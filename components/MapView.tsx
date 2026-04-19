@@ -1,31 +1,27 @@
-// components/MapView.tsx
 'use client'
 import { useEffect, useRef } from 'react'
-import mapboxgl from 'mapbox-gl'
-import 'mapbox-gl/dist/mapbox-gl.css'
+import maplibregl from 'maplibre-gl'
+import 'maplibre-gl/dist/maplibre-gl.css'
 import { Clue } from '@/types'
-
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!
 
 interface Props {
   clue: Clue
   userLat: number | null
   userLng: number | null
-  showTarget: boolean   // true when hint 2 or 3 is unlocked
+  showTarget: boolean
 }
 
 export function MapView({ clue, userLat, userLng, showTarget }: Props) {
-  const containerRef  = useRef<HTMLDivElement>(null)
-  const mapRef        = useRef<mapboxgl.Map>()
-  const userMarkerRef = useRef<mapboxgl.Marker>()
-  const targetMarkerRef = useRef<mapboxgl.Marker>()
+  const containerRef = useRef<HTMLDivElement>(null)
+  const mapRef = useRef<maplibregl.Map>()
+  const userMarkerRef = useRef<maplibregl.Marker>()
+  const targetMarkerRef = useRef<maplibregl.Marker>()
 
-  // Init map once
   useEffect(() => {
     if (!containerRef.current) return
-    const map = new mapboxgl.Map({
+    const map = new maplibregl.Map({
       container: containerRef.current,
-      style: 'mapbox://styles/mapbox/navigation-night-v1',
+      style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
       center: [clue.lng, clue.lat],
       zoom: 14.5,
     })
@@ -34,19 +30,17 @@ export function MapView({ clue, userLat, userLng, showTarget }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Show / hide target pin when hint unlocked
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
     if (showTarget && !targetMarkerRef.current) {
       const el = document.createElement('div')
-      el.className = 'target-marker'
       el.style.cssText = `
         width:20px;height:20px;border-radius:50%;
         background:#6c63f5;border:3px solid #fff;
         box-shadow:0 0 0 4px rgba(108,99,245,.35);
       `
-      targetMarkerRef.current = new mapboxgl.Marker({ element: el })
+      targetMarkerRef.current = new maplibregl.Marker({ element: el })
         .setLngLat([clue.lng, clue.lat])
         .addTo(map)
     } else if (!showTarget && targetMarkerRef.current) {
@@ -55,7 +49,6 @@ export function MapView({ clue, userLat, userLng, showTarget }: Props) {
     }
   }, [showTarget, clue.lat, clue.lng])
 
-  // Move user dot
   useEffect(() => {
     const map = mapRef.current
     if (!map || userLat === null || userLng === null) return
@@ -67,7 +60,7 @@ export function MapView({ clue, userLat, userLng, showTarget }: Props) {
         background:#378ADD;border:2px solid #fff;
         box-shadow:0 0 0 5px rgba(55,138,221,.25);
       `
-      userMarkerRef.current = new mapboxgl.Marker({ element: el })
+      userMarkerRef.current = new maplibregl.Marker({ element: el })
         .setLngLat([userLng, userLat])
         .addTo(map)
     } else {
