@@ -1,4 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#6c63f5"/>
-  <text x="16" y="24" font-size="22" text-anchor="middle" fill="white">🔍</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#6c63f5"/><circle cx="14" cy="14" r="7" fill="none" stroke="white" stroke-width="2.5"/><line x1="19" y1="19" x2="26" y2="26" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>

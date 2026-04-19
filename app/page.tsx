@@ -41,8 +41,13 @@ async function startSession(formData: FormData) {
 }
 
 export default async function HomePage() {
-  const huntsSnap = await getDocs(query(collection(db, 'hunts'), where('active', '==', true)))
-  const hunts = huntsSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+  let hunts: any[] = []
+  try {
+    const huntsSnap = await getDocs(query(collection(db, 'hunts'), where('active', '==', true)))
+    hunts = huntsSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+  } catch {
+    // Firestore not reachable or no data seeded yet
+  }
 
   return (
     <main style={{
@@ -56,6 +61,17 @@ export default async function HomePage() {
         <p style={{ fontSize: 14, color: '#8b8aaa', marginBottom: 32, lineHeight: 1.65 }}>
           Explore the city by solving riddles. You start with 10 free hint credits.
         </p>
+
+        {hunts.length === 0 && (
+          <div style={{
+            background: '#161622', border: '1px solid rgba(255,255,255,.08)',
+            borderRadius: 12, padding: '20px 16px', marginBottom: 12,
+          }}>
+            <p style={{ fontSize: 14, color: '#8b8aaa', lineHeight: 1.65, margin: 0 }}>
+              No hunts available yet. Run <code style={{ background: '#1c1c2a', padding: '2px 6px', borderRadius: 4, fontSize: 13 }}>npm run seed</code> to load the Utrecht hunt data.
+            </p>
+          </div>
+        )}
 
         {hunts.map((hunt: any) => (
           <form key={hunt.id} action={startSession} style={{ marginBottom: 12 }}>

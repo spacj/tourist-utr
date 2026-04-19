@@ -4,6 +4,7 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'Utrecht Scavenger Hunt',
   description: 'Explore Utrecht by solving riddles and confirming locations via GPS.',
+  icons: { icon: '/icon.svg' },
 }
 
 export const viewport: Viewport = {
@@ -18,8 +19,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <link rel="preconnect" href="https://api.mapbox.com" />
-        <link rel="preconnect" href="https://events.mapbox.com" />
       </head>
       <body>
         {children}
