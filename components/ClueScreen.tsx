@@ -1,12 +1,11 @@
 // components/ClueScreen.tsx
 'use client'
 import { useCallback, useEffect, useState } from 'react'
-import { Clue, HINT_COSTS, VerifyResponse } from '@/types'
+import { Clue, VerifyResponse } from '@/types'
 import { useGPS } from '@/hooks/useGPS'
 import { useCredits } from '@/hooks/useCredits'
 import { MapView } from './MapView'
 import { ProximityRing } from './ProximityRing'
-import { CreditShop } from './CreditShop'
 import { ArrivalBanner } from './ArrivalBanner'
 
 interface Props {
@@ -20,12 +19,11 @@ interface Props {
 export function ClueScreen({ clue, sessionId, initialCredits, totalScore, onComplete }: Props) {
   const [arrived,       setArrived]       = useState(false)
   const [arrivalData,   setArrivalData]   = useState<VerifyResponse | null>(null)
-  const [showShop,      setShowShop]      = useState(false)
   const [userPos,       setUserPos]       = useState<{ lat: number; lng: number } | null>(null)
   const [unlockedTiers, setUnlockedTiers] = useState<Set<number>>(new Set())
   const [openHint,      setOpenHint]      = useState<number | null>(null)
 
-  const { credits, canAfford, unlockHint, startCheckout } = useCredits(initialCredits, sessionId)
+  const { unlockHint } = useCredits(initialCredits, sessionId)
 
   const handleArrived = useCallback((data: VerifyResponse) => {
     setArrived(true)
@@ -52,7 +50,6 @@ export function ClueScreen({ clue, sessionId, initialCredits, totalScore, onComp
       setOpenHint(openHint === tier ? null : tier)
       return
     }
-    if (!canAfford(tier)) { setShowShop(true); return }
     const ok = await unlockHint(clue.id, tier)
     if (ok) {
       setUnlockedTiers((prev) => new Set([...prev, tier]))
@@ -119,13 +116,6 @@ export function ClueScreen({ clue, sessionId, initialCredits, totalScore, onComp
             onNext={() => onComplete({ nextClue: arrivalData.nextClue ?? null, huntComplete: arrivalData.huntComplete ?? false })}
           />
         )}
-        {showShop && (
-          <CreditShop
-            credits={credits}
-            onBuy={(pkgId) => { startCheckout(pkgId); setShowShop(false) }}
-            onClose={() => setShowShop(false)}
-          />
-        )}
       </div>
 
       {/* Side panel */}
@@ -134,16 +124,8 @@ export function ClueScreen({ clue, sessionId, initialCredits, totalScore, onComp
         display: 'flex', flexDirection: 'column', overflow: 'hidden',
       }}>
         {/* Top bar */}
-        <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid rgba(255,255,255,.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+        <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid rgba(255,255,255,.08)', flexShrink: 0 }}>
           <span style={{ fontSize: 13, fontWeight: 500 }}>Utrecht hunt</span>
-          <button onClick={() => setShowShop(true)} style={{
-            display: 'flex', alignItems: 'center', gap: 5,
-            background: 'rgba(108,99,245,.12)', border: '1px solid rgba(108,99,245,.3)',
-            borderRadius: 20, padding: '5px 11px', cursor: 'pointer',
-            fontSize: 12, fontWeight: 500, color: '#908af8', fontFamily: 'inherit',
-          }}>
-            ★ {credits} credits
-          </button>
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -171,9 +153,7 @@ export function ClueScreen({ clue, sessionId, initialCredits, totalScore, onComp
             <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '.07em', color: '#56556a', marginBottom: 8 }}>Hints</div>
             {hintRows.map(({ tier, label }) => {
               const unlocked = unlockedTiers.has(tier)
-              const cost = HINT_COSTS[tier]
               const isOpen = openHint === tier
-              const affordable = canAfford(tier)
 
               return (
                 <div key={tier} style={{
@@ -185,21 +165,13 @@ export function ClueScreen({ clue, sessionId, initialCredits, totalScore, onComp
                     padding: '9px 12px', cursor: 'pointer',
                   }}>
                     <span style={{ fontSize: 13, fontWeight: 500 }}>{label}</span>
-                    <span style={{ fontSize: 11, fontWeight: 500, color: unlocked ? '#22c97a' : cost === 0 ? '#22c97a' : affordable ? '#908af8' : '#56556a' }}>
-                      {unlocked ? 'Unlocked' : cost === 0 ? 'Free' : `★ ${cost} credits`}
+                    <span style={{ fontSize: 11, fontWeight: 500, color: unlocked ? '#22c97a' : '#908af8' }}>
+                      {unlocked ? 'Unlocked' : 'Tap to reveal'}
                     </span>
                   </div>
                   {unlocked && isOpen && (
                     <div style={{ padding: '9px 12px', borderTop: '1px solid rgba(255,255,255,.07)' }}>
                       {hintContent(tier)}
-                    </div>
-                  )}
-                  {!unlocked && !affordable && cost > 0 && (
-                    <div style={{ fontSize: 11, color: '#f05252', padding: '0 12px 8px' }}>
-                      Not enough credits —{' '}
-                      <span onClick={() => setShowShop(true)} style={{ color: '#908af8', cursor: 'pointer', textDecoration: 'underline' }}>
-                        buy more
-                      </span>
                     </div>
                   )}
                 </div>
