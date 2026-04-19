@@ -1,13 +1,21 @@
 import { initializeApp } from 'firebase/app'
 import { getFirestore, doc, setDoc, collection, serverTimestamp } from 'firebase/firestore'
+import { readFileSync } from 'fs'
+
+// Load .env file
+const envFile = readFileSync('.env', 'utf8')
+for (const line of envFile.split('\n')) {
+  const match = line.match(/^([^#=]+)=(.*)$/)
+  if (match) process.env[match[1].trim()] = match[2].trim()
+}
 
 const app = initializeApp({
-  apiKey: "AIzaSyADOg0QLSeWOEM6rSlKpPoQnzQyplR4fX0",
-  authDomain: "touristutr.firebaseapp.com",
-  projectId: "touristutr",
-  storageBucket: "touristutr.firebasestorage.app",
-  messagingSenderId: "15098601915",
-  appId: "1:15098601915:web:939d22c0f928349fa8a49e",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 })
 
 const db = getFirestore(app)

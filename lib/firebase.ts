@@ -2,12 +2,12 @@ import { initializeApp, getApps } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
-  apiKey: "AIzaSyADOg0QLSeWOEM6rSlKpPoQnzQyplR4fX0",
-  authDomain: "touristutr.firebaseapp.com",
-  projectId: "touristutr",
-  storageBucket: "touristutr.firebasestorage.app",
-  messagingSenderId: "15098601915",
-  appId: "1:15098601915:web:939d22c0f928349fa8a49e",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig)
