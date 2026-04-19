@@ -1,23 +1,18 @@
-import { initializeApp, cert } from 'firebase-admin/app'
-import { getFirestore, FieldValue } from 'firebase-admin/firestore'
-import { readFileSync } from 'fs'
+import { initializeApp } from 'firebase/app'
+import { getFirestore, doc, setDoc, collection, serverTimestamp } from 'firebase/firestore'
 
-const serviceAccount = JSON.parse(
-  readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS || './serviceAccountKey.json', 'utf8')
-)
+const app = initializeApp({
+  apiKey: "AIzaSyADOg0QLSeWOEM6rSlKpPoQnzQyplR4fX0",
+  authDomain: "touristutr.firebaseapp.com",
+  projectId: "touristutr",
+  storageBucket: "touristutr.firebasestorage.app",
+  messagingSenderId: "15098601915",
+  appId: "1:15098601915:web:939d22c0f928349fa8a49e",
+})
 
-initializeApp({ credential: cert(serviceAccount) })
-const db = getFirestore()
+const db = getFirestore(app)
 
 const huntId = 'hunt_utrecht_classic'
-
-const huntData = {
-  title: 'Utrecht classics',
-  description: '4 iconic spots · ~90 min on foot',
-  city: 'Utrecht',
-  active: true,
-  createdAt: FieldValue.serverTimestamp(),
-}
 
 const clues = [
   {
@@ -67,14 +62,20 @@ const clues = [
 ]
 
 async function seed() {
-  const huntRef = db.collection('hunts').doc(huntId)
-  await huntRef.set(huntData)
+  await setDoc(doc(db, 'hunts', huntId), {
+    title: 'Utrecht classics',
+    description: '4 iconic spots · ~90 min on foot',
+    city: 'Utrecht',
+    active: true,
+    createdAt: serverTimestamp(),
+  })
 
   for (const { id, ...clueData } of clues) {
-    await huntRef.collection('clues').doc(id).set(clueData)
+    await setDoc(doc(db, 'hunts', huntId, 'clues', id), clueData)
   }
 
-  console.log(`Seeded hunt "${huntData.title}" with ${clues.length} clues.`)
+  console.log(`Seeded hunt with ${clues.length} clues.`)
+  process.exit(0)
 }
 
-seed().catch(console.error)
+seed().catch((e) => { console.error(e); process.exit(1) })

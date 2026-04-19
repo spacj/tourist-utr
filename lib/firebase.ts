@@ -1,28 +1,14 @@
-import { initializeApp, getApps, cert } from 'firebase-admin/app'
-import { getFirestore, type Firestore } from 'firebase-admin/firestore'
+import { initializeApp, getApps } from 'firebase/app'
+import { getFirestore } from 'firebase/firestore'
 
-let _db: Firestore | undefined
-
-function init(): Firestore {
-  if (_db) return _db
-  if (!getApps().length) {
-    initializeApp({
-      credential: cert({
-        projectId: process.env.FIREBASE_PROJECT_ID!,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL!,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      }),
-    })
-  }
-  _db = getFirestore()
-  return _db
+const firebaseConfig = {
+  apiKey: "AIzaSyADOg0QLSeWOEM6rSlKpPoQnzQyplR4fX0",
+  authDomain: "touristutr.firebaseapp.com",
+  projectId: "touristutr",
+  storageBucket: "touristutr.firebasestorage.app",
+  messagingSenderId: "15098601915",
+  appId: "1:15098601915:web:939d22c0f928349fa8a49e",
 }
 
-export const db = new Proxy({} as Firestore, {
-  get(_target, prop, receiver) {
-    const instance = init()
-    const value = Reflect.get(instance, prop, receiver)
-    if (typeof value === 'function') return value.bind(instance)
-    return value
-  },
-})
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig)
+export const db = getFirestore(app)

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Stripe from 'stripe'
 import { CREDIT_PACKAGES } from '@/types'
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-04-10' })
+import { createOrder } from '@/lib/paypal'
 
 export async function POST(req: NextRequest) {
   const { sessionId, packageId } = await req.json()
@@ -11,23 +9,13 @@ export async function POST(req: NextRequest) {
 
   const origin = req.headers.get('origin') ?? 'http://localhost:3000'
 
-  const checkout = await stripe.checkout.sessions.create({
-    mode: 'payment',
-    line_items: [{
-      price_data: {
-        currency: 'eur',
-        unit_amount: pkg.priceCents,
-        product_data: {
-          name: `Utrecht Hunt — ${pkg.label}`,
-          description: `${pkg.credits} hint credits`,
-        },
-      },
-      quantity: 1,
-    }],
+  const { approvalUrl } = await createOrder({
+    amountEur: (pkg.priceCents / 100).toFixed(2),
+    description: `Utrecht Hunt — ${pkg.label}`,
+    returnUrl: `${origin}/api/purchases/capture?session=${sessionId}&pkg=${packageId}`,
+    cancelUrl: `${origin}/hunt?session=${sessionId}`,
     metadata: { sessionId, packageId, credits: String(pkg.credits) },
-    success_url: `${origin}/hunt?session=${sessionId}&credits=added`,
-    cancel_url: `${origin}/hunt?session=${sessionId}`,
   })
 
-  return NextResponse.json({ url: checkout.url })
+  return NextResponse.json({ url: approvalUrl })
 }

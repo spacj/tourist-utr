@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/firebase'
 import { HINT_COSTS, HintTier } from '@/types'
-import { FieldValue } from 'firebase-admin/firestore'
+import { doc, getDoc, writeBatch, serverTimestamp, increment } from 'firebase/firestore'
 
 export async function POST(req: NextRequest) {
   const { sessionId, clueId, tier } = (await req.json()) as {
@@ -9,16 +9,15 @@ export async function POST(req: NextRequest) {
   }
 
   const cost = HINT_COSTS[tier]
-  const sessionRef = db.collection('sessions').doc(sessionId)
-  const unlockId = `${clueId}_${tier}`
-  const unlockRef = sessionRef.collection('hintUnlocks').doc(unlockId)
+  const sessionRef = doc(db, 'sessions', sessionId)
+  const unlockRef = doc(db, 'sessions', sessionId, 'hintUnlocks', `${clueId}_${tier}`)
 
-  const existing = await unlockRef.get()
-  if (existing.exists) return NextResponse.json({ ok: true, alreadyUnlocked: true })
+  const existing = await getDoc(unlockRef)
+  if (existing.exists()) return NextResponse.json({ ok: true, alreadyUnlocked: true })
 
-  const sessionSnap = await sessionRef.get()
-  if (!sessionSnap.exists) return NextResponse.json({ error: 'Session not found' }, { status: 404 })
-  const session = sessionSnap.data()!
+  const sessionSnap = await getDoc(sessionRef)
+  if (!sessionSnap.exists()) return NextResponse.json({ error: 'Session not found' }, { status: 404 })
+  const session = sessionSnap.data()
 
   if (cost > 0 && session.credits < cost) {
     return NextResponse.json(
@@ -27,18 +26,18 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const batch = db.batch()
+  const batch = writeBatch(db)
   batch.set(unlockRef, {
     clueId,
     tier,
     creditCost: cost,
-    unlockedAt: FieldValue.serverTimestamp(),
+    unlockedAt: serverTimestamp(),
   })
   if (cost > 0) {
-    batch.update(sessionRef, { credits: FieldValue.increment(-cost) })
+    batch.update(sessionRef, { credits: increment(-cost) })
   }
   await batch.commit()
 
-  const updated = await sessionRef.get()
+  const updated = await getDoc(sessionRef)
   return NextResponse.json({ ok: true, creditsRemaining: updated.data()!.credits })
 }

@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/firebase'
 import { SCORE } from '@/types'
-import { FieldValue } from 'firebase-admin/firestore'
+import {
+  doc, getDoc, getDocs, collection, query, where, orderBy,
+  writeBatch, serverTimestamp, increment,
+} from 'firebase/firestore'
 
 function haversineM(lat1: number, lng1: number, lat2: number, lng2: number) {
   const R = 6_371_000
@@ -28,18 +31,19 @@ function compassDir(deg: number) {
 export async function POST(req: NextRequest) {
   const { sessionId, clueId, lat, lng } = await req.json()
 
-  const sessionRef = db.collection('sessions').doc(sessionId)
-  const sessionSnap = await sessionRef.get()
-  if (!sessionSnap.exists) return NextResponse.json({ error: 'Session not found' }, { status: 404 })
-  const session = sessionSnap.data()!
+  const sessionRef = doc(db, 'sessions', sessionId)
+  const sessionSnap = await getDoc(sessionRef)
+  if (!sessionSnap.exists()) return NextResponse.json({ error: 'Session not found' }, { status: 404 })
+  const session = sessionSnap.data()
 
-  const clueSnap = await db.collection('hunts').doc(session.huntId).collection('clues').doc(clueId).get()
-  if (!clueSnap.exists) return NextResponse.json({ error: 'Clue not found' }, { status: 404 })
-  const clue = clueSnap.data()!
+  const clueSnap = await getDoc(doc(db, 'hunts', session.huntId, 'clues', clueId))
+  if (!clueSnap.exists()) return NextResponse.json({ error: 'Clue not found' }, { status: 404 })
+  const clue = clueSnap.data()
 
-  const scSnap = await sessionRef.collection('sessionClues').doc(clueId).get()
-  if (!scSnap.exists) return NextResponse.json({ error: 'Clue not active' }, { status: 403 })
-  const sc = scSnap.data()!
+  const scRef = doc(db, 'sessions', sessionId, 'sessionClues', clueId)
+  const scSnap = await getDoc(scRef)
+  if (!scSnap.exists()) return NextResponse.json({ error: 'Clue not active' }, { status: 403 })
+  const sc = scSnap.data()
 
   if (sc.arrivedAt) return NextResponse.json({ arrived: true, alreadyConfirmed: true })
 
@@ -56,11 +60,11 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  // Compute score
-  const hintsSnap = await sessionRef.collection('hintUnlocks')
-    .where('clueId', '==', clueId).get()
-  const hintPenalty = hintsSnap.docs.reduce((acc: number, doc) => {
-    const h = doc.data()
+  const hintsSnap = await getDocs(
+    query(collection(db, 'sessions', sessionId, 'hintUnlocks'), where('clueId', '==', clueId))
+  )
+  const hintPenalty = hintsSnap.docs.reduce((acc: number, d) => {
+    const h = d.data()
     if (h.tier === 2) return acc + SCORE.hint2Penalty
     if (h.tier === 3) return acc + SCORE.hint3Penalty
     return acc
@@ -69,28 +73,27 @@ export async function POST(req: NextRequest) {
   const timeBonus = elapsedMs < SCORE.timeBonusWindowMs ? SCORE.timeBonus : 0
   const pointsEarned = Math.max(0, SCORE.base + timeBonus - hintPenalty)
 
-  const allCluesSnap = await db.collection('hunts').doc(session.huntId)
-    .collection('clues').orderBy('order').get()
+  const allCluesSnap = await getDocs(
+    query(collection(db, 'hunts', session.huntId, 'clues'), orderBy('order'))
+  )
   const totalClues = allCluesSnap.size
   const nextClueDoc = allCluesSnap.docs.find(d => d.data().order === clue.order + 1)
 
-  const batch = db.batch()
+  const batch = writeBatch(db)
 
-  batch.update(sessionRef.collection('sessionClues').doc(clueId), {
-    arrivedAt: FieldValue.serverTimestamp(),
-    pointsEarned,
-  })
-  batch.update(sessionRef, { score: FieldValue.increment(pointsEarned) })
+  batch.update(scRef, { arrivedAt: serverTimestamp(), pointsEarned })
+  batch.update(sessionRef, { score: increment(pointsEarned) })
 
   if (nextClueDoc) {
-    batch.set(sessionRef.collection('sessionClues').doc(nextClueDoc.id), {
+    const nextScRef = doc(db, 'sessions', sessionId, 'sessionClues', nextClueDoc.id)
+    batch.set(nextScRef, {
       clueId: nextClueDoc.id,
-      unlockedAt: FieldValue.serverTimestamp(),
+      unlockedAt: serverTimestamp(),
       arrivedAt: null,
       pointsEarned: 0,
     })
   } else {
-    batch.update(sessionRef, { completedAt: FieldValue.serverTimestamp() })
+    batch.update(sessionRef, { completedAt: serverTimestamp() })
   }
 
   await batch.commit()

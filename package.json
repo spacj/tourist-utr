@@ -7,16 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "node scripts/seed.mjs",
-    "stripe:listen": "stripe listen --forward-to localhost:3000/api/purchases/webhook"
+    "seed": "node scripts/seed.mjs"
   },
   "dependencies": {
-    "firebase-admin": "^13.8.0",
+    "firebase": "^12.12.0",
     "mapbox-gl": "^3.4.0",
     "next": "14.2.3",
     "react": "^18",
-    "react-dom": "^18",
-    "stripe": "^15.8.0"
+    "react-dom": "^18"
   },
   "devDependencies": {
     "@types/mapbox-gl": "^3.4.0",

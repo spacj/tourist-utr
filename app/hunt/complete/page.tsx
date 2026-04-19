@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { db } from '@/lib/firebase'
+import { doc, getDoc, getDocs, collection } from 'firebase/firestore'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,25 +12,20 @@ export default async function CompletePage({
   const sessionId = searchParams.session
   if (!sessionId) notFound()
 
-  const sessionSnap = await db.collection('sessions').doc(sessionId).get()
-  if (!sessionSnap.exists) notFound()
-  const session = sessionSnap.data()!
+  const sessionSnap = await getDoc(doc(db, 'sessions', sessionId))
+  if (!sessionSnap.exists()) notFound()
+  const session = sessionSnap.data()
 
-  const huntSnap = await db.collection('hunts').doc(session.huntId).get()
+  const huntSnap = await getDoc(doc(db, 'hunts', session.huntId))
   const hunt = huntSnap.data()!
 
-  const scSnap = await db.collection('sessions').doc(sessionId)
-    .collection('sessionClues').get()
+  const scSnap = await getDocs(collection(db, 'sessions', sessionId, 'sessionClues'))
+  const hintsSnap = await getDocs(collection(db, 'sessions', sessionId, 'hintUnlocks'))
 
-  const hintsSnap = await db.collection('sessions').doc(sessionId)
-    .collection('hintUnlocks').get()
-
-  // Fetch clue details for each session clue
   const clues = await Promise.all(
     scSnap.docs.map(async (scDoc) => {
       const sc = scDoc.data()
-      const clueSnap = await db.collection('hunts').doc(session.huntId)
-        .collection('clues').doc(scDoc.id).get()
+      const clueSnap = await getDoc(doc(db, 'hunts', session.huntId, 'clues', scDoc.id))
       const clue = clueSnap.data()!
       return {
         id: scDoc.id,
@@ -64,9 +60,7 @@ export default async function CompletePage({
         </div>
 
         <h1 style={{ fontSize: 28, fontWeight: 600, marginBottom: 6 }}>Hunt complete!</h1>
-        <p style={{ fontSize: 14, color: '#8b8aaa', marginBottom: 28 }}>
-          {hunt.title}
-        </p>
+        <p style={{ fontSize: 14, color: '#8b8aaa', marginBottom: 28 }}>{hunt.title}</p>
 
         <div style={{
           background: '#161622', border: '1px solid rgba(255,255,255,.08)',

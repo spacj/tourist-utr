@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation'
 import { db } from '@/lib/firebase'
 import { STARTING_CREDITS } from '@/types'
-import { FieldValue } from 'firebase-admin/firestore'
+import {
+  collection, doc, getDocs, getDoc, setDoc, query, where, orderBy, limit, serverTimestamp,
+} from 'firebase/firestore'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,27 +11,28 @@ async function startSession(formData: FormData) {
   'use server'
   const huntId = formData.get('huntId') as string
 
-  const huntSnap = await db.collection('hunts').doc(huntId).get()
-  if (!huntSnap.exists) throw new Error('Hunt not found')
+  const huntSnap = await getDoc(doc(db, 'hunts', huntId))
+  if (!huntSnap.exists()) throw new Error('Hunt not found')
 
-  const cluesSnap = await db.collection('hunts').doc(huntId)
-    .collection('clues').orderBy('order').limit(1).get()
+  const cluesSnap = await getDocs(
+    query(collection(db, 'hunts', huntId, 'clues'), orderBy('order'), limit(1))
+  )
   if (cluesSnap.empty) throw new Error('No clues found')
 
   const firstClue = cluesSnap.docs[0]
+  const sessionRef = doc(collection(db, 'sessions'))
 
-  const sessionRef = db.collection('sessions').doc()
-  await sessionRef.set({
+  await setDoc(sessionRef, {
     huntId,
     score: 0,
     credits: STARTING_CREDITS,
-    startedAt: FieldValue.serverTimestamp(),
+    startedAt: serverTimestamp(),
     completedAt: null,
   })
 
-  await sessionRef.collection('sessionClues').doc(firstClue.id).set({
+  await setDoc(doc(db, 'sessions', sessionRef.id, 'sessionClues', firstClue.id), {
     clueId: firstClue.id,
-    unlockedAt: FieldValue.serverTimestamp(),
+    unlockedAt: serverTimestamp(),
     arrivedAt: null,
     pointsEarned: 0,
   })
@@ -38,7 +41,7 @@ async function startSession(formData: FormData) {
 }
 
 export default async function HomePage() {
-  const huntsSnap = await db.collection('hunts').where('active', '==', true).get()
+  const huntsSnap = await getDocs(query(collection(db, 'hunts'), where('active', '==', true)))
   const hunts = huntsSnap.docs.map(d => ({ id: d.id, ...d.data() }))
 
   return (
