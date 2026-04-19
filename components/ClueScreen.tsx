@@ -1,4 +1,3 @@
-// components/ClueScreen.tsx
 'use client'
 import { useCallback, useEffect, useState } from 'react'
 import { Clue, VerifyResponse } from '@/types'
@@ -34,7 +33,6 @@ export function ClueScreen({ clue, sessionId, initialCredits, totalScore, onComp
     sessionId, clueId: clue.id, enabled: !arrived, onArrived: handleArrived,
   })
 
-  // Watch real user position for map dot
   useEffect(() => {
     if (arrived) return
     const id = navigator.geolocation.watchPosition(
@@ -66,46 +64,38 @@ export function ClueScreen({ clue, sessionId, initialCredits, totalScore, onComp
   ]
 
   const hintContent = (tier: 1 | 2 | 3): React.ReactNode => {
-    if (tier === 1) return <p style={{ fontSize: 13, lineHeight: 1.65, color: '#8b8aaa' }}>{clue.hint1}</p>
+    if (tier === 1) return <p>{clue.hint1}</p>
     if (tier === 2) return (
       <>
-        <p style={{ fontSize: 13, lineHeight: 1.65, color: '#8b8aaa', marginBottom: 8 }}>{clue.hint2}</p>
+        <p style={{ marginBottom: clue.hint2PhotoUrl ? 8 : 0 }}>{clue.hint2}</p>
         {clue.hint2PhotoUrl && (
           <img src={clue.hint2PhotoUrl} alt="Location hint"
             style={{ width: '100%', borderRadius: 7, maxHeight: 160, objectFit: 'cover' }} />
         )}
       </>
     )
-    if (tier === 3) return (
-      <p style={{ fontSize: 13, lineHeight: 1.65, color: '#8b8aaa' }}>
-        {dynamicH3 ?? clue.hint3}
-      </p>
-    )
+    if (tier === 3) return <p>{dynamicH3 ?? clue.hint3}</p>
   }
 
   return (
-    <div style={{
-      display: 'grid', gridTemplateColumns: '1fr 292px',
-      height: '100dvh', background: '#0d0d14', color: '#eeedf8',
-      fontFamily: 'system-ui, sans-serif', position: 'relative', overflow: 'hidden',
-    }}>
+    <div className="game-layout">
       {/* Map */}
-      <div style={{ position: 'relative', height: '100%' }}>
+      <div className="game-map">
         <MapView
           clue={clue}
           userLat={userPos?.lat ?? null}
           userLng={userPos?.lng ?? null}
           showTarget={showTarget}
         />
-        {/* HUD pills */}
-        <div style={{ position: 'absolute', top: 12, left: 12, right: 12, display: 'flex', justifyContent: 'space-between', pointerEvents: 'none' }}>
-          <div style={pill('#22c97a', 'rgba(34,201,122,.2)')}>
-            Clue {clue.order} of {clue.totalClues}
+        <div className="game-hud">
+          <div className="hud-pill" style={{ background: 'rgba(34,201,122,.2)', color: '#22c97a', border: '1px solid rgba(34,201,122,.25)' }}>
+            Clue {clue.order}/{clue.totalClues}
           </div>
-          <div style={pill('#f5a54a', 'rgba(245,165,74,.15)')}>
-            Score: {totalScore} pts
+          <div className="hud-pill" style={{ background: 'rgba(245,165,74,.15)', color: '#f5a54a', border: '1px solid rgba(245,165,74,.25)' }}>
+            {totalScore} pts
           </div>
         </div>
+
         {arrived && arrivalData && (
           <ArrivalBanner
             locationName={clue.locationName}
@@ -118,75 +108,52 @@ export function ClueScreen({ clue, sessionId, initialCredits, totalScore, onComp
         )}
       </div>
 
-      {/* Side panel */}
-      <div style={{
-        background: '#161622', borderLeft: '1px solid rgba(255,255,255,.08)',
-        display: 'flex', flexDirection: 'column', overflow: 'hidden',
-      }}>
-        {/* Top bar */}
-        <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid rgba(255,255,255,.08)', flexShrink: 0 }}>
-          <span style={{ fontSize: 13, fontWeight: 500 }}>Utrecht hunt</span>
+      {/* Bottom sheet (becomes side panel on desktop) */}
+      <div className="bottom-sheet">
+        <div className="sheet-handle" />
+
+        <div className="progress-wrap">
+          <div className="progress-track">
+            <div className="progress-fill" style={{ width: `${((clue.order - 1) / clue.totalClues) * 100}%` }} />
+          </div>
+          <span className="progress-text">{clue.order - 1}/{clue.totalClues}</span>
         </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {/* Progress */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,.06)', borderRadius: 2, overflow: 'hidden' }}>
-              <div style={{ height: '100%', background: '#6c63f5', borderRadius: 2, width: `${((clue.order - 1) / clue.totalClues) * 100}%`, transition: 'width .6s' }} />
-            </div>
-            <span style={{ fontSize: 11, color: '#8b8aaa', whiteSpace: 'nowrap' }}>{clue.order - 1} / {clue.totalClues} done</span>
-          </div>
-
-          {/* Ring */}
+        {/* Ring + GPS */}
+        <div className="ring-stats">
           <ProximityRing distanceM={distanceM} bearing={bearing} arrived={arrived} accuracy={accuracy} />
-
           {gpsError && <p style={{ fontSize: 12, color: '#f05252', textAlign: 'center' }}>{gpsError}</p>}
+        </div>
 
-          {/* Clue card */}
-          <div style={{ background: '#1c1c2a', border: '1px solid rgba(255,255,255,.08)', borderRadius: 9, padding: 13 }}>
-            <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '.07em', color: '#56556a', marginBottom: 6 }}>Your clue</div>
-            <p style={{ fontSize: 13, lineHeight: 1.65 }}>{clue.riddle}</p>
-          </div>
+        {/* Clue */}
+        <div className="clue-card">
+          <div className="clue-label">Your clue</div>
+          <p className="clue-text">{clue.riddle}</p>
+        </div>
 
-          {/* Hints */}
-          <div>
-            <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '.07em', color: '#56556a', marginBottom: 8 }}>Hints</div>
-            {hintRows.map(({ tier, label }) => {
-              const unlocked = unlockedTiers.has(tier)
-              const isOpen = openHint === tier
+        {/* Hints */}
+        <div>
+          <div className="clue-label" style={{ marginBottom: 8 }}>Hints</div>
+          {hintRows.map(({ tier, label }) => {
+            const unlocked = unlockedTiers.has(tier)
+            const isOpen = openHint === tier
 
-              return (
-                <div key={tier} style={{
-                  border: `1px solid ${unlocked ? 'rgba(108,99,245,.38)' : 'rgba(255,255,255,.08)'}`,
-                  borderRadius: 8, marginBottom: 6, overflow: 'hidden', transition: 'border-color .2s',
-                }}>
-                  <div onClick={() => doUnlock(tier)} style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '9px 12px', cursor: 'pointer',
-                  }}>
-                    <span style={{ fontSize: 13, fontWeight: 500 }}>{label}</span>
-                    <span style={{ fontSize: 11, fontWeight: 500, color: unlocked ? '#22c97a' : '#908af8' }}>
-                      {unlocked ? 'Unlocked' : 'Tap to reveal'}
-                    </span>
-                  </div>
-                  {unlocked && isOpen && (
-                    <div style={{ padding: '9px 12px', borderTop: '1px solid rgba(255,255,255,.07)' }}>
-                      {hintContent(tier)}
-                    </div>
-                  )}
+            return (
+              <div key={tier} className={`hint-row ${unlocked ? 'unlocked' : ''}`}>
+                <div className="hint-header" onClick={() => doUnlock(tier)}>
+                  <span className="hint-label">{label}</span>
+                  <span className="hint-status" style={{ color: unlocked ? '#22c97a' : '#908af8' }}>
+                    {unlocked ? 'Unlocked' : 'Tap to reveal'}
+                  </span>
                 </div>
-              )
-            })}
-          </div>
+                {unlocked && isOpen && (
+                  <div className="hint-body">{hintContent(tier)}</div>
+                )}
+              </div>
+            )
+          })}
         </div>
       </div>
     </div>
   )
-}
-
-function pill(color: string, bg: string): React.CSSProperties {
-  return {
-    background: bg, border: `1px solid ${color}44`,
-    borderRadius: 18, padding: '4px 12px', fontSize: 11, fontWeight: 500, color,
-  }
 }

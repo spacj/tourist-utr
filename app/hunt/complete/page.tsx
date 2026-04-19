@@ -44,12 +44,8 @@ export default async function CompletePage({
   const creditsSpent = hintsSnap.docs.reduce((s, d) => s + (d.data().creditCost || 0), 0)
 
   return (
-    <main style={{
-      minHeight: '100dvh', background: '#0d0d14', color: '#eeedf8',
-      fontFamily: 'system-ui, sans-serif', display: 'flex',
-      alignItems: 'center', justifyContent: 'center', padding: 24,
-    }}>
-      <div style={{ width: '100%', maxWidth: 400, textAlign: 'center' }}>
+    <main className="page-center">
+      <div className="container" style={{ textAlign: 'center' }}>
         <div style={{
           width: 72, height: 72, borderRadius: '50%',
           background: 'rgba(245,165,74,.12)', border: '1px solid rgba(245,165,74,.3)',
@@ -60,40 +56,30 @@ export default async function CompletePage({
         </div>
 
         <h1 style={{ fontSize: 28, fontWeight: 600, marginBottom: 6 }}>Hunt complete!</h1>
-        <p style={{ fontSize: 14, color: '#8b8aaa', marginBottom: 28 }}>{hunt.title}</p>
+        <p style={{ fontSize: 14, color: '#8b8aaa', marginBottom: 24 }}>{hunt.title}</p>
 
-        <div style={{
-          background: '#161622', border: '1px solid rgba(255,255,255,.08)',
-          borderRadius: 14, padding: '22px 20px', marginBottom: 16,
-        }}>
+        <div className="stat-card" style={{ marginBottom: 16, padding: '22px 20px' }}>
           <div style={{ fontSize: 13, color: '#56556a', marginBottom: 6 }}>Final score</div>
-          <div style={{ fontSize: 52, fontWeight: 700, color: '#6c63f5', lineHeight: 1 }}>
-            {session.score}
-          </div>
+          <div style={{ fontSize: 52, fontWeight: 700, color: '#6c63f5', lineHeight: 1 }}>{session.score}</div>
           <div style={{ fontSize: 12, color: '#8b8aaa', marginTop: 4 }}>points</div>
         </div>
 
-        <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 28,
-        }}>
+        <div className="stats-grid">
           {[
             { label: 'Locations', value: `${cluesArrived}/${totalClues}` },
             { label: 'Hints used', value: hintsUsed },
             { label: 'Credits spent', value: creditsSpent },
           ].map(({ label, value }) => (
-            <div key={label} style={{
-              background: '#161622', border: '1px solid rgba(255,255,255,.08)',
-              borderRadius: 10, padding: '14px 10px', textAlign: 'center',
-            }}>
-              <div style={{ fontSize: 22, fontWeight: 600 }}>{value}</div>
-              <div style={{ fontSize: 11, color: '#8b8aaa', marginTop: 2 }}>{label}</div>
+            <div key={label} className="stat-card">
+              <div className="stat-value">{value}</div>
+              <div className="stat-label">{label}</div>
             </div>
           ))}
         </div>
 
         <div style={{
           background: '#161622', border: '1px solid rgba(255,255,255,.08)',
-          borderRadius: 12, overflow: 'hidden', marginBottom: 24,
+          borderRadius: 12, overflow: 'hidden', marginBottom: 24, textAlign: 'left',
         }}>
           {clues.map((sc, i) => (
             <div key={sc.id} style={{
@@ -120,12 +106,9 @@ export default async function CompletePage({
           ))}
         </div>
 
-        <a href="/" style={{
-          display: 'block', background: '#6c63f5', color: '#fff',
-          borderRadius: 10, padding: 14, fontSize: 14, fontWeight: 600,
-          textDecoration: 'none', textAlign: 'center',
-        }}>
-          Play again
+        <a href="/" className="btn-primary">Play again</a>
+        <a href="/profile" className="btn-secondary" style={{ marginTop: 8, display: 'block', textDecoration: 'none' }}>
+          View profile
         </a>
       </div>
     </main>

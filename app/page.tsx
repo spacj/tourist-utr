@@ -1,99 +1,122 @@
-import { redirect } from 'next/navigation'
-import { db } from '@/lib/firebase'
-import { STARTING_CREDITS } from '@/types'
-import {
-  collection, doc, getDocs, getDoc, setDoc, query, where, orderBy, limit, serverTimestamp,
-} from 'firebase/firestore'
+'use client'
+import { useEffect, useState } from 'react'
+import { useAuth } from '@/components/AuthProvider'
+import { Hunt } from '@/types'
 
-export const dynamic = 'force-dynamic'
-
-async function startSession(formData: FormData) {
-  'use server'
-  const huntId = formData.get('huntId') as string
-
-  const huntSnap = await getDoc(doc(db, 'hunts', huntId))
-  if (!huntSnap.exists()) throw new Error('Hunt not found')
-
-  const cluesSnap = await getDocs(
-    query(collection(db, 'hunts', huntId, 'clues'), orderBy('order'), limit(1))
-  )
-  if (cluesSnap.empty) throw new Error('No clues found')
-
-  const firstClue = cluesSnap.docs[0]
-  const sessionRef = doc(collection(db, 'sessions'))
-
-  await setDoc(sessionRef, {
-    huntId,
-    score: 0,
-    credits: STARTING_CREDITS,
-    startedAt: serverTimestamp(),
-    completedAt: null,
-  })
-
-  await setDoc(doc(db, 'sessions', sessionRef.id, 'sessionClues', firstClue.id), {
-    clueId: firstClue.id,
-    unlockedAt: serverTimestamp(),
-    arrivedAt: null,
-    pointsEarned: 0,
-  })
-
-  redirect(`/hunt?session=${sessionRef.id}`)
+const DIFFICULTY_META: Record<string, { label: string; color: string; bg: string }> = {
+  easy:   { label: 'Easy',   color: '#22c97a', bg: 'rgba(34,201,122,.12)' },
+  medium: { label: 'Medium', color: '#f5a54a', bg: 'rgba(245,165,74,.12)' },
+  hard:   { label: 'Hard',   color: '#f05252', bg: 'rgba(240,82,82,.12)' },
 }
 
-export default async function HomePage() {
-  let hunts: any[] = []
-  try {
-    const huntsSnap = await getDocs(query(collection(db, 'hunts'), where('active', '==', true)))
-    hunts = huntsSnap.docs.map(d => ({ id: d.id, ...d.data() }))
-  } catch {
-    // Firestore not reachable or no data seeded yet
+export default function HomePage() {
+  const { user, loading, signIn } = useAuth()
+  const [hunts, setHunts] = useState<Hunt[]>([])
+  const [starting, setStarting] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/hunts').then(r => r.json()).then(setHunts).catch(() => {})
+  }, [])
+
+  const startHunt = async (huntId: string) => {
+    if (!user) { signIn(); return }
+    setStarting(huntId)
+    const res = await fetch('/api/start-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ huntId, userId: user.uid }),
+    })
+    const { sessionId } = await res.json()
+    window.location.href = `/hunt?session=${sessionId}`
+  }
+
+  if (loading) {
+    return (
+      <main className="page-center">
+        <div className="spinner" />
+      </main>
+    )
   }
 
   return (
-    <main style={{
-      minHeight: '100dvh', background: '#0d0d14', color: '#eeedf8',
-      fontFamily: 'system-ui, sans-serif', display: 'flex',
-      alignItems: 'center', justifyContent: 'center', padding: 24,
-    }}>
-      <div style={{ width: '100%', maxWidth: 380, textAlign: 'center' }}>
-        <div style={{ fontSize: 40, marginBottom: 16 }}>🔍</div>
-        <h1 style={{ fontSize: 26, fontWeight: 600, marginBottom: 8 }}>Utrecht scavenger hunt</h1>
-        <p style={{ fontSize: 14, color: '#8b8aaa', marginBottom: 32, lineHeight: 1.65 }}>
-          Explore the city by solving riddles. You start with 10 free hint credits.
-        </p>
+    <main className="page-center">
+      <div className="container">
+        {/* Header */}
+        <div className="header">
+          <div className="header-top">
+            <div>
+              <h1 className="title">Utrecht</h1>
+              <p className="subtitle">Scavenger Hunt</p>
+            </div>
+            {user ? (
+              <a href="/profile" className="avatar-btn">
+                {user.photoURL ? (
+                  <img src={user.photoURL} alt="" className="avatar-img" referrerPolicy="no-referrer" />
+                ) : (
+                  <span className="avatar-letter">{user.displayName?.[0] || '?'}</span>
+                )}
+              </a>
+            ) : (
+              <button onClick={signIn} className="sign-in-btn">Sign in</button>
+            )}
+          </div>
+          <p className="header-desc">
+            Explore the city by solving riddles and finding landmarks. Walk through centuries of history — guided by GPS.
+          </p>
+        </div>
+
+        {/* Hunts */}
+        <div className="section-label">Available hunts</div>
 
         {hunts.length === 0 && (
-          <div style={{
-            background: '#161622', border: '1px solid rgba(255,255,255,.08)',
-            borderRadius: 12, padding: '20px 16px', marginBottom: 12,
-          }}>
-            <p style={{ fontSize: 14, color: '#8b8aaa', lineHeight: 1.65, margin: 0 }}>
-              No hunts available yet. Run <code style={{ background: '#1c1c2a', padding: '2px 6px', borderRadius: 4, fontSize: 13 }}>npm run seed</code> to load the Utrecht hunt data.
-            </p>
+          <div className="empty-card">
+            <p>No hunts available yet.</p>
           </div>
         )}
 
-        {hunts.map((hunt: any) => (
-          <form key={hunt.id} action={startSession} style={{ marginBottom: 12 }}>
-            <input type="hidden" name="huntId" value={hunt.id} />
-            <button type="submit" style={{
-              width: '100%', background: '#6c63f5', color: '#fff', border: 'none',
-              borderRadius: 12, padding: '16px 20px', fontSize: 15, fontWeight: 600,
-              cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            }}>
-              <div>
-                <div>{hunt.title}</div>
-                <div style={{ fontSize: 12, fontWeight: 400, opacity: .75, marginTop: 2 }}>{hunt.description}</div>
+        {hunts.map((hunt) => {
+          const diff = DIFFICULTY_META[hunt.difficulty] || DIFFICULTY_META.medium
+          return (
+            <button
+              key={hunt.id}
+              className="hunt-card"
+              onClick={() => startHunt(hunt.id)}
+              disabled={starting === hunt.id}
+            >
+              <div className="hunt-card-top">
+                <div>
+                  <div className="hunt-title">{hunt.title}</div>
+                  <div className="hunt-desc">{hunt.description}</div>
+                </div>
+                <div className="hunt-arrow">{starting === hunt.id ? '...' : '→'}</div>
               </div>
-              <span style={{ fontSize: 20 }}>→</span>
-            </button>
-          </form>
-        ))}
 
-        <p style={{ fontSize: 12, color: '#56556a', marginTop: 24 }}>
-          Starts with 10 free hint credits · Explore Utrecht on foot
-        </p>
+              <div className="hunt-meta">
+                <span className="meta-pill" style={{ color: diff.color, background: diff.bg, border: `1px solid ${diff.color}33` }}>
+                  {diff.label}
+                </span>
+                <span className="meta-item">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  {hunt.clueCount} places
+                </span>
+                <span className="meta-item">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  ~{hunt.durationMin} min
+                </span>
+                <span className="meta-item">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                  {hunt.distanceKm} km
+                </span>
+              </div>
+            </button>
+          )
+        })}
+
+        {!user && (
+          <p className="footer-note">
+            Sign in with Google to save your progress
+          </p>
+        )}
       </div>
     </main>
   )

@@ -72,8 +72,12 @@ const clues = [
 async function seed() {
   await setDoc(doc(db, 'hunts', huntId), {
     title: 'Utrecht classics',
-    description: '4 iconic spots · ~90 min on foot',
+    description: 'Walk through centuries of history — from the iconic Dom Tower to hidden cloisters.',
     city: 'Utrecht',
+    difficulty: 'medium',
+    clueCount: 4,
+    durationMin: 90,
+    distanceKm: 2.5,
     active: true,
     createdAt: serverTimestamp(),
   })

@@ -14,3 +14,481 @@ body {
   font-family: system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
+
+/* ── Spinner ── */
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(108, 99, 245, 0.2);
+  border-top-color: #6c63f5;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Page center layout ── */
+.page-center {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.container {
+  width: 100%;
+  max-width: 420px;
+}
+
+/* ── Header ── */
+.header {
+  margin-bottom: 28px;
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.subtitle {
+  font-size: 15px;
+  color: #6c63f5;
+  font-weight: 500;
+  margin-top: 2px;
+}
+.header-desc {
+  font-size: 14px;
+  color: #8b8aaa;
+  line-height: 1.65;
+}
+
+/* ── Avatar / Sign-in ── */
+.avatar-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid rgba(108, 99, 245, 0.4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #161622;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.avatar-letter {
+  font-size: 16px;
+  font-weight: 600;
+  color: #6c63f5;
+}
+.sign-in-btn {
+  background: rgba(108, 99, 245, 0.12);
+  border: 1px solid rgba(108, 99, 245, 0.3);
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #908af8;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+/* ── Section label ── */
+.section-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #56556a;
+  margin-bottom: 10px;
+}
+
+/* ── Hunt card ── */
+.hunt-card {
+  width: 100%;
+  background: #161622;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  color: #eeedf8;
+  margin-bottom: 10px;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.hunt-card:hover {
+  border-color: rgba(108, 99, 245, 0.35);
+  transform: translateY(-1px);
+}
+.hunt-card:active {
+  transform: scale(0.985);
+}
+.hunt-card:disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+.hunt-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.hunt-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+.hunt-desc {
+  font-size: 13px;
+  color: #8b8aaa;
+  line-height: 1.5;
+}
+.hunt-arrow {
+  font-size: 20px;
+  color: #6c63f5;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.hunt-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.meta-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 12px;
+}
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #8b8aaa;
+}
+
+/* ── Empty card ── */
+.empty-card {
+  background: #161622;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 20px 16px;
+  margin-bottom: 12px;
+  text-align: center;
+  color: #8b8aaa;
+  font-size: 14px;
+}
+
+/* ── Footer ── */
+.footer-note {
+  font-size: 12px;
+  color: #56556a;
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* ── Game layout ── */
+.game-layout {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+.game-map {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+}
+.game-hud {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 10;
+}
+.hud-pill {
+  border-radius: 18px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  backdrop-filter: blur(6px);
+}
+
+/* ── Bottom sheet ── */
+.bottom-sheet {
+  background: #161622;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px 18px 0 0;
+  padding: 14px 16px;
+  max-height: 45dvh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 20;
+}
+.sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  margin: 0 auto 4px;
+}
+
+/* ── Clue card ── */
+.clue-card {
+  background: #1c1c2a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 13px;
+}
+.clue-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #56556a;
+  margin-bottom: 6px;
+}
+.clue-text {
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+/* ── Hint row ── */
+.hint-row {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+  margin-bottom: 6px;
+}
+.hint-row.unlocked {
+  border-color: rgba(108, 99, 245, 0.38);
+}
+.hint-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.hint-label {
+  font-size: 13px;
+  font-weight: 500;
+}
+.hint-status {
+  font-size: 11px;
+  font-weight: 500;
+}
+.hint-body {
+  padding: 9px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 13px;
+  line-height: 1.65;
+  color: #8b8aaa;
+}
+
+/* ── Progress bar ── */
+.progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.progress-track {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: #6c63f5;
+  border-radius: 2px;
+  transition: width 0.6s;
+}
+.progress-text {
+  font-size: 11px;
+  color: #8b8aaa;
+  white-space: nowrap;
+}
+
+/* ── Ring + stats row (mobile horizontal) ── */
+.ring-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ring-stats > div:first-child {
+  flex-shrink: 0;
+}
+
+/* ── Profile page ── */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.profile-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid rgba(108, 99, 245, 0.4);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.profile-name {
+  font-size: 18px;
+  font-weight: 600;
+}
+.profile-email {
+  font-size: 13px;
+  color: #8b8aaa;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: #161622;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 14px 10px;
+  text-align: center;
+}
+.stat-value {
+  font-size: 24px;
+  font-weight: 600;
+}
+.stat-label {
+  font-size: 11px;
+  color: #8b8aaa;
+  margin-top: 2px;
+}
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: #161622;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+.history-title {
+  font-size: 14px;
+  font-weight: 500;
+}
+.history-detail {
+  font-size: 12px;
+  color: #8b8aaa;
+  margin-top: 2px;
+}
+.history-score {
+  font-size: 18px;
+  font-weight: 600;
+  color: #6c63f5;
+}
+
+/* ── Buttons ── */
+.btn-primary {
+  width: 100%;
+  background: #6c63f5;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 13px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+}
+.btn-secondary {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  color: #8b8aaa;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* ── Arrival overlay ── */
+.arrival-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 10, 18, 0.92);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+.arrival-card {
+  background: #161622;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 28px 22px;
+  width: min(300px, calc(100vw - 40px));
+  text-align: center;
+}
+
+/* ── Desktop: side panel layout ── */
+@media (min-width: 768px) {
+  .game-layout {
+    flex-direction: row;
+  }
+  .game-map {
+    flex: 1;
+  }
+  .bottom-sheet {
+    width: 320px;
+    max-height: none;
+    height: 100dvh;
+    border-radius: 0;
+    border-top: none;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .sheet-handle {
+    display: none;
+  }
+  .ring-stats {
+    flex-direction: column;
+  }
+  .container {
+    max-width: 480px;
+  }
+}

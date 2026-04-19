@@ -1,4 +1,17 @@
 export type HintTier = 1 | 2 | 3
+export type Difficulty = 'easy' | 'medium' | 'hard'
+
+export interface Hunt {
+  id: string
+  title: string
+  description: string
+  city: string
+  difficulty: Difficulty
+  clueCount: number
+  durationMin: number
+  distanceKm: number
+  active: boolean
+}
 
 export interface Clue {
   id: string
