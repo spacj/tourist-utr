@@ -55,6 +55,16 @@ export function ClueScreen({ clue, sessionId, initialCredits, totalScore, onComp
     }
   }
 
+  const fakeArrive = async () => {
+    const res = await fetch('/api/verify-location', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId, clueId: clue.id, lat: clue.lat, lng: clue.lng }),
+    })
+    const data = await res.json() as VerifyResponse
+    if (data.arrived) handleArrived(data)
+  }
+
   const showTarget = unlockedTiers.has(2) || unlockedTiers.has(3)
 
   const hintRows: { tier: 1 | 2 | 3; label: string }[] = [
@@ -118,6 +128,13 @@ export function ClueScreen({ clue, sessionId, initialCredits, totalScore, onComp
           </div>
           <span className="progress-text">{clue.order - 1}/{clue.totalClues}</span>
         </div>
+
+        {/* Debug: skip to location */}
+        {!arrived && (
+          <button onClick={fakeArrive} className="btn-secondary" style={{ fontSize: 12, padding: 8, color: '#f5a54a', borderColor: 'rgba(245,165,74,.25)' }}>
+            ⚡ Skip to location (test mode)
+          </button>
+        )}
 
         {/* Ring + GPS */}
         <div className="ring-stats">
