@@ -6,6 +6,8 @@ import { useCredits } from '@/hooks/useCredits'
 import { MapView } from './MapView'
 import { ProximityRing } from './ProximityRing'
 import { ArrivalBanner } from './ArrivalBanner'
+import { CreditShop } from './CreditShop'
+import { HINT_COSTS } from '@/types'
 
 interface Props {
   clue: Clue
@@ -21,8 +23,9 @@ export function ClueScreen({ clue, sessionId, initialCredits, totalScore, onComp
   const [userPos,       setUserPos]       = useState<{ lat: number; lng: number } | null>(null)
   const [unlockedTiers, setUnlockedTiers] = useState<Set<number>>(new Set())
   const [openHint,      setOpenHint]      = useState<number | null>(null)
+  const [shopOpen,      setShopOpen]      = useState(false)
 
-  const { unlockHint } = useCredits(initialCredits, sessionId)
+  const { credits, canAfford, unlockHint, startCheckout } = useCredits(initialCredits, sessionId)
 
   const handleArrived = useCallback((data: VerifyResponse) => {
     setArrived(true)
@@ -48,6 +51,10 @@ export function ClueScreen({ clue, sessionId, initialCredits, totalScore, onComp
       setOpenHint(openHint === tier ? null : tier)
       return
     }
+    if (!canAfford(tier)) {
+      setShopOpen(true)
+      return
+    }
     const ok = await unlockHint(clue.id, tier)
     if (ok) {
       setUnlockedTiers((prev) => new Set([...prev, tier]))
@@ -65,25 +72,17 @@ export function ClueScreen({ clue, sessionId, initialCredits, totalScore, onComp
     if (data.arrived) handleArrived(data)
   }
 
-  const showTarget = unlockedTiers.has(2) || unlockedTiers.has(3)
+  const showTarget = unlockedTiers.has(3)
 
   const hintRows: { tier: 1 | 2 | 3; label: string }[] = [
     { tier: 1, label: 'Neighbourhood clue' },
-    { tier: 2, label: 'Photo hint' },
-    { tier: 3, label: 'GPS nudge' },
+    { tier: 2, label: 'Street-level hint' },
+    { tier: 3, label: 'Show on map' },
   ]
 
   const hintContent = (tier: 1 | 2 | 3): React.ReactNode => {
     if (tier === 1) return <p>{clue.hint1}</p>
-    if (tier === 2) return (
-      <>
-        <p style={{ marginBottom: clue.hint2PhotoUrl ? 8 : 0 }}>{clue.hint2}</p>
-        {clue.hint2PhotoUrl && (
-          <img src={clue.hint2PhotoUrl} alt="Location hint"
-            style={{ width: '100%', borderRadius: 7, maxHeight: 160, objectFit: 'cover' }} />
-        )}
-      </>
-    )
+    if (tier === 2) return <p>{clue.hint2}</p>
     if (tier === 3) return <p>{dynamicH3 ?? clue.hint3}</p>
   }
 
@@ -100,6 +99,9 @@ export function ClueScreen({ clue, sessionId, initialCredits, totalScore, onComp
         <div className="game-hud">
           <div className="hud-pill" style={{ background: 'rgba(34,201,122,.2)', color: '#22c97a', border: '1px solid rgba(34,201,122,.25)' }}>
             Clue {clue.order}/{clue.totalClues}
+          </div>
+          <div className="hud-pill" style={{ background: 'rgba(108,99,245,.15)', color: '#908af8', border: '1px solid rgba(108,99,245,.25)', pointerEvents: 'auto', cursor: 'pointer' }} onClick={() => setShopOpen(true)}>
+            {credits} credits
           </div>
           <div className="hud-pill" style={{ background: 'rgba(245,165,74,.15)', color: '#f5a54a', border: '1px solid rgba(245,165,74,.25)' }}>
             {totalScore} pts
@@ -160,7 +162,7 @@ export function ClueScreen({ clue, sessionId, initialCredits, totalScore, onComp
                 <div className="hint-header" onClick={() => doUnlock(tier)}>
                   <span className="hint-label">{label}</span>
                   <span className="hint-status" style={{ color: unlocked ? '#22c97a' : '#908af8' }}>
-                    {unlocked ? 'Unlocked' : 'Tap to reveal'}
+                    {unlocked ? 'Unlocked' : HINT_COSTS[tier] > 0 ? `${HINT_COSTS[tier]} credits` : 'Free'}
                   </span>
                 </div>
                 {unlocked && isOpen && (
@@ -171,6 +173,14 @@ export function ClueScreen({ clue, sessionId, initialCredits, totalScore, onComp
           })}
         </div>
       </div>
+
+      {shopOpen && (
+        <CreditShop
+          credits={credits}
+          onBuy={(pkgId) => startCheckout(pkgId)}
+          onClose={() => setShopOpen(false)}
+        />
+      )}
     </div>
   )
 }

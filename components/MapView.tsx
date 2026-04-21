@@ -81,7 +81,7 @@ export function MapView({ clue, userLat, userLng, showTarget }: Props) {
           borderRadius: 20, pointerEvents: 'none', whiteSpace: 'nowrap',
           backdropFilter: 'blur(6px)',
         }}>
-          Unlock hint 2 to reveal the pin
+          Use "Show on map" hint to reveal the pin
         </div>
       )}
     </div>

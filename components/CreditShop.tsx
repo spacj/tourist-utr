@@ -73,7 +73,7 @@ export function CreditShop({ credits, onBuy, onClose }: Props) {
             </button>
           ))}
         </div>
-        <p style={s.note}>Credits never expire · Hint 2 costs 3 cr · Hint 3 costs 5 cr</p>
+        <p style={s.note}>Credits never expire · Hint 1: 1 cr · Hint 2: 2 cr · Map pin: 3 cr</p>
       </div>
     </div>
   )

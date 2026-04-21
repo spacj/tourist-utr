@@ -54,7 +54,7 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
   { id: 'large',  credits: 40, priceCents: 499, label: '40 credits', badge: 'Best value' },
 ]
 
-export const HINT_COSTS: Record<HintTier, number> = { 1: 0, 2: 0, 3: 0 }
+export const HINT_COSTS: Record<HintTier, number> = { 1: 1, 2: 2, 3: 3 }
 
 export const SCORE = {
   base: 100,
