@@ -60,18 +60,52 @@ export async function POST(req: NextRequest) {
     })
   }
 
+  // --- Scoring ---
+
   const hintsSnap = await getDocs(
     query(collection(db, 'sessions', sessionId, 'hintUnlocks'), where('clueId', '==', clueId))
   )
+  const hintTiers = hintsSnap.docs.map(d => d.data().tier as number)
   const hintPenalty = hintsSnap.docs.reduce((acc: number, d) => {
     const h = d.data()
     if (h.tier === 2) return acc + SCORE.hint2Penalty
     if (h.tier === 3) return acc + SCORE.hint3Penalty
     return acc
   }, 0)
+
   const elapsedMs = Date.now() - sc.unlockedAt.toMillis()
-  const timeBonus = elapsedMs < SCORE.timeBonusWindowMs ? SCORE.timeBonus : 0
-  const pointsEarned = Math.max(0, SCORE.base + timeBonus - hintPenalty)
+  const timeFraction = Math.max(0, 1 - elapsedMs / SCORE.timeBonusWindowMs)
+  const timeBonus = Math.round(SCORE.timeBonus * timeFraction)
+
+  const usedNoHints = hintTiers.length === 0
+  const perfectBonus = usedNoHints ? SCORE.perfectClueBonus : 0
+
+  // Streak: count consecutive completed clues that also earned time bonus
+  const allScSnap = await getDocs(collection(db, 'sessions', sessionId, 'sessionClues'))
+  const completedClues = allScSnap.docs
+    .filter(d => d.data().arrivedAt !== null)
+    .sort((a, b) => {
+      const aTime = a.data().arrivedAt?.toMillis?.() ?? 0
+      const bTime = b.data().arrivedAt?.toMillis?.() ?? 0
+      return bTime - aTime
+    })
+
+  let streak = 0
+  for (const d of completedClues) {
+    if ((d.data().pointsEarned ?? 0) >= SCORE.base) {
+      streak++
+    } else {
+      break
+    }
+  }
+  if (timeBonus > 0 && usedNoHints) streak++
+  else streak = 0
+
+  const streakBonus = streak >= 2 ? SCORE.streakBonus * (streak - 1) : 0
+
+  const pointsEarned = Math.max(0, SCORE.base + timeBonus + perfectBonus + streakBonus - hintPenalty)
+
+  // --- Next clue ---
 
   const allCluesSnap = await getDocs(
     query(collection(db, 'hunts', session.huntId, 'clues'), orderBy('order'))
@@ -82,7 +116,10 @@ export async function POST(req: NextRequest) {
   const batch = writeBatch(db)
 
   batch.update(scRef, { arrivedAt: serverTimestamp(), pointsEarned })
-  batch.update(sessionRef, { score: increment(pointsEarned) })
+  batch.update(sessionRef, {
+    score: increment(pointsEarned),
+    streak: streak,
+  })
 
   if (nextClueDoc) {
     const nextScRef = doc(db, 'sessions', sessionId, 'sessionClues', nextClueDoc.id)
@@ -106,7 +143,11 @@ export async function POST(req: NextRequest) {
     arrived: true,
     pointsEarned,
     timeBonus,
+    streakBonus,
+    perfectBonus,
     hintPenalty,
+    streak,
+    funFact: clue.funFact ?? null,
     huntComplete: !nextClueDoc,
     nextClue,
   })
