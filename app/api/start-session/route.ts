@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/firebase'
 import { STARTING_CREDITS } from '@/types'
 import {
-  collection, doc, getDoc, getDocs, setDoc, query, orderBy, limit, serverTimestamp,
+  collection, doc, getDoc, getDocs, setDoc, query, where, orderBy, limit, serverTimestamp,
 } from 'firebase/firestore'
 
 export async function POST(req: NextRequest) {
@@ -10,6 +10,23 @@ export async function POST(req: NextRequest) {
 
   const huntSnap = await getDoc(doc(db, 'hunts', huntId))
   if (!huntSnap.exists()) return NextResponse.json({ error: 'Hunt not found' }, { status: 404 })
+
+  // ── Resume an in-progress session if one exists for this user + hunt ──
+  if (userId) {
+    const existing = await getDocs(
+      query(
+        collection(db, 'sessions'),
+        where('userId', '==', userId),
+        where('huntId', '==', huntId),
+      )
+    )
+    const inProgress = existing.docs
+      .filter(d => !d.data().completedAt)
+      .sort((a, b) => (b.data().startedAt?.toMillis?.() ?? 0) - (a.data().startedAt?.toMillis?.() ?? 0))
+    if (inProgress.length) {
+      return NextResponse.json({ sessionId: inProgress[0].id, resumed: true })
+    }
+  }
 
   const cluesSnap = await getDocs(
     query(collection(db, 'hunts', huntId, 'clues'), orderBy('order'), limit(1))
@@ -35,5 +52,5 @@ export async function POST(req: NextRequest) {
     pointsEarned: 0,
   })
 
-  return NextResponse.json({ sessionId: sessionRef.id })
+  return NextResponse.json({ sessionId: sessionRef.id, resumed: false })
 }

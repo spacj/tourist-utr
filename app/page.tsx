@@ -29,15 +29,26 @@ function SkylineSvg() {
   )
 }
 
+type ProgressMap = Record<string, { sessionId: string; cluesCompleted: number; totalClues: number }>
+
 export default function HomePage() {
   const { user, loading, signIn } = useAuth()
   const { lang, setLang, t } = useI18n()
   const [hunts, setHunts] = useState<Hunt[]>([])
   const [starting, setStarting] = useState<string | null>(null)
+  const [progress, setProgress] = useState<ProgressMap>({})
 
   useEffect(() => {
     fetch('/api/hunts').then(r => r.json()).then(setHunts).catch(() => {})
   }, [])
+
+  useEffect(() => {
+    if (!user) { setProgress({}); return }
+    fetch(`/api/user-progress?userId=${user.uid}`)
+      .then(r => r.json())
+      .then((d) => { if (d && !d.error) setProgress(d) })
+      .catch(() => {})
+  }, [user])
 
   const startHunt = async (huntId: string) => {
     if (!user) { signIn(); return }
@@ -148,14 +159,21 @@ export default function HomePage() {
 
         {hunts.map((hunt) => {
           const diff = DIFFICULTY_META[hunt.difficulty] || DIFFICULTY_META.medium
+          const inProgress = progress[hunt.id]
+          const pct = inProgress
+            ? Math.round((inProgress.cluesCompleted / Math.max(1, inProgress.totalClues)) * 100)
+            : 0
           return (
             <button
               key={hunt.id}
-              className="hunt-card"
+              className={`hunt-card ${inProgress ? 'resuming' : ''}`}
               onClick={() => startHunt(hunt.id)}
               disabled={starting === hunt.id}
             >
-              {hunt.badge && <span className="hunt-badge">{hunt.badge}</span>}
+              {inProgress
+                ? <span className="hunt-badge resume-badge">{t('ctaResume')}</span>
+                : hunt.badge && <span className="hunt-badge">{hunt.badge}</span>
+              }
               <div className="hunt-card-top">
                 <div>
                   <div className="hunt-title">{hunt.title}</div>
@@ -163,6 +181,17 @@ export default function HomePage() {
                 </div>
                 <div className="hunt-arrow">{starting === hunt.id ? '…' : '→'}</div>
               </div>
+
+              {inProgress && (
+                <div className="resume-bar">
+                  <div className="resume-bar-track">
+                    <div className="resume-bar-fill" style={{ width: `${pct}%` }} />
+                  </div>
+                  <span className="resume-bar-text">
+                    {inProgress.cluesCompleted}/{inProgress.totalClues}
+                  </span>
+                </div>
+              )}
 
               <div className="hunt-meta">
                 <span className="meta-pill" style={{ color: diff.color, background: diff.bg, border: `1px solid ${diff.color}33` }}>
