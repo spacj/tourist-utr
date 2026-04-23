@@ -14,7 +14,6 @@ const fraunces = Fraunces({
   subsets: ['latin'],
   display: 'swap',
   weight: ['500', '600', '700'],
-  axes: ['SOFT'],
   variable: '--font-serif',
 })
 
