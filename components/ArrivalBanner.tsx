@@ -51,16 +51,20 @@ export function ArrivalBanner({
   return (
     <div className="arrival-backdrop">
       <div className="arrival-card">
-        <div className="arrival-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
-            stroke="#22c97a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
+        <div className="arrival-header">
+          <div className="sheet-handle" aria-hidden />
+          <div className="arrival-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+              stroke="#22c97a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <h2 className="arrival-title">{t('youMadeIt')}</h2>
+          <p className="arrival-loc">{locationName}</p>
         </div>
-        <h2 className="arrival-title">{t('youMadeIt')}</h2>
-        <p className="arrival-loc">{locationName}</p>
 
-        <div className="score-breakdown">
+        <div className="arrival-body">
+          <div className="score-breakdown">
           <div className="score-row">
             <span style={{ color: 'var(--text-muted)' }}>{t('baseScore')}</span>
             <span>+100</span>
@@ -141,15 +145,17 @@ export function ArrivalBanner({
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={share} className="btn-ghost" style={{ flex: 'none' }} aria-label={t('share')}>
+        </div>
+
+        <div className="arrival-footer">
+          <button onClick={share} className="btn-ghost btn-share" aria-label={t('share')}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
               <line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/>
             </svg>
             {t('share')}
           </button>
-          <button className="btn-primary" onClick={onNext} style={{ flex: 1 }}>
+          <button className="btn-primary btn-next" onClick={onNext}>
             {huntComplete ? t('seeFinal') : t('nextClue')}
           </button>
         </div>
