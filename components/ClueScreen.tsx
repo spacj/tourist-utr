@@ -29,6 +29,7 @@ export function ClueScreen({ clue, sessionId, initialCredits, totalScore, onComp
   const [showIntro,     setShowIntro]     = useState(true)
   const [reading,       setReading]       = useState(false)
   const [score,         setScore]         = useState(totalScore)
+  const [sheetExpanded, setSheetExpanded] = useState(false)
 
   const { credits, canAfford, unlockHint, startCheckout } = useCredits(initialCredits, sessionId)
 
@@ -139,6 +140,12 @@ export function ClueScreen({ clue, sessionId, initialCredits, totalScore, onComp
     return ''
   })
 
+  const goHome = () => {
+    if (arrived || confirm(t('leaveHuntConfirm'))) {
+      window.location.href = '/'
+    }
+  }
+
   return (
     <div className="game-layout">
       {/* ── Clue intro card ── */}
@@ -165,13 +172,18 @@ export function ClueScreen({ clue, sessionId, initialCredits, totalScore, onComp
           showTarget={showTarget}
         />
         <div className="game-hud">
-          <div className="hud-pill" style={{ background: 'rgba(245,194,74,.18)', color: '#f5c24a', border: '1px solid rgba(245,194,74,.3)' }}>
+          <button onClick={goHome} className="hud-back" aria-label={t('home')}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <div className="hud-pill hud-stop">
             {clue.icon ?? '📍'} {clue.order}/{clue.totalClues}
           </div>
-          <div className="hud-pill" style={{ background: 'rgba(108,99,245,.15)', color: '#8e85ff', border: '1px solid rgba(108,99,245,.3)', pointerEvents: 'auto', cursor: 'pointer' }} onClick={() => setShopOpen(true)}>
+          <button onClick={() => setShopOpen(true)} className="hud-pill hud-credits" aria-label="Credits">
             💎 {credits}
-          </div>
-          <div className="hud-pill" style={{ background: 'rgba(245,165,74,.15)', color: '#f5a54a', border: '1px solid rgba(245,165,74,.3)' }}>
+          </button>
+          <div className="hud-pill hud-score">
             ⭐ {score}
           </div>
         </div>
@@ -194,8 +206,17 @@ export function ClueScreen({ clue, sessionId, initialCredits, totalScore, onComp
       </div>
 
       {/* Bottom sheet */}
-      <div className="bottom-sheet">
-        <div className="sheet-handle" />
+      <div className={`bottom-sheet ${sheetExpanded ? 'expanded' : ''}`}>
+        <button
+          className="sheet-handle-btn"
+          onClick={() => setSheetExpanded(s => !s)}
+          aria-label={sheetExpanded ? t('collapse') : t('expand')}
+        >
+          <div className="sheet-handle" />
+          <span className="sheet-handle-hint">
+            {sheetExpanded ? `▾ ${t('collapse')}` : `▴ ${t('moreHints')}`}
+          </span>
+        </button>
 
         {/* Dot trail */}
         <div className="dot-trail">

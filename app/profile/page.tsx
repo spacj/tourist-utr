@@ -53,7 +53,14 @@ export default function ProfilePage() {
   return (
     <main className="page-center">
       <div className="container">
-        <div className="profile-header">
+        <a href="/" className="topbar-back" aria-label="Home">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          <span>Home</span>
+        </a>
+
+        <div className="profile-header fade-in-up">
           <div className="profile-avatar">
             {user.photoURL ? (
               <img src={user.photoURL} alt="" referrerPolicy="no-referrer" />

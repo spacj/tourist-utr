@@ -210,6 +210,11 @@ export const T: Dict = {
   metres:            { en: 'metres',             nl: 'meters',             de: 'Meter',                fr: 'mètres' },
   locating:          { en: 'locating',           nl: 'zoeken',             de: 'suchen',               fr: 'recherche' },
   arrived:           { en: 'arrived!',           nl: 'aangekomen!',        de: 'angekommen!',          fr: 'arrivé !' },
+  home:              { en: 'Home',                nl: 'Home',               de: 'Start',                fr: 'Accueil' },
+  expand:            { en: 'Expand',              nl: 'Uitklappen',         de: 'Erweitern',            fr: 'Agrandir' },
+  collapse:          { en: 'Collapse',            nl: 'Inklappen',          de: 'Einklappen',           fr: 'Réduire' },
+  moreHints:         { en: 'Hints & details',     nl: 'Hints & details',    de: 'Hinweise & Details',   fr: 'Indices & détails' },
+  leaveHuntConfirm:  { en: 'Leave the hunt? Your progress is saved.', nl: 'Stoppen? Voortgang blijft bewaard.', de: 'Tour verlassen? Dein Fortschritt bleibt erhalten.', fr: 'Quitter ? Votre progression est enregistrée.' },
 }
 
 export function t(lang: Lang, key: string): string {
