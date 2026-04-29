@@ -77,13 +77,13 @@ export function ArrivalBanner({
           )}
           {perfectBonus > 0 && (
             <div className="score-row">
-              <span style={{ color: 'var(--text-muted)' }}>🧠 No-hint bonus</span>
+              <span style={{ color: 'var(--text-muted)' }}>🧠 {t('noHintBonus')}</span>
               <span style={{ color: 'var(--green)' }}>+{perfectBonus}</span>
             </div>
           )}
           {streakBonus > 0 && (
             <div className="score-row">
-              <span style={{ color: 'var(--text-muted)' }}>🔥 Streak bonus</span>
+              <span style={{ color: 'var(--text-muted)' }}>🔥 {t('streakBonusLabel')}</span>
               <span style={{ color: 'var(--gold)' }}>+{streakBonus}</span>
             </div>
           )}

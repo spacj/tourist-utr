@@ -358,9 +358,22 @@ a { color: inherit; }
 .hunt-badge.resume-badge {
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 100%);
   color: #fff;
+  transform: rotate(-1.5deg);
+  font-style: normal;
+  font-family: inherit;
+}
+.hunt-badge.completed-badge {
+  background: linear-gradient(135deg, var(--green) 0%, #34d997 100%);
+  color: #04230f;
+  transform: rotate(-1.5deg);
+  font-style: normal;
+  font-family: inherit;
+  box-shadow: 0 4px 12px rgba(34, 201, 122, 0.3);
 }
 .hunt-card.resuming { border-color: rgba(108, 99, 245, 0.4); }
 .hunt-card.resuming:hover { border-color: rgba(108, 99, 245, 0.6); }
+.hunt-card.completed { border-color: rgba(34, 201, 122, 0.35); }
+.hunt-card.completed:hover { border-color: rgba(34, 201, 122, 0.55); }
 
 .resume-bar {
   display: flex;
@@ -382,6 +395,9 @@ a { color: inherit; }
   border-radius: 3px;
   transition: width 0.6s ease;
 }
+.resume-bar.is-completed .resume-bar-fill {
+  background: linear-gradient(90deg, var(--green) 0%, #34d997 100%);
+}
 .resume-bar-text {
   font-size: 11px;
   font-weight: 600;
@@ -389,6 +405,7 @@ a { color: inherit; }
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
+.resume-bar.is-completed .resume-bar-text { color: var(--green); }
 .hunt-card-top {
   display: flex;
   align-items: flex-start;

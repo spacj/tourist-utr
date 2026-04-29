@@ -215,6 +215,40 @@ export const T: Dict = {
   collapse:          { en: 'Collapse',            nl: 'Inklappen',          de: 'Einklappen',           fr: 'Réduire' },
   moreHints:         { en: 'Hints & details',     nl: 'Hints & details',    de: 'Hinweise & Details',   fr: 'Indices & détails' },
   leaveHuntConfirm:  { en: 'Leave the hunt? Your progress is saved.', nl: 'Stoppen? Voortgang blijft bewaard.', de: 'Tour verlassen? Dein Fortschritt bleibt erhalten.', fr: 'Quitter ? Votre progression est enregistrée.' },
+
+  // Difficulty
+  diffEasy:          { en: 'Easy',                nl: 'Makkelijk',          de: 'Leicht',               fr: 'Facile' },
+  diffMedium:        { en: 'Medium',              nl: 'Gemiddeld',          de: 'Mittel',               fr: 'Moyen' },
+  diffHard:          { en: 'Hard',                nl: 'Moeilijk',           de: 'Schwer',               fr: 'Difficile' },
+
+  // Empty / status
+  noHuntsYet:        { en: 'No hunts available yet.', nl: 'Nog geen tochten beschikbaar.', de: 'Noch keine Touren verfügbar.', fr: 'Aucun parcours pour l\'instant.' },
+  ctaCompleted:      { en: 'Completed',           nl: 'Voltooid',           de: 'Abgeschlossen',        fr: 'Terminé' },
+  inProgress:        { en: 'In progress',         nl: 'Bezig',              de: 'Läuft',                fr: 'En cours' },
+  bestScore:         { en: 'Best',                nl: 'Beste',              de: 'Bestleistung',         fr: 'Meilleur' },
+
+  // Score breakdown
+  noHintBonus:       { en: 'No-hint bonus',       nl: 'Geen-hint-bonus',    de: 'Kein-Hinweis-Bonus',   fr: 'Bonus sans indice' },
+  streakBonusLabel:  { en: 'Streak bonus',        nl: 'Reeks-bonus',        de: 'Serien-Bonus',         fr: 'Bonus série' },
+
+  // Profile page
+  profileTitle:      { en: 'Your profile',        nl: 'Jouw profiel',       de: 'Dein Profil',          fr: 'Votre profil' },
+  profileSignInHint: { en: 'Sign in to track your progress across hunts.', nl: 'Log in om je voortgang bij te houden.', de: 'Melde dich an, um deinen Fortschritt zu verfolgen.', fr: 'Connectez-vous pour suivre votre progression.' },
+  signInGoogle:      { en: 'Sign in with Google', nl: 'Inloggen met Google', de: 'Mit Google anmelden', fr: 'Se connecter avec Google' },
+  backToHunts:       { en: '← Back to hunts',     nl: '← Terug naar tochten', de: '← Zurück zu Touren', fr: '← Retour aux parcours' },
+  huntsDone:         { en: 'Hunts done',          nl: 'Tochten gedaan',     de: 'Touren erledigt',      fr: 'Parcours faits' },
+  placesFound:       { en: 'Places found',        nl: 'Plekken gevonden',   de: 'Orte gefunden',        fr: 'Lieux trouvés' },
+  totalScore:        { en: 'Total score',         nl: 'Totaalscore',        de: 'Gesamtpunkte',         fr: 'Score total' },
+  huntHistory:       { en: 'Hunt history',        nl: 'Geschiedenis',       de: 'Verlauf',              fr: 'Historique' },
+  noHuntsPlayed:     { en: 'No hunts played yet. Go explore!', nl: 'Nog niets gespeeld. Ga op pad!', de: 'Noch nichts gespielt. Geh los!', fr: 'Aucun parcours. À l\'aventure !' },
+  playHunt:          { en: 'Play a hunt',         nl: 'Speel een tocht',    de: 'Tour starten',         fr: 'Jouer un parcours' },
+  signOut:           { en: 'Sign out',            nl: 'Uitloggen',          de: 'Abmelden',             fr: 'Se déconnecter' },
+
+  // Achievements (complete page)
+  achExplorer:       { en: 'Explorer',            nl: 'Ontdekker',          de: 'Entdecker',            fr: 'Explorateur' },
+  achFlawless:       { en: 'Flawless',            nl: 'Vlekkeloos',         de: 'Makellos',             fr: 'Sans faute' },
+  achFinisher:       { en: 'Finisher',            nl: 'Voltooid',           de: 'Vollender',            fr: 'Finisseur' },
+  ach1000:           { en: '1000+',               nl: '1000+',              de: '1000+',                fr: '1000+' },
 }
 
 export function t(lang: Lang, key: string): string {

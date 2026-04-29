@@ -27,10 +27,10 @@ export function CompleteClient({
 
   // Earned achievements (computed client-side; can sync with server later)
   const achievements: { id: string; icon: string; label: string }[] = []
-  if (cluesArrived > 0) achievements.push({ id: 'explorer', icon: '🧭', label: 'Explorer' })
-  if (hintsUsed === 0 && cluesArrived === totalClues) achievements.push({ id: 'perfect_hunt', icon: '💎', label: 'Flawless' })
-  if (cluesArrived === totalClues) achievements.push({ id: 'finisher', icon: '🏁', label: 'Finisher' })
-  if (score >= 1000) achievements.push({ id: 'thousand', icon: '🎯', label: '1000+' })
+  if (cluesArrived > 0) achievements.push({ id: 'explorer', icon: '🧭', label: t('achExplorer') })
+  if (hintsUsed === 0 && cluesArrived === totalClues) achievements.push({ id: 'perfect_hunt', icon: '💎', label: t('achFlawless') })
+  if (cluesArrived === totalClues) achievements.push({ id: 'finisher', icon: '🏁', label: t('achFinisher') })
+  if (score >= 1000) achievements.push({ id: 'thousand', icon: '🎯', label: t('ach1000') })
 
   const share = async () => {
     const text = `I scored ${score} points exploring Utrecht on the Grand Tour — ${cluesArrived}/${totalClues} stops found! 🏆`
@@ -44,11 +44,11 @@ export function CompleteClient({
   return (
     <main className="page-center">
       <div className="container" style={{ textAlign: 'center' }}>
-        <a href="/" className="topbar-back" style={{ alignSelf: 'flex-start' }} aria-label="Home">
+        <a href="/" className="topbar-back" style={{ alignSelf: 'flex-start' }} aria-label={t('home')}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
-          <span>Home</span>
+          <span>{t('home')}</span>
         </a>
 
         {/* Badge card */}
@@ -118,7 +118,7 @@ export function CompleteClient({
                   <div style={{ fontSize: 13, fontWeight: 500 }}>{sc.locationName}</div>
                   {sc.arrivedAt && (
                     <div style={{ fontSize: 11, color: 'var(--text-dim)' }}>
-                      ✓ Completed
+                      ✓ {t('ctaCompleted')}
                     </div>
                   )}
                 </div>

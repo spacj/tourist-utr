@@ -4,10 +4,10 @@ import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
 import { Hunt, LANGUAGES } from '@/types'
 
-const DIFFICULTY_META: Record<string, { label: string; color: string; bg: string }> = {
-  easy:   { label: 'Easy',   color: '#22c97a', bg: 'rgba(34,201,122,.12)' },
-  medium: { label: 'Medium', color: '#f5a54a', bg: 'rgba(245,165,74,.12)' },
-  hard:   { label: 'Hard',   color: '#f05252', bg: 'rgba(240,82,82,.12)' },
+const DIFFICULTY_META: Record<string, { key: string; color: string; bg: string }> = {
+  easy:   { key: 'diffEasy',   color: '#22c97a', bg: 'rgba(34,201,122,.12)' },
+  medium: { key: 'diffMedium', color: '#f5a54a', bg: 'rgba(245,165,74,.12)' },
+  hard:   { key: 'diffHard',   color: '#f05252', bg: 'rgba(240,82,82,.12)' },
 }
 
 function SkylineSvg() {
@@ -29,7 +29,14 @@ function SkylineSvg() {
   )
 }
 
-type ProgressMap = Record<string, { sessionId: string; cluesCompleted: number; totalClues: number }>
+type ProgressEntry = {
+  sessionId: string
+  cluesCompleted: number
+  totalClues: number
+  status: 'in_progress' | 'completed'
+  score: number
+}
+type ProgressMap = Record<string, ProgressEntry>
 
 export default function HomePage() {
   const { user, loading, signIn } = useAuth()
@@ -153,26 +160,31 @@ export default function HomePage() {
 
         {hunts.length === 0 && (
           <div className="empty-card">
-            <p>No hunts available yet.</p>
+            <p>{t('noHuntsYet')}</p>
           </div>
         )}
 
         {hunts.map((hunt) => {
           const diff = DIFFICULTY_META[hunt.difficulty] || DIFFICULTY_META.medium
-          const inProgress = progress[hunt.id]
-          const pct = inProgress
-            ? Math.round((inProgress.cluesCompleted / Math.max(1, inProgress.totalClues)) * 100)
+          const huntProgress = progress[hunt.id]
+          const isInProgress = huntProgress?.status === 'in_progress'
+          const isCompleted = huntProgress?.status === 'completed'
+          const pct = huntProgress
+            ? Math.round((huntProgress.cluesCompleted / Math.max(1, huntProgress.totalClues)) * 100)
             : 0
+          const stateClass = isCompleted ? 'completed' : isInProgress ? 'resuming' : ''
           return (
             <button
               key={hunt.id}
-              className={`hunt-card ${inProgress ? 'resuming' : ''}`}
+              className={`hunt-card ${stateClass}`}
               onClick={() => startHunt(hunt.id)}
               disabled={starting === hunt.id}
             >
-              {inProgress
-                ? <span className="hunt-badge resume-badge">{t('ctaResume')}</span>
-                : hunt.badge && <span className="hunt-badge">{hunt.badge}</span>
+              {isCompleted
+                ? <span className="hunt-badge completed-badge">✓ {t('ctaCompleted')}</span>
+                : isInProgress
+                  ? <span className="hunt-badge resume-badge">{t('ctaResume')}</span>
+                  : hunt.badge && <span className="hunt-badge">{hunt.badge}</span>
               }
               <div className="hunt-card-top">
                 <div>
@@ -182,20 +194,22 @@ export default function HomePage() {
                 <div className="hunt-arrow">{starting === hunt.id ? '…' : '→'}</div>
               </div>
 
-              {inProgress && (
-                <div className="resume-bar">
+              {huntProgress && (
+                <div className={`resume-bar ${isCompleted ? 'is-completed' : ''}`}>
                   <div className="resume-bar-track">
                     <div className="resume-bar-fill" style={{ width: `${pct}%` }} />
                   </div>
                   <span className="resume-bar-text">
-                    {inProgress.cluesCompleted}/{inProgress.totalClues}
+                    {isCompleted
+                      ? `${t('bestScore')} ${huntProgress.score}`
+                      : `${huntProgress.cluesCompleted}/${huntProgress.totalClues}`}
                   </span>
                 </div>
               )}
 
               <div className="hunt-meta">
                 <span className="meta-pill" style={{ color: diff.color, background: diff.bg, border: `1px solid ${diff.color}33` }}>
-                  {diff.label}
+                  {t(diff.key)}
                 </span>
                 {hunt.rating && (
                   <span className="hunt-rating">

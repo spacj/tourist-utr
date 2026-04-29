@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
+import { useI18n } from '@/hooks/useI18n'
 
 interface Session {
   id: string
@@ -13,6 +14,7 @@ interface Session {
 
 export default function ProfilePage() {
   const { user, loading, signIn, logOut } = useAuth()
+  const { t } = useI18n()
   const [sessions, setSessions] = useState<Session[]>([])
   const [fetching, setFetching] = useState(true)
 
@@ -33,13 +35,13 @@ export default function ProfilePage() {
     return (
       <main className="page-center">
         <div className="container" style={{ textAlign: 'center' }}>
-          <h1 style={{ fontSize: 24, fontWeight: 600, marginBottom: 8 }}>Your profile</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 600, marginBottom: 8 }}>{t('profileTitle')}</h1>
           <p style={{ fontSize: 14, color: '#8b8aaa', marginBottom: 24 }}>
-            Sign in to track your progress across hunts.
+            {t('profileSignInHint')}
           </p>
-          <button className="btn-primary" onClick={signIn}>Sign in with Google</button>
+          <button className="btn-primary" onClick={signIn}>{t('signInGoogle')}</button>
           <a href="/" className="btn-secondary" style={{ marginTop: 10, display: 'block', textDecoration: 'none' }}>
-            ← Back to hunts
+            {t('backToHunts')}
           </a>
         </div>
       </main>
@@ -53,11 +55,11 @@ export default function ProfilePage() {
   return (
     <main className="page-center">
       <div className="container">
-        <a href="/" className="topbar-back" aria-label="Home">
+        <a href="/" className="topbar-back" aria-label={t('home')}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
-          <span>Home</span>
+          <span>{t('home')}</span>
         </a>
 
         <div className="profile-header fade-in-up">
@@ -79,25 +81,25 @@ export default function ProfilePage() {
         <div className="stats-grid">
           <div className="stat-card">
             <div className="stat-value">{completed.length}</div>
-            <div className="stat-label">Hunts done</div>
+            <div className="stat-label">{t('huntsDone')}</div>
           </div>
           <div className="stat-card">
             <div className="stat-value">{totalClues}</div>
-            <div className="stat-label">Places found</div>
+            <div className="stat-label">{t('placesFound')}</div>
           </div>
           <div className="stat-card">
             <div className="stat-value" style={{ color: '#6c63f5' }}>{totalScore}</div>
-            <div className="stat-label">Total score</div>
+            <div className="stat-label">{t('totalScore')}</div>
           </div>
         </div>
 
-        <div className="section-label">Hunt history</div>
+        <div className="section-label">{t('huntHistory')}</div>
 
         {fetching && <div style={{ textAlign: 'center', padding: 20 }}><div className="spinner" style={{ margin: '0 auto' }} /></div>}
 
         {!fetching && sessions.length === 0 && (
           <div className="empty-card">
-            <p>No hunts played yet. Go explore!</p>
+            <p>{t('noHuntsPlayed')}</p>
           </div>
         )}
 
@@ -106,8 +108,8 @@ export default function ProfilePage() {
             <div>
               <div className="history-title">{s.huntTitle}</div>
               <div className="history-detail">
-                {s.cluesCompleted}/{s.totalClues} places
-                {s.completedAt ? ' · Completed' : ' · In progress'}
+                {s.cluesCompleted}/{s.totalClues} {t('places')}
+                {s.completedAt ? ` · ${t('ctaCompleted')}` : ` · ${t('inProgress')}`}
               </div>
             </div>
             <div className="history-score">{s.score}</div>
@@ -115,9 +117,9 @@ export default function ProfilePage() {
         ))}
 
         <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
-          <a href="/" className="btn-primary" style={{ textDecoration: 'none' }}>Play a hunt</a>
+          <a href="/" className="btn-primary" style={{ textDecoration: 'none' }}>{t('playHunt')}</a>
         </div>
-        <button className="btn-secondary" style={{ marginTop: 8 }} onClick={logOut}>Sign out</button>
+        <button className="btn-secondary" style={{ marginTop: 8 }} onClick={logOut}>{t('signOut')}</button>
       </div>
     </main>
   )
