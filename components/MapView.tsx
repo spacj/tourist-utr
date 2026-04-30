@@ -21,10 +21,12 @@ export function MapView({ clue, userLat, userLng, showTarget }: Props) {
     if (!containerRef.current) return
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+      style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
       center: [clue.lng, clue.lat],
       zoom: 14.5,
+      attributionControl: false,
     })
+    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right')
     mapRef.current = map
     return () => { map.remove(); mapRef.current = undefined }
   // eslint-disable-next-line react-hooks/exhaustive-deps
