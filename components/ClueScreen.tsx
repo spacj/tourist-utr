@@ -1,6 +1,6 @@
 'use client'
 import { useCallback, useEffect, useState } from 'react'
-import { Clue, VerifyResponse } from '@/types'
+import { Clue, VerifyResponse, localizeClue } from '@/types'
 import { useGPS } from '@/hooks/useGPS'
 import { useCredits } from '@/hooks/useCredits'
 import { useI18n } from '@/hooks/useI18n'
@@ -18,8 +18,9 @@ interface Props {
   onComplete: (result: { nextClue: Clue | null; huntComplete: boolean }) => void
 }
 
-export function ClueScreen({ clue, sessionId, initialCredits, totalScore, onComplete }: Props) {
-  const { t } = useI18n()
+export function ClueScreen({ clue: rawClue, sessionId, initialCredits, totalScore, onComplete }: Props) {
+  const { t, lang } = useI18n()
+  const clue = localizeClue(rawClue, lang)
   const [arrived,       setArrived]       = useState(false)
   const [arrivalData,   setArrivalData]   = useState<VerifyResponse | null>(null)
   const [userPos,       setUserPos]       = useState<{ lat: number; lng: number } | null>(null)

@@ -1,6 +1,12 @@
 export type HintTier = 1 | 2 | 3
 export type Difficulty = 'easy' | 'medium' | 'hard'
 
+export interface HuntI18n {
+  title?: string
+  description?: string
+  badge?: string
+}
+
 export interface Hunt {
   id: string
   title: string
@@ -14,6 +20,7 @@ export interface Hunt {
   rating?: number
   badge?: string
   active: boolean
+  i18n?: Partial<Record<Lang, HuntI18n>>
 }
 
 export interface Trivia {
@@ -21,6 +28,17 @@ export interface Trivia {
   options: string[]
   correctIndex: number
   explain: string
+}
+
+export interface ClueI18n {
+  theme?: string
+  riddle?: string
+  locationName?: string
+  hint1?: string
+  hint2?: string
+  hint3?: string
+  funFact?: string
+  trivia?: Trivia
 }
 
 export interface Clue {
@@ -40,6 +58,34 @@ export interface Clue {
   hint3: string
   funFact: string
   trivia?: Trivia
+  i18n?: Partial<Record<Lang, ClueI18n>>
+}
+
+export function localizeHunt(h: Hunt, lang: Lang): Hunt {
+  const tr = lang !== 'en' ? h.i18n?.[lang] : undefined
+  if (!tr) return h
+  return {
+    ...h,
+    title:       tr.title       ?? h.title,
+    description: tr.description ?? h.description,
+    badge:       tr.badge       ?? h.badge,
+  }
+}
+
+export function localizeClue(c: Clue, lang: Lang): Clue {
+  const tr = lang !== 'en' ? c.i18n?.[lang] : undefined
+  if (!tr) return c
+  return {
+    ...c,
+    theme:        tr.theme        ?? c.theme,
+    riddle:       tr.riddle       ?? c.riddle,
+    locationName: tr.locationName ?? c.locationName,
+    hint1:        tr.hint1        ?? c.hint1,
+    hint2:        tr.hint2        ?? c.hint2,
+    hint3:        tr.hint3        ?? c.hint3,
+    funFact:      tr.funFact      ?? c.funFact,
+    trivia:       tr.trivia       ?? c.trivia,
+  }
 }
 
 export interface VerifyResponse {

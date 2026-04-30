@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
           id: sDoc.id,
           huntId: s.huntId,
           huntTitle: hunt?.title ?? 'Unknown',
+          huntI18n: hunt?.i18n ?? null,
           score: s.score,
           totalClues: cluesSnap.size,
           cluesCompleted: arrived,

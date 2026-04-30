@@ -6,6 +6,7 @@ import { useI18n } from '@/hooks/useI18n'
 interface Session {
   id: string
   huntTitle: string
+  huntI18n: Record<string, { title?: string }> | null
   score: number
   totalClues: number
   cluesCompleted: number
@@ -14,7 +15,7 @@ interface Session {
 
 export default function ProfilePage() {
   const { user, loading, signIn, logOut } = useAuth()
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
   const [sessions, setSessions] = useState<Session[]>([])
   const [fetching, setFetching] = useState(true)
 
@@ -106,7 +107,7 @@ export default function ProfilePage() {
         {sessions.map((s) => (
           <div key={s.id} className="history-item">
             <div>
-              <div className="history-title">{s.huntTitle}</div>
+              <div className="history-title">{(lang !== 'en' && s.huntI18n?.[lang]?.title) || s.huntTitle}</div>
               <div className="history-detail">
                 {s.cluesCompleted}/{s.totalClues} {t('places')}
                 {s.completedAt ? ` · ${t('ctaCompleted')}` : ` · ${t('inProgress')}`}

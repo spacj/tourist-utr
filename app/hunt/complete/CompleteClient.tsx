@@ -4,6 +4,7 @@ import { useI18n } from '@/hooks/useI18n'
 interface ClueRow {
   id: string
   locationName: string
+  i18n: Record<string, { locationName?: string }> | null
   icon: string
   order: number
   arrivedAt: number | null
@@ -12,6 +13,7 @@ interface ClueRow {
 
 interface Props {
   huntTitle: string
+  huntI18n: Record<string, { title?: string }> | null
   score: number
   clues: ClueRow[]
   totalClues: number
@@ -21,9 +23,12 @@ interface Props {
 }
 
 export function CompleteClient({
-  huntTitle, score, clues, totalClues, cluesArrived, hintsUsed, creditsSpent,
+  huntTitle, huntI18n, score, clues, totalClues, cluesArrived, hintsUsed, creditsSpent,
 }: Props) {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
+  const localizedHuntTitle = (lang !== 'en' && huntI18n?.[lang]?.title) || huntTitle
+  const localizedLocation = (c: ClueRow) =>
+    (lang !== 'en' && c.i18n?.[lang]?.locationName) || c.locationName
 
   // Earned achievements (computed client-side; can sync with server later)
   const achievements: { id: string; icon: string; label: string }[] = []
@@ -57,7 +62,7 @@ export function CompleteClient({
           <h1 style={{ fontFamily: 'var(--font-serif, Georgia), serif', fontSize: 26, fontWeight: 600, marginBottom: 4 }}>
             {t('huntComplete')}
           </h1>
-          <p style={{ fontSize: 13, color: 'var(--gold)', marginBottom: 16, letterSpacing: '0.02em' }}>{huntTitle}</p>
+          <p style={{ fontSize: 13, color: 'var(--gold)', marginBottom: 16, letterSpacing: '0.02em' }}>{localizedHuntTitle}</p>
 
           <div style={{ fontSize: 12, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 2 }}>
             {t('finalScore')}
@@ -115,7 +120,7 @@ export function CompleteClient({
                   {sc.arrivedAt ? sc.icon : i + 1}
                 </div>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 500 }}>{sc.locationName}</div>
+                  <div style={{ fontSize: 13, fontWeight: 500 }}>{localizedLocation(sc)}</div>
                   {sc.arrivedAt && (
                     <div style={{ fontSize: 11, color: 'var(--text-dim)' }}>
                       ✓ {t('ctaCompleted')}

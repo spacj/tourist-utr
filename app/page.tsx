@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
-import { Hunt, LANGUAGES } from '@/types'
+import { Hunt, LANGUAGES, localizeHunt } from '@/types'
 
 const DIFFICULTY_META: Record<string, { key: string; color: string; bg: string }> = {
   easy:   { key: 'diffEasy',   color: '#22c97a', bg: 'rgba(34,201,122,.12)' },
@@ -164,14 +164,15 @@ export default function HomePage() {
           </div>
         )}
 
-        {hunts.map((hunt) => {
+        {hunts.map((rawHunt) => {
+          const hunt = localizeHunt(rawHunt, lang)
           const diff = DIFFICULTY_META[hunt.difficulty] || DIFFICULTY_META.medium
           const huntProgress = progress[hunt.id]
           const isInProgress = huntProgress?.status === 'in_progress'
           const isCompleted = huntProgress?.status === 'completed'
-          const pct = huntProgress
-            ? Math.round((huntProgress.cluesCompleted / Math.max(1, huntProgress.totalClues)) * 100)
-            : 0
+          const totalSteps = hunt.clueCount || huntProgress?.totalClues || 0
+          const cluesDone = Math.min(huntProgress?.cluesCompleted ?? 0, totalSteps)
+          const pct = totalSteps > 0 ? Math.round((cluesDone / totalSteps) * 100) : 0
           const stateClass = isCompleted ? 'completed' : isInProgress ? 'resuming' : ''
           return (
             <button
@@ -194,7 +195,7 @@ export default function HomePage() {
                 <div className="hunt-arrow">{starting === hunt.id ? '…' : '→'}</div>
               </div>
 
-              {huntProgress && (
+              {huntProgress && totalSteps > 0 && (
                 <div className={`resume-bar ${isCompleted ? 'is-completed' : ''}`}>
                   <div className="resume-bar-track">
                     <div className="resume-bar-fill" style={{ width: `${pct}%` }} />
@@ -202,7 +203,7 @@ export default function HomePage() {
                   <span className="resume-bar-text">
                     {isCompleted
                       ? `${t('bestScore')} ${huntProgress.score}`
-                      : `${huntProgress.cluesCompleted}/${huntProgress.totalClues}`}
+                      : `${cluesDone}/${totalSteps}`}
                   </span>
                 </div>
               )}

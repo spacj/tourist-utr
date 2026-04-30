@@ -30,9 +30,10 @@ export default async function CompletePage({
       const clue = clueSnap.data()!
       return {
         id: scDoc.id,
-        locationName: clue.locationName,
-        icon: clue.icon ?? '📍',
-        order: clue.order,
+        locationName: clue.locationName as string,
+        i18n: (clue.i18n ?? null) as Record<string, { locationName?: string }> | null,
+        icon: (clue.icon ?? '📍') as string,
+        order: clue.order as number,
         arrivedAt: sc.arrivedAt ? sc.arrivedAt.toMillis() : null,
         pointsEarned: sc.pointsEarned,
       }
@@ -48,6 +49,7 @@ export default async function CompletePage({
   return (
     <CompleteClient
       huntTitle={hunt.title}
+      huntI18n={(hunt.i18n ?? null) as Record<string, { title?: string }> | null}
       score={session.score}
       clues={clues}
       totalClues={totalClues}
