@@ -76,8 +76,8 @@ export function MapView({ clue, userLat, userLng, showTarget }: Props) {
       {!showTarget && (
         <div style={{
           position: 'absolute', bottom: 14, left: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(12,12,20,.82)', border: '1px solid rgba(255,255,255,.1)',
-          color: 'rgba(255,255,255,.7)', fontSize: 12, padding: '5px 14px',
+          background: 'rgba(255,255,255,.92)', border: '1px solid rgba(20,20,30,.10)',
+          color: 'rgba(20,20,30,.7)', fontSize: 12, padding: '5px 14px',
           borderRadius: 20, pointerEvents: 'none', whiteSpace: 'nowrap',
           backdropFilter: 'blur(6px)',
         }}>

@@ -36,7 +36,7 @@ export default function ProfilePage() {
       <main className="page-center">
         <div className="container" style={{ textAlign: 'center' }}>
           <h1 style={{ fontSize: 24, fontWeight: 600, marginBottom: 8 }}>{t('profileTitle')}</h1>
-          <p style={{ fontSize: 14, color: '#8b8aaa', marginBottom: 24 }}>
+          <p style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 24 }}>
             {t('profileSignInHint')}
           </p>
           <button className="btn-primary" onClick={signIn}>{t('signInGoogle')}</button>
@@ -67,7 +67,7 @@ export default function ProfilePage() {
             {user.photoURL ? (
               <img src={user.photoURL} alt="" referrerPolicy="no-referrer" />
             ) : (
-              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1c1c2a', fontSize: 20, fontWeight: 600, color: '#6c63f5' }}>
+              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-2)', fontSize: 20, fontWeight: 600, color: 'var(--gold)' }}>
                 {user.displayName?.[0] || '?'}
               </div>
             )}
@@ -88,7 +88,7 @@ export default function ProfilePage() {
             <div className="stat-label">{t('placesFound')}</div>
           </div>
           <div className="stat-card">
-            <div className="stat-value" style={{ color: '#6c63f5' }}>{totalScore}</div>
+            <div className="stat-value" style={{ color: 'var(--gold)' }}>{totalScore}</div>
             <div className="stat-label">{t('totalScore')}</div>
           </div>
         </div>
