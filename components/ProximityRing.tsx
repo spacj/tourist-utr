@@ -112,18 +112,19 @@ export function ProximityRing({ distanceM, bearing, arrived, accuracy }: Props) 
           transform="rotate(-90 65 65)"
           style={{ transition: 'stroke-dasharray 1.2s cubic-bezier(.4,0,.2,1), stroke .4s' }}
         />
-        {/* Compass arrow needle */}
+        {/* Compass arrow needle (rotates with bearing) */}
         {!arrived && distanceM !== null && distanceM > 15 && (
           <g style={{ transition: 'transform .9s ease' }}
              transform={`rotate(${bearing} 65 65)`}>
-            {/* arrow shaft */}
             <line x1="65" y1="65" x2="65" y2="30"
               stroke={ringColor} strokeWidth="3" strokeLinecap="round" />
-            {/* arrowhead */}
             <polygon points="65,22 59,32 71,32" fill={ringColor} />
-            {/* tail dot */}
-            <circle cx="65" cy="65" r="3" fill={ringColor} />
           </g>
+        )}
+        {/* Centre N marker (fixed, does not rotate) */}
+        {!arrived && distanceM !== null && distanceM > 15 && (
+          <text x="65" y="70" textAnchor="middle" fontSize="13"
+            fill={ringColor} fontFamily="system-ui" fontWeight="700">N</text>
         )}
         {/* Centre text — only checkmark when arrived, or distance when no arrow */}
         {arrived && (

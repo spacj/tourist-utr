@@ -555,7 +555,7 @@ a { color: inherit; }
   background: var(--surface);
   border-top: 1px solid var(--border);
   border-radius: 22px 22px 0 0;
-  padding: 6px 16px calc(18px + env(safe-area-inset-bottom, 0px));
+  padding: 6px 16px max(72px, calc(18px + env(safe-area-inset-bottom, 0px)));
   max-height: 55dvh;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -1300,7 +1300,7 @@ a { color: inherit; }
   /* Bottom sheet - default collapsed shows ring + clue; expanded shows hints */
   .bottom-sheet {
     max-height: 58dvh;
-    padding: 4px 14px calc(16px + env(safe-area-inset-bottom, 0px));
+    padding: 4px 14px max(80px, calc(16px + env(safe-area-inset-bottom, 0px)));
     gap: 10px;
   }
   .bottom-sheet.expanded { max-height: 92dvh; }
