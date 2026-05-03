@@ -1,5 +1,5 @@
 'use client'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Clue, VerifyResponse, localizeClue } from '@/types'
 import { useGPS } from '@/hooks/useGPS'
 import { useCredits } from '@/hooks/useCredits'
@@ -30,7 +30,31 @@ export function ClueScreen({ clue: rawClue, sessionId, initialCredits, totalScor
   const [showIntro,     setShowIntro]     = useState(true)
   const [reading,       setReading]       = useState(false)
   const [score,         setScore]         = useState(totalScore)
-  const [sheetExpanded, setSheetExpanded] = useState(false)
+  type SheetState = 'minimized' | 'default' | 'expanded'
+  const [sheetState,    setSheetState]    = useState<SheetState>('default')
+
+  // Swipe gesture on the handle to change sheet state
+  const touchStartY = useRef<number | null>(null)
+  const onHandleTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY
+  }
+  const onHandleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartY.current === null) return
+    const dy = e.changedTouches[0].clientY - touchStartY.current
+    touchStartY.current = null
+    if (Math.abs(dy) < 24) return // treat as tap, ignore here (button onClick handles it)
+    setSheetState(prev => {
+      if (dy > 0) return prev === 'expanded' ? 'default' : 'minimized'
+      return prev === 'minimized' ? 'default' : 'expanded'
+    })
+  }
+  const cycleSheet = () => {
+    setSheetState(prev =>
+      prev === 'minimized' ? 'default'
+      : prev === 'default' ? 'expanded'
+      : 'minimized'
+    )
+  }
 
   const { credits, canAfford, unlockHint, startCheckout } = useCredits(initialCredits, sessionId)
 
@@ -189,6 +213,17 @@ export function ClueScreen({ clue: rawClue, sessionId, initialCredits, totalScor
           </div>
         </div>
 
+        {/* Floating compass — visible when bottom sheet is minimized */}
+        {!arrived && sheetState === 'minimized' && (
+          <button
+            className="floating-compass"
+            onClick={() => setSheetState('default')}
+            aria-label={t('expand')}
+          >
+            <ProximityRing distanceM={distanceM} bearing={bearing} arrived={false} accuracy={accuracy} />
+          </button>
+        )}
+
         {arrived && arrivalData && (
           <ArrivalBanner
             locationName={clue.locationName}
@@ -207,15 +242,19 @@ export function ClueScreen({ clue: rawClue, sessionId, initialCredits, totalScor
       </div>
 
       {/* Bottom sheet */}
-      <div className={`bottom-sheet ${sheetExpanded ? 'expanded' : ''}`}>
+      <div className={`bottom-sheet ${sheetState}`}>
         <button
           className="sheet-handle-btn"
-          onClick={() => setSheetExpanded(s => !s)}
-          aria-label={sheetExpanded ? t('collapse') : t('expand')}
+          onClick={cycleSheet}
+          onTouchStart={onHandleTouchStart}
+          onTouchEnd={onHandleTouchEnd}
+          aria-label={sheetState === 'expanded' ? t('collapse') : t('expand')}
         >
           <div className="sheet-handle" />
           <span className="sheet-handle-hint">
-            {sheetExpanded ? `▾ ${t('collapse')}` : `▴ ${t('moreHints')}`}
+            {sheetState === 'expanded' ? `▾ ${t('collapse')}`
+              : sheetState === 'minimized' ? `▴ ${t('expand')}`
+              : `▴ ${t('moreHints')}`}
           </span>
         </button>
 
