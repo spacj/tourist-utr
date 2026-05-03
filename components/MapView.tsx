@@ -26,7 +26,6 @@ export function MapView({ clue, userLat, userLng, showTarget }: Props) {
       zoom: 14.5,
       attributionControl: false,
     })
-    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right')
     mapRef.current = map
     return () => { map.remove(); mapRef.current = undefined }
   // eslint-disable-next-line react-hooks/exhaustive-deps
