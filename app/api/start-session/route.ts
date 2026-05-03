@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/firebase'
 import { STARTING_CREDITS } from '@/types'
+import { isCityUnlocked } from '@/lib/cityUnlock'
 import {
   collection, doc, getDoc, getDocs, setDoc, query, where, orderBy, limit, serverTimestamp,
 } from 'firebase/firestore'
@@ -10,6 +11,21 @@ export async function POST(req: NextRequest) {
 
   const huntSnap = await getDoc(doc(db, 'hunts', huntId))
   if (!huntSnap.exists()) return NextResponse.json({ error: 'Hunt not found' }, { status: 404 })
+
+  // ── City-unlock gate ──
+  // First hunt in any city (order === 0) is free for everyone.
+  // Other hunts require the user to have unlocked the city (€5).
+  const hunt = huntSnap.data() as { cityId?: string; order?: number }
+  const isFree = (hunt.order ?? 0) === 0
+  if (!isFree) {
+    if (!userId) {
+      return NextResponse.json({ error: 'sign_in_required', cityId: hunt.cityId ?? null }, { status: 401 })
+    }
+    const unlocked = hunt.cityId ? await isCityUnlocked(userId, hunt.cityId) : false
+    if (!unlocked) {
+      return NextResponse.json({ error: 'city_locked', cityId: hunt.cityId ?? null }, { status: 402 })
+    }
+  }
 
   // ── Resume an in-progress session if one exists for this user + hunt ──
   if (userId) {

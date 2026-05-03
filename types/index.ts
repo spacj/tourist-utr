@@ -1,6 +1,27 @@
 export type HintTier = 1 | 2 | 3
 export type Difficulty = 'easy' | 'medium' | 'hard'
 
+export const CITY_UNLOCK_PRICE_EUROS = 5
+
+export interface CityI18n {
+  name?: string
+  country?: string
+  description?: string
+}
+
+export interface City {
+  id: string
+  name: string
+  country: string
+  description: string
+  coverEmoji?: string
+  priceEuros: number
+  huntCount: number
+  order: number
+  active: boolean
+  i18n?: Partial<Record<Lang, CityI18n>>
+}
+
 export interface HuntI18n {
   title?: string
   description?: string
@@ -9,6 +30,8 @@ export interface HuntI18n {
 
 export interface Hunt {
   id: string
+  cityId: string
+  order: number
   title: string
   description: string
   city: string
@@ -16,11 +39,25 @@ export interface Hunt {
   clueCount: number
   durationMin: number
   distanceKm: number
-  priceEuros?: number
   rating?: number
   badge?: string
   active: boolean
   i18n?: Partial<Record<Lang, HuntI18n>>
+}
+
+export function isHuntFree(h: Pick<Hunt, 'order'>): boolean {
+  return h.order === 0
+}
+
+export function localizeCity(c: City, lang: Lang): City {
+  const tr = lang !== 'en' ? c.i18n?.[lang] : undefined
+  if (!tr) return c
+  return {
+    ...c,
+    name:        tr.name        ?? c.name,
+    country:     tr.country     ?? c.country,
+    description: tr.description ?? c.description,
+  }
 }
 
 export interface Trivia {
@@ -295,6 +332,20 @@ export const T: Dict = {
   achFlawless:       { en: 'Flawless',            nl: 'Vlekkeloos',         de: 'Makellos',             fr: 'Sans faute' },
   achFinisher:       { en: 'Finisher',            nl: 'Voltooid',           de: 'Vollender',            fr: 'Finisseur' },
   ach1000:           { en: '1000+',               nl: '1000+',              de: '1000+',                fr: '1000+' },
+
+  // Cities + unlock
+  chooseCity:        { en: 'Choose a city',       nl: 'Kies een stad',      de: 'Stadt wählen',         fr: 'Choisissez une ville' },
+  cities:            { en: 'Cities',              nl: 'Steden',             de: 'Städte',               fr: 'Villes' },
+  hunts:             { en: 'hunts',               nl: 'tochten',            de: 'Touren',               fr: 'parcours' },
+  firstFree:         { en: 'First hunt free',     nl: 'Eerste tocht gratis',de: 'Erste Tour gratis',    fr: '1ʳᵉ aventure gratuite' },
+  unlockCityCta:     { en: 'Unlock all of {city} — €5', nl: 'Ontgrendel heel {city} — €5', de: '{city} komplett freischalten — €5', fr: 'Débloquer tout {city} — 5 €' },
+  locked:            { en: 'Locked',              nl: 'Vergrendeld',        de: 'Gesperrt',             fr: 'Verrouillé' },
+  unlockToPlay:      { en: 'Unlock to play',      nl: 'Ontgrendel om te spelen', de: 'Freischalten zum Spielen', fr: 'Débloquer pour jouer' },
+  freeHunt:          { en: 'Free',                nl: 'Gratis',             de: 'Gratis',               fr: 'Gratuit' },
+  cityUnlockedNote:  { en: 'You\'ve unlocked this city — all hunts are open.', nl: 'Je hebt deze stad ontgrendeld — alle tochten zijn open.', de: 'Du hast diese Stadt freigeschaltet — alle Touren sind offen.', fr: 'Vous avez débloqué cette ville — tous les parcours sont ouverts.' },
+  unlockingCity:     { en: 'Opening payment…',    nl: 'Betaling openen…',   de: 'Zahlung öffnen…',      fr: 'Paiement en cours…' },
+  unlockSuccess:     { en: 'City unlocked! 🎉',   nl: 'Stad ontgrendeld! 🎉', de: 'Stadt freigeschaltet! 🎉', fr: 'Ville débloquée ! 🎉' },
+  signInToUnlock:    { en: 'Sign in to unlock this city', nl: 'Log in om deze stad te ontgrendelen', de: 'Anmelden, um die Stadt freizuschalten', fr: 'Connectez-vous pour débloquer cette ville' },
 }
 
 export function t(lang: Lang, key: string): string {

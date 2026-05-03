@@ -21,6 +21,40 @@ const app = initializeApp({
 const db = getFirestore(app)
 
 // ══════════════════════════════════════════════════════════════════
+// CITIES — top-level grouping. Each city has ≥1 free hunt + paid hunts.
+// €5 unlocks the whole city (all paid hunts at once). First hunt = free.
+// ══════════════════════════════════════════════════════════════════
+const CITIES = [
+  {
+    id: 'city_utrecht',
+    name: 'Utrecht',
+    country: 'Netherlands',
+    description: 'Medieval canals, the tallest church tower in the country, and Holland\'s real living room.',
+    coverEmoji: '🇳🇱',
+    priceEuros: 5,
+    order: 0,
+    active: true,
+    i18n: {
+      nl: {
+        name: 'Utrecht',
+        country: 'Nederland',
+        description: 'Middeleeuwse grachten, de hoogste kerktoren van het land en de échte huiskamer van Nederland.',
+      },
+      de: {
+        name: 'Utrecht',
+        country: 'Niederlande',
+        description: 'Mittelalterliche Grachten, der höchste Kirchturm des Landes und Hollands echtes Wohnzimmer.',
+      },
+      fr: {
+        name: 'Utrecht',
+        country: 'Pays-Bas',
+        description: 'Canaux médiévaux, le plus haut clocher du pays et le véritable salon des Pays-Bas.',
+      },
+    },
+  },
+]
+
+// ══════════════════════════════════════════════════════════════════
 // HUNT 1 — Utrecht Classic (8 stops, medium)
 // ══════════════════════════════════════════════════════════════════
 const utrechtClassic = {
@@ -29,10 +63,11 @@ const utrechtClassic = {
     title: 'Utrecht Classic',
     description: 'The essential eight. From the Dom Tower to a UNESCO masterpiece — walk through 600 years of Utrecht.',
     city: 'Utrecht',
+    cityId: 'city_utrecht',
+    order: 0,
     difficulty: 'medium',
     durationMin: 150,
     distanceKm: 4.2,
-    priceEuros: 5,
     rating: 4.9,
     badge: 'Most popular',
     i18n: {
@@ -402,10 +437,11 @@ const hiddenUtrecht = {
     title: 'Hidden Utrecht',
     description: 'Seven secrets the guidebooks forgot. Medieval alleys, a papal palace, a Romanesque crypt and the first Dutch department store.',
     city: 'Utrecht',
+    cityId: 'city_utrecht',
+    order: 1,
     difficulty: 'hard',
     durationMin: 135,
     distanceKm: 3.5,
-    priceEuros: 5,
     rating: 4.8,
     badge: 'Locals\' pick',
     i18n: {
@@ -733,10 +769,11 @@ const canalsCafes = {
     title: 'Canals & Cafés',
     description: 'A relaxed six-stop stroll along Utrecht\'s waterways. Perfect for a sunny afternoon — terrace to terrace, bridge to bridge.',
     city: 'Utrecht',
+    cityId: 'city_utrecht',
+    order: 2,
     difficulty: 'easy',
     durationMin: 90,
     distanceKm: 2.4,
-    priceEuros: 5,
     rating: 4.7,
     badge: 'Sunday favourite',
     i18n: {
@@ -1019,6 +1056,19 @@ const canalsCafes = {
 const HUNTS = [utrechtClassic, hiddenUtrecht, canalsCafes]
 
 async function seed() {
+  // 1. Cities
+  for (const city of CITIES) {
+    const huntCount = HUNTS.filter(h => h.meta.cityId === city.id).length
+    const { id, ...cityData } = city
+    await setDoc(doc(db, 'cities', id), {
+      ...cityData,
+      huntCount,
+      createdAt: serverTimestamp(),
+    })
+    console.log(`✓ city ${id}: "${city.name}" (${huntCount} hunts, €${city.priceEuros})`)
+  }
+
+  // 2. Hunts + clues
   for (const hunt of HUNTS) {
     await setDoc(doc(db, 'hunts', hunt.id), {
       ...hunt.meta,
@@ -1029,9 +1079,10 @@ async function seed() {
     for (const { id, ...clueData } of hunt.clues) {
       await setDoc(doc(db, 'hunts', hunt.id, 'clues', id), { ...clueData, hint2PhotoUrl: null })
     }
-    console.log(`✓ ${hunt.id}: "${hunt.meta.title}" (${hunt.clues.length} clues)`)
+    console.log(`✓ ${hunt.id}: "${hunt.meta.title}" (${hunt.clues.length} clues, order=${hunt.meta.order}${hunt.meta.order === 0 ? ' free' : ''})`)
   }
-  console.log(`\nSeeded ${HUNTS.length} hunts.`)
+
+  console.log(`\nSeeded ${CITIES.length} cities, ${HUNTS.length} hunts.`)
   process.exit(0)
 }
 

@@ -2,13 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
-import { Hunt, LANGUAGES, localizeHunt } from '@/types'
-
-const DIFFICULTY_META: Record<string, { key: string; color: string; bg: string }> = {
-  easy:   { key: 'diffEasy',   color: '#22c97a', bg: 'rgba(34,201,122,.12)' },
-  medium: { key: 'diffMedium', color: '#f5a54a', bg: 'rgba(245,165,74,.12)' },
-  hard:   { key: 'diffHard',   color: '#f05252', bg: 'rgba(240,82,82,.12)' },
-}
+import { City, LANGUAGES, localizeCity } from '@/types'
 
 function SkylineSvg() {
   return (
@@ -19,7 +13,6 @@ function SkylineSvg() {
           <stop offset="100%" stopColor="#f5c24a" stopOpacity="0.35" />
         </linearGradient>
       </defs>
-      {/* Dom Tower silhouette centre */}
       <path d="M0 80 L0 60 L30 58 L40 55 L55 56 L70 52 L88 54 L100 48 L115 50 L130 45
                L148 47 L160 38 L170 30 L175 12 L180 8 L185 12 L190 30 L200 38 L212 47
                L228 45 L242 50 L258 48 L272 54 L288 52 L302 56 L316 55 L330 58 L360 60 L400 62 L400 80 Z"
@@ -29,45 +22,23 @@ function SkylineSvg() {
   )
 }
 
-type ProgressEntry = {
-  sessionId: string
-  cluesCompleted: number
-  totalClues: number
-  status: 'in_progress' | 'completed'
-  score: number
-}
-type ProgressMap = Record<string, ProgressEntry>
-
 export default function HomePage() {
   const { user, loading, signIn } = useAuth()
   const { lang, setLang, t } = useI18n()
-  const [hunts, setHunts] = useState<Hunt[]>([])
-  const [starting, setStarting] = useState<string | null>(null)
-  const [progress, setProgress] = useState<ProgressMap>({})
+  const [cities, setCities] = useState<City[]>([])
+  const [unlocked, setUnlocked] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    fetch('/api/hunts').then(r => r.json()).then(setHunts).catch(() => {})
+    fetch('/api/cities').then(r => r.json()).then(setCities).catch(() => {})
   }, [])
 
   useEffect(() => {
-    if (!user) { setProgress({}); return }
-    fetch(`/api/user-progress?userId=${user.uid}`)
+    if (!user) { setUnlocked(new Set()); return }
+    fetch(`/api/city-unlocks?userId=${user.uid}`)
       .then(r => r.json())
-      .then((d) => { if (d && !d.error) setProgress(d) })
+      .then((ids: string[]) => setUnlocked(new Set(ids)))
       .catch(() => {})
   }, [user])
-
-  const startHunt = async (huntId: string) => {
-    if (!user) { signIn(); return }
-    setStarting(huntId)
-    const res = await fetch('/api/start-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ huntId, userId: user.uid }),
-    })
-    const { sessionId } = await res.json()
-    window.location.href = `/hunt?session=${sessionId}`
-  }
 
   if (loading) {
     return (
@@ -155,85 +126,54 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* ── Hunts ── */}
-        <div className="section-label">{t('availableHunts')}</div>
+        {/* ── Cities ── */}
+        <div className="section-label">{t('chooseCity')}</div>
 
-        {hunts.length === 0 && (
+        {cities.length === 0 && (
           <div className="empty-card">
             <p>{t('noHuntsYet')}</p>
           </div>
         )}
 
-        {hunts.map((rawHunt) => {
-          const hunt = localizeHunt(rawHunt, lang)
-          const diff = DIFFICULTY_META[hunt.difficulty] || DIFFICULTY_META.medium
-          const huntProgress = progress[hunt.id]
-          const isInProgress = huntProgress?.status === 'in_progress'
-          const isCompleted = huntProgress?.status === 'completed'
-          const totalSteps = hunt.clueCount || huntProgress?.totalClues || 0
-          const cluesDone = Math.min(huntProgress?.cluesCompleted ?? 0, totalSteps)
-          const pct = totalSteps > 0 ? Math.round((cluesDone / totalSteps) * 100) : 0
-          const stateClass = isCompleted ? 'completed' : isInProgress ? 'resuming' : ''
+        {cities.map((rawCity) => {
+          const city = localizeCity(rawCity, lang)
+          const isUnlocked = unlocked.has(city.id)
           return (
-            <button
-              key={hunt.id}
-              className={`hunt-card ${stateClass}`}
-              onClick={() => startHunt(hunt.id)}
-              disabled={starting === hunt.id}
+            <a
+              key={city.id}
+              href={`/city/${city.id}`}
+              className="hunt-card"
+              style={{ textDecoration: 'none' }}
             >
-              {isCompleted
-                ? <span className="hunt-badge completed-badge">✓ {t('ctaCompleted')}</span>
-                : isInProgress
-                  ? <span className="hunt-badge resume-badge">{t('ctaResume')}</span>
-                  : hunt.badge && <span className="hunt-badge">{hunt.badge}</span>
+              {isUnlocked
+                ? <span className="hunt-badge completed-badge">✓ {t('unlocked')}</span>
+                : <span className="hunt-badge">{t('firstFree')}</span>
               }
               <div className="hunt-card-top">
                 <div>
-                  <div className="hunt-title">{hunt.title}</div>
-                  <div className="hunt-desc">{hunt.description}</div>
-                </div>
-                <div className="hunt-arrow">{starting === hunt.id ? '…' : '→'}</div>
-              </div>
-
-              {huntProgress && totalSteps > 0 && (
-                <div className={`resume-bar ${isCompleted ? 'is-completed' : ''}`}>
-                  <div className="resume-bar-track">
-                    <div className="resume-bar-fill" style={{ width: `${pct}%` }} />
+                  <div className="hunt-title">
+                    {city.coverEmoji && <span style={{ marginRight: 8 }}>{city.coverEmoji}</span>}
+                    {city.name}
                   </div>
-                  <span className="resume-bar-text">
-                    {isCompleted
-                      ? `${t('bestScore')} ${huntProgress.score}`
-                      : `${cluesDone}/${totalSteps}`}
-                  </span>
+                  <div className="hunt-desc">{city.description}</div>
                 </div>
-              )}
-
+                <div className="hunt-arrow">→</div>
+              </div>
               <div className="hunt-meta">
-                <span className="meta-pill" style={{ color: diff.color, background: diff.bg, border: `1px solid ${diff.color}33` }}>
-                  {t(diff.key)}
-                </span>
-                {hunt.rating && (
-                  <span className="hunt-rating">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                      <polygon points="12,2 15.1,8.3 22,9.3 17,14.1 18.2,21 12,17.8 5.8,21 7,14.1 2,9.3 8.9,8.3" />
-                    </svg>
-                    {hunt.rating.toFixed(1)}
-                  </span>
-                )}
                 <span className="meta-item">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  {hunt.clueCount} {t('places')}
+                  {city.country}
                 </span>
                 <span className="meta-item">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  ~{hunt.durationMin} {t('min')}
+                  {city.huntCount} {t('hunts')}
                 </span>
-                <span className="meta-item">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                  {hunt.distanceKm} {t('km')}
-                </span>
+                {!isUnlocked && (
+                  <span className="meta-pill" style={{ color: '#f5c24a', background: 'rgba(245,194,74,.12)', border: '1px solid rgba(245,194,74,.3)' }}>
+                    €{city.priceEuros}
+                  </span>
+                )}
               </div>
-            </button>
+            </a>
           )
         })}
 
