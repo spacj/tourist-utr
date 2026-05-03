@@ -125,41 +125,37 @@ export default function CityPage() {
   return (
     <main className="page-center">
       <div className="container">
-        <a href="/" className="meta-item" style={{ display: 'inline-block', marginBottom: 12 }}>{t('backToHunts')}</a>
+        <a href="/" className="city-back">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          {t('backToHunts')}
+        </a>
 
-        {/* City header */}
-        <div className="hero" style={{ paddingTop: 18 }}>
-          <div className="hero-top">
-            <div className="hero-brand">
-              <div className="hero-logo" style={{ fontSize: 22, lineHeight: '36px', textAlign: 'center' }}>
-                {localCity.coverEmoji ?? '📍'}
-              </div>
-              <div>
-                <div className="hero-title">{localCity.name}</div>
-                <div className="hero-sub">{localCity.country}</div>
-              </div>
-            </div>
-            {unlocked && <span className="hunt-badge completed-badge" style={{ position: 'static' }}>✓ {t('unlocked')}</span>}
+        {/* City hero */}
+        <section className={`city-hero ${unlocked ? 'is-unlocked' : ''}`}>
+          <div className="city-hero-emoji" aria-hidden>{localCity.coverEmoji ?? '📍'}</div>
+          <div className="city-hero-meta">
+            <span className="city-hero-eyebrow">{localCity.country}</span>
+            <h1 className="city-hero-title">{localCity.name}</h1>
+            <p className="city-hero-desc">{localCity.description}</p>
           </div>
-          <p className="hero-tagline" style={{ marginTop: 12 }}>{localCity.description}</p>
-          {!unlocked && (
-            <button
-              onClick={unlockCity}
-              disabled={unlocking}
-              className="sign-in-btn"
-              style={{ width: '100%', marginTop: 10 }}
-            >
-              {unlocking ? t('unlockingCity') : unlockCta}
+          {unlocked ? (
+            <div className="city-hero-cta city-hero-cta-unlocked">
+              <span className="city-hero-cta-icon">✓</span>
+              <span>{t('cityUnlockedNote')}</span>
+            </div>
+          ) : (
+            <button onClick={unlockCity} disabled={unlocking} className="city-hero-cta">
+              <span className="city-hero-cta-label">
+                {unlocking ? t('unlockingCity') : unlockCta}
+              </span>
+              {!unlocking && <span className="city-hero-cta-arrow">→</span>}
             </button>
           )}
-          {unlocked && (
-            <p className="footer-note" style={{ marginTop: 6 }}>{t('cityUnlockedNote')}</p>
-          )}
-        </div>
+        </section>
 
         {flash && (
-          <div className="empty-card" style={{ marginTop: 12, marginBottom: 4 }}>
-            <p>{flash}</p>
+          <div className="city-flash" role="status">
+            <span>{flash}</span>
           </div>
         )}
 

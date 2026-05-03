@@ -460,6 +460,295 @@ a { color: inherit; }
   font-weight: 600;
 }
 
+/* ── City card (homepage list) ── */
+.city-card {
+  display: block;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.1), box-shadow 0.25s, border-color 0.2s;
+  opacity: 0;
+  animation: cardIn 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.05) forwards;
+}
+.city-card:nth-of-type(1) { animation-delay: 0.05s; }
+.city-card:nth-of-type(2) { animation-delay: 0.13s; }
+.city-card:nth-of-type(3) { animation-delay: 0.21s; }
+.city-card:hover {
+  border-color: rgba(255, 106, 19, 0.42);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(255, 106, 19, 0.18);
+}
+.city-card:hover .city-arrow { transform: translateX(4px); }
+.city-card:active { transform: scale(0.99); }
+
+.city-cover {
+  position: relative;
+  height: 124px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.45), transparent 55%),
+    radial-gradient(circle at 80% 80%, rgba(108, 99, 245, 0.35), transparent 60%),
+    linear-gradient(135deg, #ffb068 0%, #ff6a13 60%, #c93e00 100%);
+  overflow: hidden;
+}
+.city-card.is-unlocked .city-cover {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.45), transparent 55%),
+    linear-gradient(135deg, #58e6a4 0%, #22c97a 65%, #0e8c50 100%);
+}
+.city-cover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,0.18) 1px, transparent 1.5px);
+  background-size: 14px 14px;
+  opacity: 0.45;
+  pointer-events: none;
+}
+.city-cover-emoji {
+  font-size: 64px;
+  line-height: 1;
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.18));
+  transform: rotate(-5deg);
+  position: relative;
+  z-index: 1;
+}
+.city-cover-tag {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--gold);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 999px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 4px 14px rgba(20, 20, 30, 0.15);
+}
+.city-cover-tag-unlocked { color: #0e8c50; }
+
+.city-body { padding: 16px 18px 18px; }
+.city-body-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.city-name {
+  font-family: var(--font-serif, Georgia), serif;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+.city-country {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 600;
+  margin-top: 4px;
+}
+.city-arrow {
+  font-size: 22px;
+  color: var(--gold);
+  flex-shrink: 0;
+  margin-top: 4px;
+  transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+.city-desc {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+.city-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+}
+.city-foot-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: rgba(20, 20, 30, 0.05);
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+.city-foot-price {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gold);
+  background: linear-gradient(135deg, rgba(255, 106, 19, 0.15), rgba(255, 106, 19, 0.05));
+  border: 1px solid rgba(255, 106, 19, 0.32);
+  padding: 5px 12px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
+
+/* ── City detail hero ── */
+.city-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  margin-bottom: 14px;
+  padding: 6px 10px 6px 4px;
+  border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
+}
+.city-back:hover { color: var(--gold); background: rgba(255, 106, 19, 0.08); }
+.city-hero {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  padding: 28px 22px 22px;
+  margin-bottom: 18px;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(255, 255, 255, 0.55), transparent 50%),
+    radial-gradient(circle at 100% 100%, rgba(108, 99, 245, 0.3), transparent 55%),
+    linear-gradient(155deg, #ffb068 0%, #ff6a13 55%, #c93e00 100%);
+  color: #fff;
+  box-shadow: 0 18px 40px rgba(255, 106, 19, 0.25);
+  animation: heroIn 0.6s ease both;
+}
+.city-hero.is-unlocked {
+  background:
+    radial-gradient(circle at 15% 0%, rgba(255, 255, 255, 0.5), transparent 55%),
+    linear-gradient(155deg, #58e6a4 0%, #22c97a 60%, #0e8c50 100%);
+  box-shadow: 0 18px 40px rgba(34, 201, 122, 0.25);
+}
+.city-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.2) 1px, transparent 1.5px);
+  background-size: 16px 16px;
+  opacity: 0.35;
+  pointer-events: none;
+}
+.city-hero-emoji {
+  font-size: 88px;
+  line-height: 1;
+  text-align: center;
+  margin-bottom: 6px;
+  filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.22));
+  animation: cityEmoji 0.8s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+@keyframes cityEmoji {
+  0%   { transform: scale(0.5) rotate(-12deg); opacity: 0; }
+  60%  { transform: scale(1.08) rotate(3deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); }
+}
+.city-hero-meta { text-align: center; position: relative; z-index: 1; }
+.city-hero-eyebrow {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+.city-hero-title {
+  font-family: var(--font-serif, Georgia), serif;
+  font-size: 38px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  margin: 0 0 10px;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.18);
+}
+.city-hero-desc {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.92);
+  max-width: 32ch;
+  margin: 0 auto 16px;
+}
+.city-hero-cta {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #c93e00;
+  border: none;
+  border-radius: 14px;
+  padding: 14px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  transition: transform 0.18s, box-shadow 0.2s, background 0.15s;
+  position: relative;
+  z-index: 1;
+}
+.city-hero-cta:hover { background: #fff; transform: translateY(-1px); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22); }
+.city-hero-cta:active { transform: scale(0.98); }
+.city-hero-cta:disabled { opacity: 0.7; cursor: wait; transform: none; }
+.city-hero-cta-arrow { font-size: 18px; transition: transform 0.2s; }
+.city-hero-cta:hover .city-hero-cta-arrow { transform: translateX(3px); }
+.city-hero-cta-unlocked {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  cursor: default;
+  box-shadow: none;
+  font-weight: 600;
+}
+.city-hero-cta-unlocked .city-hero-cta-icon {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  color: #0e8c50;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+.city-flash {
+  background: rgba(255, 106, 19, 0.10);
+  color: var(--gold);
+  border: 1px solid rgba(255, 106, 19, 0.28);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13.5px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  animation: heroIn 0.35s ease;
+}
+
+@media (max-width: 767px) {
+  .city-cover { height: 110px; }
+  .city-cover-emoji { font-size: 58px; }
+  .city-hero { padding: 24px 18px 18px; border-radius: 20px; }
+  .city-hero-emoji { font-size: 76px; }
+  .city-hero-title { font-size: 32px; }
+  .city-hero-desc { font-size: 14px; }
+  .city-hero-cta { padding: 13px 16px; font-size: 14.5px; }
+  .city-name { font-size: 20px; }
+}
+
 /* ── Empty card ── */
 .empty-card {
   background: var(--surface);
@@ -583,24 +872,32 @@ a { color: inherit; }
 .floating-compass {
   position: absolute;
   right: 14px;
-  bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   z-index: 15;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(20, 20, 30, 0.10);
-  border-radius: 50%;
-  padding: 6px;
-  box-shadow: 0 10px 30px rgba(20, 20, 30, 0.18);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 106, 19, 0.30);
+  border-radius: 22px;
+  padding: 10px 12px 8px;
+  box-shadow:
+    0 12px 32px rgba(20, 20, 30, 0.20),
+    0 0 0 1px rgba(255, 255, 255, 0.6) inset;
   cursor: pointer;
-  transition: transform 0.18s, box-shadow 0.18s;
   font-family: inherit;
   -webkit-tap-highlight-color: transparent;
   animation: compass-pop 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  transition: transform 0.18s, box-shadow 0.18s;
 }
 .floating-compass:active { transform: scale(0.94); }
+.floating-compass .compass { gap: 6px; }
+.floating-compass svg { width: 110px; height: 110px; }
+.floating-compass .compass-distance-num { font-size: 22px; }
+.floating-compass .compass-zone { font-size: 9px; padding: 3px 9px; letter-spacing: 0.1em; }
+.floating-compass .compass-accuracy { display: none; }
 @keyframes compass-pop {
-  from { transform: scale(0.6); opacity: 0; }
-  to   { transform: scale(1); opacity: 1; }
+  from { transform: scale(0.6) translateY(20px); opacity: 0; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
 }
 
 /* Sheet handle (now an interactive button) */
@@ -766,13 +1063,61 @@ a { color: inherit; }
   gap: 14px;
 }
 .ring-stats > div:first-child { flex-shrink: 0; }
-.zone-label {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── Compass / proximity ring ── */
+.compass {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.compass-halo { animation: compass-pulse-soft 3s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+.compass-burning .compass-halo { animation: compass-pulse-fast 0.85s ease-in-out infinite; }
+@keyframes compass-pulse-soft {
+  0%, 100% { opacity: 0.18; }
+  50%      { opacity: 0.32; }
+}
+@keyframes compass-pulse-fast {
+  0%, 100% { opacity: 0.25; }
+  50%      { opacity: 0.6; }
+}
+.compass-readout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
   animation: fadeIn 0.3s ease;
 }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.compass-distance {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  font-family: var(--font-serif, Georgia), serif;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.compass-distance-num { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; }
+.compass-distance-unit { font-size: 14px; font-weight: 600; opacity: 0.75; }
+.compass-zone {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid;
+}
+.compass-accuracy {
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+.compass-arrived .compass-distance,
+.compass-arrived .compass-accuracy { display: none; }
+@media (max-width: 767px) {
+  .compass-distance-num { font-size: 26px; }
+}
 
 /* ── Clue intro card (shown before the riddle on fresh clues) ── */
 .intro-backdrop {

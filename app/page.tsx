@@ -142,36 +142,33 @@ export default function HomePage() {
             <a
               key={city.id}
               href={`/city/${city.id}`}
-              className="hunt-card"
+              className={`city-card ${isUnlocked ? 'is-unlocked' : ''}`}
               style={{ textDecoration: 'none' }}
             >
-              {isUnlocked
-                ? <span className="hunt-badge completed-badge">✓ {t('unlocked')}</span>
-                : <span className="hunt-badge">{t('firstFree')}</span>
-              }
-              <div className="hunt-card-top">
-                <div>
-                  <div className="hunt-title">
-                    {city.coverEmoji && <span style={{ marginRight: 8 }}>{city.coverEmoji}</span>}
-                    {city.name}
-                  </div>
-                  <div className="hunt-desc">{city.description}</div>
-                </div>
-                <div className="hunt-arrow">→</div>
+              <div className="city-cover" aria-hidden>
+                <div className="city-cover-emoji">{city.coverEmoji ?? '📍'}</div>
+                {isUnlocked
+                  ? <span className="city-cover-tag city-cover-tag-unlocked">✓ {t('unlocked')}</span>
+                  : <span className="city-cover-tag">{t('firstFree')}</span>}
               </div>
-              <div className="hunt-meta">
-                <span className="meta-item">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  {city.country}
-                </span>
-                <span className="meta-item">
-                  {city.huntCount} {t('hunts')}
-                </span>
-                {!isUnlocked && (
-                  <span className="meta-pill" style={{ color: '#f5c24a', background: 'rgba(245,194,74,.12)', border: '1px solid rgba(245,194,74,.3)' }}>
-                    €{city.priceEuros}
+              <div className="city-body">
+                <div className="city-body-top">
+                  <div>
+                    <div className="city-name">{city.name}</div>
+                    <div className="city-country">{city.country}</div>
+                  </div>
+                  <div className="city-arrow">→</div>
+                </div>
+                <p className="city-desc">{city.description}</p>
+                <div className="city-foot">
+                  <span className="city-foot-pill">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+                    {city.huntCount} {t('hunts')}
                   </span>
-                )}
+                  {!isUnlocked && (
+                    <span className="city-foot-price">€{city.priceEuros}</span>
+                  )}
+                </div>
               </div>
             </a>
           )
