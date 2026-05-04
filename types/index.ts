@@ -15,6 +15,7 @@ export interface City {
   country: string
   description: string
   coverEmoji?: string
+  imageUrl?: string
   priceEuros: number
   huntCount: number
   order: number

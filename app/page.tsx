@@ -4,6 +4,55 @@ import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
 import { City, LANGUAGES, localizeCity } from '@/types'
 
+function CityCard({ city, isUnlocked, t }: { city: City; isUnlocked: boolean; t: (key: string) => string }) {
+  const [imgLoaded, setImgLoaded] = useState(false)
+  return (
+    <a
+      href={`/city/${city.id}`}
+      className={`city-card ${isUnlocked ? 'is-unlocked' : ''}`}
+      style={{ textDecoration: 'none' }}
+    >
+      <div className="city-cover" aria-hidden>
+        {city.imageUrl ? (
+          <>
+            <img
+              src={city.imageUrl}
+              alt={city.name}
+              className={`city-cover-img ${imgLoaded ? 'loaded' : ''}`}
+              onLoad={() => setImgLoaded(true)}
+            />
+            <div className="city-cover-overlay" />
+          </>
+        ) : (
+          <div className="city-cover-emoji">{city.coverEmoji ?? '📍'}</div>
+        )}
+        {isUnlocked
+          ? <span className="city-cover-tag city-cover-tag-unlocked">✓ {t('unlocked')}</span>
+          : <span className="city-cover-tag">{t('firstFree')}</span>}
+      </div>
+      <div className="city-body">
+        <div className="city-body-top">
+          <div>
+            <div className="city-name">{city.name}</div>
+            <div className="city-country">{city.country}</div>
+          </div>
+          <div className="city-arrow">→</div>
+        </div>
+        <p className="city-desc">{city.description}</p>
+        <div className="city-foot">
+          <span className="city-foot-pill">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+            {city.huntCount} {t('hunts')}
+          </span>
+          {!isUnlocked && (
+            <span className="city-foot-price">€{city.priceEuros}</span>
+          )}
+        </div>
+      </div>
+    </a>
+  )
+}
+
 export default function HomePage() {
   const { user, loading, signIn } = useAuth()
   const { lang, setLang, t } = useI18n()
@@ -64,40 +113,36 @@ export default function HomePage() {
               onLoad={() => setImgLoaded(true)}
             />
             <div className="hero-img-overlay" />
+            <div className="hero-overlay-content">
+              <div className="hero-overlay-top">
+                {user ? (
+                  <a href="/profile" className="avatar-btn avatar-btn-light">
+                    {user.photoURL ? (
+                      <img src={user.photoURL} alt="" className="avatar-img" referrerPolicy="no-referrer" />
+                    ) : (
+                      <span className="avatar-letter">{user.displayName?.[0] || '?'}</span>
+                    )}
+                  </a>
+                ) : (
+                  <button onClick={signIn} className="sign-in-btn sign-in-btn-light">{t('signIn')}</button>
+                )}
+              </div>
+              <div className="hero-overlay-bottom">
+                <div className="hero-badge">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2L4 8v12h6v-7h4v7h6V8z" />
+                  </svg>
+                  {t('subtitle')}
+                </div>
+                <h1 className="hero-overlay-title">{t('title')}</h1>
+                <p className="hero-overlay-tagline">{t('tagline')}</p>
+              </div>
+            </div>
           </div>
 
           <div className="hero-content">
-            <div className="hero-top">
-              <div className="hero-brand">
-                <div className="hero-logo">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-                    stroke="#1a1300" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 2L4 8v12h6v-7h4v7h6V8z" />
-                  </svg>
-                </div>
-                <div>
-                  <div className="hero-title">{t('title')}</div>
-                  <div className="hero-sub">{t('subtitle')}</div>
-                </div>
-              </div>
-              {user ? (
-                <a href="/profile" className="avatar-btn">
-                  {user.photoURL ? (
-                    <img src={user.photoURL} alt="" className="avatar-img" referrerPolicy="no-referrer" />
-                  ) : (
-                    <span className="avatar-letter">{user.displayName?.[0] || '?'}</span>
-                  )}
-                </a>
-              ) : (
-                <button onClick={signIn} className="sign-in-btn">{t('signIn')}</button>
-              )}
-            </div>
-
-            <p className="hero-tagline">
-              <em>{t('tagline')}</em>
-            </p>
-
-            <div className="hero-bottom-row">
+            <div className="hero-content-row">
               <span className="price-tag">{t('priceTag')}</span>
               <div className="lang-switch">
                 {LANGUAGES.map(l => (
@@ -144,40 +189,7 @@ export default function HomePage() {
         {cities.map((rawCity) => {
           const city = localizeCity(rawCity, lang)
           const isUnlocked = unlocked.has(city.id)
-          return (
-            <a
-              key={city.id}
-              href={`/city/${city.id}`}
-              className={`city-card ${isUnlocked ? 'is-unlocked' : ''}`}
-              style={{ textDecoration: 'none' }}
-            >
-              <div className="city-cover" aria-hidden>
-                <div className="city-cover-emoji">{city.coverEmoji ?? '📍'}</div>
-                {isUnlocked
-                  ? <span className="city-cover-tag city-cover-tag-unlocked">✓ {t('unlocked')}</span>
-                  : <span className="city-cover-tag">{t('firstFree')}</span>}
-              </div>
-              <div className="city-body">
-                <div className="city-body-top">
-                  <div>
-                    <div className="city-name">{city.name}</div>
-                    <div className="city-country">{city.country}</div>
-                  </div>
-                  <div className="city-arrow">→</div>
-                </div>
-                <p className="city-desc">{city.description}</p>
-                <div className="city-foot">
-                  <span className="city-foot-pill">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-                    {city.huntCount} {t('hunts')}
-                  </span>
-                  {!isUnlocked && (
-                    <span className="city-foot-price">€{city.priceEuros}</span>
-                  )}
-                </div>
-              </div>
-            </a>
-          )
+          return <CityCard key={city.id} city={city} isUnlocked={isUnlocked} t={(key: string) => t(key as any)} />
         })}
 
         {!user && (
