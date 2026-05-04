@@ -121,6 +121,27 @@ export default function HomePage() {
     { name: t('review3Name'), text: t('review3Text'), avatar: '🧑' },
   ]
 
+  const faq = [
+    { q: t('faqQ1'), a: t('faqA1') },
+    { q: t('faqQ2'), a: t('faqA2') },
+    { q: t('faqQ3'), a: t('faqA3') },
+    { q: t('faqQ4'), a: t('faqA4') },
+    { q: t('faqQ5'), a: t('faqA5') },
+  ]
+
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map(item => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a },
+    })),
+  }
+
+  const firstCity = cities[0]
+  const startHref = firstCity ? `/city/${firstCity.id}` : '/'
+
   return (
     <main className="page-center">
       <div className="container">
@@ -189,51 +210,70 @@ export default function HomePage() {
         </div>
 
         {/* ── Stats bar ── */}
-        <div className="stats-bar">
-          <div className="stat-item">
+        <div className="stats-bar" role="list" aria-label="Highlights">
+          <div className="stat-item" role="listitem">
             <div className="stat-num">2</div>
             <div className="stat-label">{t('statCities')}</div>
           </div>
-          <div className="stat-item">
+          <div className="stat-item" role="listitem">
             <div className="stat-num">5</div>
             <div className="stat-label">{t('statHunts')}</div>
           </div>
-          <div className="stat-item">
+          <div className="stat-item" role="listitem">
             <div className="stat-num">36</div>
             <div className="stat-label">{t('statStops')}</div>
           </div>
-          <div className="stat-item">
+          <div className="stat-item" role="listitem">
             <div className="stat-num">4.9</div>
             <div className="stat-label">{t('statRating')}</div>
           </div>
         </div>
 
-        {/* ── How it works ── */}
-        <div className="section-label">{t('howItWorks')}</div>
-        <div className="how-it-works">
-          {howSteps.map((s, i) => (
-            <div key={i} className="how-step" style={{ animationDelay: `${0.08 + i * 0.1}s` }}>
-              <div className="how-step-num">{i + 1}</div>
-              <div className="how-step-icon">{s.icon}</div>
-              <h3 className="how-step-title">{s.title}</h3>
-              <p className="how-step-desc">{s.desc}</p>
-            </div>
-          ))}
+        {/* ── Mid-page CTA banner ── */}
+        <div className="mid-cta">
+          <div className="mid-cta-body">
+            <h2 className="mid-cta-title">{t('midCtaTitle')}</h2>
+            <p className="mid-cta-desc">{t('midCtaDesc')}</p>
+          </div>
+          <div className="mid-cta-actions">
+            <a href={startHref} className="cta-primary-btn cta-primary-btn-compact">
+              {t('stickyCtaPrimary')}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+            <a href="/multiplayer" className="cta-secondary-btn">
+              👥 {t('stickyCtaSecondary')}
+            </a>
+          </div>
         </div>
 
+        {/* ── How it works ── */}
+        <section aria-labelledby="how-it-works-title">
+          <h2 id="how-it-works-title" className="section-label">{t('howItWorks')}</h2>
+          <div className="how-it-works">
+            {howSteps.map((s, i) => (
+              <div key={i} className="how-step" style={{ animationDelay: `${0.08 + i * 0.1}s` }}>
+                <div className="how-step-num">{i + 1}</div>
+                <div className="how-step-icon" aria-hidden>{s.icon}</div>
+                <h3 className="how-step-title">{s.title}</h3>
+                <p className="how-step-desc">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* ── Why UTR Tour ── */}
-        <div className="why-section">
-          <div className="section-label">{t('whyUtr')}</div>
+        <section className="why-section" aria-labelledby="why-title">
+          <h2 id="why-title" className="section-label">{t('whyUtr')}</h2>
           <div className="why-grid">
             {whyItems.map((w, i) => (
               <div key={i} className="why-card" style={{ animationDelay: `${0.06 + i * 0.08}s` }}>
-                <div className="why-icon">{w.icon}</div>
-                <h4 className="why-title">{w.title}</h4>
+                <div className="why-icon" aria-hidden>{w.icon}</div>
+                <h3 className="why-title">{w.title}</h3>
                 <p className="why-desc">{w.desc}</p>
               </div>
             ))}
           </div>
-        </div>
+        </section>
 
         {/* ── Features ── */}
         <div className="features">
@@ -279,21 +319,37 @@ export default function HomePage() {
         </div>
 
         {/* ── Reviews ── */}
-        <div className="reviews-section">
-          <div className="section-label">{t('reviewsTitle')}</div>
+        <section className="reviews-section" aria-labelledby="reviews-title">
+          <h2 id="reviews-title" className="section-label">{t('reviewsTitle')}</h2>
           <div className="reviews-grid">
             {reviews.map((r, i) => (
-              <div key={i} className="review-card" style={{ animationDelay: `${0.08 + i * 0.1}s` }}>
-                <div className="review-stars">★★★★★</div>
+              <article key={i} className="review-card" style={{ animationDelay: `${0.08 + i * 0.1}s` }}>
+                <div className="review-stars" aria-label="5 out of 5 stars">★★★★★</div>
                 <p className="review-text">"{r.text}"</p>
                 <div className="review-author">
-                  <span className="review-avatar">{r.avatar}</span>
+                  <span className="review-avatar" aria-hidden>{r.avatar}</span>
                   <span className="review-name">{r.name}</span>
                 </div>
-              </div>
+              </article>
             ))}
           </div>
-        </div>
+        </section>
+
+        {/* ── FAQ ── */}
+        <section className="faq-section" aria-labelledby="faq-title">
+          <h2 id="faq-title" className="section-label">{t('faqTitle')}</h2>
+          <div className="faq-list">
+            {faq.map((item, i) => (
+              <details key={i} className="faq-item">
+                <summary className="faq-q">
+                  <span>{item.q}</span>
+                  <span className="faq-toggle" aria-hidden>+</span>
+                </summary>
+                <p className="faq-a">{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
 
         {/* ── CTA section ── */}
         {!user && (
@@ -345,7 +401,7 @@ export default function HomePage() {
       {mounted && !cookieAccepted && (
         <div className="cookie-banner">
           <div className="cookie-body">
-            <span className="cookie-icon">🍪</span>
+            <span className="cookie-icon" aria-hidden>🍪</span>
             <span className="cookie-text">
               We use cookies to enhance your experience and save progress.
             </span>
@@ -355,6 +411,25 @@ export default function HomePage() {
           </div>
         </div>
       )}
+
+      {/* ── Sticky mobile CTA bar ── */}
+      {mounted && (
+        <nav className="sticky-cta" aria-label="Quick actions">
+          <a href={startHref} className="sticky-cta-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 6 8 12 8 12s8-6 8-12a8 8 0 0 0-8-8z"/></svg>
+            {t('stickyCtaPrimary')}
+          </a>
+          <a href="/multiplayer" className="sticky-cta-secondary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            {t('stickyCtaSecondary')}
+          </a>
+        </nav>
+      )}
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
     </main>
   )
 }

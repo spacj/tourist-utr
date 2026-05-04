@@ -74,6 +74,56 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clue.id])
 
+  // Keep screen awake during the hunt — players hate when their phone sleeps mid-walk.
+  useEffect(() => {
+    if (typeof navigator === 'undefined') return
+    let lock: any = null
+    let cancelled = false
+    const acquire = async () => {
+      try {
+        const wakeLock = (navigator as any).wakeLock
+        if (!wakeLock) return
+        lock = await wakeLock.request('screen')
+        if (cancelled && lock) lock.release?.().catch(() => {})
+      } catch {}
+    }
+    acquire()
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible' && !lock) acquire()
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      cancelled = true
+      document.removeEventListener('visibilitychange', onVisibility)
+      try { lock?.release?.() } catch {}
+    }
+  }, [])
+
+  // Track first user gesture so AudioContext can run on iOS Safari (autoplay restriction)
+  const audioPrimedRef = useRef(false)
+  useEffect(() => {
+    if (audioPrimedRef.current) return
+    const prime = () => {
+      audioPrimedRef.current = true
+      try {
+        const AC = (window.AudioContext || (window as any).webkitAudioContext)
+        if (AC) {
+          const ctx = new AC()
+          // Resume + immediately suspend; this just unlocks audio for later real chimes.
+          ctx.resume().then(() => ctx.close().catch(() => {})).catch(() => {})
+        }
+      } catch {}
+      window.removeEventListener('touchstart', prime)
+      window.removeEventListener('click', prime)
+    }
+    window.addEventListener('touchstart', prime, { once: true, passive: true })
+    window.addEventListener('click', prime, { once: true })
+    return () => {
+      window.removeEventListener('touchstart', prime)
+      window.removeEventListener('click', prime)
+    }
+  }, [])
+
   const handleArrived = useCallback((data: VerifyResponse) => {
     setArrived(true)
     setArrivalData(data)
