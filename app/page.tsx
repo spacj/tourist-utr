@@ -251,6 +251,16 @@ export default function HomePage() {
           ))}
         </div>
 
+        {/* ── Multiplayer CTA ── */}
+        <a href="/multiplayer" className="mp-home-cta">
+          <div className="mp-home-cta-icon">👥</div>
+          <div className="mp-home-cta-body">
+            <div className="mp-home-cta-title">{t('playWithFriends')}</div>
+            <div className="mp-home-cta-desc">{t('shareRoomCode')}</div>
+          </div>
+          <div className="mp-home-cta-arrow">→</div>
+        </a>
+
         {/* ── Cities ── */}
         <div className="section-label">{t('chooseCity')}</div>
 

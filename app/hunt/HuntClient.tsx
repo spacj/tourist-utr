@@ -2,17 +2,19 @@
 import { useEffect, useState } from 'react'
 import { Clue } from '@/types'
 import { ClueScreen } from '@/components/ClueScreen'
+import { RoomScoreboard } from '@/components/RoomScoreboard'
 
 interface Props {
   initialClue: Clue
   huntCity: string
   sessionId: string
+  roomId: string | null
   initialCredits: number
   initialScore: number
   creditsJustAdded: boolean
 }
 
-export function HuntClient({ initialClue, huntCity, sessionId, initialCredits, initialScore, creditsJustAdded }: Props) {
+export function HuntClient({ initialClue, huntCity, sessionId, roomId, initialCredits, initialScore, creditsJustAdded }: Props) {
   const [clue, setClue] = useState(initialClue)
   const [score, setScore] = useState(initialScore)
   const [credits, setCredits] = useState(initialCredits)
@@ -57,6 +59,7 @@ export function HuntClient({ initialClue, huntCity, sessionId, initialCredits, i
           onComplete={handleComplete}
         />
       </div>
+      {roomId && <RoomScoreboard roomId={roomId} totalClues={clue.totalClues} />}
       {transitioning && (
         <div className="transition-overlay">
           <div className="spinner" />

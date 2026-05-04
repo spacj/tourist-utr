@@ -42,6 +42,7 @@ export default async function HuntPage({
       initialClue={{ ...clue, id: clueId, totalClues: totalCluesSnap.size } as Clue}
       huntCity={session.huntCity}
       sessionId={sessionId}
+      roomId={session.roomId ?? null}
       initialCredits={session.credits}
       initialScore={session.score}
       creditsJustAdded={searchParams.credits === 'added'}

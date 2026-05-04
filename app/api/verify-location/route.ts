@@ -3,8 +3,10 @@ import { db } from '@/lib/firebase'
 import { SCORE } from '@/types'
 import {
   doc, getDoc, getDocs, collection, query, where, orderBy,
-  writeBatch, serverTimestamp, increment,
+  writeBatch, serverTimestamp, increment, runTransaction,
 } from 'firebase/firestore'
+
+const RACE_FIRST_BONUS = 50
 
 function haversineM(lat1: number, lng1: number, lat2: number, lng2: number) {
   const R = 6_371_000
@@ -103,7 +105,29 @@ export async function POST(req: NextRequest) {
 
   const streakBonus = streak >= 2 ? SCORE.streakBonus * (streak - 1) : 0
 
-  const pointsEarned = Math.max(0, SCORE.base + timeBonus + perfectBonus + streakBonus - hintPenalty)
+  // ── Race first-to-arrive bonus ──
+  // If this session belongs to a racing room, atomically claim the first-to-arrive slot
+  // for this clue. The first claimant for each clue earns RACE_FIRST_BONUS extra points.
+  let raceFirstBonus = 0
+  if (session.roomId) {
+    const claimRef = doc(db, 'rooms', session.roomId, 'clueClaims', clueId)
+    try {
+      raceFirstBonus = await runTransaction(db, async (tx) => {
+        const claimSnap = await tx.get(claimRef)
+        if (claimSnap.exists()) return 0
+        tx.set(claimRef, {
+          userId: session.userId,
+          sessionId,
+          claimedAt: serverTimestamp(),
+        })
+        return RACE_FIRST_BONUS
+      })
+    } catch {
+      raceFirstBonus = 0
+    }
+  }
+
+  const pointsEarned = Math.max(0, SCORE.base + timeBonus + perfectBonus + streakBonus + raceFirstBonus - hintPenalty)
 
   // --- Next clue ---
 
@@ -133,7 +157,41 @@ export async function POST(req: NextRequest) {
     batch.update(sessionRef, { completedAt: serverTimestamp() })
   }
 
+  // Mirror progress onto the room player document if this is a multiplayer session.
+  if (session.roomId && session.userId) {
+    const playerRef = doc(db, 'rooms', session.roomId, 'players', session.userId)
+    batch.update(playerRef, {
+      score: increment(pointsEarned),
+      cluesDone: increment(1),
+      ...(nextClueDoc ? {} : { finishedAt: serverTimestamp() }),
+    })
+  }
+
   await batch.commit()
+
+  // If this player just finished and they were the last unfinished racer, close out the room.
+  if (session.roomId && session.userId && !nextClueDoc) {
+    try {
+      const playersSnap = await getDocs(collection(db, 'rooms', session.roomId, 'players'))
+      const allDone = playersSnap.docs.every(d => d.data().finishedAt != null)
+      if (allDone) {
+        const roomSnap2 = await getDoc(doc(db, 'rooms', session.roomId))
+        if (roomSnap2.exists() && roomSnap2.data().state === 'racing') {
+          await runTransaction(db, async (tx) => {
+            const fresh = await tx.get(doc(db, 'rooms', session.roomId))
+            if (fresh.exists() && fresh.data().state === 'racing') {
+              tx.update(doc(db, 'rooms', session.roomId), {
+                state: 'finished',
+                finishedAt: serverTimestamp(),
+              })
+            }
+          })
+        }
+      }
+    } catch {
+      // Best-effort; scoreboard already reflects truth.
+    }
+  }
 
   const nextClue = nextClueDoc
     ? { id: nextClueDoc.id, ...nextClueDoc.data(), totalClues }
@@ -146,6 +204,7 @@ export async function POST(req: NextRequest) {
     streakBonus,
     perfectBonus,
     hintPenalty,
+    raceFirstBonus,
     streak,
     funFact: clue.funFact ?? null,
     huntComplete: !nextClueDoc,

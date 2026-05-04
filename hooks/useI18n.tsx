@@ -18,13 +18,14 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLangState] = useState<Lang>('en')
 
   useEffect(() => {
+    const supported: Lang[] = ['en','nl','de','fr','it','es']
     const stored = typeof window !== 'undefined' ? localStorage.getItem('lang') as Lang | null : null
-    if (stored && ['en','nl','de','fr'].includes(stored)) {
+    if (stored && (supported as string[]).includes(stored)) {
       setLangState(stored)
       return
     }
     const browser = typeof navigator !== 'undefined' ? navigator.language.slice(0, 2) : 'en'
-    if (['nl','de','fr'].includes(browser)) setLangState(browser as Lang)
+    if ((supported as string[]).includes(browser) && browser !== 'en') setLangState(browser as Lang)
   }, [])
 
   const setLang = (l: Lang) => {

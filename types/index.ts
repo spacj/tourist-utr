@@ -136,6 +136,7 @@ export interface VerifyResponse {
   streakBonus?: number
   perfectBonus?: number
   hintPenalty?: number
+  raceFirstBonus?: number
   streak?: number
   funFact?: string
   trivia?: Trivia | null
