@@ -49,7 +49,7 @@ export async function createOrder(opts: {
         return_url: opts.returnUrl,
         cancel_url: opts.cancelUrl,
         user_action: 'PAY_NOW',
-        brand_name: 'Utrecht Scavenger Hunt',
+        brand_name: 'Grand Tour',
       },
     }),
   })

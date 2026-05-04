@@ -13,13 +13,14 @@ import { HINT_COSTS } from '@/types'
 
 interface Props {
   clue: Clue
+  huntCity: string
   sessionId: string
   initialCredits: number
   totalScore: number
   onComplete: (result: { nextClue: Clue | null; huntComplete: boolean }) => void
 }
 
-export function ClueScreen({ clue: rawClue, sessionId, initialCredits, totalScore, onComplete }: Props) {
+export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits, totalScore, onComplete }: Props) {
   const { t, lang } = useI18n()
   const clue = localizeClue(rawClue, lang)
   const [arrived,       setArrived]       = useState(false)
@@ -248,6 +249,7 @@ export function ClueScreen({ clue: rawClue, sessionId, initialCredits, totalScor
         {arrived && arrivalData && (
           <ArrivalBanner
             locationName={clue.locationName}
+            huntCity={huntCity}
             pointsEarned={arrivalData.pointsEarned ?? 0}
             timeBonus={arrivalData.timeBonus ?? 0}
             streakBonus={arrivalData.streakBonus ?? 0}

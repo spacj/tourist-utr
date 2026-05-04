@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   // ── City-unlock gate ──
   // First hunt in any city (order === 0) is free for everyone.
   // Other hunts require the user to have unlocked the city (€5).
-  const hunt = huntSnap.data() as { cityId?: string; order?: number }
+  const hunt = huntSnap.data() as { cityId?: string; city?: string; order?: number }
   const isFree = (hunt.order ?? 0) === 0
   if (!isFree) {
     if (!userId) {
@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
 
   await setDoc(sessionRef, {
     huntId,
+    huntCity: hunt.city || null,
     userId: userId || null,
     score: 0,
     credits: STARTING_CREDITS,

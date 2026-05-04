@@ -40,6 +40,7 @@ export default async function HuntPage({
   return (
     <HuntClient
       initialClue={{ ...clue, id: clueId, totalClues: totalCluesSnap.size } as Clue}
+      huntCity={session.huntCity}
       sessionId={sessionId}
       initialCredits={session.credits}
       initialScore={session.score}

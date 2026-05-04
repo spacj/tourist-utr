@@ -5,6 +5,7 @@ import { Trivia } from '@/types'
 
 interface Props {
   locationName: string
+  huntCity: string
   pointsEarned: number
   timeBonus: number
   hintPenalty: number
@@ -18,7 +19,7 @@ interface Props {
 }
 
 export function ArrivalBanner({
-  locationName, pointsEarned, timeBonus, hintPenalty,
+  locationName, huntCity, pointsEarned, timeBonus, hintPenalty,
   streakBonus = 0, perfectBonus = 0, funFact, trivia,
   huntComplete, onNext, onTriviaCorrect,
 }: Props) {
@@ -36,10 +37,10 @@ export function ArrivalBanner({
   }
 
   const share = async () => {
-    const text = `I just reached ${locationName} on the Utrecht Grand Tour 🏆 +${pointsEarned} pts`
+    const text = `I just reached ${locationName} on the ${huntCity} Grand Tour 🏆 +${pointsEarned} pts`
     if (typeof navigator !== 'undefined' && (navigator as any).share) {
       try {
-        await (navigator as any).share({ title: 'Utrecht Grand Tour', text })
+        await (navigator as any).share({ title: `${huntCity} Grand Tour`, text })
       } catch {}
     } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
       try { await navigator.clipboard.writeText(text) } catch {}

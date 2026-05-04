@@ -19,13 +19,13 @@ const fraunces = Fraunces({
 })
 
 export const metadata: Metadata = {
-  title: 'Utrecht Grand Tour — self-guided scavenger hunt',
-  description: 'A premium 8-stop GPS-guided walking adventure through Utrecht. Medieval giants, hidden gardens and UNESCO masterpieces — €5 lifetime access.',
+  title: 'Netherlands Grand Tour — self-guided scavenger hunts',
+  description: 'Explore the Netherlands one city at a time. GPS-guided walking adventures through historic Dutch cities — €5 lifetime access per city.',
   icons: { icon: '/icon.svg', apple: '/icon.svg' },
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    title: 'UTR Tour',
+    title: 'NL Tour',
     statusBarStyle: 'black-translucent',
   },
 }

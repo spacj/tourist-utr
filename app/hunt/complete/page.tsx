@@ -50,6 +50,7 @@ export default async function CompletePage({
     <CompleteClient
       huntTitle={hunt.title}
       huntI18n={(hunt.i18n ?? null) as Record<string, { title?: string }> | null}
+      huntCity={hunt.city}
       score={session.score}
       clues={clues}
       totalClues={totalClues}

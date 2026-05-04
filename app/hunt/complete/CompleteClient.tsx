@@ -14,6 +14,7 @@ interface ClueRow {
 interface Props {
   huntTitle: string
   huntI18n: Record<string, { title?: string }> | null
+  huntCity: string
   score: number
   clues: ClueRow[]
   totalClues: number
@@ -23,7 +24,7 @@ interface Props {
 }
 
 export function CompleteClient({
-  huntTitle, huntI18n, score, clues, totalClues, cluesArrived, hintsUsed, creditsSpent,
+  huntTitle, huntI18n, huntCity, score, clues, totalClues, cluesArrived, hintsUsed, creditsSpent,
 }: Props) {
   const { t, lang } = useI18n()
   const localizedHuntTitle = (lang !== 'en' && huntI18n?.[lang]?.title) || huntTitle
@@ -38,9 +39,9 @@ export function CompleteClient({
   if (score >= 1000) achievements.push({ id: 'thousand', icon: '🎯', label: t('ach1000') })
 
   const share = async () => {
-    const text = `I scored ${score} points exploring Utrecht on the Grand Tour — ${cluesArrived}/${totalClues} stops found! 🏆`
+    const text = `I scored ${score} points exploring ${huntCity} on the Grand Tour — ${cluesArrived}/${totalClues} stops found! 🏆`
     if (typeof navigator !== 'undefined' && (navigator as any).share) {
-      try { await (navigator as any).share({ title: 'Utrecht Grand Tour', text }) } catch {}
+      try { await (navigator as any).share({ title: `${huntCity} Grand Tour`, text }) } catch {}
     } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
       try { await navigator.clipboard.writeText(text) } catch {}
     }

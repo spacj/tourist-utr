@@ -1,7 +1,7 @@
 {
-  "name": "Utrecht Grand Tour",
-  "short_name": "UTR Tour",
-  "description": "Premium GPS-guided scavenger hunts through Utrecht and beyond.",
+  "name": "Netherlands Grand Tour",
+  "short_name": "NL Tour",
+  "description": "Premium GPS-guided scavenger hunts across the Netherlands.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

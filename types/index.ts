@@ -240,9 +240,9 @@ export const LANGUAGES: { code: Lang; label: string; flag: string }[] = [
 
 type Dict = Record<string, Record<Lang, string>>
 export const T: Dict = {
-  title:             { en: 'Utrecht', nl: 'Utrecht', de: 'Utrecht', fr: 'Utrecht', it: 'Utrecht', es: 'Utrecht' },
-  subtitle:          { en: 'Grand Tour', nl: 'Grand Tour', de: 'Grand Tour', fr: 'Grand Tour', it: 'Grand Tour', es: 'Grand Tour' },
-  tagline:           { en: 'The city, unlocked.', nl: 'De stad, ontgrendeld.', de: 'Die Stadt, entsperrt.', fr: 'La ville, déverrouillée.', it: 'La città, svelata.', es: 'La ciudad, desbloqueada.' },
+  title:             { en: 'Netherlands', nl: 'Nederland', de: 'Niederlande', fr: 'Pays-Bas', it: 'Paesi Bassi', es: 'Países Bajos' },
+  subtitle:          { en: 'Grand Tour', nl: 'Grand Tour', de: 'Grand Tour', fr: 'Grand Tour', it: 'Grand Tour', es: 'Gran Tour' },
+  tagline:           { en: 'The country, unlocked.', nl: 'Het land, ontgrendeld.', de: 'Das Land, entsperrt.', fr: 'Le pays, déverrouillé.', it: 'Il paese, svelato.', es: 'El país, desbloqueado.' },
   priceTag:          { en: '€5 · lifetime access', nl: '€5 · onbeperkt spelen', de: '€5 · lebenslanger Zugang', fr: '€5 · accès à vie', it: '€5 · accesso a vita', es: '€5 · acceso de por vida' },
   ctaStart:          { en: 'Start the adventure', nl: 'Start het avontuur', de: 'Abenteuer beginnen', fr: 'Commencer l\'aventure', it: 'Inizia l\'avventura', es: 'Comenzar la aventura' },
   ctaResume:         { en: 'Resume', nl: 'Hervatten', de: 'Fortsetzen', fr: 'Reprendre', it: 'Riprendi', es: 'Reanudar' },

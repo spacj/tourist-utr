@@ -5,13 +5,14 @@ import { ClueScreen } from '@/components/ClueScreen'
 
 interface Props {
   initialClue: Clue
+  huntCity: string
   sessionId: string
   initialCredits: number
   initialScore: number
   creditsJustAdded: boolean
 }
 
-export function HuntClient({ initialClue, sessionId, initialCredits, initialScore, creditsJustAdded }: Props) {
+export function HuntClient({ initialClue, huntCity, sessionId, initialCredits, initialScore, creditsJustAdded }: Props) {
   const [clue, setClue] = useState(initialClue)
   const [score, setScore] = useState(initialScore)
   const [credits, setCredits] = useState(initialCredits)
@@ -49,6 +50,7 @@ export function HuntClient({ initialClue, sessionId, initialCredits, initialScor
       <div className={`game-transition ${transitioning ? 'fade-out' : 'fade-in'}`}>
         <ClueScreen
           clue={clue}
+          huntCity={huntCity}
           sessionId={sessionId}
           initialCredits={credits}
           totalScore={score}
