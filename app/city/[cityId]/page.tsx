@@ -4,6 +4,7 @@ import { useParams, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
 import { City, Hunt, isHuntFree, localizeCity, localizeHunt } from '@/types'
+import { ResumeRaceBanner } from '@/components/ResumeRaceBanner'
 
 const DIFFICULTY_META: Record<string, { key: string; color: string; bg: string }> = {
   easy:   { key: 'diffEasy',   color: '#22c97a', bg: 'rgba(34,201,122,.12)' },
@@ -158,6 +159,18 @@ export default function CityPage() {
             <span>{flash}</span>
           </div>
         )}
+
+        <ResumeRaceBanner />
+
+        {/* ── Multiplayer CTA ── */}
+        <a href="/multiplayer" className="mp-home-cta" style={{ margin: '16px 0' }}>
+          <div className="mp-home-cta-icon" aria-hidden>👥</div>
+          <div className="mp-home-cta-body">
+            <div className="mp-home-cta-title">{t('playWithFriends')}</div>
+            <div className="mp-home-cta-desc">{t('shareRoomCode')}</div>
+          </div>
+          <div className="mp-home-cta-arrow" aria-hidden>→</div>
+        </a>
 
         {/* Hunts */}
         <div className="section-label">{t('availableHunts')}</div>

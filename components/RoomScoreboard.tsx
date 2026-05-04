@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore'
+import { collection, doc, onSnapshot, query, orderBy } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
@@ -23,6 +23,7 @@ export function RoomScoreboard({ roomId, totalClues }: Props) {
   const { user } = useAuth()
   const { t } = useI18n()
   const [players, setPlayers] = useState<Player[]>([])
+  const [roomCode, setRoomCode] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
@@ -42,7 +43,10 @@ export function RoomScoreboard({ roomId, totalClues }: Props) {
         }))
       }
     )
-    return () => unsub()
+    const unsubRoom = onSnapshot(doc(db, 'rooms', roomId), s => {
+      if (s.exists()) setRoomCode(s.data().code ?? null)
+    })
+    return () => { unsub(); unsubRoom() }
   }, [roomId])
 
   // Sort: finished first by completion time, then by score, then by progress.
@@ -105,6 +109,14 @@ export function RoomScoreboard({ roomId, totalClues }: Props) {
             <div className="mp-scoreboard-foot">
               {ahead.length} {t('players')} ahead
             </div>
+          )}
+          {roomCode && (
+            <a
+              href={`/multiplayer/${roomCode}`}
+              className="mp-scoreboard-lobby-link"
+            >
+              {t('openLobby')} · {roomCode}
+            </a>
           )}
         </div>
       )}

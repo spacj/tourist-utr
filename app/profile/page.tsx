@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
+import { ResumeRaceBanner } from '@/components/ResumeRaceBanner'
 
 interface Session {
   id: string
@@ -78,6 +79,17 @@ export default function ProfilePage() {
             <div className="profile-email">{user.email}</div>
           </div>
         </div>
+
+        <ResumeRaceBanner />
+
+        <a href="/multiplayer" className="mp-home-cta" style={{ margin: '12px 0 18px' }}>
+          <div className="mp-home-cta-icon" aria-hidden>👥</div>
+          <div className="mp-home-cta-body">
+            <div className="mp-home-cta-title">{t('playWithFriends')}</div>
+            <div className="mp-home-cta-desc">{t('shareRoomCode')}</div>
+          </div>
+          <div className="mp-home-cta-arrow" aria-hidden>→</div>
+        </a>
 
         <div className="stats-grid">
           <div className="stat-card">

@@ -2740,6 +2740,121 @@ a { color: inherit; }
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   text-align: center;
 }
+.mp-scoreboard-lobby-link {
+  display: block;
+  padding: 12px 16px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--primary-2);
+  text-decoration: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 106, 19, 0.08);
+}
+.mp-scoreboard-lobby-link:hover { background: rgba(255, 106, 19, 0.16); }
+
+/* ── Resume race banner ── */
+.resume-race-banner {
+  display: flex;
+  align-items: stretch;
+  margin: 14px 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(34, 201, 122, 0.12), rgba(34, 201, 122, 0.04));
+  border: 1.5px solid rgba(34, 201, 122, 0.4);
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(34, 201, 122, 0.08);
+  animation: resume-pulse 1.6s ease-out;
+}
+@keyframes resume-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(34, 201, 122, 0.4); }
+  70% { box-shadow: 0 0 0 12px rgba(34, 201, 122, 0); }
+  100% { box-shadow: 0 4px 14px rgba(34, 201, 122, 0.08); }
+}
+.resume-race-link {
+  flex: 1;
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px;
+  text-decoration: none;
+  color: var(--text);
+  min-width: 0;
+}
+.resume-race-icon {
+  font-size: 24px;
+  width: 44px; height: 44px;
+  display: grid; place-items: center;
+  border-radius: 12px;
+  background: var(--green);
+  color: white;
+  flex-shrink: 0;
+}
+.resume-race-body { flex: 1; min-width: 0; }
+.resume-race-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--green);
+  background: rgba(34, 201, 122, 0.15);
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+.resume-race-title {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 1px;
+  line-height: 1.2;
+}
+.resume-race-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.resume-race-arrow {
+  font-size: 20px;
+  color: var(--green);
+  flex-shrink: 0;
+}
+.resume-race-dismiss {
+  flex: 0 0 auto;
+  width: 40px;
+  background: transparent;
+  border: none;
+  border-left: 1px solid rgba(34, 201, 122, 0.2);
+  color: var(--text-muted);
+  font-size: 22px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.resume-race-dismiss:hover {
+  background: rgba(34, 201, 122, 0.08);
+  color: var(--text);
+}
+
+/* ── Race results rank badge ── */
+.mp-rank-badge {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-weight: 700;
+  font-size: 13px;
+  background: var(--surface-2);
+  color: var(--text);
+  flex-shrink: 0;
+}
+.mp-player-row.is-me .mp-rank-badge {
+  background: var(--primary);
+  color: white;
+}
+.mp-player-row:nth-child(1) .mp-rank-badge { background: linear-gradient(135deg, #ffd24a, #ff8a3d); color: white; }
+.mp-player-row:nth-child(2) .mp-rank-badge { background: linear-gradient(135deg, #d4d4dc, #a1a1aa); color: white; }
+.mp-player-row:nth-child(3) .mp-rank-badge { background: linear-gradient(135deg, #cd853f, #b46c2f); color: white; }
+.mp-player-row.is-me { background: rgba(255, 106, 19, 0.05); border-color: rgba(255, 106, 19, 0.32); }
 
 /* ═══════════════════════════════════════════════════════════════
    Mid-page CTA · FAQ · Sticky mobile CTA

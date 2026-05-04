@@ -384,6 +384,14 @@ export const T: Dict = {
   leaveRoom:         { en: 'Leave room', nl: 'Kamer verlaten', de: 'Raum verlassen', fr: 'Quitter la salle', it: 'Lascia stanza', es: 'Salir de sala' },
   inRoomBadge:       { en: 'Multiplayer', nl: 'Multiplayer', de: 'Mehrspieler', fr: 'Multijoueur', it: 'Multigiocatore', es: 'Multijugador' },
   stopsCompleted:    { en: 'stops', nl: 'stops', de: 'Stopps', fr: 'étapes', it: 'tappe', es: 'paradas' },
+  resumeRaceTitle:   { en: 'Resume your race', nl: 'Hervat je race', de: 'Rennen fortsetzen', fr: 'Reprendre la course', it: 'Riprendi la gara', es: 'Reanudar carrera' },
+  rejoinLobbyTitle:  { en: 'Rejoin lobby', nl: 'Terug naar lobby', de: 'Lobby beitreten', fr: 'Rejoindre le salon', it: 'Torna alla lobby', es: 'Volver a la sala' },
+  viewRaceResults:   { en: 'View race results', nl: 'Bekijk uitslag', de: 'Ergebnisse ansehen', fr: 'Voir les résultats', it: 'Vedi risultati', es: 'Ver resultados' },
+  dismiss:           { en: 'Dismiss', nl: 'Sluiten', de: 'Schließen', fr: 'Ignorer', it: 'Chiudi', es: 'Descartar' },
+  hostLeftBadge:     { en: 'Host left — race ended', nl: 'Host vertrokken — race beëindigd', de: 'Host weg — Rennen beendet', fr: 'Hôte parti — course terminée', it: 'Host uscito — gara finita', es: 'Anfitrión salió — carrera terminada' },
+  raceResults:       { en: 'Race results', nl: 'Race-uitslag', de: 'Renn-Ergebnisse', fr: 'Résultats', it: 'Risultati gara', es: 'Resultados' },
+  goToHunt:          { en: 'Go to hunt', nl: 'Naar de tocht', de: 'Zur Tour', fr: 'Aller à la chasse', it: 'Vai alla caccia', es: 'Ir a la búsqueda' },
+  openLobby:         { en: 'Open lobby', nl: 'Open lobby', de: 'Lobby öffnen', fr: 'Ouvrir le salon', it: 'Apri lobby', es: 'Abrir sala' },
 
   // Homepage selling sections
   howItWorks:        { en: 'How it works', nl: 'Hoe het werkt', de: 'So funktioniert es', fr: 'Comment ça marche', it: 'Come funziona', es: 'Cómo funciona' },

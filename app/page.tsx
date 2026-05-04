@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
 import { City, LANGUAGES, localizeCity } from '@/types'
+import { ResumeRaceBanner } from '@/components/ResumeRaceBanner'
 
 function CityCard({ city, isUnlocked, t }: { city: City; isUnlocked: boolean; t: (key: string) => string }) {
   const [imgLoaded, setImgLoaded] = useState(false)
@@ -208,6 +209,8 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+
+        <ResumeRaceBanner />
 
         {/* ── Stats bar ── */}
         <div className="stats-bar" role="list" aria-label="Highlights">

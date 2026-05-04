@@ -6,6 +6,7 @@ import { db } from '@/lib/firebase'
 import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
 import { normalizeCode, ROOM_CODE_LEN } from '@/lib/rooms'
+import { setActiveLobby, clearActiveLobby } from '@/lib/activeRoom'
 
 type Player = {
   userId: string
@@ -58,6 +59,16 @@ export default function RoomLobbyPage() {
         if (cancelled) return
         setRoomId(data.roomId)
         const isMember = (data.players as Player[]).some(p => p.userId === user.uid)
+
+        // If they're already a member and the race has started, jump straight to their session.
+        if (isMember && data.state === 'racing') {
+          const me = (data.players as Player[]).find(p => p.userId === user.uid)
+          if (me?.sessionId) {
+            router.replace(`/hunt?session=${me.sessionId}`)
+            return
+          }
+        }
+
         if (!isMember && !autoJoined) {
           // Try to join (might 409 if race already started).
           setAutoJoined(true)
@@ -74,14 +85,32 @@ export default function RoomLobbyPage() {
           if (!joinRes.ok) {
             const j = await joinRes.json()
             if (!cancelled) setError(j.error || 'join_failed')
+            return
           }
+          // Successfully joined — persist lobby reference for resume.
+          if (!cancelled) {
+            setActiveLobby({
+              code,
+              roomId: data.roomId,
+              huntTitle: data.huntTitle,
+              joinedAt: Date.now(),
+            })
+          }
+        } else if (isMember) {
+          // Existing member — refresh activeLobby so the resume banner stays accurate.
+          setActiveLobby({
+            code,
+            roomId: data.roomId,
+            huntTitle: data.huntTitle,
+            joinedAt: Date.now(),
+          })
         }
       } catch {
         if (!cancelled) setError('not_found')
       }
     })()
     return () => { cancelled = true }
-  }, [code, user, loading, autoJoined])
+  }, [code, user, loading, autoJoined, router])
 
   // Live listeners for room + players.
   useEffect(() => {
@@ -111,14 +140,23 @@ export default function RoomLobbyPage() {
   }, [roomId])
 
   // When the room transitions to racing, jump to the player's session.
+  // The lobby is replaced by the active session — once race begins, the lobby UI is
+  // not what the user wants to see.
   useEffect(() => {
     if (!user || !room || !roomId) return
     if (room.state !== 'racing') return
     const me = players.find(p => p.userId === user.uid)
     if (me?.sessionId) {
+      // Lobby is over — clear stale localStorage so the resume banner uses the live race.
+      clearActiveLobby()
       router.replace(`/hunt?session=${me.sessionId}`)
     }
   }, [room, players, user, roomId, router])
+
+  // When the race finishes, clear the lobby reference (the result page is the next stop).
+  useEffect(() => {
+    if (room?.state === 'finished') clearActiveLobby()
+  }, [room?.state])
 
   const isHost = !!user && !!room && user.uid === room.hostUserId
   const canStart = isHost && room?.state === 'lobby' && players.length >= 1
@@ -132,9 +170,15 @@ export default function RoomLobbyPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ roomId, userId: user.uid }),
       })
+      const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        const data = await res.json()
         setError(data.error || 'start_failed')
+        return
+      }
+      // Optimistic navigation — listener would catch up but we have hostSessionId.
+      if (data.hostSessionId) {
+        clearActiveLobby()
+        router.replace(`/hunt?session=${data.hostSessionId}`)
       }
     } finally {
       setStarting(false)
@@ -150,6 +194,7 @@ export default function RoomLobbyPage() {
         body: JSON.stringify({ roomId, userId: user.uid }),
       })
     } finally {
+      clearActiveLobby()
       router.replace('/multiplayer')
     }
   }
@@ -164,9 +209,9 @@ export default function RoomLobbyPage() {
 
   const onShare = async () => {
     const url = typeof window !== 'undefined' ? window.location.href : ''
-    if (navigator.share) {
+    if (typeof navigator !== 'undefined' && (navigator as any).share) {
       try {
-        await navigator.share({ title: 'Join my UTR hunt', text: `Join my hunt — code ${code}`, url })
+        await (navigator as any).share({ title: 'Join my UTR hunt', text: `Join my hunt — code ${code}`, url })
       } catch {}
     } else {
       onCopy()
@@ -204,6 +249,61 @@ export default function RoomLobbyPage() {
           </div>
           <a href="/multiplayer" className="mp-cta-secondary" style={{ marginTop: 16, display: 'inline-block' }}>
             {t('createRoom')}
+          </a>
+        </div>
+      </main>
+    )
+  }
+
+  // Finished state — show race results.
+  if (room?.state === 'finished') {
+    const sortedFinal = [...players].sort((a, b) => {
+      if (a.finishedAt && b.finishedAt) return a.finishedAt - b.finishedAt
+      if (a.finishedAt) return -1
+      if (b.finishedAt) return 1
+      return b.score - a.score
+    })
+    const me = players.find(p => p.userId === user.uid)
+    return (
+      <main className="page-center">
+        <div className="container" style={{ maxWidth: 560, padding: '20px 20px 48px' }}>
+          <a href="/" className="back-link">{t('backToHunts')}</a>
+          <div className="mp-room-header">
+            <div className="mp-room-badge">{t('raceFinished')}</div>
+            <div className="mp-room-hunt">{room.huntTitle}</div>
+          </div>
+          <section className="mp-card">
+            <h2 className="mp-card-title">{t('raceResults')}</h2>
+            <ul className="mp-player-list">
+              {sortedFinal.map((p, i) => {
+                const isMe = !!user && p.userId === user.uid
+                return (
+                  <li key={p.userId} className={`mp-player-row ${isMe ? 'is-me' : ''}`}>
+                    <div className="mp-rank-badge">{i + 1}</div>
+                    <div className="mp-player-avatar">
+                      {p.photoURL
+                        ? <img src={p.photoURL} alt="" referrerPolicy="no-referrer" />
+                        : <span>{p.displayName?.[0]?.toUpperCase() || '?'}</span>}
+                    </div>
+                    <div className="mp-player-name">
+                      {p.displayName}
+                      {isMe && <span className="mp-tag">{t('you')}</span>}
+                    </div>
+                    <div className="mp-player-progress">
+                      {p.score} {t('points')}
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
+          {me?.sessionId && (
+            <a href={`/hunt/complete?session=${me.sessionId}`} className="mp-cta mp-cta-large" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>
+              {t('seeFinal')}
+            </a>
+          )}
+          <a href="/multiplayer" className="mp-cta-secondary mp-leave" style={{ textAlign: 'center', display: 'block' }}>
+            {t('playAgain')}
           </a>
         </div>
       </main>
@@ -279,9 +379,17 @@ export default function RoomLobbyPage() {
           )
         )}
 
-        {room?.state === 'racing' && (
-          <div className="mp-waiting">{t('raceStarted')}</div>
-        )}
+        {room?.state === 'racing' && (() => {
+          const me = players.find(p => p.userId === user?.uid)
+          if (me?.sessionId) {
+            return (
+              <a href={`/hunt?session=${me.sessionId}`} className="mp-cta mp-cta-large" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>
+                {t('goToHunt')} →
+              </a>
+            )
+          }
+          return <div className="mp-waiting">{t('raceStarted')}</div>
+        })()}
 
         <button className="mp-cta-secondary mp-leave" onClick={onLeave}>
           {t('leaveRoom')}

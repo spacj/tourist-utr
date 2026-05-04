@@ -5,6 +5,8 @@ import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
 import { Hunt, City, localizeHunt, localizeCity } from '@/types'
 import { ROOM_CODE_LEN, normalizeCode } from '@/lib/rooms'
+import { setActiveLobby } from '@/lib/activeRoom'
+import { ResumeRaceBanner } from '@/components/ResumeRaceBanner'
 
 export default function MultiplayerEntryPage() {
   const router = useRouter()
@@ -56,6 +58,13 @@ export default function MultiplayerEntryPage() {
         setCreating(false)
         return
       }
+      const selectedHunt = hunts.find(h => h.id === selectedHuntId)
+      setActiveLobby({
+        code: data.code,
+        roomId: data.roomId,
+        huntTitle: selectedHunt?.title ?? '',
+        joinedAt: Date.now(),
+      })
       router.push(`/multiplayer/${data.code}`)
     } catch {
       setCreating(false)
@@ -88,6 +97,11 @@ export default function MultiplayerEntryPage() {
         setJoining(false)
         return
       }
+      setActiveLobby({
+        code: data.code,
+        roomId: data.roomId,
+        joinedAt: Date.now(),
+      })
       router.push(`/multiplayer/${data.code}`)
     } catch {
       setJoinError('join_failed')
@@ -119,6 +133,8 @@ export default function MultiplayerEntryPage() {
       <div className="container" style={{ maxWidth: 560, padding: '24px 20px 48px' }}>
         <a href="/" className="back-link">{t('backToHunts')}</a>
         <h1 className="mp-title">{t('playWithFriends')}</h1>
+
+        <ResumeRaceBanner />
 
         {/* ── Join card ── */}
         <section className="mp-card">
