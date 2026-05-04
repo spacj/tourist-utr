@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Clue, VerifyResponse, localizeClue } from '@/types'
 import { useGPS } from '@/hooks/useGPS'
+import { useDeviceOrientation } from '@/hooks/useDeviceOrientation'
 import { haversineM, bearingDeg } from '@/lib/geo'
 import { useCredits } from '@/hooks/useCredits'
 import { useI18n } from '@/hooks/useI18n'
@@ -84,6 +85,9 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
   const { distanceM: serverDistanceM, bearing: serverBearing, dynamicH3, gpsError, accuracy: serverAccuracy } = useGPS({
     sessionId, clueId: clue.id, enabled: !arrived, onArrived: handleArrived,
   })
+
+  // Device compass heading — makes the arrow point relative to which way you're facing
+  const { heading: deviceHeading, requestPermission } = useDeviceOrientation()
 
   // Live GPS watcher → drives both userPos and a high-accuracy override
   const [liveAccuracy, setLiveAccuracy] = useState<number | null>(null)
@@ -242,7 +246,7 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
             onClick={() => setSheetState('default')}
             aria-label={t('expand')}
           >
-            <ProximityRing distanceM={distanceM} bearing={bearing} arrived={false} accuracy={accuracy} />
+            <ProximityRing distanceM={distanceM} bearing={bearing} arrived={false} accuracy={accuracy} heading={deviceHeading} />
           </button>
         )}
 
@@ -298,7 +302,7 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
 
         {/* Ring + GPS */}
         <div className="ring-stats">
-          <ProximityRing distanceM={distanceM} bearing={bearing} arrived={arrived} accuracy={accuracy} />
+          <ProximityRing distanceM={distanceM} bearing={bearing} arrived={arrived} accuracy={accuracy} heading={deviceHeading} />
           {gpsError && <p style={{ fontSize: 12, color: 'var(--red)', textAlign: 'center' }}>{gpsError}</p>}
         </div>
 

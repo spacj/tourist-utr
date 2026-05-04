@@ -13,6 +13,7 @@ interface Props {
   bearing: number
   arrived: boolean
   accuracy: number | null
+  heading?: number | null
 }
 
 // Synthesized chime — no audio files, no bandwidth cost
@@ -54,7 +55,7 @@ const ZONE_FREQ: Record<ProximityZoneKey, number> = {
 // 12 tick marks (every 30°). Cardinals are longer / labeled.
 const TICKS = Array.from({ length: 12 }, (_, i) => i * 30)
 
-export function ProximityRing({ distanceM, bearing, arrived, accuracy }: Props) {
+export function ProximityRing({ distanceM, bearing, arrived, accuracy, heading }: Props) {
   const MAX  = 400
   const fill = distanceM === null ? 0 : Math.max(0, 1 - distanceM / MAX)
   const dash = (fill * C).toFixed(1)
@@ -62,6 +63,10 @@ export function ProximityRing({ distanceM, bearing, arrived, accuracy }: Props) 
   const zone    = getProximityZone(distanceM)
   const zoneKey = getProximityKey(distanceM)
   const prevZoneRef = useRef<ProximityZoneKey | null>(null)
+
+  const adjustedBearing = heading !== null && heading !== undefined
+    ? ((bearing - heading) + 360) % 360
+    : bearing
 
   // audio + haptic feedback when crossing into a warmer zone
   useEffect(() => {
@@ -155,10 +160,10 @@ export function ProximityRing({ distanceM, bearing, arrived, accuracy }: Props) 
           style={{ transition: 'stroke-dasharray 1.1s cubic-bezier(.4,0,.2,1)' }}
         />
 
-        {/* Bearing arrow (rotates with bearing) */}
+        {/* Bearing arrow (rotates with bearing, adjusted for device heading) */}
         {!arrived && distanceM !== null && distanceM > 15 && (
           <g style={{ transition: 'transform .9s ease' }}
-             transform={`rotate(${bearing} ${CX} ${CY})`}>
+             transform={`rotate(${adjustedBearing} ${CX} ${CY})`}>
             {/* Arrow shaft */}
             <line x1={CX} y1={CY + 8} x2={CX} y2={CY - 32}
               stroke={ringColor} strokeWidth="3.2" strokeLinecap="round" opacity="0.85" />
