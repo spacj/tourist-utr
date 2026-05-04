@@ -97,7 +97,28 @@ export default function HomePage() {
     t('featStories'),
     t('featTrivia'),
     t('featGps'),
+    t('featOffline'),
+    t('featMulti'),
     t('featReplay'),
+  ]
+
+  const howSteps = [
+    { icon: '📍', title: t('howStep1Title'), desc: t('howStep1Desc') },
+    { icon: '🧭', title: t('howStep2Title'), desc: t('howStep2Desc') },
+    { icon: '🏆', title: t('howStep3Title'), desc: t('howStep3Desc') },
+  ]
+
+  const whyItems = [
+    { icon: '📡', title: t('whyOffline'), desc: t('whyOfflineDesc') },
+    { icon: '🌐', title: t('whyNoApp'), desc: t('whyNoAppDesc') },
+    { icon: '📖', title: t('whyStories'), desc: t('whyStoriesDesc') },
+    { icon: '🔓', title: t('whyPrice'), desc: t('whyPriceDesc') },
+  ]
+
+  const reviews = [
+    { name: t('review1Name'), text: t('review1Text'), avatar: '👩‍❤️‍👨' },
+    { name: t('review2Name'), text: t('review2Text'), avatar: '👨‍👩‍👧‍👦' },
+    { name: t('review3Name'), text: t('review3Text'), avatar: '🧑' },
   ]
 
   return (
@@ -137,6 +158,12 @@ export default function HomePage() {
                 </div>
                 <h1 className="hero-overlay-title">{t('title')}</h1>
                 <p className="hero-overlay-tagline">{t('tagline')}</p>
+                {!user && (
+                  <button onClick={signIn} className="hero-cta-btn">
+                    {t('ctaButton')}
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -158,6 +185,53 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* ── Stats bar ── */}
+        <div className="stats-bar">
+          <div className="stat-item">
+            <div className="stat-num">2</div>
+            <div className="stat-label">{t('statCities')}</div>
+          </div>
+          <div className="stat-item">
+            <div className="stat-num">5</div>
+            <div className="stat-label">{t('statHunts')}</div>
+          </div>
+          <div className="stat-item">
+            <div className="stat-num">36</div>
+            <div className="stat-label">{t('statStops')}</div>
+          </div>
+          <div className="stat-item">
+            <div className="stat-num">4.9</div>
+            <div className="stat-label">{t('statRating')}</div>
+          </div>
+        </div>
+
+        {/* ── How it works ── */}
+        <div className="section-label">{t('howItWorks')}</div>
+        <div className="how-it-works">
+          {howSteps.map((s, i) => (
+            <div key={i} className="how-step" style={{ animationDelay: `${0.08 + i * 0.1}s` }}>
+              <div className="how-step-num">{i + 1}</div>
+              <div className="how-step-icon">{s.icon}</div>
+              <h3 className="how-step-title">{s.title}</h3>
+              <p className="how-step-desc">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Why UTR Tour ── */}
+        <div className="why-section">
+          <div className="section-label">{t('whyUtr')}</div>
+          <div className="why-grid">
+            {whyItems.map((w, i) => (
+              <div key={i} className="why-card" style={{ animationDelay: `${0.06 + i * 0.08}s` }}>
+                <div className="why-icon">{w.icon}</div>
+                <h4 className="why-title">{w.title}</h4>
+                <p className="why-desc">{w.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -186,15 +260,75 @@ export default function HomePage() {
           </div>
         )}
 
-        {cities.map((rawCity) => {
-          const city = localizeCity(rawCity, lang)
-          const isUnlocked = unlocked.has(city.id)
-          return <CityCard key={city.id} city={city} isUnlocked={isUnlocked} t={(key: string) => t(key as any)} />
-        })}
+        <div className="city-grid">
+          {cities.map((rawCity) => {
+            const city = localizeCity(rawCity, lang)
+            const isUnlocked = unlocked.has(city.id)
+            return <CityCard key={city.id} city={city} isUnlocked={isUnlocked} t={(key: string) => t(key as any)} />
+          })}
+        </div>
+
+        {/* ── Reviews ── */}
+        <div className="reviews-section">
+          <div className="section-label">{t('reviewsTitle')}</div>
+          <div className="reviews-grid">
+            {reviews.map((r, i) => (
+              <div key={i} className="review-card" style={{ animationDelay: `${0.08 + i * 0.1}s` }}>
+                <div className="review-stars">★★★★★</div>
+                <p className="review-text">"{r.text}"</p>
+                <div className="review-author">
+                  <span className="review-avatar">{r.avatar}</span>
+                  <span className="review-name">{r.name}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── CTA section ── */}
+        {!user && (
+          <div className="cta-section">
+            <div className="cta-content">
+              <h2 className="cta-title">{t('ctaTitle')}</h2>
+              <p className="cta-subtitle">{t('ctaSubtitle')}</p>
+              <button onClick={signIn} className="cta-primary-btn">
+                {t('ctaButton')}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+        )}
 
         {!user && (
           <p className="footer-note">{t('signInHint')}</p>
         )}
+
+        {/* ── Footer ── */}
+        <footer className="site-footer">
+          <div className="footer-top">
+            <div className="footer-brand">
+              <span className="footer-brand-icon">🧭</span>
+              <p className="footer-brand-desc">{t('footerTagline')}</p>
+            </div>
+            <div className="footer-nav">
+              <div className="footer-nav-col">
+                <div className="footer-nav-title">{t('footerLinks')}</div>
+                {cities.map(c => (
+                  <a key={c.id} href={`/city/${c.id}`} className="footer-nav-link">{c.name}</a>
+                ))}
+              </div>
+              <div className="footer-nav-col">
+                <div className="footer-nav-title">{t('footerAbout')}</div>
+                <a href="#" className="footer-nav-link">{t('footerContact')}</a>
+                <a href="#" className="footer-nav-link">{t('footerPrivacy')}</a>
+                <a href="#" className="footer-nav-link">{t('footerTerms')}</a>
+              </div>
+            </div>
+          </div>
+          <div className="footer-bottom">
+            <span>{t('footerCopy')}</span>
+          </div>
+        </footer>
       </div>
 
       {/* ── Cookie banner ── */}
