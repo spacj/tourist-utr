@@ -1,0 +1,20 @@
+{
+  "name": "Utrecht Grand Tour",
+  "short_name": "UTR Tour",
+  "description": "Premium GPS-guided scavenger hunts through Utrecht and beyond.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0d1a",
+  "theme_color": "#0b0d1a",
+  "categories": ["travel", "entertainment", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

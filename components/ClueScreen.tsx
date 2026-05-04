@@ -1,7 +1,8 @@
 'use client'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Clue, VerifyResponse, localizeClue } from '@/types'
 import { useGPS } from '@/hooks/useGPS'
+import { haversineM, bearingDeg } from '@/lib/geo'
 import { useCredits } from '@/hooks/useCredits'
 import { useI18n } from '@/hooks/useI18n'
 import { MapView } from './MapView'
@@ -79,19 +80,39 @@ export function ClueScreen({ clue: rawClue, sessionId, initialCredits, totalScor
     if (typeof window !== 'undefined') window.speechSynthesis?.cancel()
   }, [])
 
-  const { distanceM, bearing, dynamicH3, gpsError, accuracy } = useGPS({
+  const { distanceM: serverDistanceM, bearing: serverBearing, dynamicH3, gpsError, accuracy: serverAccuracy } = useGPS({
     sessionId, clueId: clue.id, enabled: !arrived, onArrived: handleArrived,
   })
 
+  // Live GPS watcher → drives both userPos and a high-accuracy override
+  const [liveAccuracy, setLiveAccuracy] = useState<number | null>(null)
   useEffect(() => {
     if (arrived) return
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return
     const id = navigator.geolocation.watchPosition(
-      (p) => setUserPos({ lat: p.coords.latitude, lng: p.coords.longitude }),
+      (p) => {
+        setUserPos({ lat: p.coords.latitude, lng: p.coords.longitude })
+        setLiveAccuracy(Math.round(p.coords.accuracy))
+      },
       undefined,
-      { enableHighAccuracy: true }
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 }
     )
     return () => navigator.geolocation.clearWatch(id)
   }, [arrived])
+
+  // Real-time distance + bearing computed client-side from the live GPS watcher.
+  // Falls back to the server-polled values until the first watcher fix arrives.
+  const { liveDistanceM, liveBearing } = useMemo(() => {
+    if (!userPos) return { liveDistanceM: serverDistanceM, liveBearing: serverBearing }
+    return {
+      liveDistanceM: Math.round(haversineM(userPos.lat, userPos.lng, clue.lat, clue.lng)),
+      liveBearing: bearingDeg(userPos.lat, userPos.lng, clue.lat, clue.lng),
+    }
+  }, [userPos, clue.lat, clue.lng, serverDistanceM, serverBearing])
+
+  const distanceM = liveDistanceM
+  const bearing = liveBearing
+  const accuracy = liveAccuracy ?? serverAccuracy
 
   const doUnlock = async (tier: 1 | 2 | 3) => {
     if (unlockedTiers.has(tier)) {
