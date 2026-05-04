@@ -163,6 +163,7 @@ export async function POST(req: NextRequest) {
     batch.update(playerRef, {
       score: increment(pointsEarned),
       cluesDone: increment(1),
+      currentClueId: nextClueDoc ? nextClueDoc.id : null,
       ...(nextClueDoc ? {} : { finishedAt: serverTimestamp() }),
     })
   }

@@ -9,12 +9,13 @@ interface Props {
   huntCity: string
   sessionId: string
   roomId: string | null
+  huntId: string | null
   initialCredits: number
   initialScore: number
   creditsJustAdded: boolean
 }
 
-export function HuntClient({ initialClue, huntCity, sessionId, roomId, initialCredits, initialScore, creditsJustAdded }: Props) {
+export function HuntClient({ initialClue, huntCity, sessionId, roomId, huntId, initialCredits, initialScore, creditsJustAdded }: Props) {
   const [clue, setClue] = useState(initialClue)
   const [score, setScore] = useState(initialScore)
   const [credits, setCredits] = useState(initialCredits)
@@ -59,7 +60,7 @@ export function HuntClient({ initialClue, huntCity, sessionId, roomId, initialCr
           onComplete={handleComplete}
         />
       </div>
-      {roomId && <RoomScoreboard roomId={roomId} totalClues={clue.totalClues} />}
+      {roomId && huntId && <RoomScoreboard roomId={roomId} totalClues={clue.totalClues} huntId={huntId} />}
       {transitioning && (
         <div className="transition-overlay">
           <div className="spinner" />

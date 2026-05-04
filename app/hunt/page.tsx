@@ -43,6 +43,7 @@ export default async function HuntPage({
       huntCity={session.huntCity}
       sessionId={sessionId}
       roomId={session.roomId ?? null}
+      huntId={session.huntId ?? null}
       initialCredits={session.credits}
       initialScore={session.score}
       creditsJustAdded={searchParams.credits === 'added'}

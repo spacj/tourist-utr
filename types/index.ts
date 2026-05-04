@@ -432,6 +432,24 @@ export const T: Dict = {
   statStops:         { en: 'Stops', nl: 'Stops', de: 'Stopps', fr: 'Étapes', it: 'Tappe', es: 'Paradas' },
   statRating:        { en: 'Avg. Rating', nl: 'Gem. Score', de: 'Ø Bewertung', fr: 'Note moy.', it: 'Valutaz. media', es: 'Nota media' },
 
+  // Multiplayer enhanced
+  mpLivePlayers:     { en: 'Live players', nl: 'Live spelers', de: 'Live-Spieler', fr: 'Joueurs en direct', it: 'Giocatori live', es: 'Jugadores en vivo' },
+  mpAtLocation:      { en: 'At', nl: 'Bij', de: 'Bei', fr: 'À', it: 'A', es: 'En' },
+  mpFinished:        { en: 'Finished!', nl: 'Klaar!', de: 'Fertig!', fr: 'Terminé !', it: 'Finito!', es: '¡Terminado!' },
+  mpRaceTime:        { en: 'Race time', nl: 'Race-tijd', de: 'Rennzeit', fr: 'Temps de course', it: 'Tempo gara', es: 'Tiempo de carrera' },
+  mpClueTimes:       { en: 'Stop times', nl: 'Stop-tijden', de: 'Stopp-Zeiten', fr: 'Temps par étape', it: 'Tempi tappa', es: 'Tiempos por parada' },
+  mpFirstArrival:    { en: '1st to arrive', nl: '1e aankomst', de: '1. Ankunft', fr: '1ᵉʳ arrivé', it: '1° arrivato', es: '1° en llegar' },
+  mpMedalGold:       { en: 'Gold', nl: 'Goud', de: 'Gold', fr: 'Or', it: 'Oro', es: 'Oro' },
+  mpMedalSilver:     { en: 'Silver', nl: 'Zilver', de: 'Silber', fr: 'Argent', it: 'Argento', es: 'Plata' },
+  mpMedalBronze:     { en: 'Bronze', nl: 'Brons', de: 'Bronze', fr: 'Bronze', it: 'Bronzo', es: 'Bronce' },
+  mpDetailedResults: { en: 'Detailed results', nl: 'Gedetailleerde uitslag', de: 'Detaillierte Ergebnisse', fr: 'Résultats détaillés', it: 'Risultati dettagliati', es: 'Resultados detallados' },
+  mpPlayerProgress:  { en: 'Progress', nl: 'Voortgang', de: 'Fortschritt', fr: 'Progrès', it: 'Progresso', es: 'Progreso' },
+  mpCurrentClue:     { en: 'Current stop', nl: 'Huidige stop', de: 'Aktueller Stopp', fr: 'Étape actuelle', it: 'Tappa attuale', es: 'Parada actual' },
+  mpNotStarted:      { en: 'Not started', nl: 'Niet gestart', de: 'Nicht gestartet', fr: 'Pas commencé', it: 'Non iniziato', es: 'No iniciado' },
+  mpTotalTime:       { en: 'Total time', nl: 'Totale tijd', de: 'Gesamtzeit', fr: 'Temps total', it: 'Tempo totale', es: 'Tiempo total' },
+  mpAvgPerStop:      { en: 'Avg per stop', nl: 'Gem. per stop', de: 'Ø pro Stopp', fr: 'Moy. par étape', it: 'Media a tappa', es: 'Prom. por parada' },
+  mpBehindLeader:    { en: 'behind leader', nl: 'achter koploper', de: 'hinter dem Führenden', fr: 'derrière le leader', it: 'dietro il leader', es: 'detrás del líder' },
+
   // Sticky + extra CTAs
   stickyCtaPrimary:  { en: 'Start free hunt', nl: 'Start gratis tocht', de: 'Gratis Tour starten', fr: 'Commencer gratuitement', it: 'Inizia gratis', es: 'Empezar gratis' },
   stickyCtaSecondary:{ en: 'With friends', nl: 'Met vrienden', de: 'Mit Freunden', fr: 'Entre amis', it: 'Con amici', es: 'Con amigos' },

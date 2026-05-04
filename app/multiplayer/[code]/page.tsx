@@ -7,6 +7,7 @@ import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
 import { normalizeCode, ROOM_CODE_LEN } from '@/lib/rooms'
 import { setActiveLobby, clearActiveLobby } from '@/lib/activeRoom'
+import { MultiplayerResults } from '@/components/MultiplayerResults'
 
 type Player = {
   userId: string
@@ -17,6 +18,7 @@ type Player = {
   cluesDone: number
   finishedAt: number | null
   sessionId: string | null
+  currentClueId?: string | null
 }
 
 type RoomDoc = {
@@ -132,6 +134,7 @@ export default function RoomLobbyPage() {
             cluesDone: p.cluesDone ?? 0,
             finishedAt: p.finishedAt?.toMillis?.() ?? null,
             sessionId: p.sessionId ?? null,
+            currentClueId: p.currentClueId ?? null,
           }
         }))
       }
@@ -255,56 +258,17 @@ export default function RoomLobbyPage() {
     )
   }
 
-  // Finished state — show race results.
-  if (room?.state === 'finished') {
-    const sortedFinal = [...players].sort((a, b) => {
-      if (a.finishedAt && b.finishedAt) return a.finishedAt - b.finishedAt
-      if (a.finishedAt) return -1
-      if (b.finishedAt) return 1
-      return b.score - a.score
-    })
-    const me = players.find(p => p.userId === user.uid)
+  // Finished state — show enhanced race results.
+  if (room?.state === 'finished' && roomId) {
     return (
       <main className="page-center">
-        <div className="container" style={{ maxWidth: 560, padding: '20px 20px 48px' }}>
+        <div className="container" style={{ maxWidth: 800, padding: '20px 20px 48px' }}>
           <a href="/" className="back-link">{t('backToHunts')}</a>
           <div className="mp-room-header">
             <div className="mp-room-badge">{t('raceFinished')}</div>
             <div className="mp-room-hunt">{room.huntTitle}</div>
           </div>
-          <section className="mp-card">
-            <h2 className="mp-card-title">{t('raceResults')}</h2>
-            <ul className="mp-player-list">
-              {sortedFinal.map((p, i) => {
-                const isMe = !!user && p.userId === user.uid
-                return (
-                  <li key={p.userId} className={`mp-player-row ${isMe ? 'is-me' : ''}`}>
-                    <div className="mp-rank-badge">{i + 1}</div>
-                    <div className="mp-player-avatar">
-                      {p.photoURL
-                        ? <img src={p.photoURL} alt="" referrerPolicy="no-referrer" />
-                        : <span>{p.displayName?.[0]?.toUpperCase() || '?'}</span>}
-                    </div>
-                    <div className="mp-player-name">
-                      {p.displayName}
-                      {isMe && <span className="mp-tag">{t('you')}</span>}
-                    </div>
-                    <div className="mp-player-progress">
-                      {p.score} {t('points')}
-                    </div>
-                  </li>
-                )
-              })}
-            </ul>
-          </section>
-          {me?.sessionId && (
-            <a href={`/hunt/complete?session=${me.sessionId}`} className="mp-cta mp-cta-large" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>
-              {t('seeFinal')}
-            </a>
-          )}
-          <a href="/multiplayer" className="mp-cta-secondary mp-leave" style={{ textAlign: 'center', display: 'block' }}>
-            {t('playAgain')}
-          </a>
+          <MultiplayerResults roomId={roomId} />
         </div>
       </main>
     )
