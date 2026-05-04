@@ -450,6 +450,9 @@ export const T: Dict = {
   mpAvgPerStop:      { en: 'Avg per stop', nl: 'Gem. per stop', de: 'Ø pro Stopp', fr: 'Moy. par étape', it: 'Media a tappa', es: 'Prom. por parada' },
   mpBehindLeader:    { en: 'behind leader', nl: 'achter koploper', de: 'hinter dem Führenden', fr: 'derrière le leader', it: 'dietro il leader', es: 'detrás del líder' },
 
+  // Profile history
+  histMpRaces:     { en: 'Multiplayer races', nl: 'Multiplayer races', de: 'Multiplayer-Rennen', fr: 'Courses multijoueur', it: 'Gare multiplayer', es: 'Carreras multijugador' },
+
   // Sticky + extra CTAs
   stickyCtaPrimary:  { en: 'Start free hunt', nl: 'Start gratis tocht', de: 'Gratis Tour starten', fr: 'Commencer gratuitement', it: 'Inizia gratis', es: 'Empezar gratis' },
   stickyCtaSecondary:{ en: 'With friends', nl: 'Met vrienden', de: 'Mit Freunden', fr: 'Entre amis', it: 'Con amici', es: 'Con amigos' },

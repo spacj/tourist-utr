@@ -3,6 +3,7 @@ import { Inter, Fraunces } from 'next/font/google'
 import { AuthProvider } from '@/components/AuthProvider'
 import { I18nProvider } from '@/hooks/useI18n'
 import { PwaInstallBanner } from '@/components/PwaInstallBanner'
+import { OfflineIndicator } from '@/components/OfflineIndicator'
 import './globals.css'
 
 const inter = Inter({
@@ -143,8 +144,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AuthProvider>
             {children}
             <PwaInstallBanner />
+            <OfflineIndicator />
           </AuthProvider>
         </I18nProvider>
+        <script dangerouslySetInnerHTML={{ __html: `
+          if('serviceWorker' in navigator){
+            window.addEventListener('load',function(){
+              navigator.serviceWorker.register('/sw.js').catch(function(){})
+            })
+          }
+        ` }} />
       </body>
     </html>
   )

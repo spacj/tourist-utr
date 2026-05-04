@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { Clue } from '@/types'
 import { ClueScreen } from '@/components/ClueScreen'
 import { RoomScoreboard } from '@/components/RoomScoreboard'
+import { useServiceWorker } from '@/hooks/useServiceWorker'
+import { saveHuntToIndexedDB } from '@/lib/indexedDB'
 
 interface Props {
   initialClue: Clue
@@ -13,13 +15,15 @@ interface Props {
   initialCredits: number
   initialScore: number
   creditsJustAdded: boolean
+  allClues: Array<Record<string, unknown>>
 }
 
-export function HuntClient({ initialClue, huntCity, sessionId, roomId, huntId, initialCredits, initialScore, creditsJustAdded }: Props) {
+export function HuntClient({ initialClue, huntCity, sessionId, roomId, huntId, initialCredits, initialScore, creditsJustAdded, allClues }: Props) {
   const [clue, setClue] = useState(initialClue)
   const [score, setScore] = useState(initialScore)
   const [credits, setCredits] = useState(initialCredits)
   const [transitioning, setTransitioning] = useState(false)
+  const { cacheHunt } = useServiceWorker()
 
   useEffect(() => {
     if (creditsJustAdded) {
@@ -28,6 +32,16 @@ export function HuntClient({ initialClue, huntCity, sessionId, roomId, huntId, i
         .then((d) => { if (d.credits) setCredits(d.credits) })
     }
   }, [creditsJustAdded, sessionId])
+
+  useEffect(() => {
+    if (!huntId || !allClues.length) return
+    let cancelled = false
+    saveHuntToIndexedDB(huntId, { huntId }, allClues).catch(() => {})
+    try {
+      cacheHunt(huntId, { huntId }, allClues)
+    } catch {}
+    return () => { cancelled = true }
+  }, [huntId, allClues, cacheHunt])
 
   const handleComplete = ({
     nextClue,

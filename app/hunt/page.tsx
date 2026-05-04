@@ -2,7 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import { db } from '@/lib/firebase'
 import { HuntClient } from './HuntClient'
 import { Clue } from '@/types'
-import { doc, getDoc, getDocs, collection, query, where, limit } from 'firebase/firestore'
+import { doc, getDoc, getDocs, collection, query, where, limit, orderBy } from 'firebase/firestore'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,7 +35,14 @@ export default async function HuntPage({
   if (!clueSnap.exists()) notFound()
   const clue = clueSnap.data()
 
-  const totalCluesSnap = await getDocs(collection(db, 'hunts', session.huntId, 'clues'))
+  const totalCluesSnap = await getDocs(
+    query(collection(db, 'hunts', session.huntId, 'clues'), orderBy('order'))
+  )
+
+  const allClues = totalCluesSnap.docs.map((d) => ({
+    ...d.data(),
+    id: d.id,
+  })) as Array<Record<string, unknown>>
 
   return (
     <HuntClient
@@ -47,6 +54,7 @@ export default async function HuntPage({
       initialCredits={session.credits}
       initialScore={session.score}
       creditsJustAdded={searchParams.credits === 'added'}
+      allClues={allClues}
     />
   )
 }

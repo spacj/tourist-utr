@@ -1338,6 +1338,41 @@ a { color: inherit; }
 .history-detail { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 .history-score { font-size: 18px; font-weight: 600; color: var(--gold); font-family: var(--font-serif, Georgia), serif; }
 
+/* ── Multiplayer history items ── */
+.history-item-mp {
+  background: linear-gradient(135deg, rgba(108, 99, 245, 0.04), rgba(255, 106, 19, 0.02));
+  border-color: rgba(108, 99, 245, 0.2);
+}
+.history-item-mp:hover {
+  border-color: rgba(108, 99, 245, 0.4);
+}
+.history-mp-body { flex: 1; min-width: 0; }
+.history-mp-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
+  background: rgba(255, 106, 19, 0.1);
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-right: 4px;
+}
+.history-mp-medal { margin-left: 2px; }
+.history-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: 8px;
+}
+
 /* ── Buttons ── */
 .btn-primary {
   width: 100%;
@@ -2979,20 +3014,17 @@ a { color: inherit; }
   gap: 8px;
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
 }
-.sticky-cta-primary,
-.sticky-cta-secondary {
+.sticky-cta-primary {
   flex: 1;
   display: inline-flex; align-items: center; justify-content: center;
   gap: 6px;
-  padding: 12px 14px;
-  border-radius: 12px;
+  padding: 14px 14px;
+  border-radius: 14px;
   text-decoration: none;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   white-space: nowrap;
   transition: transform 0.15s ease;
-}
-.sticky-cta-primary {
   background: linear-gradient(135deg, var(--primary), var(--primary-2));
   color: white;
   box-shadow: 0 6px 14px rgba(255, 106, 19, 0.32);
@@ -3000,28 +3032,50 @@ a { color: inherit; }
 .sticky-cta-primary:active { transform: scale(0.97); }
 .sticky-cta-secondary {
   flex: 0 0 auto;
-  padding: 12px 16px;
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 6px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: transform 0.15s ease;
   background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border-2);
 }
+.sticky-cta-secondary:active { transform: scale(0.97); }
 
 @media (max-width: 767px) {
   .sticky-cta { display: flex; }
   /* leave room above sticky bar so content isn't cut off */
-  body { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+  body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
   /* compact mid-cta on mobile */
   .mid-cta {
     flex-direction: column;
     align-items: stretch;
-    text-align: left;
-    padding: 18px 18px 16px;
+    text-align: center;
+    padding: 20px 20px 18px;
     margin: 20px 0;
   }
-  .mid-cta-actions { flex-direction: column; align-items: stretch; }
+  .mid-cta-actions { flex-direction: column; align-items: stretch; gap: 8px; }
   .cta-primary-btn-compact, .cta-secondary-btn {
     width: 100%; justify-content: center;
+    padding: 14px 18px;
+    font-size: 14px;
   }
+  /* hide secondary text on very narrow phones, keep icon */
+  .sticky-cta-secondary-text { display: inline; }
+}
+
+@media (max-width: 380px) {
+  .sticky-cta { gap: 6px; padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px)); }
+  .sticky-cta-primary { padding: 12px 10px; font-size: 14px; border-radius: 12px; }
+  .sticky-cta-secondary { padding: 12px 14px; font-size: 14px; border-radius: 12px; }
+  .sticky-cta-secondary-text { display: none; }
+  .sticky-cta-secondary { gap: 0; padding: 12px 14px; }
+  .sticky-cta-secondary svg { width: 18px; height: 18px; }
 }
 
 /* ═══ Enhanced multiplayer scoreboard ═══ */
@@ -3444,4 +3498,43 @@ a { color: inherit; }
   .mp-td-progress { min-width: 80px; }
   .mp-breakdown-clue { grid-template-columns: 20px 1fr auto auto; }
   .mp-breakdown-clue-delta { display: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Offline indicator
+   ═══════════════════════════════════════════════════════════════ */
+
+.offline-indicator {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #1a1d2e;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+.offline-indicator-icon {
+  font-size: 16px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }

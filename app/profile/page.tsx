@@ -12,6 +12,12 @@ interface Session {
   totalClues: number
   cluesCompleted: number
   completedAt: any
+  multiplayer: {
+    roomCode: string
+    playerCount: number
+    rank: number
+    totalPlayers: number
+  } | null
 }
 
 export default function ProfilePage() {
@@ -53,6 +59,8 @@ export default function ProfilePage() {
   const completed = sessions.filter(s => s.completedAt)
   const totalScore = sessions.reduce((a, s) => a + s.score, 0)
   const totalClues = sessions.reduce((a, s) => a + s.cluesCompleted, 0)
+  const mpSessions = sessions.filter(s => s.multiplayer)
+  const mpRaces = mpSessions.filter(s => s.multiplayer && s.completedAt)
 
   return (
     <main className="page-center">
@@ -104,19 +112,51 @@ export default function ProfilePage() {
             <div className="stat-value" style={{ color: 'var(--gold)' }}>{totalScore}</div>
             <div className="stat-label">{t('totalScore')}</div>
           </div>
+          <div className="stat-card">
+            <div className="stat-value">{mpRaces.length}</div>
+            <div className="stat-label">{t('histMpRaces')}</div>
+          </div>
         </div>
 
-        <div className="section-label">{t('huntHistory')}</div>
+        {/* ── Multiplayer races ── */}
+        {mpRaces.length > 0 && (
+          <>
+            <div className="section-label">{t('histMpRaces')}</div>
+            {mpRaces.map((s) => (
+              <div key={`mp-${s.id}`} className="history-item history-item-mp">
+                <div className="history-mp-body">
+                  <div className="history-title">{(lang !== 'en' && s.huntI18n?.[lang]?.title) || s.huntTitle}</div>
+                  <div className="history-detail">
+                    {s.multiplayer?.roomCode && (
+                      <span className="history-mp-code">Room {s.multiplayer.roomCode}</span>
+                    )}
+                    <span>· {s.multiplayer?.rank}/{s.multiplayer?.totalPlayers}</span>
+                    {s.multiplayer && s.multiplayer.rank === 1 && <span className="history-mp-medal">🥇</span>}
+                  </div>
+                </div>
+                <div className="history-score">{s.score}</div>
+              </div>
+            ))}
+          </>
+        )}
+
+        {/* ── Solo history ── */}
+        <div className="section-label" style={{ marginTop: mpRaces.length > 0 ? 20 : 0 }}>
+          {t('huntHistory')}
+          {sessions.filter(s => !s.multiplayer).length > 0 && (
+            <span className="history-count">{sessions.filter(s => !s.multiplayer).length}</span>
+          )}
+        </div>
 
         {fetching && <div style={{ textAlign: 'center', padding: 20 }}><div className="spinner" style={{ margin: '0 auto' }} /></div>}
 
-        {!fetching && sessions.length === 0 && (
+        {!fetching && sessions.filter(s => !s.multiplayer).length === 0 && mpRaces.length === 0 && (
           <div className="empty-card">
             <p>{t('noHuntsPlayed')}</p>
           </div>
         )}
 
-        {sessions.map((s) => (
+        {sessions.filter(s => !s.multiplayer).map((s) => (
           <div key={s.id} className="history-item">
             <div>
               <div className="history-title">{(lang !== 'en' && s.huntI18n?.[lang]?.title) || s.huntTitle}</div>
