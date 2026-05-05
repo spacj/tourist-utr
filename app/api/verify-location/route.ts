@@ -166,6 +166,14 @@ export async function POST(req: NextRequest) {
       currentClueId: nextClueDoc ? nextClueDoc.id : null,
       ...(nextClueDoc ? {} : { finishedAt: serverTimestamp() }),
     })
+    // When the player finishes, flip their active-room state to 'finished' so the
+    // resume banner switches over to "View race results" on every device they're on.
+    if (!nextClueDoc) {
+      batch.set(doc(db, 'userActiveRooms', session.userId), {
+        state: 'finished',
+        updatedAt: serverTimestamp(),
+      }, { merge: true })
+    }
   }
 
   await batch.commit()

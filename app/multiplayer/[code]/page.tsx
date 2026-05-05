@@ -6,7 +6,6 @@ import { db } from '@/lib/firebase'
 import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
 import { normalizeCode, ROOM_CODE_LEN } from '@/lib/rooms'
-import { setActiveLobby, clearActiveLobby } from '@/lib/activeRoom'
 import { MultiplayerResults } from '@/components/MultiplayerResults'
 
 type Player = {
@@ -86,26 +85,17 @@ export default function RoomLobbyPage() {
           })
           if (!joinRes.ok) {
             const j = await joinRes.json()
-            if (!cancelled) setError(j.error || 'join_failed')
+            if (!cancelled) {
+              if (j.error === 'already_in_room' && j.existing?.code) {
+                // User already has an active room — surface so they can confirm or cancel.
+                setError(`already_in_room:${j.existing.code}`)
+              } else {
+                setError(j.error || 'join_failed')
+              }
+            }
             return
           }
-          // Successfully joined — persist lobby reference for resume.
-          if (!cancelled) {
-            setActiveLobby({
-              code,
-              roomId: data.roomId,
-              huntTitle: data.huntTitle,
-              joinedAt: Date.now(),
-            })
-          }
-        } else if (isMember) {
-          // Existing member — refresh activeLobby so the resume banner stays accurate.
-          setActiveLobby({
-            code,
-            roomId: data.roomId,
-            huntTitle: data.huntTitle,
-            joinedAt: Date.now(),
-          })
+          // Successfully joined — userActiveRooms is updated server-side.
         }
       } catch {
         if (!cancelled) setError('not_found')
@@ -150,16 +140,9 @@ export default function RoomLobbyPage() {
     if (room.state !== 'racing') return
     const me = players.find(p => p.userId === user.uid)
     if (me?.sessionId) {
-      // Lobby is over — clear stale localStorage so the resume banner uses the live race.
-      clearActiveLobby()
       router.replace(`/hunt?session=${me.sessionId}`)
     }
   }, [room, players, user, roomId, router])
-
-  // When the race finishes, clear the lobby reference (the result page is the next stop).
-  useEffect(() => {
-    if (room?.state === 'finished') clearActiveLobby()
-  }, [room?.state])
 
   const isHost = !!user && !!room && user.uid === room.hostUserId
   const canStart = isHost && room?.state === 'lobby' && players.length >= 1
@@ -180,7 +163,6 @@ export default function RoomLobbyPage() {
       }
       // Optimistic navigation — listener would catch up but we have hostSessionId.
       if (data.hostSessionId) {
-        clearActiveLobby()
         router.replace(`/hunt?session=${data.hostSessionId}`)
       }
     } finally {
@@ -191,13 +173,21 @@ export default function RoomLobbyPage() {
   const onLeave = async () => {
     if (!user || !roomId) return
     try {
-      await fetch('/api/rooms/leave', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomId, userId: user.uid }),
-      })
+      // During a race, leave just removes you from the active-room pointer; abandon truly forfeits.
+      if (room?.state === 'racing') {
+        await fetch('/api/rooms/abandon', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ roomId, userId: user.uid }),
+        })
+      } else {
+        await fetch('/api/rooms/leave', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ roomId, userId: user.uid }),
+        })
+      }
     } finally {
-      clearActiveLobby()
       router.replace('/multiplayer')
     }
   }

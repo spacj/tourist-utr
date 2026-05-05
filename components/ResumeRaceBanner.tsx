@@ -8,31 +8,34 @@ export function ResumeRaceBanner() {
 
   if (!active) return null
 
-  // Build the resume URL based on what's active.
   let href = ''
   let title = ''
   let desc = ''
   let badge = ''
-  let onDismiss: (() => void) | null = null
+  let icon = '👥'
+  let canDismiss = false
 
-  if (active.source === 'race') {
-    if (active.state === 'racing') {
-      href = `/hunt?session=${active.sessionId}`
-      title = t('resumeRaceTitle')
-      desc = `${active.huntTitle} · ${active.cluesDone} ${t('stopsCompleted')} · ${active.score} ${t('points')}`
-      badge = t('inRoomBadge')
-    } else if (active.state === 'finished') {
-      href = `/multiplayer/${active.code}`
-      title = t('viewRaceResults')
-      desc = `${active.huntTitle} · ${active.score} ${t('points')}`
-      badge = t('raceFinished')
-    }
+  if (active.state === 'racing' && active.sessionId) {
+    href = `/hunt?session=${active.sessionId}`
+    title = t('resumeRaceTitle')
+    desc = `${active.huntTitle} · ${active.cluesDone} ${t('stopsCompleted')} · ${active.score} ${t('points')}`
+    badge = t('inRoomBadge')
+    icon = '🏃'
+  } else if (active.state === 'finished') {
+    href = `/multiplayer/${active.code}`
+    title = t('viewRaceResults')
+    desc = `${active.huntTitle} · ${active.score} ${t('points')}`
+    badge = t('raceFinished')
+    icon = '🏁'
+    canDismiss = true
   } else {
+    // lobby
     href = `/multiplayer/${active.code}`
     title = t('rejoinLobbyTitle')
     desc = active.huntTitle ? `${active.huntTitle} · ${active.code}` : active.code
     badge = t('lobby')
-    onDismiss = dismiss
+    icon = '👥'
+    canDismiss = true
   }
 
   if (!href) return null
@@ -40,9 +43,7 @@ export function ResumeRaceBanner() {
   return (
     <div className="resume-race-banner" role="region" aria-label={title}>
       <a href={href} className="resume-race-link">
-        <div className="resume-race-icon" aria-hidden>
-          {active.source === 'race' && active.state === 'racing' ? '🏃' : active.source === 'race' ? '🏁' : '👥'}
-        </div>
+        <div className="resume-race-icon" aria-hidden>{icon}</div>
         <div className="resume-race-body">
           <div className="resume-race-badge">{badge}</div>
           <div className="resume-race-title">{title}</div>
@@ -50,11 +51,11 @@ export function ResumeRaceBanner() {
         </div>
         <div className="resume-race-arrow" aria-hidden>→</div>
       </a>
-      {onDismiss && (
+      {canDismiss && (
         <button
           type="button"
           className="resume-race-dismiss"
-          onClick={onDismiss}
+          onClick={dismiss}
           aria-label={t('dismiss')}
         >
           ×

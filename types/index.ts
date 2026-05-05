@@ -392,6 +392,9 @@ export const T: Dict = {
   raceResults:       { en: 'Race results', nl: 'Race-uitslag', de: 'Renn-Ergebnisse', fr: 'Résultats', it: 'Risultati gara', es: 'Resultados' },
   goToHunt:          { en: 'Go to hunt', nl: 'Naar de tocht', de: 'Zur Tour', fr: 'Aller à la chasse', it: 'Vai alla caccia', es: 'Ir a la búsqueda' },
   openLobby:         { en: 'Open lobby', nl: 'Open lobby', de: 'Lobby öffnen', fr: 'Ouvrir le salon', it: 'Apri lobby', es: 'Abrir sala' },
+  alreadyInRoomConfirm: { en: 'You\'re already in room {code}. Leave that room and continue?', nl: 'Je zit al in kamer {code}. Verlaten en doorgaan?', de: 'Du bist bereits in Raum {code}. Verlassen und fortfahren?', fr: 'Vous êtes déjà dans la salle {code}. Quitter et continuer ?', it: 'Sei già nella stanza {code}. Lasciare e continuare?', es: '¿Ya estás en la sala {code}. Salir y continuar?' },
+  abandonRace:       { en: 'Abandon race', nl: 'Race opgeven', de: 'Rennen aufgeben', fr: 'Abandonner la course', it: 'Abbandona gara', es: 'Abandonar carrera' },
+  abandonConfirm:    { en: 'Forfeit this race? Your current score will be locked in and you\'ll appear as finished on the leaderboard.', nl: 'Race opgeven? Je huidige score wordt vastgelegd en je verschijnt als voltooid op het scorebord.', de: 'Rennen aufgeben? Dein aktueller Punktestand wird festgehalten und du erscheinst als fertig.', fr: 'Abandonner ? Votre score actuel sera enregistré et vous apparaîtrez comme terminé.', it: 'Abbandonare? Il tuo punteggio attuale verrà salvato e apparirai come terminato.', es: '¿Abandonar? Tu puntuación actual se guardará y aparecerás como terminado.' },
 
   // Homepage selling sections
   howItWorks:        { en: 'How it works', nl: 'Hoe het werkt', de: 'So funktioniert es', fr: 'Comment ça marche', it: 'Come funziona', es: 'Cómo funciona' },

@@ -180,6 +180,23 @@ export function RoomScoreboard({ roomId, totalClues, huntId }: Props) {
               {t('openLobby')} · {roomCode}
             </a>
           )}
+          {isRacing && me && !me.finishedAt && user && (
+            <button
+              type="button"
+              className="mp-scoreboard-abandon"
+              onClick={async () => {
+                if (!confirm(t('abandonConfirm'))) return
+                await fetch('/api/rooms/abandon', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ roomId, userId: user.uid }),
+                })
+                window.location.href = `/multiplayer/${roomCode}`
+              }}
+            >
+              {t('abandonRace')}
+            </button>
+          )}
         </div>
       )}
     </>

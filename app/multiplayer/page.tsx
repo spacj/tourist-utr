@@ -5,7 +5,6 @@ import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
 import { Hunt, City, localizeHunt, localizeCity } from '@/types'
 import { ROOM_CODE_LEN, normalizeCode } from '@/lib/rooms'
-import { setActiveLobby } from '@/lib/activeRoom'
 import { ResumeRaceBanner } from '@/components/ResumeRaceBanner'
 
 export default function MultiplayerEntryPage() {
@@ -38,7 +37,7 @@ export default function MultiplayerEntryPage() {
 
   const playableHunts = hunts.filter(h => h.active && (h.order === 0 || (h.cityId && unlockedCities.has(h.cityId))))
 
-  const onCreate = async () => {
+  const onCreate = async (force = false) => {
     if (!user || !selectedHuntId) return
     setCreating(true)
     try {
@@ -50,28 +49,38 @@ export default function MultiplayerEntryPage() {
           userId: user.uid,
           displayName: user.displayName || 'Player',
           photoURL: user.photoURL || null,
+          force,
         }),
       })
       const data = await res.json()
       if (!res.ok) {
-        setJoinError(data.error || 'create_failed')
+        // If user already in another lobby, ask them to confirm before stomping it.
+        if (data.error === 'already_in_room' && data.existing?.code) {
+          const ok = confirm(
+            t('alreadyInRoomConfirm').replace('{code}', data.existing.code)
+          )
+          if (ok) {
+            // Leave the old room first, then retry create with force.
+            await fetch('/api/rooms/leave', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: user.uid, roomId: data.existing.roomId }),
+            }).catch(() => {})
+            return onCreate(true)
+          }
+        } else {
+          setJoinError(data.error || 'create_failed')
+        }
         setCreating(false)
         return
       }
-      const selectedHunt = hunts.find(h => h.id === selectedHuntId)
-      setActiveLobby({
-        code: data.code,
-        roomId: data.roomId,
-        huntTitle: selectedHunt?.title ?? '',
-        joinedAt: Date.now(),
-      })
       router.push(`/multiplayer/${data.code}`)
     } catch {
       setCreating(false)
     }
   }
 
-  const onJoin = async () => {
+  const onJoin = async (force = false) => {
     if (!user) return
     const norm = normalizeCode(code)
     if (norm.length !== ROOM_CODE_LEN) {
@@ -89,19 +98,29 @@ export default function MultiplayerEntryPage() {
           userId: user.uid,
           displayName: user.displayName || 'Player',
           photoURL: user.photoURL || null,
+          force,
         }),
       })
       const data = await res.json()
       if (!res.ok) {
-        setJoinError(data.error || 'join_failed')
+        if (data.error === 'already_in_room' && data.existing?.code) {
+          const ok = confirm(
+            t('alreadyInRoomConfirm').replace('{code}', data.existing.code)
+          )
+          if (ok) {
+            await fetch('/api/rooms/leave', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: user.uid, roomId: data.existing.roomId }),
+            }).catch(() => {})
+            return onJoin(true)
+          }
+        } else {
+          setJoinError(data.error || 'join_failed')
+        }
         setJoining(false)
         return
       }
-      setActiveLobby({
-        code: data.code,
-        roomId: data.roomId,
-        joinedAt: Date.now(),
-      })
       router.push(`/multiplayer/${data.code}`)
     } catch {
       setJoinError('join_failed')
@@ -155,7 +174,7 @@ export default function MultiplayerEntryPage() {
             />
             <button
               className="mp-cta"
-              onClick={onJoin}
+              onClick={() => onJoin()}
               disabled={joining || code.length !== ROOM_CODE_LEN}
             >
               {joining ? '…' : t('joinRoom')}
@@ -212,7 +231,7 @@ export default function MultiplayerEntryPage() {
               </div>
               <button
                 className="mp-cta"
-                onClick={onCreate}
+                onClick={() => onCreate()}
                 disabled={!selectedHuntId || creating}
                 style={{ marginTop: 16, width: '100%' }}
               >

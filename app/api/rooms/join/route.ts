@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/firebase'
 import { findRoomByCode, isRoomExpired, MAX_PLAYERS, normalizeCode } from '@/lib/rooms'
+import { setUserActiveRoom, isUserInOtherRoom } from '@/lib/userActiveRoom'
 import {
   collection, doc, getDoc, getDocs, setDoc, updateDoc, serverTimestamp, increment,
 } from 'firebase/firestore'
 
 export async function POST(req: NextRequest) {
-  const { code, userId, displayName, photoURL } = await req.json()
+  const { code, userId, displayName, photoURL, force } = await req.json()
 
   if (!userId) return NextResponse.json({ error: 'sign_in_required' }, { status: 401 })
 
@@ -19,14 +20,30 @@ export async function POST(req: NextRequest) {
 
   const { id: roomId, data: room } = found
 
-  // Already a member? Idempotent return.
+  // Already a member? Idempotent — refresh active-room pointer and return.
   const existingPlayer = await getDoc(doc(db, 'rooms', roomId, 'players', userId))
   if (existingPlayer.exists()) {
+    await setUserActiveRoom(userId, {
+      roomId,
+      code: room.code,
+      huntId: room.huntId,
+      huntTitle: room.huntTitle ?? 'Hunt',
+      state: room.state,
+      sessionId: existingPlayer.data().sessionId ?? null,
+    })
     return NextResponse.json({ roomId, code: room.code, rejoined: true })
   }
 
   if (room.state !== 'lobby') {
     return NextResponse.json({ error: 'race_started' }, { status: 409 })
+  }
+
+  // Block duplicate active rooms unless caller explicitly confirms (force=true).
+  if (!force) {
+    const otherRoom = await isUserInOtherRoom(userId, roomId)
+    if (otherRoom) {
+      return NextResponse.json({ error: 'already_in_room', existing: otherRoom }, { status: 409 })
+    }
   }
 
   const playersSnap = await getDocs(collection(db, 'rooms', roomId, 'players'))
@@ -48,6 +65,15 @@ export async function POST(req: NextRequest) {
 
   await updateDoc(doc(db, 'rooms', roomId), {
     playerCount: increment(1),
+  })
+
+  await setUserActiveRoom(userId, {
+    roomId,
+    code: room.code,
+    huntId: room.huntId,
+    huntTitle: room.huntTitle ?? 'Hunt',
+    state: 'lobby',
+    sessionId: null,
   })
 
   return NextResponse.json({ roomId, code: room.code, rejoined: false })

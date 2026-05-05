@@ -65,6 +65,10 @@ export async function POST(req: NextRequest) {
   const batch = writeBatch(db)
   let hostSessionId: string | null = null
 
+  // Read the room once to populate the userActiveRooms updates with code + huntTitle.
+  const roomSnap = await getDoc(roomRef)
+  const room = roomSnap.exists() ? roomSnap.data() : { code: '', huntTitle: 'Hunt' }
+
   for (const playerDoc of playersSnap.docs) {
     const player = playerDoc.data()
     const sessionRef = doc(collection(db, 'sessions'))
@@ -89,6 +93,17 @@ export async function POST(req: NextRequest) {
     batch.update(doc(db, 'rooms', roomId, 'players', player.userId), {
       sessionId: sessionRef.id,
     })
+
+    // Update each player's active-room pointer so resume banners flip to "racing".
+    batch.set(doc(db, 'userActiveRooms', player.userId), {
+      roomId,
+      code: room.code,
+      huntId: claim.huntId,
+      huntTitle: room.huntTitle ?? 'Hunt',
+      state: 'racing',
+      sessionId: sessionRef.id,
+      updatedAt: serverTimestamp(),
+    }, { merge: true })
   }
 
   await batch.commit()

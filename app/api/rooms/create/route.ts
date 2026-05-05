@@ -2,15 +2,27 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/firebase'
 import { generateUniqueCode, ROOM_TTL_HOURS, MAX_PLAYERS } from '@/lib/rooms'
 import { isCityUnlocked } from '@/lib/cityUnlock'
+import { setUserActiveRoom, isUserInOtherRoom } from '@/lib/userActiveRoom'
 import {
   collection, doc, getDoc, setDoc, serverTimestamp,
 } from 'firebase/firestore'
 
 export async function POST(req: NextRequest) {
-  const { huntId, userId, displayName, photoURL } = await req.json()
+  const { huntId, userId, displayName, photoURL, force } = await req.json()
 
   if (!userId) return NextResponse.json({ error: 'sign_in_required' }, { status: 401 })
   if (!huntId) return NextResponse.json({ error: 'hunt_required' }, { status: 400 })
+
+  // Block duplicate active rooms unless caller explicitly confirms (force=true).
+  if (!force) {
+    const existing = await isUserInOtherRoom(userId)
+    if (existing) {
+      return NextResponse.json(
+        { error: 'already_in_room', existing },
+        { status: 409 }
+      )
+    }
+  }
 
   const huntSnap = await getDoc(doc(db, 'hunts', huntId))
   if (!huntSnap.exists()) return NextResponse.json({ error: 'hunt_not_found' }, { status: 404 })
@@ -55,6 +67,15 @@ export async function POST(req: NextRequest) {
     score: 0,
     cluesDone: 0,
     finishedAt: null,
+  })
+
+  await setUserActiveRoom(userId, {
+    roomId: roomRef.id,
+    code,
+    huntId,
+    huntTitle: hunt.title || 'Hunt',
+    state: 'lobby',
+    sessionId: null,
   })
 
   return NextResponse.json({ roomId: roomRef.id, code })
