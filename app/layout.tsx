@@ -19,30 +19,32 @@ const fraunces = Fraunces({
   variable: '--font-serif',
 })
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nl-tour.app'
-const SITE_NAME = 'NL Grand Tour'
-const DEFAULT_TITLE = 'Netherlands Grand Tour — GPS scavenger hunts in Dutch cities'
-const DEFAULT_DESC = 'Self-guided GPS walking adventures through Utrecht, Amsterdam and beyond. Solve riddles, discover hidden stories, race friends in real-time multiplayer. €5 lifetime per city — first hunt free.'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tourhunts.com'
+const SITE_NAME = 'TourHunts'
+const DEFAULT_TITLE = 'TourHunts — GPS scavenger hunts in cities around the world'
+const DEFAULT_DESC = 'Self-guided GPS walking adventures through the world\'s most beautiful cities. Solve riddles, discover hidden stories, race friends in real-time multiplayer. €5 lifetime per city — first hunt free.'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: DEFAULT_TITLE,
-    template: '%s · NL Grand Tour',
+    template: '%s · TourHunts',
   },
   description: DEFAULT_DESC,
   applicationName: SITE_NAME,
-  authors: [{ name: 'NL Grand Tour' }],
+  authors: [{ name: 'TourHunts' }],
   generator: 'Next.js',
   keywords: [
-    'scavenger hunt', 'walking tour', 'GPS game', 'Netherlands tour', 'Utrecht tour',
-    'Amsterdam walking tour', 'self-guided tour', 'city game', 'treasure hunt app',
-    'Dutch cities', 'tourist activity Netherlands', 'multiplayer city game', 'family activity Utrecht',
+    'scavenger hunt', 'walking tour', 'GPS game', 'self-guided city tour',
+    'Netherlands tour', 'Italy tour', 'Spain tour', 'France tour',
+    'Utrecht walking tour', 'Amsterdam scavenger hunt', 'Rome treasure hunt',
+    'city game', 'treasure hunt app', 'multiplayer city game', 'family travel activity',
+    'tourist game', 'tour hunts',
   ],
   category: 'travel',
   referrer: 'origin-when-cross-origin',
-  creator: 'NL Grand Tour',
-  publisher: 'NL Grand Tour',
+  creator: 'TourHunts',
+  publisher: 'TourHunts',
   formatDetection: { email: false, address: false, telephone: false },
   alternates: {
     canonical: SITE_URL,
@@ -90,7 +92,7 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    title: 'NL Tour',
+    title: 'TourHunts',
     statusBarStyle: 'black-translucent',
   },
 }

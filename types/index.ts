@@ -3,6 +3,38 @@ export type Difficulty = 'easy' | 'medium' | 'hard'
 
 export const CITY_UNLOCK_PRICE_EUROS = 5
 
+export interface CountryI18n {
+  name?: string
+  description?: string
+  tagline?: string
+}
+
+export interface Country {
+  id: string             // ISO 3166-1 alpha-2 lowercase: 'nl', 'it', 'es'
+  name: string
+  flag: string           // emoji flag
+  description: string
+  tagline?: string
+  cityCount: number
+  huntCount: number
+  order: number
+  active: boolean
+  comingSoon?: boolean   // shown but not navigable
+  imageUrl?: string
+  i18n?: Partial<Record<Lang, CountryI18n>>
+}
+
+export function localizeCountry(c: Country, lang: Lang): Country {
+  const tr = lang !== 'en' ? c.i18n?.[lang] : undefined
+  if (!tr) return c
+  return {
+    ...c,
+    name:        tr.name        ?? c.name,
+    description: tr.description ?? c.description,
+    tagline:     tr.tagline     ?? c.tagline,
+  }
+}
+
 export interface CityI18n {
   name?: string
   country?: string
@@ -11,6 +43,7 @@ export interface CityI18n {
 
 export interface City {
   id: string
+  countryId?: string     // back-pointer to country (defaults to 'nl' for legacy data)
   name: string
   country: string
   description: string
@@ -242,9 +275,9 @@ export const LANGUAGES: { code: Lang; label: string; flag: string }[] = [
 
 type Dict = Record<string, Record<Lang, string>>
 export const T: Dict = {
-  title:             { en: 'Netherlands', nl: 'Nederland', de: 'Niederlande', fr: 'Pays-Bas', it: 'Paesi Bassi', es: 'Países Bajos' },
-  subtitle:          { en: 'Grand Tour', nl: 'Grand Tour', de: 'Grand Tour', fr: 'Grand Tour', it: 'Grand Tour', es: 'Gran Tour' },
-  tagline:           { en: 'The country, unlocked.', nl: 'Het land, ontgrendeld.', de: 'Das Land, entsperrt.', fr: 'Le pays, déverrouillé.', it: 'Il paese, svelato.', es: 'El país, desbloqueado.' },
+  title:             { en: 'TourHunts', nl: 'TourHunts', de: 'TourHunts', fr: 'TourHunts', it: 'TourHunts', es: 'TourHunts' },
+  subtitle:          { en: 'Walk · Solve · Discover', nl: 'Wandel · Los op · Ontdek', de: 'Gehen · Lösen · Entdecken', fr: 'Marchez · Résolvez · Découvrez', it: 'Cammina · Risolvi · Scopri', es: 'Camina · Resuelve · Descubre' },
+  tagline:           { en: 'GPS-guided scavenger hunts around the world.', nl: 'GPS-geleide speurtochten over de hele wereld.', de: 'GPS-geführte Schnitzeljagden rund um die Welt.', fr: 'Chasses au trésor par GPS partout dans le monde.', it: 'Cacce al tesoro guidate da GPS in tutto il mondo.', es: 'Búsquedas del tesoro guiadas por GPS en todo el mundo.' },
   priceTag:          { en: '€5 · lifetime access', nl: '€5 · onbeperkt spelen', de: '€5 · lebenslanger Zugang', fr: '€5 · accès à vie', it: '€5 · accesso a vita', es: '€5 · acceso de por vida' },
   ctaStart:          { en: 'Start the adventure', nl: 'Start het avontuur', de: 'Abenteuer beginnen', fr: 'Commencer l\'aventure', it: 'Inizia l\'avventura', es: 'Comenzar la aventura' },
   ctaResume:         { en: 'Resume', nl: 'Hervatten', de: 'Fortsetzen', fr: 'Reprendre', it: 'Riprendi', es: 'Reanudar' },
@@ -340,6 +373,13 @@ export const T: Dict = {
 
   // Cities + unlock
   chooseCity:        { en: 'Choose a city', nl: 'Kies een stad', de: 'Stadt wählen', fr: 'Choisissez une ville', it: 'Scegli una città', es: 'Elige una ciudad' },
+  chooseCountry:     { en: 'Choose a country', nl: 'Kies een land', de: 'Land wählen', fr: 'Choisissez un pays', it: 'Scegli un paese', es: 'Elige un país' },
+  countries:         { en: 'Countries', nl: 'Landen', de: 'Länder', fr: 'Pays', it: 'Paesi', es: 'Países' },
+  citiesIn:          { en: 'Cities in {country}', nl: 'Steden in {country}', de: 'Städte in {country}', fr: 'Villes en {country}', it: 'Città in {country}', es: 'Ciudades en {country}' },
+  comingSoon:        { en: 'Coming soon', nl: 'Binnenkort', de: 'Demnächst', fr: 'Bientôt', it: 'Prossimamente', es: 'Próximamente' },
+  backToCountries:   { en: '← Back to countries', nl: '← Terug naar landen', de: '← Zurück zu Ländern', fr: '← Retour aux pays', it: '← Torna ai paesi', es: '← Volver a países' },
+  cityWord:          { en: 'cities', nl: 'steden', de: 'Städte', fr: 'villes', it: 'città', es: 'ciudades' },
+  noCitiesYet:       { en: 'No cities here yet — check back soon.', nl: 'Nog geen steden hier — kom snel terug.', de: 'Noch keine Städte hier — schau bald wieder vorbei.', fr: 'Pas encore de villes ici — revenez bientôt.', it: 'Ancora nessuna città — torna presto.', es: 'Aún sin ciudades — vuelve pronto.' },
   cities:            { en: 'Cities', nl: 'Steden', de: 'Städte', fr: 'Villes', it: 'Città', es: 'Ciudades' },
   hunts:             { en: 'hunts', nl: 'tochten', de: 'Touren', fr: 'parcours', it: 'cacce', es: 'búsquedas' },
   firstFree:         { en: 'First hunt free', nl: 'Eerste tocht gratis', de: 'Erste Tour gratis', fr: '1ʳᵉ aventure gratuite', it: 'Prima caccia gratis', es: 'Primera búsqueda gratis' },
@@ -354,7 +394,7 @@ export const T: Dict = {
 
   // PWA install prompt
   pwaInstallTitle:   { en: 'Install for the best experience', nl: 'Installeer voor de beste ervaring', de: 'Installiere für das beste Erlebnis', fr: 'Installez pour la meilleure expérience', it: 'Installa per la migliore esperienza', es: 'Instala para la mejor experiencia' },
-  pwaInstallBody:    { en: 'Add UTR Tour to your home screen — opens fullscreen and works offline.', nl: 'Voeg UTR Tour toe aan je beginscherm — opent volledig en werkt offline.', de: 'Füge UTR Tour zum Startbildschirm hinzu — öffnet im Vollbild und funktioniert offline.', fr: 'Ajoutez UTR Tour à votre écran d\'accueil — plein écran et hors-ligne.', it: 'Aggiungi UTR Tour alla schermata Home — a schermo intero e offline.', es: 'Añade UTR Tour a tu pantalla de inicio — pantalla completa y sin conexión.' },
+  pwaInstallBody:    { en: 'Add TourHunts to your home screen — opens fullscreen and works offline.', nl: 'Voeg TourHunts toe aan je beginscherm — opent volledig en werkt offline.', de: 'Füge TourHunts zum Startbildschirm hinzu — öffnet im Vollbild und funktioniert offline.', fr: 'Ajoutez TourHunts à votre écran d\'accueil — plein écran et hors-ligne.', it: 'Aggiungi TourHunts alla schermata Home — a schermo intero e offline.', es: 'Añade TourHunts a tu pantalla de inicio — pantalla completa y sin conexión.' },
   pwaInstallCta:     { en: 'Install', nl: 'Installeren', de: 'Installieren', fr: 'Installer', it: 'Installa', es: 'Instalar' },
   pwaInstallDismiss: { en: 'Not now', nl: 'Niet nu', de: 'Später', fr: 'Plus tard', it: 'Non ora', es: 'Ahora no' },
   pwaIosStep:        { en: 'Tap Share, then Add to Home Screen', nl: 'Tik op Delen, dan Op beginscherm', de: 'Tippe Teilen, dann Zum Home-Bildschirm', fr: 'Appuyez sur Partager, puis Sur l\'écran d\'accueil', it: 'Tocca Condividi, poi Aggiungi a Home', es: 'Toca Compartir, luego Añadir a Inicio' },
@@ -404,7 +444,7 @@ export const T: Dict = {
   howStep2Desc:      { en: 'Walk through the city using GPS-guided riddles. Discover hidden stories, fun facts, and trivia at every stop.', nl: 'Wandel door de stad met GPS-geleide raadsels. Ontdek verborgen verhalen, weetjes en trivia bij elke stop.', de: 'Spaziere durch die Stadt mit GPS-geführten Rätseln. Entdecke verborgene Geschichten und Wissenswertes an jedem Stopp.', fr: 'Parcourez la ville avec des énigmes guidées par GPS. Découvrez des histoires cachées et des anecdotes à chaque étape.', it: 'Cammina per la città con indizi guidati dal GPS. Scopri storie nascoste e curiosità a ogni tappa.', es: 'Camina por la ciudad con acertijos guiados por GPS. Descubre historias ocultas y curiosidades en cada parada.' },
   howStep3Title:     { en: 'Score & compete', nl: 'Score & competeer', de: 'Punkte & vergleiche', fr: 'Scorez & competez', it: 'Punteggia & competí', es: 'Puntúa & compite' },
   howStep3Desc:      { en: 'Earn points for speed, accuracy, and trivia. Challenge friends in real-time multiplayer races.', nl: 'Verdien punten voor snelheid, nauwkeurigheid en trivia. Daag vrienden uit in real-time multiplayer races.', de: 'Sammle Punkte für Geschwindigkeit, Genauigkeit und Quiz. Fordere Freunde in Echtzeit-Multiplayer-Rennen heraus.', fr: 'Gagnez des points pour la vitesse, la précision et le quiz. Affrontez vos amis en course multijoueur en temps réel.', it: 'Guadagna punti per velocità, precisione e quiz. Sfida gli amici in gare multiplayer in tempo reale.', es: 'Gana puntos por velocidad, precisión y trivia. Desafía a amigos en carreras multijugador en tiempo real.' },
-  whyUtr:            { en: 'Why UTR Tour', nl: 'Waarom UTR Tour', de: 'Warum UTR Tour', fr: 'Pourquoi UTR Tour', it: 'Perché UTR Tour', es: 'Por qué UTR Tour' },
+  whyUtr:            { en: 'Why TourHunts', nl: 'Waarom TourHunts', de: 'Warum TourHunts', fr: 'Pourquoi TourHunts', it: 'Perché TourHunts', es: 'Por qué TourHunts' },
   whyOffline:        { en: 'Works offline', nl: 'Werkt offline', de: 'Offline verfügbar', fr: 'Fonctionne hors ligne', it: 'Funziona offline', es: 'Funciona sin conexión' },
   whyOfflineDesc:    { en: 'Once you start a hunt, all clues download to your phone. No data needed while exploring.', nl: 'Zodra je een tocht start, worden alle raadsels gedownload. Geen data nodig tijdens het verkennen.', de: 'Sobald du eine Tour startest, werden alle Hinweise heruntergeladen. Kein Internet während der Erkundung nötig.', fr: 'Une fois la chasse lancée, tous les indices sont téléchargés. Pas de données nécessaires.', it: 'Una volta iniziata la caccia, tutti gli indizi vengono scaricati. Nessun dato necessario.', es: 'Una vez iniciada la búsqueda, todas las pistas se descargan. Sin datos necesarios.' },
   whyNoApp:          { en: 'No app to install', nl: 'Geen app nodig', de: 'Keine App nötig', fr: 'Pas d\'app à installer', it: 'Nessuna app da installare', es: 'Sin app que instalar' },
@@ -423,13 +463,13 @@ export const T: Dict = {
   ctaTitle:          { en: 'Ready to explore?', nl: 'Klaar om te ontdekken?', de: 'Bereit zu entdecken?', fr: 'Prêt à explorer ?', it: 'Pronto a esplorare?', es: '¿Listo para explorar?' },
   ctaSubtitle:       { en: 'Your first hunt in every city is free. No credit card required — just sign in and start walking.', nl: 'Je eerste tocht in elke stad is gratis. Geen creditcard nodig — gewoon inloggen en lopen.', de: 'Deine erste Tour in jeder Stadt ist gratis. Keine Kreditkarte nötig — einfach anmelden und losgehen.', fr: 'Votre première chasse dans chaque ville est gratuite. Pas de carte bancaire — connectez-vous et partez.', it: 'La tua prima caccia in ogni città è gratis. Nessuna carta richiesta — accedi e inizia a camminare.', es: 'Tu primera búsqueda en cada ciudad es gratis. Sin tarjeta requerida — solo inicia sesión y camina.' },
   ctaButton:         { en: 'Start your first hunt — free', nl: 'Start je eerste tocht — gratis', de: 'Starte deine erste Tour — gratis', fr: 'Commencez votre première chasse — gratuite', it: 'Inizia la tua prima caccia — gratis', es: 'Comienza tu primera búsqueda — gratis' },
-  footerTagline:     { en: 'GPS-powered walking hunts through the Netherlands\' most beautiful cities.', nl: 'GPS-gestuurde wandeltochten door de mooiste steden van Nederland.', de: 'GPS-gestützte Walking-Touren durch die schönsten Städte der Niederlande.', fr: 'Chasses à pied guidées par GPS dans les plus belles villes des Pays-Bas.', it: 'Cacce a piedi con GPS nelle città più belle dei Paesi Bassi.', es: 'Búsquedas a pie con GPS por las ciudades más bellas de los Países Bajos.' },
+  footerTagline:     { en: 'GPS-powered walking hunts through the world\'s most beautiful cities.', nl: 'GPS-gestuurde wandeltochten door de mooiste steden ter wereld.', de: 'GPS-gestützte Walking-Touren durch die schönsten Städte der Welt.', fr: 'Chasses à pied guidées par GPS dans les plus belles villes du monde.', it: 'Cacce a piedi con GPS nelle città più belle del mondo.', es: 'Búsquedas a pie con GPS por las ciudades más bellas del mundo.' },
   footerLinks:       { en: 'Cities', nl: 'Steden', de: 'Städte', fr: 'Villes', it: 'Città', es: 'Ciudades' },
   footerAbout:       { en: 'About', nl: 'Over ons', de: 'Über uns', fr: 'À propos', it: 'Chi siamo', es: 'Acerca de' },
   footerContact:     { en: 'Contact', nl: 'Contact', de: 'Kontakt', fr: 'Contact', it: 'Contatti', es: 'Contacto' },
   footerPrivacy:     { en: 'Privacy', nl: 'Privacy', de: 'Datenschutz', fr: 'Confidentialité', it: 'Privacy', es: 'Privacidad' },
   footerTerms:       { en: 'Terms', nl: 'Voorwaarden', de: 'AGB', fr: 'Conditions', it: 'Termini', es: 'Términos' },
-  footerCopy:        { en: '© 2026 UTR Tour. All rights reserved.', nl: '© 2026 UTR Tour. Alle rechten voorbehouden.', de: '© 2026 UTR Tour. Alle Rechte vorbehalten.', fr: '© 2026 UTR Tour. Tous droits réservés.', it: '© 2026 UTR Tour. Tutti i diritti riservati.', es: '© 2026 UTR Tour. Todos los derechos reservados.' },
+  footerCopy:        { en: '© 2026 TourHunts. All rights reserved.', nl: '© 2026 TourHunts. Alle rechten voorbehouden.', de: '© 2026 TourHunts. Alle Rechte vorbehalten.', fr: '© 2026 TourHunts. Tous droits réservés.', it: '© 2026 TourHunts. Tutti i diritti riservati.', es: '© 2026 TourHunts. Todos los derechos reservados.' },
   statCities:        { en: 'Cities', nl: 'Steden', de: 'Städte', fr: 'Villes', it: 'Città', es: 'Ciudades' },
   statHunts:         { en: 'Hunts', nl: 'Tochten', de: 'Touren', fr: 'Parcours', it: 'Cacce', es: 'Búsquedas' },
   statStops:         { en: 'Stops', nl: 'Stops', de: 'Stopps', fr: 'Étapes', it: 'Tappe', es: 'Paradas' },

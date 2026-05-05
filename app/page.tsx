@@ -2,52 +2,58 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
-import { City, LANGUAGES, localizeCity } from '@/types'
+import { Country, LANGUAGES, localizeCountry } from '@/types'
 import { ResumeRaceBanner } from '@/components/ResumeRaceBanner'
 
-function CityCard({ city, isUnlocked, t }: { city: City; isUnlocked: boolean; t: (key: string) => string }) {
+function CountryCard({ country, t }: { country: Country; t: (key: string) => string }) {
   const [imgLoaded, setImgLoaded] = useState(false)
+  const isComingSoon = country.comingSoon || country.cityCount === 0
+  const href = isComingSoon ? '#' : `/country/${country.id}`
   return (
     <a
-      href={`/city/${city.id}`}
-      className={`city-card ${isUnlocked ? 'is-unlocked' : ''}`}
+      href={href}
+      className={`country-card ${isComingSoon ? 'is-coming-soon' : ''}`}
+      onClick={(e) => { if (isComingSoon) e.preventDefault() }}
+      aria-disabled={isComingSoon}
       style={{ textDecoration: 'none' }}
     >
-      <div className="city-cover" aria-hidden>
-        {city.imageUrl ? (
+      <div className="country-cover" aria-hidden>
+        {country.imageUrl ? (
           <>
             <img
-              src={city.imageUrl}
-              alt={city.name}
-              className={`city-cover-img ${imgLoaded ? 'loaded' : ''}`}
+              src={country.imageUrl}
+              alt={country.name}
+              className={`country-cover-img ${imgLoaded ? 'loaded' : ''}`}
               onLoad={() => setImgLoaded(true)}
             />
-            <div className="city-cover-overlay" />
+            <div className="country-cover-overlay" />
           </>
         ) : (
-          <div className="city-cover-emoji">{city.coverEmoji ?? '📍'}</div>
+          <div className="country-cover-emoji">{country.flag}</div>
         )}
-        {isUnlocked
-          ? <span className="city-cover-tag city-cover-tag-unlocked">✓ {t('unlocked')}</span>
-          : <span className="city-cover-tag">{t('firstFree')}</span>}
+        <span className="country-cover-flag" aria-hidden>{country.flag}</span>
+        {isComingSoon && (
+          <span className="country-cover-tag country-cover-tag-soon">{t('comingSoon')}</span>
+        )}
       </div>
-      <div className="city-body">
-        <div className="city-body-top">
+      <div className="country-body">
+        <div className="country-body-top">
           <div>
-            <div className="city-name">{city.name}</div>
-            <div className="city-country">{city.country}</div>
+            <div className="country-name">{country.name}</div>
+            {country.tagline && <div className="country-tagline">{country.tagline}</div>}
           </div>
-          <div className="city-arrow">→</div>
+          {!isComingSoon && <div className="country-arrow">→</div>}
         </div>
-        <p className="city-desc">{city.description}</p>
-        <div className="city-foot">
-          <span className="city-foot-pill">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-            {city.huntCount} {t('hunts')}
+        <p className="country-desc">{country.description}</p>
+        <div className="country-foot">
+          <span className="country-foot-pill">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2c3 4 3 16 0 20M12 2c-3 4-3 16 0 20"/></svg>
+            {country.cityCount} {t('cityWord')}
           </span>
-          {!isUnlocked && (
-            <span className="city-foot-price">€{city.priceEuros}</span>
-          )}
+          <span className="country-foot-pill">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+            {country.huntCount} {t('hunts')}
+          </span>
         </div>
       </div>
     </a>
@@ -57,8 +63,7 @@ function CityCard({ city, isUnlocked, t }: { city: City; isUnlocked: boolean; t:
 export default function HomePage() {
   const { user, loading, signIn } = useAuth()
   const { lang, setLang, t } = useI18n()
-  const [cities, setCities] = useState<City[]>([])
-  const [unlocked, setUnlocked] = useState<Set<string>>(new Set())
+  const [countries, setCountries] = useState<Country[]>([])
   const [cookieAccepted, setCookieAccepted] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [imgLoaded, setImgLoaded] = useState(false)
@@ -69,16 +74,8 @@ export default function HomePage() {
   }, [])
 
   useEffect(() => {
-    fetch('/api/cities').then(r => r.json()).then(setCities).catch(() => {})
+    fetch('/api/countries').then(r => r.json()).then(setCountries).catch(() => {})
   }, [])
-
-  useEffect(() => {
-    if (!user) { setUnlocked(new Set()); return }
-    fetch(`/api/city-unlocks?userId=${user.uid}`)
-      .then(r => r.json())
-      .then((ids: string[]) => setUnlocked(new Set(ids)))
-      .catch(() => {})
-  }, [user])
 
   const acceptCookies = () => {
     localStorage.setItem('cookieConsent', 'yes')
@@ -140,8 +137,8 @@ export default function HomePage() {
     })),
   }
 
-  const firstCity = cities[0]
-  const startHref = firstCity ? `/city/${firstCity.id}` : '/'
+  const firstCountry = countries.find(c => !c.comingSoon && c.cityCount > 0)
+  const startHref = firstCountry ? `/country/${firstCountry.id}` : '/'
 
   return (
     <main className="page-center">
@@ -215,16 +212,16 @@ export default function HomePage() {
         {/* ── Stats bar ── */}
         <div className="stats-bar" role="list" aria-label="Highlights">
           <div className="stat-item" role="listitem">
-            <div className="stat-num">2</div>
+            <div className="stat-num">{countries.filter(c => !c.comingSoon).length || 1}</div>
+            <div className="stat-label">{t('countries')}</div>
+          </div>
+          <div className="stat-item" role="listitem">
+            <div className="stat-num">{countries.reduce((sum, c) => sum + (c.cityCount || 0), 0) || 2}</div>
             <div className="stat-label">{t('statCities')}</div>
           </div>
           <div className="stat-item" role="listitem">
-            <div className="stat-num">5</div>
+            <div className="stat-num">{countries.reduce((sum, c) => sum + (c.huntCount || 0), 0) || 5}</div>
             <div className="stat-label">{t('statHunts')}</div>
-          </div>
-          <div className="stat-item" role="listitem">
-            <div className="stat-num">36</div>
-            <div className="stat-label">{t('statStops')}</div>
           </div>
           <div className="stat-item" role="listitem">
             <div className="stat-num">4.9</div>
@@ -264,7 +261,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── Why UTR Tour ── */}
+        {/* ── Why TourHunts ── */}
         <section className="why-section" aria-labelledby="why-title">
           <h2 id="why-title" className="section-label">{t('whyUtr')}</h2>
           <div className="why-grid">
@@ -304,20 +301,19 @@ export default function HomePage() {
           <div className="mp-home-cta-arrow">→</div>
         </a>
 
-        {/* ── Cities ── */}
-        <div className="section-label">{t('chooseCity')}</div>
+        {/* ── Countries ── */}
+        <h2 className="section-label">{t('chooseCountry')}</h2>
 
-        {cities.length === 0 && (
+        {countries.length === 0 && (
           <div className="empty-card">
             <p>{t('noHuntsYet')}</p>
           </div>
         )}
 
-        <div className="city-grid">
-          {cities.map((rawCity) => {
-            const city = localizeCity(rawCity, lang)
-            const isUnlocked = unlocked.has(city.id)
-            return <CityCard key={city.id} city={city} isUnlocked={isUnlocked} t={(key: string) => t(key as any)} />
+        <div className="country-grid">
+          {countries.map((rawCountry) => {
+            const country = localizeCountry(rawCountry, lang)
+            return <CountryCard key={country.id} country={country} t={(key: string) => t(key as any)} />
           })}
         </div>
 
@@ -381,9 +377,9 @@ export default function HomePage() {
             </div>
             <div className="footer-nav">
               <div className="footer-nav-col">
-                <div className="footer-nav-title">{t('footerLinks')}</div>
-                {cities.map(c => (
-                  <a key={c.id} href={`/city/${c.id}`} className="footer-nav-link">{c.name}</a>
+                <div className="footer-nav-title">{t('countries')}</div>
+                {countries.filter(c => !c.comingSoon).map(c => (
+                  <a key={c.id} href={`/country/${c.id}`} className="footer-nav-link">{localizeCountry(c, lang).name}</a>
                 ))}
               </div>
               <div className="footer-nav-col">

@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'NL Grand Tour — GPS-guided scavenger hunts through Dutch cities'
+export const alt = 'TourHunts — GPS-guided scavenger hunts in cities around the world'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -33,7 +33,7 @@ export default async function Image() {
           >
             🧭
           </div>
-          <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: 1 }}>NL Grand Tour</div>
+          <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: 1 }}>TourHunts</div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -46,7 +46,7 @@ export default async function Image() {
               maxWidth: 900,
             }}
           >
-            Self-guided GPS hunts through Dutch cities.
+            Self-guided GPS hunts in cities around the world.
           </div>
           <div style={{ fontSize: 30, opacity: 0.92, maxWidth: 900 }}>
             Solve riddles · Discover hidden stories · Race friends in real-time

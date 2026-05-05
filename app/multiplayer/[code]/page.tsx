@@ -204,7 +204,7 @@ export default function RoomLobbyPage() {
     const url = typeof window !== 'undefined' ? window.location.href : ''
     if (typeof navigator !== 'undefined' && (navigator as any).share) {
       try {
-        await (navigator as any).share({ title: 'Join my UTR hunt', text: `Join my hunt — code ${code}`, url })
+        await (navigator as any).share({ title: 'Join my TourHunts race', text: `Join my hunt — code ${code}`, url })
       } catch {}
     } else {
       onCopy()

@@ -126,9 +126,9 @@ export default function CityPage() {
   return (
     <main className="page-center">
       <div className="container">
-        <a href="/" className="city-back">
+        <a href={city.countryId ? `/country/${city.countryId}` : '/'} className="city-back">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          {t('backToHunts')}
+          {city.countryId ? t('backToCountries') : t('backToHunts')}
         </a>
 
         {/* City hero */}

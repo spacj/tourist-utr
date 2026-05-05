@@ -1,7 +1,7 @@
 {
-  "name": "Netherlands Grand Tour",
-  "short_name": "NL Tour",
-  "description": "Premium GPS-guided scavenger hunts across the Netherlands.",
+  "name": "TourHunts",
+  "short_name": "TourHunts",
+  "description": "GPS-guided scavenger hunts in cities around the world.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

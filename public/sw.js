@@ -1,10 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
-   UTR Tour — Service Worker
+   TourHunts — Service Worker
    Precaches shell, caches pages offline, persists hunt data.
    ═══════════════════════════════════════════════════════════════ */
 
-const CACHE_NAME = 'utr-v1'
-const HUNT_CACHE_NAME = 'utr-hunts-v1'
+const CACHE_NAME = 'tourhunts-v1'
+const HUNT_CACHE_NAME = 'tourhunts-hunts-v1'
 const OFFLINE_PAGE = '/offline.html'
 
 // Assets that are precached on SW install
