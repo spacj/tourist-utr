@@ -173,7 +173,7 @@ export default function CityPage() {
         </a>
 
         {/* Hunts */}
-        <div className="section-label">{t('availableHunts')}</div>
+        <h2 id="hunts" className="section-label" style={{ scrollMarginTop: '20px' }}>{t('availableHunts')}</h2>
 
         {hunts.length === 0 && (
           <div className="empty-card"><p>{t('noHuntsYet')}</p></div>

@@ -137,8 +137,7 @@ export default function HomePage() {
     })),
   }
 
-  const firstCountry = countries.find(c => !c.comingSoon && c.cityCount > 0)
-  const startHref = firstCountry ? `/country/${firstCountry.id}` : '/'
+  const startHref = '#countries'
 
   return (
     <main className="page-center">
@@ -147,8 +146,10 @@ export default function HomePage() {
         <div className="hero">
           <div className="hero-img-wrap">
             <img
-              src="https://images.unsplash.com/photo-1526512340740-9217d0159da9?w=880&q=80"
-              alt="Canal in the Netherlands"
+              src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1600&q=85&auto=format&fit=crop"
+              srcSet="https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=900&q=80&auto=format&fit=crop 900w, https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1600&q=85&auto=format&fit=crop 1600w"
+              sizes="(max-width: 767px) 100vw, 1100px"
+              alt="Travel and exploration with TourHunts"
               className={`hero-img ${imgLoaded ? 'loaded' : ''}`}
               onLoad={() => setImgLoaded(true)}
             />
@@ -177,12 +178,10 @@ export default function HomePage() {
                 </div>
                 <h1 className="hero-overlay-title">{t('title')}</h1>
                 <p className="hero-overlay-tagline">{t('tagline')}</p>
-                {!user && (
-                  <button onClick={signIn} className="hero-cta-btn">
-                    {t('ctaButton')}
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                  </button>
-                )}
+                <a href="#countries" className="hero-cta-btn">
+                  {t('ctaButton')}
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
               </div>
             </div>
           </div>
@@ -302,7 +301,7 @@ export default function HomePage() {
         </a>
 
         {/* ── Countries ── */}
-        <h2 className="section-label">{t('chooseCountry')}</h2>
+        <h2 id="countries" className="section-label" style={{ scrollMarginTop: '20px' }}>{t('chooseCountry')}</h2>
 
         {countries.length === 0 && (
           <div className="empty-card">

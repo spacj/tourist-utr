@@ -1759,12 +1759,19 @@ a { color: inherit; }
 
   /* Hero - tighter on small screens */
   .hero { border-radius: 20px; }
-  .hero-img-wrap { height: 240px; }
-  .hero-overlay-content { padding: 14px 18px 22px; }
-  .hero-overlay-title { font-size: 32px; }
-  .hero-overlay-tagline { font-size: 15px; }
+  .hero-img-wrap { height: 360px; }
+  .hero-overlay-content { padding: 14px 18px 20px; }
+  .hero-overlay-title { font-size: 30px; line-height: 1.08; }
+  .hero-overlay-tagline { font-size: 14px; line-height: 1.35; max-width: 88%; }
   .hero-badge { font-size: 10px; padding: 5px 10px; }
   .hero-content { padding: 12px 18px 14px; }
+  /* CTA button on mobile: full-width, doesn't get cut off */
+  .hero-cta-btn {
+    margin-top: 12px;
+    padding: 12px 18px;
+    font-size: 13px;
+    border-radius: 12px;
+  }
 
   /* Hunt cards - more touch-friendly */
   .hunt-card { padding: 16px; border-radius: 14px; }
@@ -1953,14 +1960,15 @@ a { color: inherit; }
 }
 
 @media (max-width: 360px) {
-  .hero-img-wrap { height: 200px; }
-  .hero-overlay-content { padding: 12px 16px 18px; }
-  .hero-overlay-title { font-size: 28px; }
-  .hero-overlay-tagline { font-size: 14px; }
+  .hero-img-wrap { height: 320px; }
+  .hero-overlay-content { padding: 12px 14px 16px; }
+  .hero-overlay-title { font-size: 26px; line-height: 1.08; }
+  .hero-overlay-tagline { font-size: 13px; line-height: 1.35; }
   .hero-badge { font-size: 9px; padding: 4px 8px; gap: 4px; }
   .hero-badge svg { width: 12px; height: 12px; }
   .hero-content { padding: 10px 16px 12px; }
   .sign-in-btn { padding: 6px 10px; font-size: 11px; }
+  .hero-cta-btn { margin-top: 10px; padding: 11px 16px; font-size: 12px; }
   .city-cover { height: 88px; }
   .city-cover-emoji { font-size: 44px; }
   .city-name { font-size: 18px; }
@@ -1992,6 +2000,8 @@ a { color: inherit; }
   box-shadow: 0 8px 24px rgba(255, 106, 19, 0.4);
   transition: transform 0.18s, box-shadow 0.2s;
   font-family: inherit;
+  text-decoration: none;
+  white-space: nowrap;
 }
 .hero-cta-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(255, 106, 19, 0.5); }
 .hero-cta-btn:active { transform: scale(0.97); }
@@ -3265,8 +3275,8 @@ a { color: inherit; }
 
 @media (max-width: 767px) {
   .sticky-cta { display: flex; }
-  /* leave room above sticky bar so content isn't cut off */
-  body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+  /* Pad the body only when the sticky CTA is actually rendered (homepage). */
+  body:has(.sticky-cta) { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
   /* compact mid-cta on mobile */
   .mid-cta {
     flex-direction: column;
@@ -3283,6 +3293,97 @@ a { color: inherit; }
   }
   /* hide secondary text on very narrow phones, keep icon */
   .sticky-cta-secondary-text { display: inline; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Multiplayer mobile polish
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 540px) {
+  .mp-title { font-size: 26px; line-height: 1.15; }
+  .mp-card { padding: 16px; border-radius: 14px; margin-top: 12px; }
+  .mp-card-title { font-size: 16px; }
+  .mp-card-desc { font-size: 12.5px; margin-bottom: 12px; }
+
+  /* Stack code input + Join button vertically — both go full-width */
+  .mp-code-input-row { flex-direction: column; gap: 10px; }
+  .mp-code-input {
+    font-size: 26px;
+    letter-spacing: 6px;
+    padding: 14px 12px;
+    width: 100%;
+  }
+  .mp-cta { padding: 14px 18px; font-size: 15px; width: 100%; }
+
+  /* Lobby code display — bigger code, vertical action buttons */
+  .mp-code-display { padding: 16px 14px; margin-top: 14px; }
+  .mp-code-value { font-size: 30px; letter-spacing: 6px; }
+  .mp-code-actions { flex-direction: column; gap: 8px; }
+  .mp-cta-secondary { width: 100%; padding: 11px 14px; text-align: center; }
+
+  /* Room header */
+  .mp-room-header { padding: 12px 0 6px; }
+  .mp-room-hunt { font-size: 19px; margin-top: 8px; line-height: 1.2; }
+
+  /* Player rows — tighter padding, allow progress text to wrap */
+  .mp-player-row { padding: 10px; gap: 10px; }
+  .mp-player-avatar { width: 32px; height: 32px; font-size: 13px; }
+  .mp-player-name { font-size: 13.5px; flex-wrap: wrap; }
+  .mp-player-progress {
+    font-size: 11px;
+    white-space: normal;
+    text-align: right;
+    flex-shrink: 0;
+    max-width: 50%;
+  }
+  .mp-tag { padding: 2px 5px; font-size: 9px; }
+
+  /* Hunt picker on /multiplayer entry — tighter rows */
+  .mp-hunt-item { padding: 12px 14px; }
+  .mp-hunt-name { font-size: 13.5px; }
+  .mp-hunt-meta { font-size: 11.5px; }
+  .mp-hunt-radio { font-size: 20px; }
+
+  .mp-cta-large { padding: 15px 18px; font-size: 15px; margin-top: 14px; }
+  .mp-waiting { padding: 12px; font-size: 13px; }
+  .mp-leave { font-size: 11px; margin-top: 18px; }
+
+  /* Race results rank badge */
+  .mp-rank-badge { width: 26px; height: 26px; font-size: 12px; }
+
+  /* Scoreboard FAB and panel: full-width panel on small screens */
+  .mp-scoreboard-fab {
+    top: calc(env(safe-area-inset-top, 8px) + 8px);
+    right: 8px;
+    padding: 8px 12px;
+  }
+  .mp-scoreboard-fab-rank { font-size: 14px; }
+  .mp-scoreboard-fab-label { font-size: 11px; }
+  .mp-scoreboard-panel {
+    width: calc(100vw - 16px);
+    right: 8px;
+    max-height: calc(100vh - 96px);
+  }
+  .mp-scoreboard-row {
+    grid-template-columns: 22px 1fr auto;
+    gap: 8px;
+    padding: 8px 12px;
+  }
+  .mp-scoreboard-name { font-size: 12.5px; }
+  .mp-scoreboard-progress { width: 60px; }
+  .mp-scoreboard-numbers { font-size: 10.5px; }
+
+  /* Resume race banner */
+  .resume-race-link { padding: 12px 14px; gap: 12px; }
+  .resume-race-icon { width: 38px; height: 38px; font-size: 20px; }
+  .resume-race-title { font-size: 14px; }
+  .resume-race-desc { font-size: 11.5px; }
+  .resume-race-dismiss { width: 36px; font-size: 20px; }
+}
+
+@media (max-width: 360px) {
+  .mp-code-value { font-size: 26px; letter-spacing: 4px; }
+  .mp-code-input { font-size: 22px; letter-spacing: 4px; }
+  .mp-room-hunt { font-size: 17px; }
 }
 
 @media (max-width: 380px) {
