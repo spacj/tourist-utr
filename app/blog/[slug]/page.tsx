@@ -1,8 +1,10 @@
+import { Fragment } from 'react'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { db } from '@/lib/firebase'
 import { doc, getDoc } from 'firebase/firestore'
-import { BLOG_POSTS, getPostBySlug, type Block, type BlogPost } from '@/content/blog'
+import { getAllSlugs, getPost } from '@/lib/blog'
+import type { CtaSpec } from '@/lib/md'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tourhunts.com'
 
@@ -10,11 +12,11 @@ export const dynamic = 'force-static'
 export const revalidate = 3600
 
 export async function generateStaticParams() {
-  return BLOG_POSTS.map(p => ({ slug: p.slug }))
+  return getAllSlugs().map(slug => ({ slug }))
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const post = getPostBySlug(params.slug)
+  const post = getPost(params.slug)
   if (!post) return { title: 'Not found' }
   const url = `${SITE_URL}/blog/${post.slug}`
   return {
@@ -50,118 +52,69 @@ interface CtaTarget {
   badge: string
 }
 
-async function resolveCta(block: Extract<Block, { type: 'cta' }>): Promise<CtaTarget | null> {
-  const fallback = (href: string, badge: string, title: string, description: string): CtaTarget => ({
+async function resolveCta(spec: CtaSpec): Promise<CtaTarget | null> {
+  const make = (href: string, badge: string, title: string, description: string): CtaTarget => ({
     href, badge, title, description,
   })
 
-  if (block.kind === 'multiplayer') {
-    return fallback(
+  if (spec.kind === 'multiplayer') {
+    return make(
       '/multiplayer',
       'Multiplayer',
-      block.title ?? 'Race friends through a hunt',
-      block.description ?? 'Real-time multiplayer races. First to all stops wins. First hunt in every city is free.'
+      spec.title ?? 'Race friends through a hunt',
+      spec.description ?? 'Real-time multiplayer races. First to all stops wins. First hunt in every city is free.'
     )
   }
 
-  if (block.kind === 'tour' && block.targetId) {
-    return fallback(
-      `/multiplayer`,                       // tours can't deep-link to a session — entry point is the city/multiplayer page
+  if (spec.kind === 'tour' && spec.targetId) {
+    return make(
+      '/multiplayer',
       'Self-guided tour',
-      block.title ?? 'Try this self-guided tour',
-      block.description ?? 'Walk it at your own pace. GPS-guided, in-app maps, fun facts at every stop.'
+      spec.title ?? 'Try this self-guided tour',
+      spec.description ?? 'Walk it at your own pace. GPS-guided, in-app maps, fun facts at every stop.'
     )
   }
 
-  if (block.kind === 'hunt' && block.targetId) {
+  if (spec.kind === 'hunt' && spec.targetId) {
     try {
-      const huntSnap = await getDoc(doc(db, 'hunts', block.targetId))
+      const huntSnap = await getDoc(doc(db, 'hunts', spec.targetId))
       if (huntSnap.exists()) {
         const hunt = huntSnap.data() as { title?: string; description?: string; cityId?: string }
-        return fallback(
+        return make(
           hunt.cityId ? `/city/${hunt.cityId}#hunts` : '/',
           'Hunt',
-          block.title ?? hunt.title ?? 'Try this hunt',
-          block.description ?? hunt.description ?? 'GPS-guided self-guided scavenger hunt — first hunt in every city is free.'
+          spec.title ?? hunt.title ?? 'Try this hunt',
+          spec.description ?? hunt.description ?? 'GPS-guided self-guided scavenger hunt — first hunt in every city is free.'
         )
       }
     } catch {}
-    return fallback('/', 'Hunt', block.title ?? 'Try a hunt', block.description ?? 'Pick a city and dive in.')
+    return make('/', 'Hunt', spec.title ?? 'Try a hunt', spec.description ?? 'Pick a city and dive in.')
   }
 
-  if (block.kind === 'city' && block.targetId) {
+  if (spec.kind === 'city' && spec.targetId) {
     try {
-      const citySnap = await getDoc(doc(db, 'cities', block.targetId))
+      const citySnap = await getDoc(doc(db, 'cities', spec.targetId))
       if (citySnap.exists()) {
         const city = citySnap.data() as { name?: string }
-        return fallback(
-          `/city/${block.targetId}`,
+        return make(
+          `/city/${spec.targetId}`,
           'City',
-          block.title ?? `Explore ${city.name ?? 'this city'}`,
-          block.description ?? 'First hunt is free. Lifetime access for €5.'
+          spec.title ?? `Explore ${city.name ?? 'this city'}`,
+          spec.description ?? 'First hunt is free. Lifetime access for €5.'
         )
       }
     } catch {}
-    return fallback(`/city/${block.targetId}`, 'City', block.title ?? 'Explore the city', block.description ?? 'First hunt is free.')
+    return make(`/city/${spec.targetId}`, 'City', spec.title ?? 'Explore the city', spec.description ?? 'First hunt is free.')
   }
 
-  return null
-}
-
-function renderInlineBlock(block: Block, key: number): JSX.Element | null {
-  switch (block.type) {
-    case 'p':
-      return <p key={key} className="blog-p">{block.text}</p>
-    case 'h2':
-      return <h2 key={key} id={block.id} className="blog-h2">{block.text}</h2>
-    case 'h3':
-      return <h3 key={key} id={block.id} className="blog-h3">{block.text}</h3>
-    case 'ul':
-      return (
-        <ul key={key} className="blog-ul">
-          {block.items.map((item, i) => <li key={i}>{item}</li>)}
-        </ul>
-      )
-    case 'ol':
-      return (
-        <ol key={key} className="blog-ol">
-          {block.items.map((item, i) => <li key={i}>{item}</li>)}
-        </ol>
-      )
-    case 'quote':
-      return (
-        <blockquote key={key} className="blog-quote">
-          <p>{block.text}</p>
-          {block.cite && <cite>— {block.cite}</cite>}
-        </blockquote>
-      )
-    case 'image':
-      return (
-        <figure key={key} className="blog-figure">
-          <img src={block.src} alt={block.alt} loading="lazy" />
-          {block.caption && <figcaption>{block.caption}</figcaption>}
-        </figure>
-      )
-    case 'divider':
-      return <hr key={key} className="blog-divider" />
-    case 'cta':
-      // Resolved separately (async) — placeholder here.
-      return null
-  }
   return null
 }
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = getPostBySlug(params.slug)
+  const post = getPost(params.slug)
   if (!post) notFound()
 
-  // Pre-resolve all CTA blocks server-side (one Firestore round-trip per
-  // unique target) so the rendered HTML has the city/hunt name baked in
-  // and search engines see the linked anchor in plain text.
-  const resolvedCtas = await Promise.all(
-    post.blocks.map(b => (b.type === 'cta' ? resolveCta(b) : Promise.resolve(null)))
-  )
-
+  const resolvedCtas = await Promise.all(post.ctas.map(c => resolveCta(c)))
   const url = `${SITE_URL}/blog/${post.slug}`
 
   const articleJsonLd = {
@@ -220,23 +173,21 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
         )}
 
         <div className="blog-post-body">
-          {post.blocks.map((block, i) => {
-            if (block.type === 'cta') {
-              const cta = resolvedCtas[i]
-              if (!cta) return null
-              return (
-                <a key={i} href={cta.href} className="blog-cta">
+          {post.htmlSegments.map((html, i) => (
+            <Fragment key={i}>
+              <div dangerouslySetInnerHTML={{ __html: html }} />
+              {i < post.ctas.length && resolvedCtas[i] && (
+                <a href={resolvedCtas[i]!.href} className="blog-cta">
                   <div className="blog-cta-content">
-                    <span className="blog-cta-badge">{cta.badge}</span>
-                    <div className="blog-cta-title">{cta.title}</div>
-                    <div className="blog-cta-desc">{cta.description}</div>
+                    <span className="blog-cta-badge">{resolvedCtas[i]!.badge}</span>
+                    <div className="blog-cta-title">{resolvedCtas[i]!.title}</div>
+                    <div className="blog-cta-desc">{resolvedCtas[i]!.description}</div>
                   </div>
                   <div className="blog-cta-arrow" aria-hidden>→</div>
                 </a>
-              )
-            }
-            return renderInlineBlock(block, i)
-          })}
+              )}
+            </Fragment>
+          ))}
         </div>
 
         {post.tags.length > 0 && (

@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { db } from '@/lib/firebase'
 import { collection, getDocs } from 'firebase/firestore'
-import { BLOG_POSTS } from '@/content/blog'
+import { getAllPostsMeta } from '@/lib/blog'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tourhunts.com'
 
@@ -32,7 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]
 
   // Blog posts — each gets its own URL with dateModified for crawl freshness.
-  for (const post of BLOG_POSTS) {
+  for (const post of getAllPostsMeta()) {
     entries.push({
       url: `${SITE_URL}/blog/${post.slug}`,
       lastModified: new Date(post.updatedAt ?? post.publishedAt),

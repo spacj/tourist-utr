@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { BLOG_POSTS } from '@/content/blog'
+import { getAllPostsMeta } from '@/lib/blog'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tourhunts.com'
 
@@ -25,13 +25,10 @@ const CATEGORY_LABEL: Record<string, string> = {
 }
 
 export default function BlogIndexPage() {
-  const posts = [...BLOG_POSTS].sort(
-    (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-  )
+  const posts = getAllPostsMeta()
 
-  // Schema.org Blog + BlogPosting list — surfaces post titles, dates, and URLs
-  // in Google rich results without exposing post bodies (full bodies live on
-  // the individual post pages where they get their own Article schema).
+  // Schema.org Blog + BlogPosting list — Google rich-result eligible without
+  // exposing post bodies (those live on the individual post pages).
   const blogJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Blog',
