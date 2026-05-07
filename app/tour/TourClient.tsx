@@ -1,8 +1,9 @@
 'use client'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Clue, Hunt, localizeClue, localizeHunt, TourCategory } from '@/types'
 import { useI18n } from '@/hooks/useI18n'
 import { haversineM } from '@/lib/geo'
+import { TourMapView } from '@/components/TourMapView'
 
 interface Props {
   hunt: Hunt
@@ -34,6 +35,8 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, initiall
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null)
   const [openClueId, setOpenClueId] = useState<string | null>(clues[0]?.id ?? null)
   const [marking, setMarking] = useState<string | null>(null)
+  const mapWrapRef = useRef<HTMLDivElement>(null)
+  const stopRefs = useRef<Map<string, HTMLLIElement>>(new Map())
 
   // Live GPS — used to surface "you're nearby" hints, not for scoring.
   useEffect(() => {
@@ -94,6 +97,21 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, initiall
   const completedCount = arrived.size
   const allDone = completedCount >= clues.length
 
+  const focusOnMap = (clueId: string) => {
+    setOpenClueId(clueId)
+    if (mapWrapRef.current) {
+      mapWrapRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
+  const onMarkerSelect = (clueId: string) => {
+    setOpenClueId(clueId)
+    // When the user taps a marker, scroll the corresponding list item into view
+    // so they can read details + tap "I'm here" / "visited" without hunting.
+    const el = stopRefs.current.get(clueId)
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }
+
   return (
     <main className="page-center">
       <div className="container tour-container">
@@ -128,8 +146,23 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, initiall
           </div>
         </section>
 
-        {/* Stop list */}
-        <ul className="tour-stops" aria-label={t('tourStops')}>
+        {/* Map + stops: side-by-side on desktop, stacked on mobile. The map
+            is sticky on desktop so it stays visible while the list scrolls. */}
+        <div className="tour-content-grid">
+          <div ref={mapWrapRef} className="tour-map-wrap">
+            <TourMapView
+              clues={clues}
+              visited={arrived}
+              selectedId={openClueId}
+              onSelect={onMarkerSelect}
+              userLat={userPos?.lat ?? null}
+              userLng={userPos?.lng ?? null}
+              accentColor={catMeta.color}
+            />
+          </div>
+
+          {/* Stop list */}
+          <ul className="tour-stops" aria-label={t('tourStops')}>
           {clues.map((clue) => {
             const isOpen = openClueId === clue.id
             const isVisited = arrived.has(clue.id)
@@ -139,7 +172,14 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, initiall
             const nearby = distance !== null && distance <= NEARBY_M
 
             return (
-              <li key={clue.id} className={`tour-stop ${isVisited ? 'is-visited' : ''} ${isOpen ? 'is-open' : ''}`}>
+              <li
+                key={clue.id}
+                ref={(el) => {
+                  if (el) stopRefs.current.set(clue.id, el)
+                  else stopRefs.current.delete(clue.id)
+                }}
+                className={`tour-stop ${isVisited ? 'is-visited' : ''} ${isOpen ? 'is-open' : ''}`}
+              >
                 <button
                   type="button"
                   className="tour-stop-summary"
@@ -174,17 +214,16 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, initiall
                       </div>
                     )}
                     <div className="tour-stop-actions">
-                      <a
-                        href={`https://www.google.com/maps/dir/?api=1&destination=${clue.lat},${clue.lng}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        type="button"
+                        onClick={() => focusOnMap(clue.id)}
                         className="tour-stop-maps-btn"
                       >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
                         </svg>
-                        {t('openInMaps')}
-                      </a>
+                        {t('showMap')}
+                      </button>
                       {isVisited ? (
                         <span className="tour-stop-visited-tag">✓ {t('visited')}</span>
                       ) : (
@@ -203,7 +242,8 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, initiall
               </li>
             )
           })}
-        </ul>
+          </ul>
+        </div>
 
         {allDone && (
           <a
