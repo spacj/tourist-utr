@@ -2520,11 +2520,224 @@ const delftVermeer = {
 }
 
 // ══════════════════════════════════════════════════════════════════
+// HUNT — Milan Classic (6 stops, medium)
+// ══════════════════════════════════════════════════════════════════
+const milanClassic = {
+  id: 'hunt_milan_classic',
+  meta: {
+    title: 'Milan Classic',
+    description: 'Six iconic stops from the world\'s third-largest cathedral to a Roman amphitheatre still standing — Milan\'s essential 600-year walk in one loop.',
+    city: 'Milan',
+    cityId: 'city_milan',
+    order: 0,
+    difficulty: 'medium',
+    durationMin: 140,
+    distanceKm: 3.8,
+    rating: 4.9,
+    badge: 'Most popular',
+    i18n: {
+      it: { title: 'Milano Classico', description: 'Sei tappe iconiche dalla terza cattedrale più grande del mondo a un anfiteatro romano ancora in piedi — i 600 anni essenziali di Milano in un unico anello.', badge: 'Più popolare' },
+      nl: { title: 'Milaan Klassiek', description: 'Zes iconische stops, van de derde grootste kathedraal ter wereld tot een Romeins amfitheater dat nog overeind staat — de essentiële 600 jaar van Milaan in één rondje.', badge: 'Populairst' },
+      de: { title: 'Mailand Klassik', description: 'Sechs ikonische Stationen — vom drittgrößten Dom der Welt bis zu einem römischen Amphitheater, das noch steht. Die wesentlichen 600 Jahre Mailand in einer Schleife.', badge: 'Am beliebtesten' },
+      fr: { title: 'Milan Classique', description: 'Six étapes incontournables — de la troisième plus grande cathédrale du monde à un amphithéâtre romain encore debout. 600 ans de Milan en une boucle.', badge: 'Le plus populaire' },
+      es: { title: 'Milán Clásico', description: 'Seis paradas icónicas — desde la tercera catedral más grande del mundo hasta un anfiteatro romano que aún sigue en pie. 600 años esenciales de Milán en un solo recorrido.', badge: 'Más popular' },
+    },
+  },
+  clues: [
+    {
+      id: 'clue_1', order: 1, icon: '⛪', theme: 'Six centuries of Gothic',
+      riddle: "Find the largest Gothic cathedral in Italy. 135 spires, 3,400 statues, and 600 years to finish — Napoleon was crowned king of Italy here in 1805 before the façade was even done.",
+      locationName: 'Duomo di Milano', lat: 45.4641, lng: 9.1919, radiusM: 60,
+      hint1: "You're looking for Milan's main cathedral, built of pink-white Candoglia marble, on the central square.",
+      hint2: 'Piazza del Duomo. The cathedral is the obvious centerpiece — the bronze doors face west.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'Construction started in 1386 and the last spire was added in 1965. Milan\'s archbishops still own the Candoglia marble quarry that supplied every stone — it\'s a tax-free zone granted by the Visconti dukes in 1387 and never revoked. The roof is open to visitors and gives you a 360° view of the Alps on clear days.',
+      trivia: { question: 'How long did the Duomo take to complete?', options: ['About 50 years', 'About 200 years', 'Almost 600 years', 'It\'s still not finished'], correctIndex: 2, explain: 'Started in 1386, the last spire (the small one near the back) was added in 1965 — about 579 years.' },
+      i18n: {
+        it: { theme: 'Sei secoli di gotico', riddle: "Trova la più grande cattedrale gotica d'Italia. 135 guglie, 3.400 statue, 600 anni per completarla — Napoleone fu incoronato qui re d'Italia nel 1805, prima ancora che la facciata fosse finita.", locationName: 'Duomo di Milano', funFact: 'I lavori iniziarono nel 1386 e l\'ultima guglia fu aggiunta nel 1965. Gli arcivescovi di Milano possiedono ancora la cava di marmo di Candoglia che fornì ogni pietra — è una zona esentasse concessa dai Visconti nel 1387 e mai revocata. Il tetto è aperto al pubblico e nelle giornate limpide regala una vista a 360° sulle Alpi.' },
+      },
+    },
+    {
+      id: 'clue_2', order: 2, icon: '🛍️', theme: 'World\'s oldest mall',
+      riddle: "Step into a four-storey iron-and-glass arcade opened in 1877. The mosaic floor includes a bull — Milanese tradition says you should spin on its testicles for luck.",
+      locationName: 'Galleria Vittorio Emanuele II', lat: 45.4659, lng: 9.1900, radiusM: 50,
+      hint1: "You're looking for a covered shopping arcade with a glass dome, directly next to the Duomo.",
+      hint2: 'Enter from Piazza del Duomo — the arched entrance is on the north side, opposite the cathedral façade.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'Designed by Giuseppe Mengoni, who fell to his death from the scaffolding three days before the inauguration. The Galleria houses the original Prada (founded 1913) and the Camparino bar where the Negroni Sbagliato was invented. The famous mosaic bull on the floor — symbol of Turin — has its testicles worn flat by a century of locals spinning on them for luck.',
+      trivia: { question: 'Why do Milanese spin on the mosaic bull\'s testicles?', options: ['It\'s required for new university students', 'For luck — the tradition is to do a 360° spin on your heel', 'To win the lottery', 'It was a fascist-era political ritual'], correctIndex: 1, explain: 'A 360° heel-spin on the bull\'s testicles is supposed to bring luck. The mosaic has been re-tiled three times — same spot wears down each cycle.' },
+      i18n: {
+        it: { theme: 'Il centro commerciale più antico del mondo', riddle: "Entra in un'arcata di ferro e vetro su quattro piani, inaugurata nel 1877. Sul pavimento a mosaico c'è un toro — la tradizione milanese dice di girare sui suoi testicoli per portafortuna.", locationName: 'Galleria Vittorio Emanuele II', funFact: 'Progettata da Giuseppe Mengoni, caduto dall\'impalcatura tre giorni prima dell\'inaugurazione. La Galleria ospita lo storico Prada (1913) e il Camparino, dove fu inventato il Negroni Sbagliato. Il famoso toro a mosaico — simbolo di Torino — ha i testicoli consumati da un secolo di milanesi che ci girano sopra per superstizione.' },
+      },
+    },
+    {
+      id: 'clue_3', order: 3, icon: '🎼', theme: 'Where opera was made religion',
+      riddle: "Walk through the Galleria to a piazza with a small statue of Leonardo. Behind him sits the most prestigious opera house in the world — Verdi premiered here, Toscanini conducted, Callas sang.",
+      locationName: 'Teatro alla Scala', lat: 45.4674, lng: 9.1893, radiusM: 50,
+      hint1: "You're looking for an 18th-century opera house at the end of the Galleria — the building is more austere outside than you'd expect.",
+      hint2: 'Piazza della Scala — exit the Galleria opposite to the Duomo and you\'re facing it. Leonardo\'s statue stands in the middle of the square.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'Built in 1778 on the ruins of the church of Santa Maria alla Scala (hence the name). Verdi premiered "Nabucco," "Otello," and "Falstaff" here. Maria Callas\'s 1955 "La Traviata" is still discussed by opera fans as the night opera reached its peak. The museum next door has Verdi\'s top hat and Liszt\'s piano.',
+      trivia: { question: 'Which Verdi opera did NOT premiere at La Scala?', options: ['Nabucco', 'Aida', 'Otello', 'Falstaff'], correctIndex: 1, explain: '"Aida" premiered in Cairo in 1871 — commissioned to celebrate the opening of the Suez Canal. The other three are La Scala originals.' },
+      i18n: {
+        it: { theme: 'Dove l\'opera è diventata religione', riddle: "Attraversa la Galleria fino a una piazza con una statua di Leonardo. Dietro di lui sorge l'opera più prestigiosa al mondo — Verdi vi debuttò, Toscanini diresse, la Callas vi cantò.", locationName: 'Teatro alla Scala', funFact: 'Costruito nel 1778 sulle rovine della chiesa di Santa Maria alla Scala (da cui il nome). Verdi vi debuttò "Nabucco," "Otello" e "Falstaff." La "Traviata" del 1955 con la Callas è ancora discussa come la sera in cui l\'opera ha toccato il suo apice. Il museo accanto custodisce il cappello a cilindro di Verdi e il pianoforte di Liszt.' },
+      },
+    },
+    {
+      id: 'clue_4', order: 4, icon: '🏰', theme: 'The Sforza fortress',
+      riddle: "Ten minutes north-west, find the medieval brick fortress that was the seat of the Sforza dukes. Inside, Leonardo painted a ceiling fresco of a forest. Michelangelo's last sculpture is here.",
+      locationName: 'Castello Sforzesco', lat: 45.4707, lng: 9.1797, radiusM: 80,
+      hint1: "You're looking for a large red-brick castle complex with three towers and a moat, on the edge of the historic centre.",
+      hint2: 'Piazza Castello — about 10 minutes\' walk from La Scala. The main entrance is the Filarete tower facing south.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'Built in 1370 as the Visconti castle, transformed in the 15th century into the Renaissance court of the Sforza dukes. Leonardo da Vinci frescoed the Sala delle Asse with a canopy of intertwined trees in 1498 — fragments survive. Michelangelo\'s Rondanini Pietà — the unfinished sculpture he was working on six days before his death in 1564 — sits in a quiet ground-floor room. Free entry to the courtyards.',
+      trivia: { question: 'What was Michelangelo doing six days before his death?', options: ['Painting the Sistine Chapel', 'Sculpting the Rondanini Pietà', 'Designing St. Peter\'s dome', 'Writing his autobiography'], correctIndex: 1, explain: 'He was carving the Rondanini Pietà — a marble he kept reworking for the last decade of his life. The chisel marks visible today are his last.' },
+      i18n: {
+        it: { theme: 'La fortezza degli Sforza', riddle: "Dieci minuti a nord-ovest, trova la fortezza medievale in mattoni che fu sede dei duchi Sforza. All'interno, Leonardo affrescò un soffitto a forma di foresta. Qui c'è anche l'ultima scultura di Michelangelo.", locationName: 'Castello Sforzesco', funFact: 'Costruito nel 1370 come castello dei Visconti, trasformato nel \'400 nella corte rinascimentale degli Sforza. Leonardo affrescò la Sala delle Asse con una volta di alberi intrecciati nel 1498 — frammenti sopravvivono. La Pietà Rondanini di Michelangelo — la scultura non finita a cui lavorava sei giorni prima di morire nel 1564 — si trova in una stanza tranquilla al piano terra. Cortili aperti gratis.' },
+      },
+    },
+    {
+      id: 'clue_5', order: 5, icon: '🎨', theme: 'Bohemian Brera',
+      riddle: "Cut east into Milan's bohemian quarter. Cobbled streets, art galleries, and the city's main painting collection — including Caravaggio's only altarpiece in Milan and Raphael's Marriage of the Virgin.",
+      locationName: 'Pinacoteca di Brera', lat: 45.4720, lng: 9.1875, radiusM: 60,
+      hint1: "You're looking for an 18th-century palazzo housing one of Italy's top three painting galleries, in the Brera district north of La Scala.",
+      hint2: 'Via Brera 28. The entrance is through an arched courtyard with a bronze statue of Napoleon — naked, in the style of a Roman emperor.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'The Pinacoteca was founded by Napoleon in 1809 as a public gallery — the seized art of conquered Italian states, redistributed for "civic education." Today it holds 400 paintings including Caravaggio\'s "Supper at Emmaus," Raphael\'s "Sposalizio della Vergine," and Mantegna\'s shockingly foreshortened "Dead Christ." The streets around (Via Fiori Chiari, Via Madonnina) are Milan\'s closest equivalent to Paris\'s Marais.',
+      trivia: { question: 'Who founded the Pinacoteca di Brera as a public gallery?', options: ['The Sforza dukes', 'The House of Savoy', 'Napoleon Bonaparte', 'Mussolini'], correctIndex: 2, explain: 'Napoleon, in 1809. He seized art from churches and noble houses across northern Italy and made it publicly viewable — propaganda by way of access to Caravaggios.' },
+      i18n: {
+        it: { theme: 'La Brera bohémien', riddle: "Tagli a est verso il quartiere bohémien di Milano. Strade acciottolate, gallerie d'arte e la principale pinacoteca della città — con l'unica pala d'altare di Caravaggio a Milano e lo Sposalizio della Vergine di Raffaello.", locationName: 'Pinacoteca di Brera', funFact: 'Fondata da Napoleone nel 1809 come galleria pubblica — l\'arte sequestrata agli stati italiani conquistati, ridistribuita per "educazione civica." Oggi ospita 400 dipinti tra cui la "Cena di Emmaus" di Caravaggio, lo "Sposalizio della Vergine" di Raffaello e il "Cristo morto" di Mantegna, di un audace scorcio prospettico. Le strade intorno (Via Fiori Chiari, Via Madonnina) sono il Marais milanese.' },
+      },
+    },
+    {
+      id: 'clue_6', order: 6, icon: '🏛️', theme: 'Roman Milan',
+      riddle: "End the loop south of the centre. 16 ancient Roman columns stand in a row in front of a 4th-century basilica — what's left of a temple to who-knows-which god, repurposed by early Christians.",
+      locationName: 'Colonne di San Lorenzo', lat: 45.4582, lng: 9.1820, radiusM: 60,
+      hint1: "You're looking for a row of free-standing ancient Roman columns in front of a brick basilica, south of the city centre.",
+      hint2: 'Corso di Porta Ticinese, near the Basilica di San Lorenzo Maggiore. About 15 minutes\' walk south from Piazza del Duomo.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'The 16 Corinthian columns date to the 2nd century AD — probably from a Roman temple or bath complex. Early Christians moved them here in the 4th century to grace the new Basilica di San Lorenzo, one of the oldest churches in the western Roman empire. The square in front fills with Milanese students every evening for an unofficial outdoor aperitivo.',
+      trivia: { question: 'How old are the columns themselves?', options: ['Built specifically for the basilica in the 4th century', 'Reused from a 2nd-century Roman building', 'Built in the Middle Ages', 'Built during the Renaissance to look ancient'], correctIndex: 1, explain: 'The columns are about 200 years OLDER than the basilica behind them — repurposed Roman material that was the cheapest way to build monumental Christian churches in late antiquity.' },
+      i18n: {
+        it: { theme: 'Milano romana', riddle: "Chiudi l'anello a sud del centro. Sedici antiche colonne romane in fila davanti a una basilica del IV secolo — ciò che resta di un tempio dedicato a chissà quale dio, riutilizzato dai primi cristiani.", locationName: 'Colonne di San Lorenzo', funFact: 'Le 16 colonne corinzie risalgono al II secolo d.C. — probabilmente da un tempio o complesso termale romano. I primi cristiani le spostarono qui nel IV secolo per ornare la nuova Basilica di San Lorenzo, una delle più antiche chiese dell\'impero romano d\'occidente. Il sagrato si riempie ogni sera di studenti milanesi per un aperitivo all\'aperto non ufficiale.' },
+      },
+    },
+  ],
+}
+
+// ══════════════════════════════════════════════════════════════════
+// HUNT — Rome Classic (6 stops, medium)
+// ══════════════════════════════════════════════════════════════════
+const romeClassic = {
+  id: 'hunt_rome_classic',
+  meta: {
+    title: 'Rome Classic',
+    description: 'Six legendary stops across 2,000 years of empire — Colosseum, Pantheon, Trevi, Spanish Steps. The greatest hits of the eternal city in one walk.',
+    city: 'Rome',
+    cityId: 'city_rome',
+    order: 0,
+    difficulty: 'medium',
+    durationMin: 160,
+    distanceKm: 4.0,
+    rating: 4.9,
+    badge: 'Most popular',
+    i18n: {
+      it: { title: 'Roma Classica', description: 'Sei tappe leggendarie attraverso 2.000 anni di impero — Colosseo, Pantheon, Fontana di Trevi, Trinità dei Monti. I più grandi successi della città eterna in un\'unica passeggiata.', badge: 'Più popolare' },
+      nl: { title: 'Rome Klassiek', description: 'Zes legendarische stops door 2.000 jaar imperium — Colosseum, Pantheon, Trevi-fontein, Spaanse Trappen. De grootste hits van de eeuwige stad in één wandeling.', badge: 'Populairst' },
+      de: { title: 'Rom Klassik', description: 'Sechs legendäre Stationen durch 2.000 Jahre Imperium — Kolosseum, Pantheon, Trevi-Brunnen, Spanische Treppe. Die größten Hits der Ewigen Stadt in einem Rundgang.', badge: 'Am beliebtesten' },
+      fr: { title: 'Rome Classique', description: 'Six étapes légendaires à travers 2 000 ans d\'empire — Colisée, Panthéon, fontaine de Trevi, place d\'Espagne. Les plus grands hits de la Ville éternelle en une seule promenade.', badge: 'Le plus populaire' },
+      es: { title: 'Roma Clásica', description: 'Seis paradas legendarias a través de 2.000 años de imperio — Coliseo, Panteón, Fontana di Trevi, Plaza de España. Los grandes éxitos de la ciudad eterna en un recorrido.', badge: 'Más popular' },
+    },
+  },
+  clues: [
+    {
+      id: 'clue_1', order: 1, icon: '🏟️', theme: 'The bloodsport amphitheatre',
+      riddle: "Find the largest amphitheatre ever built. 50,000 Romans watched gladiators die here. The arena flooded for naval battles. Its limestone outer wall was strip-mined for centuries to build St. Peter's.",
+      locationName: 'Colosseo', lat: 41.8902, lng: 12.4922, radiusM: 100,
+      hint1: "You're looking for the iconic Roman amphitheatre on Piazza del Colosseo, east of the Forum.",
+      hint2: 'Piazza del Colosseo — Metro line B, station "Colosseo." The structure dominates everything around it.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'Inaugurated in 80 AD with 100 days of games — 9,000 wild animals were killed in the opening alone. The half-missing outer wall is the result of two earthquakes (847 and 1349) plus centuries of papal-sanctioned stone quarrying — much of St. Peter\'s and the Palazzo Venezia is recycled Colosseum. The arena floor was wood, sand-covered, with trapdoors for trick entrances; the stone substructure underneath is what visitors see today.',
+      trivia: { question: 'How many wild animals were killed during the Colosseum\'s 100-day inaugural games in 80 AD?', options: ['100', '900', '9,000', '90,000'], correctIndex: 2, explain: '9,000 — including lions, tigers, elephants, and rhinos shipped from across the empire. Many animal species were driven to local extinction by the demand for the games.' },
+      i18n: {
+        it: { theme: 'L\'anfiteatro del sangue', riddle: "Trova il più grande anfiteatro mai costruito. 50.000 romani vi guardavano morire i gladiatori. L'arena veniva allagata per battaglie navali. La sua cortina esterna in travertino fu cavata per secoli per costruire San Pietro.", locationName: 'Colosseo', funFact: 'Inaugurato nell\'80 d.C. con 100 giorni di giochi — solo nell\'apertura morirono 9.000 animali selvatici. Il muro esterno mezzo crollato è il risultato di due terremoti (847 e 1349) più secoli di estrazione di pietra autorizzata dai papi — gran parte di San Pietro e Palazzo Venezia è Colosseo riciclato. Il pavimento dell\'arena era in legno coperto di sabbia, con botole; oggi si vede la sottostruttura in pietra.' },
+      },
+    },
+    {
+      id: 'clue_2', order: 2, icon: '🏛️', theme: 'The Roman Forum',
+      riddle: "Walk west into a long valley of marble fragments. Senators argued here, Caesar was cremated here, and the road that ran through ended at every other Roman town. \"All roads lead to here,\" really.",
+      locationName: 'Foro Romano', lat: 41.8925, lng: 12.4853, radiusM: 100,
+      hint1: "You're looking for the Roman Forum — a long archaeological site with ancient ruins between the Colosseum and the Capitoline Hill.",
+      hint2: 'Largo della Salara Vecchia 5/6 — the main entrance. About 5 minutes\' walk from the Colosseum, sharing the same ticket.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'The Forum was Rome\'s political, commercial, and religious center for 1,200 years. Julius Caesar\'s body was cremated on the spot now marked by the Temple of Caesar — fresh flowers still appear daily. The Curia (Senate house) you can enter is the third on the spot, rebuilt by Diocletian in 305 AD; it survived because it was converted into a church. The Via Sacra paving stones are the same ones triumphal generals walked on.',
+      trivia: { question: 'Where was Julius Caesar\'s body cremated in the Forum?', options: ['On the steps of the Senate (where he was killed)', 'At the Temple of Vesta', 'On the spot now marked by the Temple of Caesar', 'On the Capitoline Hill'], correctIndex: 2, explain: 'Mark Antony cremated him in the Forum, on the spot the Temple of the Divine Caesar was later built. Locals still leave flowers there every day.' },
+      i18n: {
+        it: { theme: 'Il Foro Romano', riddle: "Cammina a ovest, in una lunga valle di frammenti di marmo. I senatori discutevano qui, Cesare fu cremato qui, e la strada che partiva da qui finiva in ogni altra città romana. \"Tutte le strade portano a qui,\" davvero.", locationName: 'Foro Romano', funFact: 'Per 1.200 anni il Foro fu il centro politico, commerciale e religioso di Roma. Cesare fu cremato dove oggi sorge il Tempio del Divo Giulio — fiori freschi appaiono ogni giorno. La Curia visitabile è la terza nel sito, ricostruita da Diocleziano nel 305 d.C. e sopravvissuta perché trasformata in chiesa. Le pietre della Via Sacra sono le stesse che calpestavano i generali nei trionfi.' },
+      },
+    },
+    {
+      id: 'clue_3', order: 3, icon: '🛕', theme: 'The unsupported dome',
+      riddle: "Walk 15 minutes north-west to a 2,000-year-old temple turned church. The dome above you is unreinforced concrete and was the largest in the world for 1,300 years. There is a 9-metre hole in the ceiling — it was always there.",
+      locationName: 'Pantheon', lat: 41.8986, lng: 12.4769, radiusM: 50,
+      hint1: "You're looking for the Pantheon — a circular temple-church on Piazza della Rotonda.",
+      hint2: 'Piazza della Rotonda. The portico has eight massive Corinthian columns; the church looks small from outside but the dome inside is staggering.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'Rebuilt by Hadrian in 126 AD on the site of an earlier Agrippa temple (Hadrian kept Agrippa\'s name on the inscription out of modesty). The dome\'s diameter is exactly its height — 43.3m — making it a perfect sphere by geometry. The oculus is open to the sky; rain falls through and drains via 22 small holes in the marble floor that have been quietly working for 19 centuries. Raphael is buried inside.',
+      trivia: { question: 'What happens when it rains through the Pantheon\'s open oculus?', options: ['Staff close it with a tarp', 'Water drains through 22 small holes in the marble floor', 'The floor is convex so water runs off the sides', 'Rome\'s humidity is so low rain rarely enters'], correctIndex: 1, explain: '22 small drainage holes in the marble floor handle the rain — they\'ve been doing it since 126 AD with no upgrades.' },
+      i18n: {
+        it: { theme: 'La cupola senza armatura', riddle: "Cammina 15 minuti a nord-ovest fino a un tempio-chiesa di 2.000 anni. La cupola sopra di te è in calcestruzzo non armato ed è stata la più grande al mondo per 1.300 anni. Nel soffitto c'è un foro di 9 metri — c'è sempre stato.", locationName: 'Pantheon', funFact: 'Ricostruito da Adriano nel 126 d.C. sul sito di un precedente tempio di Agrippa (Adriano mantenne l\'iscrizione di Agrippa per modestia). Il diametro della cupola coincide con la sua altezza — 43,3m — per cui forma una sfera perfetta. L\'oculo è aperto sul cielo; la pioggia scende e drena attraverso 22 piccoli fori nel pavimento di marmo, perfettamente funzionanti da 19 secoli. Raffaello è sepolto qui.' },
+      },
+    },
+    {
+      id: 'clue_4', order: 4, icon: '⛲', theme: 'Bernini\'s rivers',
+      riddle: "Three minutes\' walk west, find a long oval piazza built on the ruins of a stadium where Romans once raced chariots. At its centre sits a fountain with four figures representing four rivers — Bernini's against an architect he despised.",
+      locationName: 'Piazza Navona', lat: 41.8992, lng: 12.4731, radiusM: 80,
+      hint1: "You're looking for an elongated baroque piazza with three fountains — most famously a central one with four river-god statues.",
+      hint2: 'About 3 minutes\' walk west of the Pantheon. The piazza is unmistakable — long, oval, ringed with cafés and street artists.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'The piazza\'s shape preserves the foot-print of the Stadium of Domitian (86 AD) — a 30,000-seat venue for athletic contests. Bernini\'s Fountain of the Four Rivers (1651) personifies the Nile, Ganges, Danube, and Río de la Plata. Rumor says one figure shields his eyes against the church Borromini designed across the piazza — Bernini\'s rival — but the church wasn\'t finished when Bernini sculpted the figure.',
+      trivia: { question: 'Why is Piazza Navona shaped like a long oval?', options: ['Built around a Renaissance horse-racing track', 'Preserves the footprint of an ancient Roman stadium', 'Designed that way by Bernini for visual effect', 'Originally a medieval marketplace'], correctIndex: 1, explain: 'The Stadium of Domitian — built 86 AD for athletic contests, including running races and chariot events. Excavations are open to visitors below the piazza.' },
+      i18n: {
+        it: { theme: 'I fiumi di Bernini', riddle: "Tre minuti a piedi a ovest, trova una lunga piazza ovale costruita sulle rovine di uno stadio dove i romani correvano coi carri. Al centro, una fontana con quattro figure — quattro fiumi — il dispetto di Bernini contro un architetto che disprezzava.", locationName: 'Piazza Navona', funFact: 'La forma della piazza conserva l\'impianto dello Stadio di Domiziano (86 d.C.) — un anfiteatro da 30.000 posti per competizioni atletiche. La Fontana dei Quattro Fiumi di Bernini (1651) personifica Nilo, Gange, Danubio e Río de la Plata. Si dice che una figura si protegga dalla chiesa progettata da Borromini — rivale di Bernini — ma in realtà la chiesa non era ancora finita quando Bernini scolpì la statua.' },
+      },
+    },
+    {
+      id: 'clue_5', order: 5, icon: '💧', theme: 'Three coins',
+      riddle: "Ten minutes east, find Rome's largest baroque fountain. The legend says throw one coin to return to Rome, two for love, three for marriage — over the left shoulder, with the right hand. €1.5 million ends up in the basin every year.",
+      locationName: 'Fontana di Trevi', lat: 41.9009, lng: 12.4833, radiusM: 50,
+      hint1: "You're looking for the Trevi Fountain — Rome's largest fountain, tucked into a small piazza behind a maze of streets.",
+      hint2: 'Piazza di Trevi — about 10 minutes\' walk east of Piazza Navona. Follow the crowds; you\'ll hear the water before you see it.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'The fountain marks the terminus of the Aqua Virgo aqueduct, built in 19 BC by Agrippa and still feeding water to it today. The current baroque façade was completed in 1762 by Nicola Salvi. About €1.5 million in coins are collected each year and donated to Caritas, the Catholic charity — they fund a soup kitchen and supermarket for Rome\'s homeless. Throwing the coin became a tradition after the 1954 Hollywood film "Three Coins in the Fountain."',
+      trivia: { question: 'Where do the coins thrown into the Trevi Fountain go?', options: ['Italian state treasury', 'Donated to Caritas, the Catholic charity', 'Restoration of Rome\'s monuments', 'Local Roman government'], correctIndex: 1, explain: 'About €1.5 million per year goes to Caritas, which runs a homeless soup kitchen and supermarket in Rome. The municipal government tried to claim them in 2017 — public outcry forced a reversal.' },
+      i18n: {
+        it: { theme: 'Tre monete', riddle: "Dieci minuti a est, trova la più grande fontana barocca di Roma. La leggenda: una moneta per tornare a Roma, due per l'amore, tre per il matrimonio — sopra la spalla sinistra, con la mano destra. Un milione e mezzo di euro finisce nella vasca ogni anno.", locationName: 'Fontana di Trevi', funFact: 'La fontana è il punto d\'arrivo dell\'Acqua Vergine, l\'acquedotto costruito da Agrippa nel 19 a.C. e ancora in funzione. La facciata barocca attuale fu completata nel 1762 da Nicola Salvi. Circa 1,5 milioni di euro in monete vengono raccolti ogni anno e donati alla Caritas — finanziano una mensa e un supermercato per i senzatetto di Roma. Il rito di lanciare la moneta divenne tradizione dopo il film hollywoodiano del 1954 "Tre soldi nella fontana."' },
+      },
+    },
+    {
+      id: 'clue_6', order: 6, icon: '🌹', theme: 'The Spanish Steps',
+      riddle: "End the day at 135 marble steps that link a French church to a Spanish embassy. John Keats died in the small pink house at the bottom in 1821 — his bedroom is now a museum about him.",
+      locationName: 'Piazza di Spagna', lat: 41.9059, lng: 12.4823, radiusM: 60,
+      hint1: "You're looking for the Spanish Steps — Rome's most famous staircase, climbing from a piazza with a boat-shaped fountain to a church with twin bell towers above.",
+      hint2: 'Piazza di Spagna. About 5 minutes\' walk north of Trevi. The Barcaccia (boat-shaped) fountain at the bottom was sculpted by Bernini\'s father.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: '135 steps, completed in 1725 to connect the Spanish embassy at the bottom with the French church Trinità dei Monti at the top. The pink house immediately to the right of the steps is the Keats-Shelley House — John Keats died there of tuberculosis aged 25 in February 1821. His narrow bedroom and a lock of his hair are preserved. Sitting on the steps was banned in 2019 by Roman law — €400 fine if caught.',
+      trivia: { question: 'Which Romantic poet died in the pink house at the foot of the Spanish Steps?', options: ['Lord Byron', 'Percy Bysshe Shelley', 'John Keats', 'William Wordsworth'], correctIndex: 2, explain: 'John Keats, in February 1821, aged 25, of tuberculosis. He came to Rome hoping the climate would heal him; it didn\'t. The house is now the Keats-Shelley Memorial Museum.' },
+      i18n: {
+        it: { theme: 'La scalinata di Trinità dei Monti', riddle: "Finisci la giornata su 135 scalini di marmo che collegano una chiesa francese a un'ambasciata spagnola. John Keats morì nella casetta rosa in fondo nel 1821 — la sua camera è oggi un museo a lui dedicato.", locationName: 'Piazza di Spagna', funFact: '135 gradini, completati nel 1725 per collegare l\'ambasciata spagnola in basso alla chiesa francese di Trinità dei Monti in alto. La casetta rosa subito a destra della scalinata è la Keats-Shelley House — Keats vi morì di tubercolosi a 25 anni nel febbraio 1821. La sua piccola camera e una ciocca dei suoi capelli sono conservate. Sedersi sui gradini è vietato dal 2019 — multa di 400 euro.' },
+      },
+    },
+  ],
+}
+
+// ══════════════════════════════════════════════════════════════════
 // Write everything
 // ══════════════════════════════════════════════════════════════════
 const HUNTS = [
   utrechtClassic, hiddenUtrecht, canalsCafes, amsterdamClassic, hiddenAmsterdam,
   theHagueRoyal, rotterdamModern, delftVermeer,
+  milanClassic, romeClassic,
   utrechtFoodTour, milanAperitivoTour, romeTrastevereTour,
 ]
 
