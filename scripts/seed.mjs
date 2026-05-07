@@ -33,7 +33,11 @@ const COUNTRIES = [
     order: 0,
     active: true,
     comingSoon: false,
-    imageUrl: 'https://images.unsplash.com/photo-1576924542622-772579af28e7?w=1600&q=85&auto=format&fit=crop',
+    // Wikimedia Commons (CC BY-SA, public domain dedications) — these URLs
+    // are stable, served from upload.wikimedia.org, and the licenses allow
+    // commercial use with optional attribution. Far more reliable than
+    // Unsplash photo IDs that occasionally disappear.
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Amsterdam_-_Damrak.jpg/1200px-Amsterdam_-_Damrak.jpg',
     i18n: {
       nl: { name: 'Nederland', description: 'Grachten, gouden-eeuwse steden en fietsen tot in de oneindigheid. Wandel door middeleeuwse straten van Utrecht tot Amsterdam.', tagline: 'Grachten · Steden · Verhalen' },
       de: { name: 'Niederlande', description: 'Grachten, Goldenes-Zeitalter-Städte und unzählige Fahrräder. Erkunde mittelalterliche Gassen von Utrecht bis Amsterdam.', tagline: 'Grachten · Städte · Geschichten' },
@@ -110,7 +114,8 @@ const CITIES = [
     country: 'Netherlands',
     description: 'Medieval canals, the tallest church tower in the country, and Holland\'s real living room.',
     coverEmoji: '🇳🇱',
-    imageUrl: 'https://images.unsplash.com/photo-1583425423320-12ef5c9ea6e5?w=1200&q=85&auto=format&fit=crop',
+    // Utrecht Dom Tower, Wikimedia Commons (CC BY-SA, stable URL).
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Utrecht_Domtower_%283%29.jpg/1200px-Utrecht_Domtower_%283%29.jpg',
     priceEuros: 5,
     order: 0,
     active: true,

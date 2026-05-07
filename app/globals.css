@@ -4009,40 +4009,58 @@ a { color: inherit; }
   .tour-map-control { width: 36px; height: 36px; }
 }
 
-/* ─── Tour markers (2-layer DOM: outer owned by MapLibre, inner styled) ─── */
+/* ─── Tour markers (2-layer DOM: outer owned by MapLibre, inner styled) ───
+   The visual is an SVG teardrop pin. anchor: 'bottom' on the MapLibre
+   Marker means the bottom tip of the SVG sits on the actual coordinate. */
 .tour-marker {
-  /* root: positioned by MapLibre — never override transform/cssText here */
-  width: 0; height: 0;
-  display: flex; align-items: center; justify-content: center;
+  /* Root: positioned by MapLibre — never override transform/cssText here. */
   pointer-events: auto;
 }
 .tour-marker-inner {
-  /* visual element — all styling lives here so it can be mutated freely */
-  width: 32px; height: 32px;
-  border-radius: 50%;
-  border: 2px solid #fff;
-  background: var(--primary);
-  color: #fff;
-  font-weight: 700;
-  font-size: 14px;
-  font-family: system-ui, -apple-system, sans-serif;
-  display: flex; align-items: center; justify-content: center;
+  position: relative;
   cursor: pointer;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.32);
-  transition: transform 0.18s ease, box-shadow 0.2s ease;
   user-select: none;
+  transition: transform 0.18s cubic-bezier(.22,.61,.36,1);
+  /* Anchor the visual so the pin's tip lands on the lat/lng. */
+  transform-origin: 50% 100%;
 }
 .tour-marker-inner:hover { transform: scale(1.08); }
-.tour-marker-inner.is-selected {
-  transform: scale(1.22);
-  box-shadow: 0 0 0 6px rgba(255, 106, 19, 0.30), 0 4px 16px rgba(0, 0, 0, 0.30);
-  z-index: 1;
+.tour-marker-inner.is-selected { transform: scale(1.20); z-index: 1; }
+.tour-marker-svg {
+  display: block;
+  /* slight bottom padding so the drop shadow doesn't get clipped */
+  overflow: visible;
 }
-.tour-marker-inner.is-visited {
-  background: #22c97a !important;
+.tour-marker-text {
+  /* Pin text auto-colors via JS to match the pin fill. */
+  pointer-events: none;
 }
-.tour-marker-inner.is-selected.is-visited {
-  box-shadow: 0 0 0 6px rgba(34, 201, 122, 0.30), 0 4px 16px rgba(0, 0, 0, 0.30);
+
+/* Halo around selected marker — pulsing ring sized to the SVG. */
+.tour-marker-halo {
+  position: absolute;
+  left: 50%;
+  bottom: 22px; /* center on the disc area, not the tip */
+  transform: translate(-50%, 50%);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  background: rgba(255, 106, 19, 0.45);
+  transition: opacity 0.2s ease;
+}
+.tour-marker-inner.is-selected .tour-marker-halo {
+  opacity: 1;
+  animation: tour-marker-halo 1.6s ease-out infinite;
+}
+.tour-marker-inner.is-visited.is-selected .tour-marker-halo {
+  background: rgba(34, 201, 122, 0.45);
+}
+@keyframes tour-marker-halo {
+  0%   { transform: translate(-50%, 50%) scale(1);   opacity: 0.65; }
+  70%  { transform: translate(-50%, 50%) scale(2.2); opacity: 0; }
+  100% { transform: translate(-50%, 50%) scale(2.2); opacity: 0; }
 }
 
 .tour-user-marker { width: 0; height: 0; display: flex; align-items: center; justify-content: center; }

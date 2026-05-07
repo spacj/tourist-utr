@@ -21,17 +21,37 @@ const ROUTE_LAYER_ID = 'tour-route-line'
 /**
  * Build a 2-layer marker DOM tree:
  *   .tour-marker       <- root, MapLibre sets transform: translate3d(...) on this
- *     .tour-marker-inner  <- everything visual goes here so root.style stays clean
+ *     .tour-marker-inner  <- visual SVG pin goes here so root.style stays clean
  *
  * Touching root's transform/cssText would fight with MapLibre's positioning and
  * cause markers to "trail" / drift while panning. Keeping the root untouched
- * and updating only the inner element styles fixes that.
+ * and updating only the inner element fixes that.
+ *
+ * The pin is an inline SVG teardrop — bottom tip points to the actual lat/lng
+ * (we use anchor: 'bottom' on the MapLibre Marker so the tip sits exactly on
+ * the coordinate). The number / check mark lives in a white inner circle.
  */
 function buildMarkerDom(): { root: HTMLDivElement; inner: HTMLDivElement } {
   const root = document.createElement('div')
   root.className = 'tour-marker'
   const inner = document.createElement('div')
   inner.className = 'tour-marker-inner'
+  inner.innerHTML = `
+    <svg class="tour-marker-svg" width="34" height="44" viewBox="0 0 34 44" aria-hidden="true">
+      <defs>
+        <filter id="tm-shadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.32"/>
+        </filter>
+      </defs>
+      <path class="tour-marker-pin"
+        d="M17 1 C8.16 1 1 8.16 1 17 C1 26 9 33 17 43 C25 33 33 26 33 17 C33 8.16 25.84 1 17 1 Z"
+        stroke="#fff" stroke-width="2" filter="url(#tm-shadow)"
+      />
+      <circle class="tour-marker-disc" cx="17" cy="16" r="9" fill="#fff" />
+      <text class="tour-marker-text" x="17" y="20" text-anchor="middle" font-size="12" font-weight="800" font-family="system-ui, -apple-system, sans-serif"></text>
+    </svg>
+    <span class="tour-marker-halo" aria-hidden></span>
+  `
   root.appendChild(inner)
   return { root, inner }
 }
@@ -41,8 +61,14 @@ function applyMarkerState(
   opts: { number: number; visited: boolean; selected: boolean; accentColor: string }
 ) {
   const { number, visited, selected, accentColor } = opts
-  inner.textContent = visited ? '✓' : String(number)
-  inner.style.background = visited ? '#22c97a' : accentColor
+  const fill = visited ? '#22c97a' : accentColor
+  const pin = inner.querySelector('.tour-marker-pin') as SVGPathElement | null
+  const text = inner.querySelector('.tour-marker-text') as SVGTextElement | null
+  if (pin) pin.setAttribute('fill', fill)
+  if (text) {
+    text.textContent = visited ? '✓' : String(number)
+    text.setAttribute('fill', fill)
+  }
   inner.classList.toggle('is-selected', selected)
   inner.classList.toggle('is-visited', visited)
 }
@@ -146,7 +172,7 @@ export function TourMapView({
           ev.stopPropagation()
           onSelect(clue.id)
         })
-        const marker = new maplibregl.Marker({ element: root, anchor: 'center' })
+        const marker = new maplibregl.Marker({ element: root, anchor: 'bottom' })
           .setLngLat([clue.lng, clue.lat])
           .addTo(map)
         entry = { marker, inner }
