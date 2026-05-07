@@ -72,6 +72,7 @@ export function HuntClient({ initialClue, huntCity, sessionId, roomId, huntId, i
           initialCredits={credits}
           totalScore={score}
           onComplete={handleComplete}
+          allClues={allClues as unknown as Clue[]}
         />
       </div>
       {roomId && huntId && <RoomScoreboard roomId={roomId} totalClues={clue.totalClues} huntId={huntId} />}

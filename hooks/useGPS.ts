@@ -36,12 +36,20 @@ export function useGPS(opts: {
     setAccuracy(Math.round(pos.coords.accuracy))
     setGpsError(null)
 
-    const res  = await fetch('/api/verify-location', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId, clueId, lat: pos.coords.latitude, lng: pos.coords.longitude }),
-    })
-    const data = await res.json() as VerifyResponse & { dynamicHint3?: string }
+    let data: VerifyResponse & { dynamicHint3?: string }
+    try {
+      const res = await fetch('/api/verify-location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, clueId, lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      })
+      data = await res.json() as VerifyResponse & { dynamicHint3?: string }
+    } catch {
+      // Offline / network error — let the interval retry. ClueScreen has its
+      // own client-side arrival check (offlineQueue) that unblocks gameplay
+      // when the user is physically at the clue.
+      return
+    }
 
     if (data.arrived) {
       arrivedRef.current = true

@@ -1,6 +1,7 @@
 'use client'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Clue, VerifyResponse, localizeClue } from '@/types'
+import { Clue, VerifyResponse, localizeClue, SCORE } from '@/types'
+import { enqueue } from '@/lib/offlineQueue'
 import { useGPS } from '@/hooks/useGPS'
 import { useDeviceOrientation } from '@/hooks/useDeviceOrientation'
 import { haversineM, bearingDeg } from '@/lib/geo'
@@ -19,9 +20,12 @@ interface Props {
   initialCredits: number
   totalScore: number
   onComplete: (result: { nextClue: Clue | null; huntComplete: boolean }) => void
+  // Full clue list for the hunt — passed in so we can compute the next clue
+  // client-side when an arrival happens while offline.
+  allClues?: Clue[]
 }
 
-export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits, totalScore, onComplete }: Props) {
+export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits, totalScore, onComplete, allClues }: Props) {
   const { t, lang } = useI18n()
   const clue = localizeClue(rawClue, lang)
   const [arrived,       setArrived]       = useState(false)
@@ -168,6 +172,49 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
   const distanceM = liveDistanceM
   const bearing = liveBearing
   const accuracy = liveAccuracy ?? serverAccuracy
+
+  // Offline arrival: when the network is down but the user is physically at
+  // the clue, advance the game locally and queue the server verify for replay
+  // when the connection returns. The server-side useGPS poll will keep
+  // retrying on its own; this hook is the fallback that unblocks gameplay.
+  useEffect(() => {
+    if (arrived) return
+    if (typeof navigator === 'undefined') return
+    if (navigator.onLine) return  // online — let the server be authoritative
+    if (!userPos || liveDistanceM === null) return
+    if (liveDistanceM > clue.radiusM) return
+
+    // Compute the next clue from the full hunt list (passed in by HuntClient).
+    const nextRaw = (allClues ?? []).find(c => c.order === clue.order + 1) ?? null
+    const nextClue = nextRaw
+      ? { ...nextRaw, totalClues: clue.totalClues } as Clue
+      : null
+
+    const optimistic: VerifyResponse = {
+      arrived: true,
+      // No score is computed offline — the server will reconcile when the
+      // queued verify replays. We return SCORE.base as a placeholder so the
+      // UI can show "+100" instead of zero.
+      pointsEarned: SCORE.base,
+      timeBonus: 0,
+      perfectBonus: 0,
+      streakBonus: 0,
+      hintPenalty: 0,
+      raceFirstBonus: 0,
+      streak: 0,
+      funFact: clue.funFact ?? undefined,
+      huntComplete: !nextClue,
+      nextClue,
+    }
+
+    enqueue({
+      url: '/api/verify-location',
+      body: { sessionId, clueId: clue.id, lat: userPos.lat, lng: userPos.lng },
+      reconcileKey: `verify:${sessionId}:${clue.id}`,
+    }).catch(() => {})
+
+    handleArrived(optimistic)
+  }, [arrived, userPos, liveDistanceM, clue.id, clue.order, clue.radiusM, clue.totalClues, clue.funFact, allClues, sessionId])
 
   const doUnlock = async (tier: 1 | 2 | 3) => {
     if (unlockedTiers.has(tier)) {
