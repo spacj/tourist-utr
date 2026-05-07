@@ -18,35 +18,33 @@ interface Props {
 const ROUTE_SOURCE_ID = 'tour-route'
 const ROUTE_LAYER_ID = 'tour-route-line'
 
-function buildMarkerEl(opts: {
-  number: number
-  visited: boolean
-  selected: boolean
-  accentColor: string
-}): HTMLDivElement {
+/**
+ * Build a 2-layer marker DOM tree:
+ *   .tour-marker       <- root, MapLibre sets transform: translate3d(...) on this
+ *     .tour-marker-inner  <- everything visual goes here so root.style stays clean
+ *
+ * Touching root's transform/cssText would fight with MapLibre's positioning and
+ * cause markers to "trail" / drift while panning. Keeping the root untouched
+ * and updating only the inner element styles fixes that.
+ */
+function buildMarkerDom(): { root: HTMLDivElement; inner: HTMLDivElement } {
+  const root = document.createElement('div')
+  root.className = 'tour-marker'
+  const inner = document.createElement('div')
+  inner.className = 'tour-marker-inner'
+  root.appendChild(inner)
+  return { root, inner }
+}
+
+function applyMarkerState(
+  inner: HTMLDivElement,
+  opts: { number: number; visited: boolean; selected: boolean; accentColor: string }
+) {
   const { number, visited, selected, accentColor } = opts
-  const el = document.createElement('div')
-  el.setAttribute('aria-label', `Stop ${number}`)
-  // The colored circle
-  const fill = visited ? '#22c97a' : accentColor
-  const ring = selected ? '0 0 0 5px rgba(255,106,19,0.32)' : '0 2px 8px rgba(0,0,0,0.25)'
-  el.style.cssText = `
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    background: ${fill};
-    border: 2px solid #fff;
-    color: #fff;
-    font-weight: 700;
-    font-size: 14px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    box-shadow: ${ring};
-    transition: transform 0.15s ease, box-shadow 0.2s ease;
-    font-family: system-ui, -apple-system, sans-serif;
-  `
-  el.textContent = visited ? '✓' : String(number)
-  if (selected) el.style.transform = 'scale(1.18)'
-  return el
+  inner.textContent = visited ? '✓' : String(number)
+  inner.style.background = visited ? '#22c97a' : accentColor
+  inner.classList.toggle('is-selected', selected)
+  inner.classList.toggle('is-visited', visited)
 }
 
 export function TourMapView({
@@ -55,7 +53,7 @@ export function TourMapView({
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map>()
   const userMarkerRef = useRef<maplibregl.Marker>()
-  const stopMarkersRef = useRef<Map<string, { marker: maplibregl.Marker; el: HTMLDivElement }>>(new Map())
+  const stopMarkersRef = useRef<Map<string, { marker: maplibregl.Marker; inner: HTMLDivElement }>>(new Map())
   const userInteractedRef = useRef(false)
   const [followingUser, setFollowingUser] = useState(false)
   const [mapReady, setMapReady] = useState(false)
@@ -75,7 +73,7 @@ export function TourMapView({
       container: containerRef.current,
       style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
       bounds,
-      fitBoundsOptions: { padding: 56, maxZoom: 16 },
+      fitBoundsOptions: { padding: 80, maxZoom: 16 },
       attributionControl: false,
     })
     mapRef.current = map
@@ -92,7 +90,6 @@ export function TourMapView({
     map.on('pitchstart', onUserMove)
 
     map.on('load', () => {
-      // Route polyline through all stops in order
       const coordinates = clues.map(c => [c.lng, c.lat] as [number, number])
       map.addSource(ROUTE_SOURCE_ID, {
         type: 'geojson',
@@ -140,29 +137,32 @@ export function TourMapView({
       seen.add(clue.id)
       const isVisited = visited.has(clue.id)
       const isSelected = selectedId === clue.id
-      const newEl = buildMarkerEl({
+
+      let entry = stopMarkersRef.current.get(clue.id)
+      if (!entry) {
+        const { root, inner } = buildMarkerDom()
+        // Click on inner so the event doesn't bubble into MapLibre's drag.
+        inner.addEventListener('click', (ev) => {
+          ev.stopPropagation()
+          onSelect(clue.id)
+        })
+        const marker = new maplibregl.Marker({ element: root, anchor: 'center' })
+          .setLngLat([clue.lng, clue.lat])
+          .addTo(map)
+        entry = { marker, inner }
+        stopMarkersRef.current.set(clue.id, entry)
+      }
+
+      // IMPORTANT: only mutate the inner element's styles. The root carries
+      // MapLibre's translate3d positioning and must stay untouched.
+      applyMarkerState(entry.inner, {
         number: clue.order,
         visited: isVisited,
         selected: isSelected,
         accentColor,
       })
-      newEl.addEventListener('click', () => onSelect(clue.id))
-
-      const existing = stopMarkersRef.current.get(clue.id)
-      if (existing) {
-        // Re-style by replacing the element's innerHTML / styles in place
-        existing.el.style.cssText = newEl.style.cssText
-        existing.el.textContent = newEl.textContent
-        // Replace the click handler — easiest is to clone and swap
-      } else {
-        const marker = new maplibregl.Marker({ element: newEl, anchor: 'center' })
-          .setLngLat([clue.lng, clue.lat])
-          .addTo(map)
-        stopMarkersRef.current.set(clue.id, { marker, el: newEl })
-      }
     })
 
-    // Remove markers for clues no longer present
     stopMarkersRef.current.forEach((entry, id) => {
       if (!seen.has(id)) {
         entry.marker.remove()
@@ -171,21 +171,18 @@ export function TourMapView({
     })
   }, [clues, visited, selectedId, mapReady, accentColor, onSelect])
 
-  // ── User position marker + auto-follow until they pan ─────────────
+  // ── User position marker ──────────────────────────────────────────
   useEffect(() => {
     const map = mapRef.current
     if (!map || userLat === null || userLng === null) return
 
     if (!userMarkerRef.current) {
-      const el = document.createElement('div')
-      el.style.cssText = `
-        width: 14px; height: 14px;
-        border-radius: 50%;
-        background: #378ADD;
-        border: 2px solid #fff;
-        box-shadow: 0 0 0 5px rgba(55,138,221,0.25);
-      `
-      userMarkerRef.current = new maplibregl.Marker({ element: el })
+      const root = document.createElement('div')
+      root.className = 'tour-user-marker'
+      const inner = document.createElement('div')
+      inner.className = 'tour-user-marker-inner'
+      root.appendChild(inner)
+      userMarkerRef.current = new maplibregl.Marker({ element: root })
         .setLngLat([userLng, userLat])
         .addTo(map)
     } else {
@@ -197,7 +194,7 @@ export function TourMapView({
     }
   }, [userLat, userLng, followingUser])
 
-  // ── Pan/zoom to selected stop when it changes (programmatic move) ─
+  // ── Pan/zoom to selected stop when it changes ─────────────────────
   useEffect(() => {
     const map = mapRef.current
     if (!map || !selectedId) return
@@ -223,7 +220,7 @@ export function TourMapView({
     const lats = clues.map(c => c.lat)
     map.fitBounds(
       [[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]],
-      { padding: 56, maxZoom: 16, duration: 600 }
+      { padding: 80, maxZoom: 16, duration: 600 }
     )
   }
 

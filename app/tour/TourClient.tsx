@@ -35,7 +35,9 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, initiall
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null)
   const [openClueId, setOpenClueId] = useState<string | null>(clues[0]?.id ?? null)
   const [marking, setMarking] = useState<string | null>(null)
-  const mapWrapRef = useRef<HTMLDivElement>(null)
+  // 'card' = collapsed sheet showing just the selected stop; 'list' = full
+  // expandable list of all stops with details
+  const [sheetMode, setSheetMode] = useState<'card' | 'list'>('card')
   const stopRefs = useRef<Map<string, HTMLLIElement>>(new Map())
 
   // Live GPS — used to surface "you're nearby" hints, not for scoring.
@@ -99,151 +101,243 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, initiall
 
   const focusOnMap = (clueId: string) => {
     setOpenClueId(clueId)
-    if (mapWrapRef.current) {
-      mapWrapRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
+    setSheetMode('card')
   }
 
   const onMarkerSelect = (clueId: string) => {
     setOpenClueId(clueId)
-    // When the user taps a marker, scroll the corresponding list item into view
-    // so they can read details + tap "I'm here" / "visited" without hunting.
+    // Tapping a marker collapses the list to a card view focused on that stop.
+    setSheetMode('card')
     const el = stopRefs.current.get(clueId)
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }
 
-  return (
-    <main className="page-center">
-      <div className="container tour-container">
-        <a href="/" className="back-link" style={{ marginTop: 12, display: 'inline-block' }}>
-          ← {t('exitTour')}
-        </a>
+  const selectedClue = clues.find(c => c.id === openClueId) ?? clues[0] ?? null
+  const selectedDistance = selectedClue && userPos
+    ? Math.round(haversineM(userPos.lat, userPos.lng, selectedClue.lat, selectedClue.lng))
+    : null
+  const selectedNearby = selectedDistance !== null && selectedDistance <= NEARBY_M
+  const selectedVisited = selectedClue ? arrived.has(selectedClue.id) : false
 
-        {/* Hero */}
-        <section
-          className="tour-hero"
-          style={{
-            background: `linear-gradient(135deg, ${catMeta.color} 0%, ${catMeta.color}cc 100%)`,
-          }}
-        >
-          <div className="tour-hero-eyebrow">
-            <span style={{ marginRight: 6 }}>{catMeta.icon}</span>
+  return (
+    <div className={`tour-fullscreen sheet-${sheetMode}`}>
+      {/* Floating top bar */}
+      <header className="tour-topbar">
+        <a href="/" className="tour-topbar-back" aria-label={t('exitTour')}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </a>
+        <div className="tour-topbar-info">
+          <div className="tour-topbar-eyebrow">
+            <span style={{ marginRight: 4 }}>{catMeta.icon}</span>
             {t(`cat${cat.charAt(0).toUpperCase()}${cat.slice(1)}` as any) || t('tourLabel')}
           </div>
-          <h1 className="tour-hero-title">{hunt.title}</h1>
-          <p className="tour-hero-desc">{hunt.description}</p>
-          <div className="tour-hero-progress">
-            <div className="tour-hero-progress-bar">
-              <div
-                className="tour-hero-progress-fill"
-                style={{ width: `${clues.length ? (completedCount / clues.length) * 100 : 0}%` }}
-              />
-            </div>
-            <div className="tour-hero-progress-text">
-              {completedCount} / {clues.length} {t('tourStops').toLowerCase()}
-              {allDone && ` · ${t('tourComplete')}`}
-            </div>
-          </div>
-        </section>
-
-        {/* Map + stops: side-by-side on desktop, stacked on mobile. The map
-            is sticky on desktop so it stays visible while the list scrolls. */}
-        <div className="tour-content-grid">
-          <div ref={mapWrapRef} className="tour-map-wrap">
-            <TourMapView
-              clues={clues}
-              visited={arrived}
-              selectedId={openClueId}
-              onSelect={onMarkerSelect}
-              userLat={userPos?.lat ?? null}
-              userLng={userPos?.lng ?? null}
-              accentColor={catMeta.color}
+          <div className="tour-topbar-title">{hunt.title}</div>
+        </div>
+        <div className="tour-topbar-progress" aria-label={`${completedCount} of ${clues.length} stops visited`}>
+          <div className="tour-topbar-progress-num">{completedCount}/{clues.length}</div>
+          <div className="tour-topbar-progress-bar">
+            <div
+              className="tour-topbar-progress-fill"
+              style={{
+                width: `${clues.length ? (completedCount / clues.length) * 100 : 0}%`,
+                background: catMeta.color,
+              }}
             />
           </div>
+        </div>
+      </header>
 
-          {/* Stop list */}
-          <ul className="tour-stops" aria-label={t('tourStops')}>
-          {clues.map((clue) => {
-            const isOpen = openClueId === clue.id
-            const isVisited = arrived.has(clue.id)
-            const distance = userPos
-              ? Math.round(haversineM(userPos.lat, userPos.lng, clue.lat, clue.lng))
-              : null
-            const nearby = distance !== null && distance <= NEARBY_M
+      {/* Full-screen map */}
+      <div className="tour-fullmap">
+        <TourMapView
+          clues={clues}
+          visited={arrived}
+          selectedId={openClueId}
+          onSelect={onMarkerSelect}
+          userLat={userPos?.lat ?? null}
+          userLng={userPos?.lng ?? null}
+          accentColor={catMeta.color}
+        />
+      </div>
 
-            return (
-              <li
-                key={clue.id}
-                ref={(el) => {
-                  if (el) stopRefs.current.set(clue.id, el)
-                  else stopRefs.current.delete(clue.id)
-                }}
-                className={`tour-stop ${isVisited ? 'is-visited' : ''} ${isOpen ? 'is-open' : ''}`}
-              >
-                <button
-                  type="button"
-                  className="tour-stop-summary"
-                  onClick={() => setOpenClueId(isOpen ? null : clue.id)}
-                  aria-expanded={isOpen}
-                >
-                  <span className="tour-stop-num">
-                    {isVisited ? '✓' : clue.order}
-                  </span>
-                  <div className="tour-stop-headline">
-                    <div className="tour-stop-name">{clue.locationName || `Stop ${clue.order}`}</div>
-                    <div className="tour-stop-meta">
-                      {clue.theme && <span className="tour-stop-theme">{clue.theme}</span>}
-                      {distance !== null && !isVisited && (
-                        <span className={`tour-stop-distance ${nearby ? 'is-near' : ''}`}>
-                          {distance < 1000 ? `${distance} m` : `${(distance / 1000).toFixed(1)} km`}
-                          {nearby && ' · nearby'}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <span className="tour-stop-chevron" aria-hidden>{isOpen ? '▾' : '▸'}</span>
-                </button>
+      {/* Bottom sheet — two modes: card (selected stop) and list (all stops) */}
+      <aside className={`tour-sheet tour-sheet-${sheetMode}`} aria-label={t('tourStops')}>
+        <button
+          type="button"
+          className="tour-sheet-handle"
+          onClick={() => setSheetMode(sheetMode === 'list' ? 'card' : 'list')}
+          aria-label={sheetMode === 'list' ? 'Collapse list' : 'Expand list'}
+        >
+          <span className="tour-sheet-grip" aria-hidden />
+          <span className="tour-sheet-handle-label">
+            {sheetMode === 'list' ? `${clues.length} ${t('tourStops').toLowerCase()}` : `${t('tourStops')} ↑`}
+          </span>
+        </button>
 
-                {isOpen && (
-                  <div className="tour-stop-body">
-                    {clue.riddle && <p className="tour-stop-desc">{clue.riddle}</p>}
-                    {clue.funFact && (
-                      <div className="tour-stop-funfact">
-                        <span className="tour-stop-funfact-label">{t('didYouKnow')}</span>
-                        <p>{clue.funFact}</p>
-                      </div>
-                    )}
-                    <div className="tour-stop-actions">
-                      <button
-                        type="button"
-                        onClick={() => focusOnMap(clue.id)}
-                        className="tour-stop-maps-btn"
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-                        </svg>
-                        {t('showMap')}
-                      </button>
-                      {isVisited ? (
-                        <span className="tour-stop-visited-tag">✓ {t('visited')}</span>
-                      ) : (
-                        <button
-                          type="button"
-                          className={`tour-stop-here-btn ${nearby ? 'is-nearby' : ''}`}
-                          onClick={() => markVisited(clue.id)}
-                          disabled={marking === clue.id}
-                        >
-                          {marking === clue.id ? '…' : t('imHere')}
-                        </button>
-                      )}
-                    </div>
+        {sheetMode === 'card' && selectedClue && (() => {
+          const distance = selectedDistance
+          const nearby = selectedNearby
+          const isVisited = selectedVisited
+          return (
+            <div className="tour-card">
+              <div className="tour-card-head">
+                <span className={`tour-card-badge ${isVisited ? 'is-visited' : ''}`} style={!isVisited ? { background: catMeta.color } : undefined}>
+                  {isVisited ? '✓' : selectedClue.order}
+                </span>
+                <div className="tour-card-headline">
+                  <div className="tour-card-name">{selectedClue.locationName || `Stop ${selectedClue.order}`}</div>
+                  {selectedClue.theme && <div className="tour-card-theme">{selectedClue.theme}</div>}
+                </div>
+                {distance !== null && !isVisited && (
+                  <div className={`tour-card-distance ${nearby ? 'is-near' : ''}`}>
+                    {distance < 1000 ? `${distance} m` : `${(distance / 1000).toFixed(1)} km`}
+                    {nearby && <span className="tour-card-distance-tag">{t('nearby') || 'nearby'}</span>}
                   </div>
                 )}
-              </li>
-            )
-          })}
+              </div>
+              {selectedClue.riddle && (
+                <p className="tour-card-desc">{selectedClue.riddle}</p>
+              )}
+              <div className="tour-card-actions">
+                <button
+                  type="button"
+                  className="tour-card-detail-btn"
+                  onClick={() => setSheetMode('list')}
+                >
+                  {t('moreHints')} ↑
+                </button>
+                {isVisited ? (
+                  <span className="tour-card-visited-tag">✓ {t('visited')}</span>
+                ) : (
+                  <button
+                    type="button"
+                    className={`tour-card-here-btn ${nearby ? 'is-nearby' : ''}`}
+                    onClick={() => markVisited(selectedClue.id)}
+                    disabled={marking === selectedClue.id}
+                  >
+                    {marking === selectedClue.id ? '…' : t('imHere')}
+                  </button>
+                )}
+              </div>
+              {/* Pager */}
+              <div className="tour-card-pager">
+                <button
+                  type="button"
+                  className="tour-card-pager-btn"
+                  disabled={selectedClue.order <= 1}
+                  onClick={() => {
+                    const prev = clues.find(c => c.order === selectedClue.order - 1)
+                    if (prev) onMarkerSelect(prev.id)
+                  }}
+                  aria-label={t('prevStop')}
+                >
+                  ←
+                </button>
+                <span className="tour-card-pager-pos">
+                  {selectedClue.order} / {clues.length}
+                </span>
+                <button
+                  type="button"
+                  className="tour-card-pager-btn"
+                  disabled={selectedClue.order >= clues.length}
+                  onClick={() => {
+                    const nxt = clues.find(c => c.order === selectedClue.order + 1)
+                    if (nxt) onMarkerSelect(nxt.id)
+                  }}
+                  aria-label={t('nextStop')}
+                >
+                  →
+                </button>
+              </div>
+            </div>
+          )
+        })()}
+
+        {sheetMode === 'list' && (
+          <ul className="tour-stops">
+            {clues.map((clue) => {
+              const isOpen = openClueId === clue.id
+              const isVisited = arrived.has(clue.id)
+              const distance = userPos
+                ? Math.round(haversineM(userPos.lat, userPos.lng, clue.lat, clue.lng))
+                : null
+              const nearby = distance !== null && distance <= NEARBY_M
+
+              return (
+                <li
+                  key={clue.id}
+                  ref={(el) => {
+                    if (el) stopRefs.current.set(clue.id, el)
+                    else stopRefs.current.delete(clue.id)
+                  }}
+                  className={`tour-stop ${isVisited ? 'is-visited' : ''} ${isOpen ? 'is-open' : ''}`}
+                >
+                  <button
+                    type="button"
+                    className="tour-stop-summary"
+                    onClick={() => setOpenClueId(isOpen ? null : clue.id)}
+                    aria-expanded={isOpen}
+                  >
+                    <span className="tour-stop-num">
+                      {isVisited ? '✓' : clue.order}
+                    </span>
+                    <div className="tour-stop-headline">
+                      <div className="tour-stop-name">{clue.locationName || `Stop ${clue.order}`}</div>
+                      <div className="tour-stop-meta">
+                        {clue.theme && <span className="tour-stop-theme">{clue.theme}</span>}
+                        {distance !== null && !isVisited && (
+                          <span className={`tour-stop-distance ${nearby ? 'is-near' : ''}`}>
+                            {distance < 1000 ? `${distance} m` : `${(distance / 1000).toFixed(1)} km`}
+                            {nearby && ' · nearby'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <span className="tour-stop-chevron" aria-hidden>{isOpen ? '▾' : '▸'}</span>
+                  </button>
+
+                  {isOpen && (
+                    <div className="tour-stop-body">
+                      {clue.riddle && <p className="tour-stop-desc">{clue.riddle}</p>}
+                      {clue.funFact && (
+                        <div className="tour-stop-funfact">
+                          <span className="tour-stop-funfact-label">{t('didYouKnow')}</span>
+                          <p>{clue.funFact}</p>
+                        </div>
+                      )}
+                      <div className="tour-stop-actions">
+                        <button
+                          type="button"
+                          onClick={() => focusOnMap(clue.id)}
+                          className="tour-stop-maps-btn"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                          </svg>
+                          {t('showMap')}
+                        </button>
+                        {isVisited ? (
+                          <span className="tour-stop-visited-tag">✓ {t('visited')}</span>
+                        ) : (
+                          <button
+                            type="button"
+                            className={`tour-stop-here-btn ${nearby ? 'is-nearby' : ''}`}
+                            onClick={() => markVisited(clue.id)}
+                            disabled={marking === clue.id}
+                          >
+                            {marking === clue.id ? '…' : t('imHere')}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </li>
+              )
+            })}
           </ul>
-        </div>
+        )}
 
         {allDone && (
           <a
@@ -253,7 +347,7 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, initiall
             {t('seeFinal')} →
           </a>
         )}
-      </div>
-    </main>
+      </aside>
+    </div>
   )
 }
