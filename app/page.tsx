@@ -386,6 +386,7 @@ export default function HomePage() {
               </div>
               <div className="footer-nav-col">
                 <div className="footer-nav-title">{t('footerAbout')}</div>
+                <a href="/blog" className="footer-nav-link">Blog</a>
                 <a href="#" className="footer-nav-link">{t('footerContact')}</a>
                 <a href="#" className="footer-nav-link">{t('footerPrivacy')}</a>
                 <a href="#" className="footer-nav-link">{t('footerTerms')}</a>
