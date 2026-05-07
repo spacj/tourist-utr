@@ -16,10 +16,11 @@ export async function GET(req: NextRequest) {
   const pkg = CREDIT_PACKAGES.find((p) => p.id === packageId)
   if (!pkg) return NextResponse.json({ error: 'Unknown package' }, { status: 400 })
 
-  // Idempotency — skip if already processed
-  const purchaseRef = doc(db, 'sessions', sessionId, 'purchases', paypalToken)
-  const existing = await getDoc(purchaseRef)
-  if (existing.exists()) {
+  // Idempotency keyed by paypal token (order id) — the webhook keys by
+  // capture id so they may write different docs, but we check both before
+  // crediting to avoid double-credit.
+  const existingByOrder = await getDoc(doc(db, 'sessions', sessionId, 'purchases', paypalToken))
+  if (existingByOrder.exists()) {
     return NextResponse.redirect(new URL(`/hunt?session=${sessionId}&credits=added`, req.url))
   }
 
@@ -28,15 +29,34 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL(`/hunt?session=${sessionId}`, req.url))
   }
 
-  const sessionRef = doc(db, 'sessions', sessionId)
-  await setDoc(purchaseRef, {
+  // Security: validate the captured order's metadata matches our URL params.
+  const meta = result.metadata
+  if (
+    !meta ||
+    meta.kind !== 'credit_pack' ||
+    meta.sessionId !== sessionId ||
+    meta.packageId !== packageId
+  ) {
+    return NextResponse.redirect(new URL(`/hunt?session=${sessionId}&paypal=mismatch`, req.url))
+  }
+
+  // Webhook may have written by captureId already — second guard.
+  const captureId = result.captureId ?? paypalToken
+  const existingByCapture = await getDoc(doc(db, 'sessions', sessionId, 'purchases', captureId))
+  if (existingByCapture.exists()) {
+    return NextResponse.redirect(new URL(`/hunt?session=${sessionId}&credits=added`, req.url))
+  }
+
+  await setDoc(doc(db, 'sessions', sessionId, 'purchases', captureId), {
     packageId,
     creditsAdded: pkg.credits,
     amountCents: pkg.priceCents,
     paypalOrderId: paypalToken,
+    paypalCaptureId: captureId,
     completedAt: serverTimestamp(),
+    grantedVia: 'redirect',
   })
-  await updateDoc(sessionRef, { credits: increment(pkg.credits) })
+  await updateDoc(doc(db, 'sessions', sessionId), { credits: increment(pkg.credits) })
 
   return NextResponse.redirect(new URL(`/hunt?session=${sessionId}&credits=added`, req.url))
 }
