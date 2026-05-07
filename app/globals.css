@@ -1,7 +1,16 @@
 /* ═══════════════════════════════════════════════════════════════
-   Utrecht Grand Tour — design system
+   TourHunts — design system
    Crisp white ↔ vivid orange palette · serif riddles · sans UI
    ═══════════════════════════════════════════════════════════════ */
+
+/* Twemoji Country Flags — polyfills 🇳🇱 🇮🇹 etc. on Windows where the
+   system font ships only ASCII letter pairs instead of colored flags. */
+@font-face {
+  font-family: 'Twemoji Country Flags';
+  unicode-range: U+1F1E6-1F1FF, U+1F3F4, U+E0062-E0063, U+E0065, U+E0067, U+E006C, U+E006E, U+E0073-E0074, U+E0077, U+E007F;
+  src: url('https://cdn.jsdelivr.net/npm/country-flag-emoji-polyfill@0.1/dist/TwemojiCountryFlags.woff2') format('woff2');
+  font-display: swap;
+}
 
 :root {
   --bg:          #ffffff;
@@ -35,7 +44,7 @@ body {
   height: 100%;
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font-sans, system-ui), -apple-system, sans-serif;
+  font-family: 'Twemoji Country Flags', var(--font-sans, system-ui), -apple-system, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
 }
@@ -221,6 +230,8 @@ a { color: inherit; }
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: background 0.15s;
+  /* Country flag emoji rendering — Twemoji font filling in for Windows. */
+  font-family: 'Twemoji Country Flags', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
 }
 .lang-btn:hover { background: rgba(20, 20, 30, 0.06); }
 .lang-btn.active { background: rgba(255, 106, 19, 0.18); }
@@ -2128,8 +2139,16 @@ a { color: inherit; }
   gap: 14px;
   margin-bottom: 28px;
 }
-@media (min-width: 768px) {
-  .country-grid { grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (min-width: 640px) {
+  .country-grid { grid-template-columns: repeat(2, 1fr); gap: 18px; }
+}
+@media (min-width: 1024px) {
+  /* On wider desktops give every country its own card on a 3-up grid so
+     they don't stretch to twice the natural width and feel empty. */
+  .country-grid { grid-template-columns: repeat(3, 1fr); gap: 22px; }
+}
+@media (min-width: 1400px) {
+  .country-grid { grid-template-columns: repeat(4, 1fr); }
 }
 
 .country-card {
@@ -2183,8 +2202,19 @@ a { color: inherit; }
   position: absolute;
   top: 12px; left: 14px;
   font-size: 32px;
+  line-height: 1;
+  /* Force the Twemoji Country Flags font for the badge so the small flag
+     in the corner renders consistently across Windows / iOS / Android. */
+  font-family: 'Twemoji Country Flags', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
   filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4));
   z-index: 2;
+}
+@media (min-width: 1024px) {
+  /* Slightly taller cover on desktop keeps proportions right when cards
+     get narrower in a 3-up grid. */
+  .country-cover { height: 180px; }
+  .country-cover-flag { font-size: 36px; top: 14px; left: 16px; }
+  .country-name { font-size: 24px; }
 }
 .country-cover-tag {
   position: absolute;

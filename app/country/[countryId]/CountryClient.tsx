@@ -7,6 +7,8 @@ import { ResumeRaceBanner } from '@/components/ResumeRaceBanner'
 
 function CityCard({ city, isUnlocked, t }: { city: City; isUnlocked: boolean; t: (key: string) => string }) {
   const [imgLoaded, setImgLoaded] = useState(false)
+  const [imgFailed, setImgFailed] = useState(false)
+  const showImage = city.imageUrl && !imgFailed
   return (
     <a
       href={`/city/${city.id}`}
@@ -14,13 +16,14 @@ function CityCard({ city, isUnlocked, t }: { city: City; isUnlocked: boolean; t:
       style={{ textDecoration: 'none' }}
     >
       <div className="city-cover" aria-hidden>
-        {city.imageUrl ? (
+        {showImage ? (
           <>
             <img
               src={city.imageUrl}
               alt={city.name}
               className={`city-cover-img ${imgLoaded ? 'loaded' : ''}`}
               onLoad={() => setImgLoaded(true)}
+              onError={() => setImgFailed(true)}
             />
             <div className="city-cover-overlay" />
           </>

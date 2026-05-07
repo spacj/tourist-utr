@@ -7,8 +7,10 @@ import { ResumeRaceBanner } from '@/components/ResumeRaceBanner'
 
 function CountryCard({ country, t }: { country: Country; t: (key: string) => string }) {
   const [imgLoaded, setImgLoaded] = useState(false)
+  const [imgFailed, setImgFailed] = useState(false)
   const isComingSoon = country.comingSoon || country.cityCount === 0
   const href = isComingSoon ? '#' : `/country/${country.id}`
+  const showImage = country.imageUrl && !imgFailed
   return (
     <a
       href={href}
@@ -18,13 +20,14 @@ function CountryCard({ country, t }: { country: Country; t: (key: string) => str
       style={{ textDecoration: 'none' }}
     >
       <div className="country-cover" aria-hidden>
-        {country.imageUrl ? (
+        {showImage ? (
           <>
             <img
               src={country.imageUrl}
               alt={country.name}
               className={`country-cover-img ${imgLoaded ? 'loaded' : ''}`}
               onLoad={() => setImgLoaded(true)}
+              onError={() => setImgFailed(true)}
             />
             <div className="country-cover-overlay" />
           </>
