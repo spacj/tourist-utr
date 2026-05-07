@@ -15,7 +15,8 @@ export async function POST(req: NextRequest) {
   // ── City-unlock gate ──
   // First hunt in any city (order === 0) is free for everyone.
   // Other hunts require the user to have unlocked the city (€5).
-  const hunt = huntSnap.data() as { cityId?: string; city?: string; order?: number }
+  const hunt = huntSnap.data() as { cityId?: string; city?: string; order?: number; tourType?: 'hunt' | 'tour' }
+  const tourType: 'hunt' | 'tour' = hunt.tourType === 'tour' ? 'tour' : 'hunt'
   const isFree = (hunt.order ?? 0) === 0
   if (!isFree) {
     if (!userId) {
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
       .filter(d => !d.data().completedAt)
       .sort((a, b) => (b.data().startedAt?.toMillis?.() ?? 0) - (a.data().startedAt?.toMillis?.() ?? 0))
     if (inProgress.length) {
-      return NextResponse.json({ sessionId: inProgress[0].id, resumed: true })
+      return NextResponse.json({ sessionId: inProgress[0].id, resumed: true, tourType })
     }
   }
 
@@ -56,8 +57,11 @@ export async function POST(req: NextRequest) {
     huntId,
     huntCity: hunt.city || null,
     userId: userId || null,
+    tourType,
+    // Tours don't use credits or scoring — initialize to zero anyway so the
+    // type stays consistent in Firestore reads.
     score: 0,
-    credits: STARTING_CREDITS,
+    credits: tourType === 'tour' ? 0 : STARTING_CREDITS,
     startedAt: serverTimestamp(),
     completedAt: null,
   })
@@ -69,5 +73,5 @@ export async function POST(req: NextRequest) {
     pointsEarned: 0,
   })
 
-  return NextResponse.json({ sessionId: sessionRef.id, resumed: false })
+  return NextResponse.json({ sessionId: sessionRef.id, resumed: false, tourType })
 }

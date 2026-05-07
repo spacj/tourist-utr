@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
-import { City, Hunt, isHuntFree, localizeCity, localizeHunt } from '@/types'
+import { City, Hunt, isHuntFree, isTour, localizeCity, localizeHunt, TourCategory } from '@/types'
 import { ResumeRaceBanner } from '@/components/ResumeRaceBanner'
 
 const DIFFICULTY_META: Record<string, { key: string; color: string; bg: string }> = {
@@ -88,7 +88,17 @@ export default function CityPage() {
       else if (data?.error === 'sign_in_required') signIn()
       return
     }
-    window.location.href = `/hunt?session=${data.sessionId}`
+    const route = data.tourType === 'tour' ? '/tour' : '/hunt'
+    window.location.href = `${route}?session=${data.sessionId}`
+  }
+
+  const TOUR_CATEGORY_META: Record<TourCategory, { icon: string; color: string }> = {
+    nightlife: { icon: '🌙', color: '#7c3aed' },
+    food:      { icon: '🍝', color: '#dc2626' },
+    shopping:  { icon: '🛍️', color: '#0891b2' },
+    culture:   { icon: '🏛️', color: '#0d9488' },
+    family:    { icon: '👨‍👩‍👧', color: '#f59e0b' },
+    general:   { icon: '🧭', color: '#6366f1' },
   }
 
   const unlockCity = async () => {
@@ -172,92 +182,122 @@ export default function CityPage() {
           <div className="mp-home-cta-arrow" aria-hidden>→</div>
         </a>
 
-        {/* Hunts */}
-        <h2 id="hunts" className="section-label" style={{ scrollMarginTop: '20px' }}>{t('availableHunts')}</h2>
+        {(() => {
+          const huntsOnly = hunts.filter(h => !isTour(h))
+          const toursOnly = hunts.filter(h => isTour(h))
 
-        {hunts.length === 0 && (
-          <div className="empty-card"><p>{t('noHuntsYet')}</p></div>
-        )}
+          const renderItem = (rawHunt: Hunt) => {
+            const hunt = localizeHunt(rawHunt, lang)
+            const free = isHuntFree(hunt)
+            const locked = !free && !unlocked
+            const diff = DIFFICULTY_META[hunt.difficulty] || DIFFICULTY_META.medium
+            const huntProgress = progress[hunt.id]
+            const isInProgress = huntProgress?.status === 'in_progress'
+            const isCompleted = huntProgress?.status === 'completed'
+            const totalSteps = hunt.clueCount || huntProgress?.totalClues || 0
+            const cluesDone = Math.min(huntProgress?.cluesCompleted ?? 0, totalSteps)
+            const pct = totalSteps > 0 ? Math.round((cluesDone / totalSteps) * 100) : 0
+            const stateClass = isCompleted ? 'completed' : isInProgress ? 'resuming' : ''
+            const tourMode = isTour(rawHunt)
+            const cat = tourMode ? (rawHunt.tourCategory ?? 'general') : 'general'
+            const catMeta = TOUR_CATEGORY_META[cat]
 
-        {hunts.map((rawHunt) => {
-          const hunt = localizeHunt(rawHunt, lang)
-          const free = isHuntFree(hunt)
-          const locked = !free && !unlocked
-          const diff = DIFFICULTY_META[hunt.difficulty] || DIFFICULTY_META.medium
-          const huntProgress = progress[hunt.id]
-          const isInProgress = huntProgress?.status === 'in_progress'
-          const isCompleted = huntProgress?.status === 'completed'
-          const totalSteps = hunt.clueCount || huntProgress?.totalClues || 0
-          const cluesDone = Math.min(huntProgress?.cluesCompleted ?? 0, totalSteps)
-          const pct = totalSteps > 0 ? Math.round((cluesDone / totalSteps) * 100) : 0
-          const stateClass = isCompleted ? 'completed' : isInProgress ? 'resuming' : ''
-          return (
-            <button
-              key={hunt.id}
-              className={`hunt-card ${stateClass}`}
-              onClick={() => locked ? unlockCity() : startHunt(hunt.id, free)}
-              disabled={starting === hunt.id || unlocking}
-              style={locked ? { opacity: 0.78 } : undefined}
-            >
-              {locked
-                ? <span className="hunt-badge" style={{ background: 'rgba(245,194,74,.18)', color: '#f5c24a' }}>🔒 {t('locked')}</span>
-                : free && !isCompleted && !isInProgress
-                  ? <span className="hunt-badge" style={{ background: 'rgba(34,201,122,.16)', color: '#22c97a' }}>{t('freeHunt')}</span>
-                  : isCompleted
-                    ? <span className="hunt-badge completed-badge">✓ {t('ctaCompleted')}</span>
-                    : isInProgress
-                      ? <span className="hunt-badge resume-badge">{t('ctaResume')}</span>
-                      : hunt.badge && <span className="hunt-badge">{hunt.badge}</span>
-              }
-              <div className="hunt-card-top">
-                <div>
-                  <div className="hunt-title">{hunt.title}</div>
-                  <div className="hunt-desc">{hunt.description}</div>
-                </div>
-                <div className="hunt-arrow">{starting === hunt.id ? '…' : (locked ? '🔒' : '→')}</div>
-              </div>
-
-              {huntProgress && totalSteps > 0 && !locked && (
-                <div className={`resume-bar ${isCompleted ? 'is-completed' : ''}`}>
-                  <div className="resume-bar-track">
-                    <div className="resume-bar-fill" style={{ width: `${pct}%` }} />
+            return (
+              <button
+                key={hunt.id}
+                className={`hunt-card ${stateClass} ${tourMode ? 'is-tour' : ''}`}
+                onClick={() => locked ? unlockCity() : startHunt(hunt.id, free)}
+                disabled={starting === hunt.id || unlocking}
+                style={locked ? { opacity: 0.78 } : undefined}
+              >
+                {locked
+                  ? <span className="hunt-badge" style={{ background: 'rgba(245,194,74,.18)', color: '#f5c24a' }}>🔒 {t('locked')}</span>
+                  : free && !isCompleted && !isInProgress
+                    ? <span className="hunt-badge" style={{ background: 'rgba(34,201,122,.16)', color: '#22c97a' }}>{t('freeHunt')}</span>
+                    : isCompleted
+                      ? <span className="hunt-badge completed-badge">✓ {t('ctaCompleted')}</span>
+                      : isInProgress
+                        ? <span className="hunt-badge resume-badge">{t('ctaResume')}</span>
+                        : hunt.badge && <span className="hunt-badge">{hunt.badge}</span>
+                }
+                <div className="hunt-card-top">
+                  <div>
+                    <div className="hunt-title">{hunt.title}</div>
+                    <div className="hunt-desc">{hunt.description}</div>
                   </div>
-                  <span className="resume-bar-text">
-                    {isCompleted
-                      ? `${t('bestScore')} ${huntProgress.score}`
-                      : `${cluesDone}/${totalSteps}`}
+                  <div className="hunt-arrow">{starting === hunt.id ? '…' : (locked ? '🔒' : '→')}</div>
+                </div>
+
+                {huntProgress && totalSteps > 0 && !locked && (
+                  <div className={`resume-bar ${isCompleted ? 'is-completed' : ''}`}>
+                    <div className="resume-bar-track">
+                      <div className="resume-bar-fill" style={{ width: `${pct}%` }} />
+                    </div>
+                    <span className="resume-bar-text">
+                      {isCompleted
+                        ? (tourMode ? `✓ ${cluesDone}/${totalSteps}` : `${t('bestScore')} ${huntProgress.score}`)
+                        : `${cluesDone}/${totalSteps}`}
+                    </span>
+                  </div>
+                )}
+
+                <div className="hunt-meta">
+                  {tourMode ? (
+                    <span className="meta-pill" style={{ color: catMeta.color, background: `${catMeta.color}1a`, border: `1px solid ${catMeta.color}40` }}>
+                      <span style={{ marginRight: 4 }}>{catMeta.icon}</span>
+                      {t(`cat${cat.charAt(0).toUpperCase()}${cat.slice(1)}` as any) || t('tourLabel')}
+                    </span>
+                  ) : (
+                    <span className="meta-pill" style={{ color: diff.color, background: diff.bg, border: `1px solid ${diff.color}33` }}>
+                      {t(diff.key)}
+                    </span>
+                  )}
+                  {hunt.rating && (
+                    <span className="hunt-rating">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="12,2 15.1,8.3 22,9.3 17,14.1 18.2,21 12,17.8 5.8,21 7,14.1 2,9.3 8.9,8.3" />
+                      </svg>
+                      {hunt.rating.toFixed(1)}
+                    </span>
+                  )}
+                  <span className="meta-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    {hunt.clueCount} {tourMode ? t('tourStops').toLowerCase() : t('places')}
+                  </span>
+                  <span className="meta-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    ~{hunt.durationMin} {t('min')}
+                  </span>
+                  <span className="meta-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                    {hunt.distanceKm} {t('km')}
                   </span>
                 </div>
+              </button>
+            )
+          }
+
+          return (
+            <>
+              {/* Hunts */}
+              <h2 id="hunts" className="section-label" style={{ scrollMarginTop: '20px' }}>{t('availableHunts')}</h2>
+
+              {huntsOnly.length === 0 && toursOnly.length === 0 && (
+                <div className="empty-card"><p>{t('noHuntsYet')}</p></div>
               )}
 
-              <div className="hunt-meta">
-                <span className="meta-pill" style={{ color: diff.color, background: diff.bg, border: `1px solid ${diff.color}33` }}>
-                  {t(diff.key)}
-                </span>
-                {hunt.rating && (
-                  <span className="hunt-rating">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                      <polygon points="12,2 15.1,8.3 22,9.3 17,14.1 18.2,21 12,17.8 5.8,21 7,14.1 2,9.3 8.9,8.3" />
-                    </svg>
-                    {hunt.rating.toFixed(1)}
-                  </span>
-                )}
-                <span className="meta-item">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  {hunt.clueCount} {t('places')}
-                </span>
-                <span className="meta-item">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  ~{hunt.durationMin} {t('min')}
-                </span>
-                <span className="meta-item">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                  {hunt.distanceKm} {t('km')}
-                </span>
-              </div>
-            </button>
+              {huntsOnly.map(renderItem)}
+
+              {/* Self-guided tours */}
+              {toursOnly.length > 0 && (
+                <>
+                  <h2 className="section-label" style={{ marginTop: 24 }}>{t('selfGuidedTours')}</h2>
+                  {toursOnly.map(renderItem)}
+                </>
+              )}
+            </>
           )
-        })}
+        })()}
 
         {!user && (
           <p className="footer-note">{t('signInHint')}</p>

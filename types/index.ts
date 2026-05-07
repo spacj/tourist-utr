@@ -62,6 +62,9 @@ export interface HuntI18n {
   badge?: string
 }
 
+export type TourType = 'hunt' | 'tour'
+export type TourCategory = 'general' | 'nightlife' | 'food' | 'shopping' | 'culture' | 'family'
+
 export interface Hunt {
   id: string
   cityId: string
@@ -77,6 +80,14 @@ export interface Hunt {
   badge?: string
   active: boolean
   i18n?: Partial<Record<Lang, HuntI18n>>
+  // Tour vs hunt: tours are self-guided itineraries (food, nightlife, shopping)
+  // with no riddles/hints/scoring. Defaults to 'hunt' if absent.
+  tourType?: TourType
+  tourCategory?: TourCategory
+}
+
+export function isTour(h: Pick<Hunt, 'tourType'>): boolean {
+  return h.tourType === 'tour'
 }
 
 export function isHuntFree(h: Pick<Hunt, 'order'>): boolean {
@@ -435,6 +446,26 @@ export const T: Dict = {
   alreadyInRoomConfirm: { en: 'You\'re already in room {code}. Leave that room and continue?', nl: 'Je zit al in kamer {code}. Verlaten en doorgaan?', de: 'Du bist bereits in Raum {code}. Verlassen und fortfahren?', fr: 'Vous êtes déjà dans la salle {code}. Quitter et continuer ?', it: 'Sei già nella stanza {code}. Lasciare e continuare?', es: 'Ya estás en la sala {code}. ¿Salir y continuar?' },
   abandonRace:       { en: 'Abandon race', nl: 'Race opgeven', de: 'Rennen aufgeben', fr: 'Abandonner la course', it: 'Abbandona gara', es: 'Abandonar carrera' },
   abandonConfirm:    { en: 'Forfeit this race? Your current score will be locked in and you\'ll appear as finished on the leaderboard.', nl: 'Race opgeven? Je huidige score wordt vastgelegd en je verschijnt als voltooid op het scorebord.', de: 'Rennen aufgeben? Dein aktueller Punktestand wird festgehalten und du erscheinst als fertig.', fr: 'Abandonner ? Votre score actuel sera enregistré et vous apparaîtrez comme terminé.', it: 'Abbandonare? Il tuo punteggio attuale verrà salvato e apparirai come terminato.', es: '¿Abandonar? Tu puntuación actual se guardará y aparecerás como terminado.' },
+
+  // Tours (self-guided itineraries: food, nightlife, shopping, etc.)
+  tours:             { en: 'Tours', nl: 'Tours', de: 'Touren', fr: 'Visites', it: 'Tour', es: 'Tours' },
+  selfGuidedTours:   { en: 'Self-guided tours', nl: 'Self-guided tours', de: 'Selbstgeführte Touren', fr: 'Visites autoguidées', it: 'Tour autoguidati', es: 'Tours autoguiados' },
+  tourLabel:         { en: 'Tour', nl: 'Tour', de: 'Tour', fr: 'Visite', it: 'Tour', es: 'Tour' },
+  huntLabel:         { en: 'Hunt', nl: 'Tocht', de: 'Tour', fr: 'Chasse', it: 'Caccia', es: 'Búsqueda' },
+  catNightlife:      { en: 'Nightlife', nl: 'Uitgaan', de: 'Nachtleben', fr: 'Vie nocturne', it: 'Vita notturna', es: 'Vida nocturna' },
+  catFood:           { en: 'Food', nl: 'Eten', de: 'Essen', fr: 'Gastronomie', it: 'Cucina', es: 'Gastronomía' },
+  catShopping:       { en: 'Shopping', nl: 'Shoppen', de: 'Shopping', fr: 'Shopping', it: 'Shopping', es: 'Compras' },
+  catCulture:        { en: 'Culture', nl: 'Cultuur', de: 'Kultur', fr: 'Culture', it: 'Cultura', es: 'Cultura' },
+  catFamily:         { en: 'Family', nl: 'Familie', de: 'Familie', fr: 'Famille', it: 'Famiglia', es: 'Familia' },
+  startTour:         { en: 'Start tour', nl: 'Start tour', de: 'Tour starten', fr: 'Démarrer la visite', it: 'Inizia tour', es: 'Iniciar tour' },
+  tourStops:         { en: 'Tour stops', nl: 'Tour stops', de: 'Tour-Stationen', fr: 'Étapes de la visite', it: 'Tappe del tour', es: 'Paradas del tour' },
+  imHere:            { en: 'I\'m here', nl: 'Ik ben er', de: 'Ich bin da', fr: 'Je suis ici', it: 'Sono qui', es: 'Estoy aquí' },
+  visited:           { en: 'Visited', nl: 'Bezocht', de: 'Besucht', fr: 'Visité', it: 'Visitato', es: 'Visitado' },
+  openInMaps:        { en: 'Open in Maps', nl: 'Open in Maps', de: 'In Karten öffnen', fr: 'Ouvrir dans Plans', it: 'Apri in Mappe', es: 'Abrir en Mapas' },
+  tourComplete:      { en: 'Tour complete!', nl: 'Tour voltooid!', de: 'Tour abgeschlossen!', fr: 'Visite terminée !', it: 'Tour completato!', es: '¡Tour completado!' },
+  exitTour:          { en: 'Exit tour', nl: 'Tour verlaten', de: 'Tour verlassen', fr: 'Quitter la visite', it: 'Esci dal tour', es: 'Salir del tour' },
+  nextStop:          { en: 'Next stop', nl: 'Volgende stop', de: 'Nächster Stopp', fr: 'Étape suivante', it: 'Prossima tappa', es: 'Siguiente parada' },
+  prevStop:          { en: 'Previous', nl: 'Vorige', de: 'Vorherige', fr: 'Précédent', it: 'Precedente', es: 'Anterior' },
 
   // Homepage selling sections
   howItWorks:        { en: 'How it works', nl: 'Hoe het werkt', de: 'So funktioniert es', fr: 'Comment ça marche', it: 'Come funziona', es: 'Cómo funciona' },

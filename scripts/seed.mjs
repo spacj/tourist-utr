@@ -130,6 +130,16 @@ const CITIES = [
         country: 'Pays-Bas',
         description: 'Canaux médiévaux, le plus haut clocher du pays et le véritable salon des Pays-Bas.',
       },
+      it: {
+        name: 'Utrecht',
+        country: 'Paesi Bassi',
+        description: 'Canali medievali, la torre campanaria più alta del paese e il vero salotto dei Paesi Bassi.',
+      },
+      es: {
+        name: 'Utrecht',
+        country: 'Países Bajos',
+        description: 'Canales medievales, la torre de la iglesia más alta del país y la verdadera sala de estar de los Países Bajos.',
+      },
     },
   },
   {
@@ -158,6 +168,16 @@ const CITIES = [
         name: 'Amsterdam',
         country: 'Pays-Bas',
         description: 'La ville des canaux, des musées mondiales et des hôtels particuliers du Siècle d\'or qui ont bâti les Pays-Bas.',
+      },
+      it: {
+        name: 'Amsterdam',
+        country: 'Paesi Bassi',
+        description: 'Canali patrimonio UNESCO, case a schiera del XVII secolo e biciclette ovunque.',
+      },
+      es: {
+        name: 'Ámsterdam',
+        country: 'Países Bajos',
+        description: 'Canales patrimonio de la UNESCO, casas adosadas del siglo XVII y bicicletas por todas partes.',
       },
     },
   },
@@ -194,6 +214,16 @@ const utrechtClassic = {
         title: 'Utrecht Classique',
         description: 'Les huit incontournables. De la Tour du Dôme à un chef-d\'œuvre UNESCO — 600 ans d\'Utrecht à pied.',
         badge: 'Le plus populaire',
+      },
+      it: {
+        title: 'Utrecht Classica',
+        description: 'Gli otto essentials. Dalla Torre del Duomo a un capolavoro UNESCO — passeggiata attraverso 600 anni di Utrecht.',
+        badge: 'Più popolare',
+      },
+      es: {
+        title: 'Utrecht Clásico',
+        description: 'Los ocho essentials. Desde la Torre del Duomo hasta una obra maestra de la UNESCO — camina a través de 600 años de Utrecht.',
+        badge: 'Más popular',
       },
     },
   },
@@ -569,6 +599,16 @@ const hiddenUtrecht = {
         description: 'Sept secrets oubliés des guides. Ruelles médiévales, palais papal, crypte romane et le premier grand magasin des Pays-Bas.',
         badge: 'Choix des habitants',
       },
+      it: {
+        title: 'Utrecht Nascosta',
+        description: 'Scopri i segreti delle stradine medievali, cortili nascosti e storie che la maggior parte dei turisti non conosce.',
+        badge: 'Nascosto',
+      },
+      es: {
+        title: 'Utrecht Oculta',
+        description: 'Descubre los secretos de los callejones medievales, patios escondidos e historias que la mayoría de los turistas no conocen.',
+        badge: 'Oculto',
+      },
     },
   },
   clues: [
@@ -901,6 +941,16 @@ const canalsCafes = {
         description: 'Une balade détendue en six étapes le long des canaux d\'Utrecht. Parfaite pour un dimanche ensoleillé — de terrasse en terrasse, de pont en pont.',
         badge: 'Préféré du dimanche',
       },
+      it: {
+        title: 'Canali e Caffè',
+        description: 'Goditi il meglio dei caffè lungo i canali, con soste in brunch e tè meravigliosi.',
+        badge: 'Relax',
+      },
+      es: {
+        title: 'Canales y Cafés',
+        description: 'Disfruta de lo mejor de los cafés junto a los canales, con paradas en brunch y tés maravillosos.',
+        badge: 'Relax',
+      },
     },
   },
   clues: [
@@ -1188,8 +1238,18 @@ const amsterdamClassic = {
       },
       fr: {
         title: 'Amsterdam Classique',
-        description: 'Les huit incontournables. Du Palais Royal aux chefs-d\'œuvre Van Gogh — 700 ans du Âge d\'or à pied.',
+        description: 'Les huit incontournables. Du Palais Royal aux chefs-d\'œuvre de Van Gogh — 700 ans de l\'Âge d\'or à pied.',
         badge: 'Le plus populaire',
+      },
+      it: {
+        title: 'Amsterdam Classica',
+        description: 'I nove essentials. Dai canali UNESCO al Quartiere dei Musei — esplora il secolo d\'oro di Amsterdam.',
+        badge: 'Più popolare',
+      },
+      es: {
+        title: 'Ámsterdam Clásico',
+        description: 'Los nueve essentials. Desde los canales UNESCO hasta el Barrio de los Museos — explora el siglo de oro de Ámsterdam.',
+        badge: 'Más popular',
       },
     },
   },
@@ -1565,6 +1625,16 @@ const hiddenAmsterdam = {
         description: 'Sept secrets oubliés des guides. Jardins du Begijnhof, églises cachées, la plus ancienne maison de la ville et une porte médiévale.',
         badge: 'Choix des habitants',
       },
+      it: {
+        title: 'Amsterdam Nascosta',
+        description: 'Scopri i segreti di Amsterdam lontano dai sentieri turistici battuti.',
+        badge: 'Nascosto',
+      },
+      es: {
+        title: 'Ámsterdam Oculta',
+        description: 'Descubre los secretos de Ámsterdam lejos de las rutas turísticas habituales.',
+        badge: 'Oculto',
+      },
     },
   },
   clues: [
@@ -1866,9 +1936,260 @@ const hiddenAmsterdam = {
 }
 
 // ══════════════════════════════════════════════════════════════════
+// Italy cities (Milan + Rome) — both ship initially with one self-guided
+// commercial tour each. Hunts can be added later.
+// ══════════════════════════════════════════════════════════════════
+CITIES.push({
+  id: 'city_milan',
+  countryId: 'it',
+  name: 'Milan',
+  country: 'Italy',
+  description: 'Italy\'s fashion and design capital — Duomo spires by day, aperitivo terraces by night.',
+  coverEmoji: '🇮🇹',
+  imageUrl: 'https://images.unsplash.com/photo-1520440229-6469a149ac59?w=1200&q=85&auto=format&fit=crop',
+  priceEuros: 5,
+  order: 0,
+  active: true,
+  i18n: {
+    nl: { name: 'Milaan', country: 'Italië', description: 'Italië\'s mode- en designhoofdstad — Domspitsen overdag, aperitivo-terrassen \'s avonds.' },
+    de: { name: 'Mailand', country: 'Italien', description: 'Italiens Mode- und Designhauptstadt — Dom-Spitzen am Tag, Aperitivo-Terrassen am Abend.' },
+    fr: { name: 'Milan', country: 'Italie', description: 'La capitale italienne de la mode et du design — flèches du Duomo le jour, terrasses d\'apéritif le soir.' },
+    it: { name: 'Milano', country: 'Italia', description: 'Capitale italiana di moda e design — guglie del Duomo di giorno, terrazze dell\'aperitivo la sera.' },
+    es: { name: 'Milán', country: 'Italia', description: 'Capital italiana de la moda y el diseño — agujas del Duomo de día, terrazas de aperitivo de noche.' },
+  },
+})
+
+CITIES.push({
+  id: 'city_rome',
+  countryId: 'it',
+  name: 'Rome',
+  country: 'Italy',
+  description: 'Three thousand years of empire, art, and pasta layered on seven hills. The eternal city for a reason.',
+  coverEmoji: '🇮🇹',
+  imageUrl: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=1200&q=85&auto=format&fit=crop',
+  priceEuros: 5,
+  order: 1,
+  active: true,
+  i18n: {
+    nl: { name: 'Rome', country: 'Italië', description: 'Drieduizend jaar imperium, kunst en pasta op zeven heuvels. De eeuwige stad — terecht.' },
+    de: { name: 'Rom', country: 'Italien', description: 'Dreitausend Jahre Imperium, Kunst und Pasta auf sieben Hügeln. Die Ewige Stadt — zu Recht.' },
+    fr: { name: 'Rome', country: 'Italie', description: 'Trois mille ans d\'empire, d\'art et de pasta sur sept collines. La ville éternelle, à juste titre.' },
+    it: { name: 'Roma', country: 'Italia', description: 'Tremila anni di impero, arte e pasta su sette colli. La città eterna — a ragione.' },
+    es: { name: 'Roma', country: 'Italia', description: 'Tres mil años de imperio, arte y pasta sobre siete colinas. La ciudad eterna, con razón.' },
+  },
+})
+
+// Flip Italy to active (was comingSoon: true).
+const italyIdx = COUNTRIES.findIndex(c => c.id === 'it')
+if (italyIdx >= 0) COUNTRIES[italyIdx].comingSoon = false
+
+// ══════════════════════════════════════════════════════════════════
+// SELF-GUIDED TOUR 1 — Utrecht Bites & Bars (food, 5 stops)
+// ══════════════════════════════════════════════════════════════════
+const utrechtFoodTour = {
+  id: 'tour_utrecht_bites',
+  meta: {
+    title: 'Utrecht Bites & Bars',
+    description: 'A self-guided food crawl through Utrecht\'s tastiest stops — from canalside cafés to a hidden brewery. No riddles, just where to eat.',
+    city: 'Utrecht',
+    cityId: 'city_utrecht',
+    order: 10,
+    difficulty: 'easy',
+    durationMin: 180,
+    distanceKm: 2.6,
+    rating: 4.7,
+    badge: 'Foodie pick',
+    tourType: 'tour',
+    tourCategory: 'food',
+    i18n: {
+      nl: { title: 'Utrecht Hapjes & Bars', description: 'Een self-guided food tour langs Utrechts lekkerste adresjes — van grachtcafés tot een verborgen brouwerij.' },
+      it: { title: 'Utrecht Cibi & Bar', description: 'Un tour gastronomico autoguidato per Utrecht — dai caffè sui canali a un birrificio nascosto.' },
+      es: { title: 'Utrecht Comida y Bares', description: 'Un tour gastronómico autoguiado por Utrecht — desde cafés junto al canal hasta una cervecería oculta.' },
+    },
+  },
+  clues: [
+    {
+      id: 'stop_1', order: 1, icon: '🥐', theme: 'Canal-side breakfast',
+      riddle: 'Start your morning at a sun-drenched canal terrace below street level. Their stroopwafel-and-coffee combo is a local rite of passage.',
+      locationName: 'Café Olivier (canal terrace)', lat: 52.0892, lng: 5.1183, radiusM: 50,
+      hint1: '', hint2: '', hint3: '',
+      funFact: 'Café Olivier sits in a former 19th-century church refectory. The Belgian beer list runs 100+ bottles — Utrecht\'s deepest.',
+    },
+    {
+      id: 'stop_2', order: 2, icon: '🥪', theme: 'Lunch on a wharf',
+      riddle: 'A 5-minute stroll north along the lower wharf. Look for the green awning — their warm-pulled-pork sandwich is famous in the cycling-courier circuit.',
+      locationName: 'De Rechtbank lunch wharf', lat: 52.0905, lng: 5.1196, radiusM: 45,
+      hint1: '', hint2: '', hint3: '',
+      funFact: 'The building was Utrecht\'s actual courthouse until 2010 — you can sit for lunch in the old jury room.',
+    },
+    {
+      id: 'stop_3', order: 3, icon: '☕', theme: 'Afternoon coffee',
+      riddle: 'Cross the canal and head into the Twijnstraat side streets. A speciality coffee bar hidden in a former milliner\'s shop — order the espresso tonic.',
+      locationName: 'Blackbird Coffee', lat: 52.0876, lng: 5.1212, radiusM: 40,
+      hint1: '', hint2: '', hint3: '',
+      funFact: 'Their beans are roasted weekly two blocks away. The cortado here regularly tops Dutch coffee rankings.',
+    },
+    {
+      id: 'stop_4', order: 4, icon: '🍻', theme: 'Hidden brewery',
+      riddle: 'Walk south along Oudegracht, then duck into a courtyard behind a peaked-roof building. Utrecht\'s only inner-city microbrewery — try the wheat beer.',
+      locationName: 'De Kromme Haring tap room', lat: 52.0852, lng: 5.1196, radiusM: 50,
+      hint1: '', hint2: '', hint3: '',
+      funFact: 'Founded by three former physics students. Their seasonal wild-fermented sours sell out in days.',
+    },
+    {
+      id: 'stop_5', order: 5, icon: '🍝', theme: 'Dinner with a view',
+      riddle: 'Final stop: an Italian trattoria on a quieter stretch of canal. Sit on the lower wharf if the weather holds. The hand-rolled cacio e pepe is the move.',
+      locationName: 'Trattoria Vittoria (Oudegracht)', lat: 52.0840, lng: 5.1188, radiusM: 50,
+      hint1: '', hint2: '', hint3: '',
+      funFact: 'Same family for three generations. The cellar dining room was once a 14th-century wine merchant\'s storehouse.',
+    },
+  ],
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SELF-GUIDED TOUR 2 — Milan Aperitivo Crawl (nightlife, 5 stops)
+// ══════════════════════════════════════════════════════════════════
+const milanAperitivoTour = {
+  id: 'tour_milan_aperitivo',
+  meta: {
+    title: 'Milan Aperitivo Crawl',
+    description: 'Five iconic Milanese terraces for the city\'s greatest contribution to the world: the aperitivo. Starts at 6 pm, ends after the sun is gone.',
+    city: 'Milan',
+    cityId: 'city_milan',
+    order: 0,
+    difficulty: 'easy',
+    durationMin: 210,
+    distanceKm: 3.0,
+    rating: 4.9,
+    badge: 'Local favourite',
+    tourType: 'tour',
+    tourCategory: 'nightlife',
+    i18n: {
+      it: { title: 'Aperitivo Tour Milano', description: 'Cinque terrazze milanesi iconiche per il più grande contributo della città al mondo: l\'aperitivo. Si inizia alle 18, si finisce a notte fonda.' },
+      en: { title: 'Milan Aperitivo Crawl', description: 'Five iconic Milanese terraces for the city\'s greatest contribution to the world: the aperitivo.' },
+      nl: { title: 'Milaan Aperitivo Tour', description: 'Vijf iconische Milanese terrassen voor het beste cadeau van deze stad aan de wereld: de aperitivo.' },
+      es: { title: 'Tour de Aperitivo Milán', description: 'Cinco terrazas milanesas icónicas para el mejor regalo de esta ciudad al mundo: el aperitivo.' },
+    },
+  },
+  clues: [
+    {
+      id: 'stop_1', order: 1, icon: '🍸', theme: 'Camparino, the original',
+      riddle: 'Start where it all began: at the foot of the Duomo, inside the Galleria. The bar that gave its name to the drink — a Negroni at the marble counter.',
+      locationName: 'Camparino in Galleria', lat: 45.4659, lng: 9.1899, radiusM: 40,
+      hint1: '', hint2: '', hint3: '',
+      funFact: 'Opened in 1915 by Davide Campari himself. The mosaic floor and Liberty-style frescoes are original. Order the Negroni Sbagliato — invented around the corner.',
+      i18n: { it: { theme: 'Camparino, l\'originale', riddle: 'Inizia dove è cominciato tutto: ai piedi del Duomo, dentro la Galleria. Il bar che ha dato il nome al drink — un Negroni al bancone di marmo.', locationName: 'Camparino in Galleria', funFact: 'Aperto nel 1915 da Davide Campari in persona. Il pavimento a mosaico e gli affreschi Liberty sono originali. Ordina il Negroni Sbagliato — inventato qui dietro l\'angolo.' } },
+    },
+    {
+      id: 'stop_2', order: 2, icon: '🥂', theme: 'Brera by golden hour',
+      riddle: '15 minutes north into the Brera district. A street terrace under fairy lights, regulars include Pinacoteca curators. Perfect for the second drink.',
+      locationName: 'N\'Ombra de Vin (Brera)', lat: 45.4720, lng: 9.1864, radiusM: 50,
+      hint1: '', hint2: '', hint3: '',
+      funFact: 'The cellar dates to a 16th-century friary. They stock 3,000+ wine references and run nightly tastings.',
+      i18n: { it: { theme: 'Brera all\'ora dorata', riddle: '15 minuti a nord verso Brera. Terrazza in strada con luci, frequentata anche dai curatori della Pinacoteca. Perfetto per il secondo drink.', locationName: 'N\'Ombra de Vin (Brera)', funFact: 'La cantina è del XVI secolo, di un convento. Hanno oltre 3.000 etichette di vino e organizzano degustazioni serali.' } },
+    },
+    {
+      id: 'stop_3', order: 3, icon: '🌃', theme: 'Rooftop bar',
+      riddle: 'Head to the Repubblica area for the panoramic stop. Take the elevator up — the skyline of Porta Nuova\'s towers framed against the Alps on a clear evening.',
+      locationName: 'Terrazza Gallia (rooftop)', lat: 45.4854, lng: 9.2054, radiusM: 60,
+      hint1: '', hint2: '', hint3: '',
+      funFact: 'Atop the Excelsior Hotel Gallia. Their signature cocktail uses bergamot from the chef\'s family farm in Calabria.',
+      i18n: { it: { theme: 'Rooftop', riddle: 'Vai verso Repubblica per la tappa panoramica. Prendi l\'ascensore — lo skyline di Porta Nuova incorniciato dalle Alpi nelle sere limpide.', locationName: 'Terrazza Gallia (rooftop)', funFact: 'In cima all\'Excelsior Hotel Gallia. Il loro cocktail signature usa bergamotto della cascina di famiglia dello chef in Calabria.' } },
+    },
+    {
+      id: 'stop_4', order: 4, icon: '🍕', theme: 'Navigli aperitivo buffet',
+      riddle: 'Tram south to the Navigli. The full Milanese aperitivo experience — €10 cocktail, all-you-can-eat buffet on the canal embankment. Crowded by 9 pm.',
+      locationName: 'Mag Café (Naviglio Grande)', lat: 45.4501, lng: 9.1745, radiusM: 60,
+      hint1: '', hint2: '', hint3: '',
+      funFact: 'The Navigli were Leonardo\'s engineering project — locks designed by him in the 1480s are still in use upstream.',
+      i18n: { it: { theme: 'Aperitivo buffet sui Navigli', riddle: 'Tram a sud verso i Navigli. La vera esperienza dell\'aperitivo milanese — cocktail a €10, buffet a volontà sul canale. Pieno entro le 21.', locationName: 'Mag Café (Naviglio Grande)', funFact: 'I Navigli furono il progetto idraulico di Leonardo — chiuse progettate da lui negli anni 1480 sono ancora in uso a monte.' } },
+    },
+    {
+      id: 'stop_5', order: 5, icon: '🍷', theme: 'Last call, hidden cellar',
+      riddle: 'Final stop: a barrel-vaulted wine bar 200 m from the canal. Quieter, candlelit, ideal for the digestivo. The amaro list runs 80 deep.',
+      locationName: 'Vinile (Naviglio Pavese)', lat: 45.4486, lng: 9.1758, radiusM: 45,
+      hint1: '', hint2: '', hint3: '',
+      funFact: 'Hidden in a former bicycle workshop. The DJ booth is built into a 1960s Vespa.',
+      i18n: { it: { theme: 'Ultima tappa, cantina nascosta', riddle: 'Ultima tappa: enoteca con volta a botte a 200 m dal canale. Più tranquilla, a lume di candela, perfetta per il digestivo. La carta degli amari ne conta 80.', locationName: 'Vinile (Naviglio Pavese)', funFact: 'Nascosta in un ex officina di biciclette. La consolle del DJ è ricavata da una Vespa anni \'60.' } },
+    },
+  ],
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SELF-GUIDED TOUR 3 — Rome Trastevere by Night (food, 5 stops)
+// ══════════════════════════════════════════════════════════════════
+const romeTrastevereTour = {
+  id: 'tour_rome_trastevere',
+  meta: {
+    title: 'Rome: Trastevere by Night',
+    description: 'A self-guided crawl through Rome\'s most atmospheric neighbourhood — cobbled lanes, 4th-century basilicas, and the city\'s best Roman dishes.',
+    city: 'Rome',
+    cityId: 'city_rome',
+    order: 0,
+    difficulty: 'easy',
+    durationMin: 180,
+    distanceKm: 2.2,
+    rating: 4.8,
+    badge: 'Local favourite',
+    tourType: 'tour',
+    tourCategory: 'food',
+    i18n: {
+      it: { title: 'Roma: Trastevere di Sera', description: 'Un percorso autoguidato nel quartiere più suggestivo di Roma — vicoli acciottolati, basiliche del IV secolo e i migliori piatti romani.' },
+      en: { title: 'Rome: Trastevere by Night', description: 'A self-guided crawl through Rome\'s most atmospheric neighbourhood — cobbled lanes, 4th-century basilicas, and the city\'s best Roman dishes.' },
+      es: { title: 'Roma: Trastevere de Noche', description: 'Un recorrido autoguiado por el barrio más atmosférico de Roma — callejones empedrados, basílicas del siglo IV y los mejores platos romanos.' },
+    },
+  },
+  clues: [
+    {
+      id: 'stop_1', order: 1, icon: '⛪', theme: 'Mosaic basilica',
+      riddle: 'Start in the heart of Trastevere. The 12th-century mosaics on the façade glow at golden hour. Nuns chant vespers at 6 pm — sit in the back, listen.',
+      locationName: 'Santa Maria in Trastevere', lat: 41.8895, lng: 12.4694, radiusM: 50,
+      hint1: '', hint2: '', hint3: '',
+      funFact: 'One of Rome\'s oldest churches — the first place Christians could legally worship in the city, granted by Pope Callistus around 220 AD.',
+      i18n: { it: { theme: 'Basilica dei mosaici', riddle: 'Si parte dal cuore di Trastevere. I mosaici del XII secolo sulla facciata brillano all\'ora dorata. Le suore cantano i vespri alle 18 — siediti in fondo e ascolta.', locationName: 'Santa Maria in Trastevere', funFact: 'Una delle chiese più antiche di Roma — il primo luogo in cui i cristiani poterono celebrare apertamente, per concessione di Papa Callisto intorno al 220 d.C.' } },
+    },
+    {
+      id: 'stop_2', order: 2, icon: '🍝', theme: 'Cacio e pepe',
+      riddle: '3-minute walk west to a tiny family trattoria. The cacio e pepe arrives at the table still being mixed in a hollowed pecorino wheel.',
+      locationName: 'Da Enzo al 29', lat: 41.8884, lng: 12.4724, radiusM: 30,
+      hint1: '', hint2: '', hint3: '',
+      funFact: 'No reservations after 7 pm — show up at 6:45 or queue. Anthony Bourdain ate here. The carbonara is also legendary.',
+      i18n: { it: { theme: 'Cacio e pepe', riddle: '3 minuti a piedi a ovest, in una piccola trattoria familiare. La cacio e pepe arriva al tavolo ancora mescolata in una forma di pecorino svuotata.', locationName: 'Da Enzo al 29', funFact: 'Niente prenotazioni dopo le 19 — arriva alle 18:45 o fai la fila. Ci ha mangiato Anthony Bourdain. Anche la carbonara è leggendaria.' } },
+    },
+    {
+      id: 'stop_3', order: 3, icon: '🍦', theme: 'Gelato detour',
+      riddle: 'Cross Viale Trastevere. A gelateria where the flavours change daily based on what the chef found at the market. Try the ricotta-fig.',
+      locationName: 'Otaleg gelateria', lat: 41.8881, lng: 12.4747, radiusM: 35,
+      hint1: '', hint2: '', hint3: '',
+      funFact: 'The name spelled backward is "Gelato". Owner Marco Radicioni was named Italy\'s best gelato maker in 2019.',
+      i18n: { it: { theme: 'Pausa gelato', riddle: 'Attraversa Viale Trastevere. Una gelateria dove i gusti cambiano ogni giorno in base a cosa lo chef trova al mercato. Prova ricotta e fichi.', locationName: 'Gelateria Otaleg', funFact: 'Il nome letto al contrario è "Gelato". Marco Radicioni, il proprietario, è stato eletto miglior gelataio d\'Italia nel 2019.' } },
+    },
+    {
+      id: 'stop_4', order: 4, icon: '🍷', theme: 'Wine bar in a vault',
+      riddle: 'Wander south into the quieter lanes. A 100-year-old wine bar in a brick-vaulted cellar — Lazio reds by the glass for €4. Cheese boards travel.',
+      locationName: 'Enoteca Ferrara', lat: 41.8868, lng: 12.4708, radiusM: 50,
+      hint1: '', hint2: '', hint3: '',
+      funFact: 'The cellar holds 1,500 labels and you can wander it freely. The same family ran it for 87 years before passing it on in 2018.',
+      i18n: { it: { theme: 'Enoteca in cantina', riddle: 'Cammina a sud verso i vicoli più tranquilli. Un\'enoteca centenaria in una cantina a volta — vini rossi del Lazio al bicchiere a €4. I taglieri fanno parlare.', locationName: 'Enoteca Ferrara', funFact: 'La cantina conta 1.500 etichette e si può visitare liberamente. La stessa famiglia l\'ha gestita per 87 anni prima del passaggio nel 2018.' } },
+    },
+    {
+      id: 'stop_5', order: 5, icon: '🌉', theme: 'Bridge nightcap',
+      riddle: 'Final stop: walk to Ponte Sisto, the pedestrian bridge over the Tiber. A street musician usually plays here past midnight. Stop, look at the city, finish your night.',
+      locationName: 'Ponte Sisto', lat: 41.8932, lng: 12.4711, radiusM: 60,
+      hint1: '', hint2: '', hint3: '',
+      funFact: 'Built in 1479 by Pope Sixtus IV, on the foundations of an ancient Roman bridge. The four obelisks at each corner are 1990s replacements — the originals are in the Capitoline museums.',
+      i18n: { it: { theme: 'Ultimo brindisi sul ponte', riddle: 'Ultima tappa: cammina fino a Ponte Sisto, il ponte pedonale sul Tevere. Quasi sempre un musicista suona qui dopo mezzanotte. Fermati, guarda la città, chiudi la serata.', locationName: 'Ponte Sisto', funFact: 'Costruito nel 1479 da Papa Sisto IV, sulle fondamenta di un antico ponte romano. I quattro obelischi agli angoli sono repliche degli anni \'90 — gli originali sono ai Musei Capitolini.' } },
+    },
+  ],
+}
+
+// ══════════════════════════════════════════════════════════════════
 // Write everything
 // ══════════════════════════════════════════════════════════════════
-const HUNTS = [utrechtClassic, hiddenUtrecht, canalsCafes, amsterdamClassic, hiddenAmsterdam]
+const HUNTS = [
+  utrechtClassic, hiddenUtrecht, canalsCafes, amsterdamClassic, hiddenAmsterdam,
+  utrechtFoodTour, milanAperitivoTour, romeTrastevereTour,
+]
 
 async function seed() {
   // 1. Countries
