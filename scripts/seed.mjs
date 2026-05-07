@@ -1989,6 +1989,69 @@ const italyIdx = COUNTRIES.findIndex(c => c.id === 'it')
 if (italyIdx >= 0) COUNTRIES[italyIdx].comingSoon = false
 
 // ══════════════════════════════════════════════════════════════════
+// More Dutch cities: The Hague, Rotterdam, Delft
+// ══════════════════════════════════════════════════════════════════
+CITIES.push({
+  id: 'city_the_hague',
+  countryId: 'nl',
+  name: 'The Hague',
+  country: 'Netherlands',
+  description: 'Royal palaces, the Dutch parliament, and the city where the world comes to talk peace. Vermeer\'s "Girl with a Pearl Earring" lives here.',
+  coverEmoji: '👑',
+  imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/The_Hague_Binnenhof_Hofvijver.jpg/1200px-The_Hague_Binnenhof_Hofvijver.jpg',
+  priceEuros: 5,
+  order: 2,
+  active: true,
+  i18n: {
+    nl: { name: 'Den Haag', country: 'Nederland', description: 'Koninklijke paleizen, het Nederlandse parlement, en de stad waar de wereld komt praten over vrede. "Het meisje met de parel" hangt hier.' },
+    de: { name: 'Den Haag', country: 'Niederlande', description: 'Königliche Paläste, das niederländische Parlament — und die Stadt, in die die Welt kommt, um über Frieden zu reden. Das "Mädchen mit dem Perlenohrring" hängt hier.' },
+    fr: { name: 'La Haye', country: 'Pays-Bas', description: 'Palais royaux, parlement néerlandais — et la ville où le monde vient parler de paix. La "Jeune fille à la perle" vit ici.' },
+    it: { name: 'L\'Aia', country: 'Paesi Bassi', description: 'Palazzi reali, il parlamento olandese — e la città dove il mondo viene a parlare di pace. La "Ragazza con l\'orecchino di perla" è qui.' },
+    es: { name: 'La Haya', country: 'Países Bajos', description: 'Palacios reales, el parlamento holandés — y la ciudad donde el mundo viene a hablar de paz. La "Joven de la perla" vive aquí.' },
+  },
+})
+
+CITIES.push({
+  id: 'city_rotterdam',
+  countryId: 'nl',
+  name: 'Rotterdam',
+  country: 'Netherlands',
+  description: 'Bombed flat in 1940 and rebuilt as the Netherlands\' boldest architecture lab. Cube houses, a covered market that\'s also an apartment block, and the busiest port in Europe.',
+  coverEmoji: '🌉',
+  imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Rotterdam_Erasmusbrug_3.jpg/1200px-Rotterdam_Erasmusbrug_3.jpg',
+  priceEuros: 5,
+  order: 3,
+  active: true,
+  i18n: {
+    nl: { name: 'Rotterdam', country: 'Nederland', description: 'Plat gebombardeerd in 1940 en herbouwd als het stoutmoedigste architectuurlab van Nederland. Kubuswoningen, een markthal die ook een woonblok is, en de drukste haven van Europa.' },
+    de: { name: 'Rotterdam', country: 'Niederlande', description: '1940 in Schutt und Asche gelegt, danach als kühnstes Architekturlabor der Niederlande wieder aufgebaut. Kubushäuser, eine Markthalle, die zugleich Wohnblock ist, und Europas größter Hafen.' },
+    fr: { name: 'Rotterdam', country: 'Pays-Bas', description: 'Rasée en 1940 et reconstruite comme le laboratoire architectural le plus audacieux des Pays-Bas. Maisons cubiques, une halle qui est aussi un immeuble, et le port le plus actif d\'Europe.' },
+    it: { name: 'Rotterdam', country: 'Paesi Bassi', description: 'Rasa al suolo nel 1940 e ricostruita come il laboratorio architettonico più audace dei Paesi Bassi. Case-cubo, un mercato coperto che è anche un palazzo, e il porto più trafficato d\'Europa.' },
+    es: { name: 'Rotterdam', country: 'Países Bajos', description: 'Arrasada en 1940 y reconstruida como el laboratorio arquitectónico más atrevido de los Países Bajos. Casas cúbicas, un mercado cubierto que también es bloque de pisos, y el puerto más activo de Europa.' },
+  },
+})
+
+CITIES.push({
+  id: 'city_delft',
+  countryId: 'nl',
+  name: 'Delft',
+  country: 'Netherlands',
+  description: 'Vermeer\'s home town and the source of the world\'s most famous blue pottery. A pocket-sized canal city you can walk in an afternoon — but won\'t want to leave.',
+  coverEmoji: '🏛️',
+  imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Delft_Markt_Nieuwe_Kerk.jpg/1200px-Delft_Markt_Nieuwe_Kerk.jpg',
+  priceEuros: 5,
+  order: 4,
+  active: true,
+  i18n: {
+    nl: { name: 'Delft', country: 'Nederland', description: 'De stad van Vermeer en het beroemdste blauwe aardewerk ter wereld. Een grachtenstadje van zakformaat dat je in een middag kunt lopen — maar niet wilt verlaten.' },
+    de: { name: 'Delft', country: 'Niederlande', description: 'Vermeers Heimatstadt und Ursprungsort des berühmtesten blauen Porzellans der Welt. Eine Kanalstadt im Westentaschenformat, die man an einem Nachmittag durchquert — aber nicht verlassen möchte.' },
+    fr: { name: 'Delft', country: 'Pays-Bas', description: 'La ville natale de Vermeer et l\'origine de la plus célèbre faïence bleue au monde. Une ville-canal au format de poche que vous traversez en une après-midi — mais ne voudrez plus quitter.' },
+    it: { name: 'Delft', country: 'Paesi Bassi', description: 'La città natale di Vermeer e culla della più famosa ceramica blu del mondo. Una città di canali in formato tascabile, che attraversi in un pomeriggio — ma da cui non vorrai andartene.' },
+    es: { name: 'Delft', country: 'Países Bajos', description: 'La ciudad natal de Vermeer y origen de la cerámica azul más famosa del mundo. Una ciudad-canal de bolsillo que recorres en una tarde — pero no querrás dejar.' },
+  },
+})
+
+// ══════════════════════════════════════════════════════════════════
 // SELF-GUIDED TOUR 1 — Utrecht Bites & Bars (food, 5 stops)
 // ══════════════════════════════════════════════════════════════════
 const utrechtFoodTour = {
@@ -2189,10 +2252,279 @@ const romeTrastevereTour = {
 }
 
 // ══════════════════════════════════════════════════════════════════
+// HUNT — The Hague Royal Walk (6 stops, easy)
+// ══════════════════════════════════════════════════════════════════
+const theHagueRoyal = {
+  id: 'hunt_the_hague_royal',
+  meta: {
+    title: 'The Hague Royal Walk',
+    description: 'Six iconic stops across the city of kings and ambassadors — from the Dutch parliament to the Peace Palace, with Vermeer\'s most famous painting in between.',
+    city: 'The Hague',
+    cityId: 'city_the_hague',
+    order: 0,
+    difficulty: 'easy',
+    durationMin: 130,
+    distanceKm: 3.4,
+    rating: 4.7,
+    badge: 'Most popular',
+    i18n: {
+      nl: { title: 'Den Haag Koninklijke Wandeling', description: 'Zes iconische stops door de stad van koningen en ambassadeurs — van het Binnenhof tot het Vredespaleis, met Vermeers beroemdste schilderij ertussen.', badge: 'Populairst' },
+      de: { title: 'Den Haag — Königlicher Spaziergang', description: 'Sechs ikonische Stationen durch die Stadt der Könige und Diplomaten — vom Binnenhof bis zum Friedenspalast, mit Vermeers berühmtestem Gemälde dazwischen.', badge: 'Am beliebtesten' },
+      fr: { title: 'La Haye — Promenade royale', description: 'Six étapes emblématiques dans la ville des rois et des ambassadeurs — du Binnenhof au Palais de la Paix, avec le tableau le plus célèbre de Vermeer entre les deux.', badge: 'Le plus populaire' },
+    },
+  },
+  clues: [
+    {
+      id: 'clue_1', order: 1, icon: '🏛️', theme: 'Heart of Dutch politics',
+      riddle: "Find the medieval gates that guard the inner courtyard where the Dutch government has met for 800 years. The pond beside it reflects the hall where royal speeches are given each year.",
+      locationName: 'Binnenhof', lat: 52.0796, lng: 4.3137, radiusM: 50,
+      hint1: "You're looking for a complex of medieval and renaissance buildings with a large square and an octagonal hall, in the very center of The Hague.",
+      hint2: 'Head for the Hofvijver pond. The Binnenhof rises behind it — go through the arched gate to enter the inner courtyard.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'The Binnenhof is one of the oldest still-functioning parliament buildings in the world. The Ridderzaal (Knights\' Hall) at its center dates to the 13th century — the king delivers his throne speech from here every September on Prinsjesdag.',
+      trivia: { question: 'When does the Dutch king deliver his annual throne speech in the Ridderzaal?', options: ['Christmas', 'Prinsjesdag (third Tuesday of September)', 'Koningsdag (King\'s Day)', 'New Year'], correctIndex: 1, explain: 'Prinsjesdag — the third Tuesday of September. The royal carriage rides here from Noordeinde Palace.' },
+    },
+    {
+      id: 'clue_2', order: 2, icon: '👧', theme: 'Girl with a Pearl Earring',
+      riddle: "I am a small 17th-century mansion that holds the most photographed painting in the Netherlands. A girl turns her head, a pearl glints in her ear, and the canvas is barely larger than this phone.",
+      locationName: 'Mauritshuis', lat: 52.0801, lng: 4.3138, radiusM: 35,
+      hint1: "You're looking for a small honey-colored mansion next to the Hofvijver pond, just outside the Binnenhof.",
+      hint2: 'On Plein 29, attached to the Binnenhof complex. Look for the classical façade and the small art-museum sign.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'The Mauritshuis was built in 1644 as the city palace of Johan Maurits, governor of Dutch Brazil. Today it holds 800 paintings including Vermeer\'s "Girl with a Pearl Earring," Rembrandt\'s "Anatomy Lesson," and Fabritius\'s "The Goldfinch."',
+      trivia: { question: 'How big is "Girl with a Pearl Earring"?', options: ['About 4 metres tall', 'About 1.5 metres tall', 'Smaller than an A4 sheet (44 × 39 cm)', 'About 80 × 60 cm'], correctIndex: 2, explain: 'Just 44 by 39 cm — smaller than a sheet of A4 paper. Most visitors are surprised by how tiny it is in person.' },
+    },
+    {
+      id: 'clue_3', order: 3, icon: '🎨', theme: 'Optical illusions',
+      riddle: "Inside a former royal residence, an artist played with infinite stairs, impossible buildings, and tessellating birds that turn into fish. His name became a verb for visual paradox.",
+      locationName: 'Escher in Het Paleis', lat: 52.0815, lng: 4.3094, radiusM: 35,
+      hint1: "You're looking for a small palace museum dedicated to a single Dutch graphic artist whose work plays tricks on the eye.",
+      hint2: 'On Lange Voorhout, a tree-lined avenue west of the Binnenhof. The building is the former winter palace of Queen Mother Emma.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'M.C. Escher (1898–1972) drew his impossible architecture from real places he visited in Italy. The chandeliers in the museum are sculptures by Hans van Bentem and change every few years — past versions included a giant skull and a UFO.',
+      trivia: { question: 'Which of these is NOT a real M.C. Escher print?', options: ['Drawing Hands', 'Relativity', 'The Persistence of Memory', 'Belvedere'], correctIndex: 2, explain: '"The Persistence of Memory" is by Salvador Dalí — the melting clocks. Escher made the other three.' },
+    },
+    {
+      id: 'clue_4', order: 4, icon: '👑', theme: 'Working royal palace',
+      riddle: "Find the palace where the king of the Netherlands actually goes to work. Two ornate gilded gates flank the courtyard, and the Royal Standard flies overhead when he\'s inside.",
+      locationName: 'Noordeinde Palace', lat: 52.0828, lng: 4.3091, radiusM: 45,
+      hint1: "You're looking for a large 17th-century palace on a long shopping street, with two royal gates and a wide ceremonial courtyard.",
+      hint2: 'Walk west along Noordeinde from Lange Voorhout. The palace dominates the block — the Royal Stables sit just behind it.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'Noordeinde is one of three official palaces of the Dutch monarch and the king\'s working residence. He doesn\'t live here — that\'s in nearby Huis ten Bosch — but he meets ministers, foreign leaders, and ambassadors here. The orange royal flag flies when he\'s present.',
+      trivia: { question: 'How many official palaces does the Dutch monarch have?', options: ['One', 'Three', 'Five', 'Eleven'], correctIndex: 1, explain: 'Three: Noordeinde (working), Huis ten Bosch (residence), and the Royal Palace on Dam Square in Amsterdam (state events).' },
+    },
+    {
+      id: 'clue_5', order: 5, icon: '🕊️', theme: 'Where the world talks peace',
+      riddle: "I am a neo-Renaissance palace built with Carnegie\'s steel money. Inside, judges from every continent rule on disputes between nations. Every flag of every state in the world hangs in my hall.",
+      locationName: 'Vredespaleis (Peace Palace)', lat: 52.0867, lng: 4.2956, radiusM: 60,
+      hint1: "You're looking for a grand red-brick palace with a tall slate-roofed tower, on the western edge of the city center.",
+      hint2: 'Carnegieplein 2. About 15 minutes\' walk west of Noordeinde Palace, just before Zorgvliet park.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'The Peace Palace opened in 1913 and is funded by a $1.5 million donation from Andrew Carnegie. It hosts the International Court of Justice — the highest court of the United Nations. The visitor center next door is free; tours of the palace itself require booking weeks ahead.',
+      trivia: { question: 'Which UN body sits inside the Peace Palace?', options: ['UN Security Council', 'International Criminal Court', 'International Court of Justice', 'UNHCR'], correctIndex: 2, explain: 'The International Court of Justice. The ICC (which prosecutes individuals) is also in The Hague but in a different building.' },
+    },
+    {
+      id: 'clue_6', order: 6, icon: '🌊', theme: 'Where the Dutch go to the beach',
+      riddle: "End the day where the city becomes sand. A 1900-metre boardwalk runs along the North Sea, with a 19th-century pier reaching out into the water and a casino at its end.",
+      locationName: 'Scheveningen Pier', lat: 52.1124, lng: 4.2722, radiusM: 80,
+      hint1: "You're looking for a long pier reaching into the sea on the coastal edge of The Hague, about 5 km from the city center.",
+      hint2: 'Take tram 1 or 9 to Scheveningen Strand. The pier is the obvious landmark on the boulevard.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'Scheveningen ("Schevening-en") is famously hard for foreigners to pronounce — during WWII the Dutch resistance used it as a shibboleth to spot German infiltrators. The current pier opened in 1959; a Ferris wheel was added in 2016 for the views over the North Sea.',
+      trivia: { question: 'Why was "Scheveningen" used as a shibboleth in WWII?', options: ['It contains uniquely Dutch sounds Germans can\'t pronounce', 'It was a code name for an underground bunker', 'It was banned by the German occupation', 'It was the first word of the Dutch national anthem'], correctIndex: 0, explain: 'The "sch-" cluster plus "-eveningen" trips up German speakers. Resistance fighters made suspects say the name.' },
+    },
+  ],
+}
+
+// ══════════════════════════════════════════════════════════════════
+// HUNT — Rotterdam Modern Marvels (7 stops, medium)
+// ══════════════════════════════════════════════════════════════════
+const rotterdamModern = {
+  id: 'hunt_rotterdam_modern',
+  meta: {
+    title: 'Rotterdam Modern Marvels',
+    description: 'Seven stops through the city that rebuilt itself from scratch. Cube houses, a covered market that\'s also an apartment block, and Europe\'s most photographed bridge.',
+    city: 'Rotterdam',
+    cityId: 'city_rotterdam',
+    order: 0,
+    difficulty: 'medium',
+    durationMin: 150,
+    distanceKm: 4.2,
+    rating: 4.8,
+    badge: 'Architect\'s pick',
+    i18n: {
+      nl: { title: 'Rotterdam Moderne Wonderen', description: 'Zeven stops door de stad die zichzelf opnieuw uitvond. Kubuswoningen, een markthal die ook een woonblok is, en de meest gefotografeerde brug van Europa.', badge: 'Architectenkeuze' },
+      de: { title: 'Rotterdam — Moderne Wunder', description: 'Sieben Stationen durch die Stadt, die sich von Grund auf neu erfunden hat. Kubushäuser, eine Markthalle, die zugleich Wohnblock ist, und Europas meistfotografierte Brücke.', badge: 'Architekten-Pick' },
+      fr: { title: 'Rotterdam — Merveilles modernes', description: 'Sept étapes dans la ville qui s\'est réinventée de zéro. Maisons cubiques, halle qui est aussi un immeuble, et le pont le plus photographié d\'Europe.', badge: 'Choix des architectes' },
+    },
+  },
+  clues: [
+    {
+      id: 'clue_1', order: 1, icon: '🟨', theme: 'Tilted yellow houses',
+      riddle: "Find a forest of 38 yellow cubes balanced on their corners. Inside each one, the floors are diamond-shaped and the walls lean. Designed in 1984 — and people actually live in them.",
+      locationName: 'Kubuswoningen (Cube Houses)', lat: 51.9197, lng: 4.4900, radiusM: 50,
+      hint1: "You're looking for a cluster of bright-yellow tilted cubes near Blaak station.",
+      hint2: 'Above and around Blaak station, on the corner of Overblaak. One of the cubes is a "show home" you can enter for €4.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'Architect Piet Blom designed the cubes as "trees" — each one represents a tree, and the whole cluster forms an "urban forest" above the street. Each apartment is 100m², spread across three floors with the walls all leaning at 54.7 degrees.',
+      trivia: { question: 'What does each yellow cube represent in architect Piet Blom\'s concept?', options: ['A house', 'A tree', 'A ship', 'A flower'], correctIndex: 1, explain: 'A tree. The whole cluster is meant to read as an "urban forest" floating above pedestrian streets.' },
+    },
+    {
+      id: 'clue_2', order: 2, icon: '🏗️', theme: 'Market inside an apartment block',
+      riddle: "I am a 40-metre-tall arched building. The outside curve is full of apartments. The inside ceiling is the largest mural in the Netherlands — and the floor underneath is a market hall.",
+      locationName: 'Markthal', lat: 51.9203, lng: 4.4870, radiusM: 35,
+      hint1: "You're looking for a large arched horseshoe-shaped building right next to the Cube Houses.",
+      hint2: 'On Binnenrotte, a 1-minute walk from Kubuswoningen. The glass façades face out at both ends.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'The Markthal opened in 2014. The 11,000 m² ceiling mural — fruits, vegetables, and flowers — is by Arno Coenen and Iris Roskam, printed on 4,000 perforated panels. The 228 apartments wrap the arch with windows facing out (and into the market). Best free art in Rotterdam.',
+      trivia: { question: 'How many apartments are inside the Markthal\'s arch?', options: ['25', '88', '228', '500'], correctIndex: 2, explain: '228 apartments wrap the arch on the outside curve. The inside curve is the painted ceiling.' },
+    },
+    {
+      id: 'clue_3', order: 3, icon: '🏯', theme: 'The white tower that survived',
+      riddle: "Find the 11-storey white tower from 1898. It was the tallest building in Europe when it opened. The Nazis burned the city around it — but somehow the tower still stands.",
+      locationName: 'Witte Huis', lat: 51.9210, lng: 4.4890, radiusM: 35,
+      hint1: "You're looking for an Art Nouveau-style white tower with a green dome, near the Oudehaven harbor.",
+      hint2: 'Wijnhaven 3, on the corner overlooking Oudehaven. The harbor side has a beer terrace.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'The Witte Huis was Europe\'s first skyscraper, completed in 1898. When the Luftwaffe firebombed Rotterdam on 14 May 1940 and erased 24,000 buildings in 90 minutes, this tower survived almost untouched — pure luck of where the bombs fell. It\'s now a national monument.',
+      trivia: { question: 'How many buildings did the May 1940 bombing of Rotterdam destroy?', options: ['About 800', 'About 5,000', 'About 24,000', 'About 100,000'], correctIndex: 2, explain: 'Around 24,000 buildings in 90 minutes. 850 people died and 80,000 were left homeless. The Witte Huis was one of the only structures left.' },
+    },
+    {
+      id: 'clue_4', order: 4, icon: '⚓', theme: 'A floating city of glass',
+      riddle: "Cross the Erasmusbrug and look back. Three glass towers stand on a pier where ocean liners once sailed for New York. The pier itself is named after a queen.",
+      locationName: 'Wilhelminapier viewpoint', lat: 51.9050, lng: 4.4859, radiusM: 80,
+      hint1: "You're looking for the south bank of the Maas, just past the Erasmusbrug, with skyscrapers.",
+      hint2: 'Walk across the Erasmus Bridge from the city center. Wilhelminapier is the strip of land directly across.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'Wilhelminapier was the Holland-America Line\'s departure pier — between 1873 and 1971, more than a million Dutch and German emigrants left for New York from here. The departure terminal is now Hotel New York. The three glass towers (De Rotterdam, Toren op Zuid, KPN) anchor what locals call the "Manhattan on the Maas."',
+      trivia: { question: 'How many Europeans emigrated to America from Wilhelminapier between 1873 and 1971?', options: ['About 50,000', 'About 250,000', 'Over 1 million', 'Over 5 million'], correctIndex: 2, explain: 'More than a million emigrants — mostly Dutch, German, and Eastern European Jews — left for the US from this pier.' },
+    },
+    {
+      id: 'clue_5', order: 5, icon: '🌉', theme: 'The Swan',
+      riddle: "I am a 800-metre cable-stayed bridge with a single asymmetric pylon. Locals call me \"The Swan.\" My southern half tilts upwards every few hours so ships can sail past.",
+      locationName: 'Erasmusbrug', lat: 51.9094, lng: 4.4867, radiusM: 100,
+      hint1: "You're looking for the iconic blue cable-stayed bridge across the Maas with a single tall pylon.",
+      hint2: 'You\'ll cross it walking back from Wilhelminapier. The viewpoints from either bank are equally good.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'Designed by Ben van Berkel, the Erasmusbrug opened in 1996 and immediately became Rotterdam\'s logo. Its 139-metre pylon leans 8 degrees. The southern bascule section opens 1,200 times a year to let ships pass — the timing is published online so locals can plan around it.',
+      trivia: { question: 'Why is the Erasmusbrug nicknamed "The Swan"?', options: ['It was painted white originally', 'The asymmetric pylon resembles a swan\'s neck and head', 'It was financed by a swan-shaped statue', 'Swans nest underneath'], correctIndex: 1, explain: 'The asymmetric leaning pylon with the cable-stays curving down looks like a swan\'s neck arching over the river.' },
+    },
+    {
+      id: 'clue_6', order: 6, icon: '⛵', theme: 'The oldest harbor',
+      riddle: "Find the harbor where Rotterdam began. Tall historic ships float on the water; a tower from the 17th century stands at the end. The bombs of 1940 stopped just short of here.",
+      locationName: 'Oude Haven (Old Harbor)', lat: 51.9168, lng: 4.4920, radiusM: 60,
+      hint1: "You're looking for a small historic harbor with old wooden ships, just east of the Cube Houses.",
+      hint2: 'Two minutes\' walk from Markthal toward the river. The harbor is enclosed by old warehouse-fronts.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'Oude Haven was the first port dug in Rotterdam, around 1350. The Witte Huis stands at one corner; the maritime museum has working historic ships moored along the quays. After the 1940 bombing, this is one of the only stretches of pre-war Rotterdam still standing.',
+      trivia: { question: 'When was Oude Haven first dug?', options: ['Around 1100', 'Around 1350', 'Around 1600', 'Around 1850'], correctIndex: 1, explain: 'Around 1350 — Rotterdam grew up around this dam in the Rotte river. The city\'s name comes from "dam in the Rotte."' },
+    },
+    {
+      id: 'clue_7', order: 7, icon: '🗼', theme: 'The view from above',
+      riddle: "End on the observation deck of a 185-metre concrete tower built for a 1960 horticulture expo. From the top you can see Belgium on a clear day. A glass capsule rotates around the spire.",
+      locationName: 'Euromast', lat: 51.9050, lng: 4.4669, radiusM: 80,
+      hint1: "You're looking for the tall concrete observation tower in Het Park, west of the city center.",
+      hint2: 'Het Park, walking distance from the river. Tickets €13.50 for the rotating top. Restaurant on level 2.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'The Euromast opened in 1960 for the Floriade horticulture expo. The "Space Tower" rotating capsule was added in 1970 to claim the title of "tallest tower in the Netherlands" again — they\'d been overtaken by Utrecht. The roof was once the launch pad for an annual abseiling charity event.',
+      trivia: { question: 'Why was the rotating capsule added on top of the Euromast in 1970?', options: ['Lighting was poor at the original height', 'To reclaim the "tallest in the Netherlands" title', 'For TV broadcasting', 'For weather measurement'], correctIndex: 1, explain: 'Utrecht\'s flat-screen TV tower had briefly become taller. The Space Tower added 84m and reclaimed the title.' },
+    },
+  ],
+}
+
+// ══════════════════════════════════════════════════════════════════
+// HUNT — Delft Vermeer Trail (6 stops, easy)
+// ══════════════════════════════════════════════════════════════════
+const delftVermeer = {
+  id: 'hunt_delft_vermeer',
+  meta: {
+    title: 'Delft: Vermeer\'s Trail',
+    description: 'Six stops through the canal city Vermeer never left. Where he was born, where he\'s buried, where Princes William of Orange hid from a Spanish assassin — and the kilns where the world\'s most famous blue pottery is still hand-painted today.',
+    city: 'Delft',
+    cityId: 'city_delft',
+    order: 0,
+    difficulty: 'easy',
+    durationMin: 110,
+    distanceKm: 2.6,
+    rating: 4.9,
+    badge: 'Hidden gem',
+    i18n: {
+      nl: { title: 'Delft: Vermeers Spoor', description: 'Zes stops door de grachtenstad die Vermeer nooit verliet. Waar hij geboren werd, waar hij begraven ligt, waar Willem van Oranje schuilde voor een Spaanse moordenaar — en de ovens waar het beroemdste blauwe aardewerk ter wereld nog steeds met de hand wordt beschilderd.', badge: 'Verborgen pareltje' },
+      de: { title: 'Delft: Vermeers Spuren', description: 'Sechs Stationen durch die Kanalstadt, die Vermeer nie verließ. Wo er geboren wurde, wo er begraben liegt, wo Wilhelm von Oranien sich vor einem spanischen Attentäter versteckte — und die Werkstätten, in denen das berühmteste blaue Porzellan der Welt bis heute von Hand bemalt wird.', badge: 'Geheimtipp' },
+      fr: { title: 'Delft : Sur les pas de Vermeer', description: 'Six étapes dans la ville-canal que Vermeer n\'a jamais quittée. Où il est né, où il est enterré, où Guillaume d\'Orange se cacha d\'un assassin espagnol — et les ateliers où la plus célèbre faïence bleue au monde est encore peinte à la main.', badge: 'Joyau caché' },
+    },
+  },
+  clues: [
+    {
+      id: 'clue_1', order: 1, icon: '⛪', theme: 'Where the kings are buried',
+      riddle: "Find the 14th-century church on the central market square. A 109-metre tower rises above it. Below the floor, every Dutch monarch since 1584 is laid to rest.",
+      locationName: 'Nieuwe Kerk', lat: 52.0118, lng: 4.3580, radiusM: 50,
+      hint1: "You're looking for a tall Gothic church on Delft's central market square.",
+      hint2: 'On Markt — the rectangular cobbled market square in the center of the old town. The tower is impossible to miss.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'Despite the name "New Church," this 14th-century building is older than most cathedrals. The royal crypt below holds 46 members of the House of Orange-Nassau, including William the Silent (1584) and the most recent royal interment, Prince Bernhard, in 2004. The tower has 376 steps.',
+      trivia: { question: 'Who was the first member of the House of Orange-Nassau buried in the Nieuwe Kerk?', options: ['William of Orange ("the Silent"), assassinated 1584', 'Maurice of Orange, died 1625', 'Frederick Henry, died 1647', 'King Willem I, died 1843'], correctIndex: 0, explain: 'William the Silent — assassinated by a Spanish agent in 1584, in the Prinsenhof a few hundred metres from here. Every Dutch monarch since has been buried in the same crypt.' },
+    },
+    {
+      id: 'clue_2', order: 2, icon: '🎨', theme: 'Vermeer\'s home museum',
+      riddle: "On the same square, find the small museum that tells the story of Delft\'s most famous painter. He never left this town. He painted only 36 known works in his lifetime.",
+      locationName: 'Vermeer Centrum', lat: 52.0114, lng: 4.3576, radiusM: 35,
+      hint1: "You're looking for a small museum dedicated to Johannes Vermeer, just off the main market square.",
+      hint2: 'Voldersgracht 21 — a 1-minute walk from Markt, on a quieter canal-side street. The entrance is a wooden door with a small sign.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'The Vermeer Centrum doesn\'t hold any original Vermeer paintings — those are in Amsterdam, The Hague, New York, Paris, and so on. What it does hold is reproductions of all 36 of his known works in one room, staged at their original sizes, alongside reconstructions of his studio and the camera obscura he probably used.',
+      trivia: { question: 'How many paintings is Vermeer known to have completed?', options: ['About 12', 'About 36', 'About 80', 'Over 200'], correctIndex: 1, explain: 'Just 36 attributed works survive. Some scholars argue 34, some 37 — the precise count is debated for two contested paintings.' },
+    },
+    {
+      id: 'clue_3', order: 3, icon: '🪦', theme: 'The painter\'s grave',
+      riddle: "Walk west two minutes to a leaning Gothic tower from 1246. Inside, beneath the floor, lies the painter himself — buried in the family vault of his wife\'s church.",
+      locationName: 'Oude Kerk', lat: 52.0124, lng: 4.3553, radiusM: 50,
+      hint1: "You're looking for the OLD church (Oude Kerk) — distinguishable from the Nieuwe Kerk by its visibly leaning brick tower.",
+      hint2: 'On Heilige Geestkerkhof, two minutes\' walk west from the Vermeer Centrum. The 75m tower leans almost 2 metres off-vertical.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'Vermeer was buried here in 1675, aged 43, leaving his wife Catharina with eleven children and crushing debts (he died "in a frenzy and a fury," according to her petition for bankruptcy relief). The exact location of his grave was lost for two centuries; a memorial stone marks the approximate spot in the north transept.',
+      trivia: { question: 'Why does the Oude Kerk\'s tower lean?', options: ['A bombing weakened the foundation', 'Built on soft canal-side soil that gave way', 'A failed 19th-century renovation', 'Earthquakes from gas extraction'], correctIndex: 1, explain: 'The tower stands on soft, canal-saturated soil and was already leaning by the early 1500s. Restoration in the 1990s stabilized it but kept the lean.' },
+    },
+    {
+      id: 'clue_4', order: 4, icon: '🔫', theme: 'The bullet hole',
+      riddle: "Find the 14th-century convent that became William of Orange\'s court. Look at the wall on the staircase — there are still bullet holes from the assassin who shot him here in 1584.",
+      locationName: 'Prinsenhof', lat: 52.0124, lng: 4.3551, radiusM: 40,
+      hint1: "You're looking for a former convent (now a museum) that served as the court of William of Orange — right next to the Oude Kerk.",
+      hint2: 'Sint Agathaplein 1 — directly behind the Oude Kerk. The museum entrance has a small courtyard.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'On 10 July 1584, a Catholic Frenchman named Balthasar Gérard shot William the Silent on the staircase of his bedroom apartment. The two bullet holes in the plaster wall are preserved behind glass — the very first bullet holes ever made by a handgun on record. Gérard was caught and executed; William\'s death triggered the Dutch revolt that eventually won independence.',
+      trivia: { question: 'William of Orange was the first head of state in history to be killed with what?', options: ['A bow and arrow', 'A handgun (an early wheel-lock pistol)', 'A bomb', 'A poisoned blade'], correctIndex: 1, explain: 'A wheel-lock pistol — the first known assassination of a head of state by handgun. The weapon is preserved in the Rijksmuseum.' },
+    },
+    {
+      id: 'clue_5', order: 5, icon: '🍶', theme: 'The original blue pottery',
+      riddle: "Walk south to the only original Delft pottery still operating — founded in 1653, the year Vermeer married. Painters here still hand-decorate every piece. The factory is recognized by royal charter.",
+      locationName: 'Royal Delft (Koninklijke Porceleyne Fles)', lat: 52.0050, lng: 4.3588, radiusM: 50,
+      hint1: "You're looking for the working Delftware factory — the only original 17th-century pottery still producing today.",
+      hint2: 'Rotterdamseweg 196 — about 12 minutes\' walk south from the city center, near the train station. Worth the detour.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'In the 17th century there were 32 Delftware factories in this city; war and industrial cheap-imitation killed all but one. Royal Delft (founded 1653 as De Porceleyne Fles) survives because the Dutch royal family bought a share and granted it the "Royal" title. Each piece still goes through eight hand-applied glazes; the cobalt blue paint comes from a single mine in Saxony.',
+      trivia: { question: 'Where does the cobalt for "Delft Blue" actually come from?', options: ['Delft itself', 'A mine in Saxony, Germany', 'Imported from China', 'A volcano in Indonesia'], correctIndex: 1, explain: 'Saxony — Royal Delft has used the same German cobalt source for centuries. The "Chinese-style" decorations were originally imitations of Ming porcelain.' },
+    },
+    {
+      id: 'clue_6', order: 6, icon: '🍻', theme: 'The animal market',
+      riddle: "End at a sloping cobbled square where Delft farmers used to sell cows and pigs. Today it\'s the city\'s favorite terrace — eight cafés ringing a square of plane trees, busy from afternoon until late.",
+      locationName: 'Beestenmarkt', lat: 52.0145, lng: 4.3582, radiusM: 50,
+      hint1: "You're looking for a leafy cobbled square ringed with cafés, north of the main market square.",
+      hint2: 'A 5-minute walk north from Markt. Look for the rows of plane trees and the café terraces.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'Beestenmarkt ("Animal Market") is exactly what it sounds like — until 1960, this is where livestock was bought and sold every Thursday. The trees were planted in 1830 to give the animals shade. The cafés moved in once the cattle moved out, and the square is now arguably the best-positioned terrace in the Netherlands at golden hour.',
+      trivia: { question: 'When did Beestenmarkt stop being an actual livestock market?', options: ['1820', '1900', '1960', 'It still is'], correctIndex: 2, explain: '1960 — within living memory. The livestock auction moved to a modern market hall on the city outskirts, and the square pivoted to cafés within a decade.' },
+    },
+  ],
+}
+
+// ══════════════════════════════════════════════════════════════════
 // Write everything
 // ══════════════════════════════════════════════════════════════════
 const HUNTS = [
   utrechtClassic, hiddenUtrecht, canalsCafes, amsterdamClassic, hiddenAmsterdam,
+  theHagueRoyal, rotterdamModern, delftVermeer,
   utrechtFoodTour, milanAperitivoTour, romeTrastevereTour,
 ]
 
