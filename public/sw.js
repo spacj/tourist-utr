@@ -3,9 +3,10 @@
    Precaches shell, caches pages offline, persists hunt data.
    ═══════════════════════════════════════════════════════════════ */
 
-const CACHE_NAME = 'tourhunts-v3'
+const CACHE_NAME = 'tourhunts-v4'
 const HUNT_CACHE_NAME = 'tourhunts-hunts-v1'
 const API_CACHE_NAME = 'tourhunts-api-v1'
+const HUNT_PAGE_CACHE_NAME = 'tourhunts-hunt-pages-v1'
 const OFFLINE_PAGE = '/offline.html'
 
 // Assets that are precached on SW install
@@ -71,7 +72,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((k) => k !== CACHE_NAME && k !== HUNT_CACHE_NAME && k !== API_CACHE_NAME)
+          .filter((k) => k !== CACHE_NAME && k !== HUNT_CACHE_NAME && k !== API_CACHE_NAME && k !== HUNT_PAGE_CACHE_NAME)
           .map((k) => caches.delete(k))
       )
     )
@@ -184,38 +185,49 @@ async function networkFirstCache(request, cacheName) {
 }
 
 async function huntFallback(request, url) {
-  // Try network first
+  // Try network and cache the response on success. This is what lets the
+  // user navigate to /hunt?session=X offline — we serve the previously
+  // cached HTML so the React app can boot, hydrate from Firestore's
+  // IndexedDB cache, and pick up where they left off.
   try {
     const response = await fetch(request)
-    if (response.ok) return response
+    if (response.ok) {
+      try {
+        const cache = await caches.open(HUNT_PAGE_CACHE_NAME)
+        await cache.put(request, response.clone())
+      } catch {}
+      return response
+    }
   } catch {}
 
-  // Try IndexedDB for cached hunt session data
-  const sessionId = url.searchParams.get('session')
-  if (!sessionId) {
-    // No session — try cache
-    const cached = await caches.match(request)
-    if (cached) return cached
-    return caches.match(OFFLINE_PAGE).then(r => r || new Response('Offline', { status: 503 }))
-  }
+  // Offline: serve the cached HTML for this exact URL if we have it.
+  const cached = await caches.match(request, { cacheName: HUNT_PAGE_CACHE_NAME })
+  if (cached) return cached
+  // Some Next.js navigations append _rsc=... params we cached separately —
+  // try a URL-stripped lookup as a fallback.
+  const fallbackUrl = new URL(request.url)
+  fallbackUrl.searchParams.delete('_rsc')
+  const fallbackReq = new Request(fallbackUrl.toString(), { headers: request.headers })
+  const cachedFallback = await caches.match(fallbackReq, { cacheName: HUNT_PAGE_CACHE_NAME })
+  if (cachedFallback) return cachedFallback
 
-  // Look for cached hunt data in CacheStorage
-  const allCaches = await caches.keys()
-  if (allCaches.includes(HUNT_CACHE_NAME)) {
-    const huntCache = await caches.open(HUNT_CACHE_NAME)
-    // Try to find any cached hunt for this session
-    const keys = await huntCache.keys()
-    for (const key of keys) {
-      const resp = await huntCache.match(key)
-      if (resp) {
-        const data = await resp.json()
-        // Build an offline-friendly hunt page response
-        return buildOfflineHuntPage(sessionId, data)
+  // Last fallback: render a static HTML view from IndexedDB-cached clue data.
+  const sessionId = url.searchParams.get('session')
+  if (sessionId) {
+    const allCaches = await caches.keys()
+    if (allCaches.includes(HUNT_CACHE_NAME)) {
+      const huntCache = await caches.open(HUNT_CACHE_NAME)
+      const keys = await huntCache.keys()
+      for (const key of keys) {
+        const resp = await huntCache.match(key)
+        if (resp) {
+          const data = await resp.json()
+          return buildOfflineHuntPage(sessionId, data)
+        }
       }
     }
   }
 
-  // Final fallback
   return caches.match(OFFLINE_PAGE).then(r => r || new Response('Offline', { status: 503 }))
 }
 
