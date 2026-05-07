@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { onSnapshot, collection, doc, query, orderBy } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
@@ -44,6 +44,11 @@ export default function RoomLobbyPage() {
   const [starting, setStarting] = useState(false)
   const [copied, setCopied] = useState(false)
   const [autoJoined, setAutoJoined] = useState(false)
+  // Snapshot once when the room first loads: were we already racing/finished
+  // when the user arrived? If yes, never auto-redirect to /hunt — they came
+  // here on purpose (via "Open lobby" from the in-hunt scoreboard) and want
+  // to see the live leaderboard.
+  const [arrivedDuringActiveRace, setArrivedDuringActiveRace] = useState<boolean | null>(null)
 
   // Resolve code -> roomId, and ensure user is a member.
   useEffect(() => {
@@ -128,21 +133,26 @@ export default function RoomLobbyPage() {
     return () => { unsubRoom(); unsubPlayers() }
   }, [roomId])
 
-  // Auto-redirect to /hunt only on the *transition* lobby→racing.
-  // If the user arrives at this URL while already racing (e.g. clicked the
-  // "Open lobby" link from the in-hunt scoreboard), we leave them on the
-  // lobby/scoreboard view so they can see live progress.
-  const prevStateRef = useRef<string | null>(null)
+  // First time we see room data, snapshot whether the race was already in
+  // progress. The decision sticks for the lifetime of this page mount.
   useEffect(() => {
+    if (!room || arrivedDuringActiveRace !== null) return
+    setArrivedDuringActiveRace(room.state !== 'lobby')
+  }, [room, arrivedDuringActiveRace])
+
+  // Auto-redirect to /hunt only when WE were waiting in the lobby and the
+  // race just started. If the user arrived to view the live leaderboard
+  // (race was already racing/finished on arrival), we never redirect them
+  // away — they tap "Go to hunt" manually if they want to.
+  useEffect(() => {
+    if (arrivedDuringActiveRace !== false) return
     if (!user || !room || !roomId) return
-    const prev = prevStateRef.current
-    prevStateRef.current = room.state
-    if (prev !== 'lobby' || room.state !== 'racing') return
+    if (room.state !== 'racing') return
     const me = players.find(p => p.userId === user.uid)
     if (me?.sessionId) {
       router.replace(`/hunt?session=${me.sessionId}`)
     }
-  }, [room, players, user, roomId, router])
+  }, [arrivedDuringActiveRace, room, players, user, roomId, router])
 
   const isHost = !!user && !!room && user.uid === room.hostUserId
   const canStart = isHost && room?.state === 'lobby' && players.length >= 1

@@ -3,7 +3,7 @@
    Precaches shell, caches pages offline, persists hunt data.
    ═══════════════════════════════════════════════════════════════ */
 
-const CACHE_NAME = 'tourhunts-v2'
+const CACHE_NAME = 'tourhunts-v3'
 const HUNT_CACHE_NAME = 'tourhunts-hunts-v1'
 const API_CACHE_NAME = 'tourhunts-api-v1'
 const OFFLINE_PAGE = '/offline.html'
