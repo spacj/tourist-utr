@@ -3,8 +3,9 @@
    Precaches shell, caches pages offline, persists hunt data.
    ═══════════════════════════════════════════════════════════════ */
 
-const CACHE_NAME = 'tourhunts-v1'
+const CACHE_NAME = 'tourhunts-v2'
 const HUNT_CACHE_NAME = 'tourhunts-hunts-v1'
+const API_CACHE_NAME = 'tourhunts-api-v1'
 const OFFLINE_PAGE = '/offline.html'
 
 // Assets that are precached on SW install
@@ -32,7 +33,21 @@ const PAGE_PATTERNS = [
   /^\/profile$/,                    // Profile
 ]
 
-// API routes — network-only (real-time data, no caching)
+// Read-only API routes — network-first with cache fallback so the
+// app remains browsable when offline (homepage countries, city hunts, etc.).
+const READ_API_PATTERNS = [
+  /^\/api\/countries(\?.*)?$/,
+  /^\/api\/cities(\?.*)?$/,
+  /^\/api\/hunts(\?.*)?$/,
+  /^\/api\/city-unlocks(\?.*)?$/,
+  /^\/api\/user-progress(\?.*)?$/,
+  /^\/api\/user-history(\?.*)?$/,
+  /^\/api\/leaderboard(\?.*)?$/,
+  /^\/api\/session-credits(\?.*)?$/,
+  /^\/api\/rooms\/(active|get|results)(\?.*)?$/,
+]
+
+// Write/realtime API routes — never cache, always go to network.
 const API_PATTERNS = [
   /^\/api\//,
 ]
@@ -56,7 +71,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((k) => k !== CACHE_NAME && k !== HUNT_CACHE_NAME)
+          .filter((k) => k !== CACHE_NAME && k !== HUNT_CACHE_NAME && k !== API_CACHE_NAME)
           .map((k) => caches.delete(k))
       )
     )
@@ -72,7 +87,14 @@ self.addEventListener('fetch', (event) => {
   // Only handle GET requests on same origin
   if (request.method !== 'GET' || url.origin !== self.location.origin) return
 
-  // API: network-only
+  // Read-only APIs: network-first with cache fallback so offline users
+  // still see countries/hunts/cities they've previously visited.
+  if (READ_API_PATTERNS.some(p => p.test(url.pathname + url.search))) {
+    event.respondWith(networkFirstCache(request, API_CACHE_NAME))
+    return
+  }
+
+  // Other APIs (writes, realtime): network-only
   if (API_PATTERNS.some(p => p.test(url.pathname))) {
     event.respondWith(networkOnly(request))
     return

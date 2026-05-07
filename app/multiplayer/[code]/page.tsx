@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { onSnapshot, collection, doc, query, orderBy } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
@@ -61,14 +61,10 @@ export default function RoomLobbyPage() {
         setRoomId(data.roomId)
         const isMember = (data.players as Player[]).some(p => p.userId === user.uid)
 
-        // If they're already a member and the race has started, jump straight to their session.
-        if (isMember && data.state === 'racing') {
-          const me = (data.players as Player[]).find(p => p.userId === user.uid)
-          if (me?.sessionId) {
-            router.replace(`/hunt?session=${me.sessionId}`)
-            return
-          }
-        }
+        // Note: we intentionally do NOT redirect to /hunt here even when the race
+        // is in progress. Visiting /multiplayer/[code] during a race is how the
+        // user opens the live scoreboard — see the lobby→racing transition
+        // handler below for the only auto-redirect.
 
         if (!isMember && !autoJoined) {
           // Try to join (might 409 if race already started).
@@ -132,12 +128,16 @@ export default function RoomLobbyPage() {
     return () => { unsubRoom(); unsubPlayers() }
   }, [roomId])
 
-  // When the room transitions to racing, jump to the player's session.
-  // The lobby is replaced by the active session — once race begins, the lobby UI is
-  // not what the user wants to see.
+  // Auto-redirect to /hunt only on the *transition* lobby→racing.
+  // If the user arrives at this URL while already racing (e.g. clicked the
+  // "Open lobby" link from the in-hunt scoreboard), we leave them on the
+  // lobby/scoreboard view so they can see live progress.
+  const prevStateRef = useRef<string | null>(null)
   useEffect(() => {
     if (!user || !room || !roomId) return
-    if (room.state !== 'racing') return
+    const prev = prevStateRef.current
+    prevStateRef.current = room.state
+    if (prev !== 'lobby' || room.state !== 'racing') return
     const me = players.find(p => p.userId === user.uid)
     if (me?.sessionId) {
       router.replace(`/hunt?session=${me.sessionId}`)
