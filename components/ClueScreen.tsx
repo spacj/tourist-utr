@@ -11,6 +11,7 @@ import { MapView } from './MapView'
 import { ProximityRing } from './ProximityRing'
 import { ArrivalBanner } from './ArrivalBanner'
 import { CreditShop } from './CreditShop'
+import { PuzzleCard } from './PuzzleCard'
 import { HINT_COSTS } from '@/types'
 
 interface Props {
@@ -37,6 +38,7 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
   const [showIntro,     setShowIntro]     = useState(true)
   const [reading,       setReading]       = useState(false)
   const [score,         setScore]         = useState(totalScore)
+  const [puzzleBonus,   setPuzzleBonus]   = useState(0)
   type SheetState = 'minimized' | 'default' | 'expanded'
   const [sheetState,    setSheetState]    = useState<SheetState>('default')
 
@@ -73,6 +75,7 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
     setUnlockedTiers(new Set())
     setOpenHint(null)
     setScore(totalScore)
+    setPuzzleBonus(0)
     const id = setTimeout(() => setShowIntro(false), 2800)
     return () => clearTimeout(id)
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -356,15 +359,12 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
             streakBonus={arrivalData.streakBonus ?? 0}
             perfectBonus={arrivalData.perfectBonus ?? 0}
             hintPenalty={arrivalData.hintPenalty ?? 0}
+            puzzleBonus={puzzleBonus}
             funFact={clue.funFact}
             trivia={clue.trivia ?? null}
-            puzzle={clue.puzzle ?? null}
-            sessionId={sessionId}
-            clueId={clue.id}
             huntComplete={arrivalData.huntComplete ?? false}
             onNext={() => onComplete({ nextClue: arrivalData.nextClue ?? null, huntComplete: arrivalData.huntComplete ?? false })}
             onTriviaCorrect={() => setScore(s => s + 25)}
-            onPuzzleSolved={(bonus) => setScore(s => s + bonus)}
           />
         )}
       </div>
@@ -431,6 +431,19 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
             </button>
           </div>
         </div>
+
+        {/* Puzzle (cipher / anagram / logic) — solved during the clue phase, before arrival */}
+        {clue.puzzle && !arrived && (
+          <PuzzleCard
+            puzzle={clue.puzzle}
+            sessionId={sessionId}
+            clueId={clue.id}
+            onSolved={(bonus) => {
+              setPuzzleBonus(bonus)
+              setScore(s => s + bonus)
+            }}
+          />
+        )}
 
         {/* Hints */}
         <div>

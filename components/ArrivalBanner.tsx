@@ -1,8 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useI18n } from '@/hooks/useI18n'
-import { Trivia, Puzzle } from '@/types'
-import { PuzzleCard } from './PuzzleCard'
+import { Trivia } from '@/types'
 
 interface Props {
   locationName: string
@@ -14,32 +13,22 @@ interface Props {
   perfectBonus?: number
   funFact?: string | null
   trivia?: Trivia | null
-  /** Logic / cipher / wordplay puzzle attached to this clue. */
-  puzzle?: Puzzle | null
-  /** Required when `puzzle` is present so the verifier knows the (session, clue) pair. */
-  sessionId?: string
-  clueId?: string
+  /** Bonus from a puzzle solved during the clue phase (shown in score breakdown). */
+  puzzleBonus?: number
   huntComplete: boolean
   onNext: () => void
   onTriviaCorrect?: () => void
-  onPuzzleSolved?: (bonus: number) => void
 }
 
 export function ArrivalBanner({
   locationName, huntCity, pointsEarned, timeBonus, hintPenalty,
   streakBonus = 0, perfectBonus = 0, funFact, trivia,
-  puzzle, sessionId, clueId,
-  huntComplete, onNext, onTriviaCorrect, onPuzzleSolved,
+  puzzleBonus = 0,
+  huntComplete, onNext, onTriviaCorrect,
 }: Props) {
   const { t } = useI18n()
   const [picked, setPicked] = useState<number | null>(null)
   const [bonusClaimed, setBonusClaimed] = useState(false)
-  const [puzzleBonus, setPuzzleBonus] = useState(0)
-
-  const handlePuzzleSolved = (bonus: number) => {
-    setPuzzleBonus(bonus)
-    onPuzzleSolved?.(bonus)
-  }
 
   const pickTrivia = (i: number) => {
     if (picked !== null) return
@@ -164,15 +153,6 @@ export function ArrivalBanner({
               </div>
             )}
           </div>
-        )}
-
-        {puzzle && sessionId && clueId && (
-          <PuzzleCard
-            puzzle={puzzle}
-            sessionId={sessionId}
-            clueId={clueId}
-            onSolved={handlePuzzleSolved}
-          />
         )}
 
         </div>
