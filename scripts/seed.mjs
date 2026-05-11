@@ -242,6 +242,13 @@ const utrechtClassic = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Dom Tower took 60 years to build (1321–1382) and has 465 steps to the top. During WWII it was used as a hiding spot for resistance fighters. The 13th-century carillon still plays every 15 minutes — one of the oldest in the world.',
       trivia: { question: 'How many steps does it take to reach the top of the Dom Tower?', options: ['265', '365', '465', '565'], correctIndex: 2, explain: '465 steps — and the view stretches 50 km on a clear day.' },
+      puzzle: {
+        type: 'cipher',
+        prompt: "Caesar cipher (each letter shifted +3 positions in the alphabet). Decode: 'GRP WRZHU'",
+        answer: 'DOM TOWER',
+        hint: "Shift each letter BACK by 3: G→D, R→O, P→M, W→T, R→O, Z→W, H→E, U→R.",
+        explain: "Julius Caesar used this exact +3 shift cipher around 50 BC for his private correspondence — one of the first recorded encryption methods.",
+      },
       i18n: {
         nl: {
           theme: 'Middeleeuwse reus',
@@ -284,6 +291,13 @@ const utrechtClassic = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Oudegracht is unique in Europe — no other city has this two-level wharf system. The lower wharves were built in the 13th century so merchants could unload goods directly from boats into cellars.',
       trivia: { question: 'What made the Oudegracht\'s double-level design necessary?', options: ['Flood protection', 'Direct boat-to-cellar trade', 'Defensive moat', 'Carriage parking'], correctIndex: 1, explain: 'Merchants unloaded boats straight into their warehouse cellars — faster trade, less theft.' },
+      puzzle: {
+        type: 'anagram',
+        prompt: "Anagram. Rearrange these letters into the Dutch word for canal (6 letters): T H A C R G",
+        answer: 'GRACHT',
+        hint: "Starts with G, ends with T. You see them everywhere in the Netherlands.",
+        explain: "GRACHT is Dutch for canal. The Oudegracht is literally 'the old canal' — dug in the 12th century as a defensive moat, repurposed as a trade artery within 200 years.",
+      },
       i18n: {
         nl: {
           theme: 'Gracht met dubbele werf',
@@ -1268,6 +1282,13 @@ const amsterdamClassic = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Royal Palace was built as Amsterdam\'s town hall from 1648–1655, on 13,659 wooden piles. It became the royal palace in 1808 when Louis Napoleon, brother of Emperor Napoleon, moved in. The Citizens\' Hall marble floor features the largest known medieval map.',
       trivia: { question: 'How many wooden piles support the Royal Palace?', options: ['3,659', '13,659', '23,659', '33,659'], correctIndex: 1, explain: '13,659 piles — driven into the sandy soil of the Dam.' },
+      puzzle: {
+        type: 'sequence',
+        prompt: "The Royal Palace is held up by 13,659 wooden piles. What's the sum of those five digits? (1+3+6+5+9)",
+        answer: '24',
+        hint: "Add the digits one at a time: 1, then +3, then +6, then +5, then +9.",
+        explain: "24 — Dutch schoolkids learn the pile count as a mnemonic for digit-sum exercises. The number was reverse-engineered from 17th-century construction ledgers in the 1960s.",
+      },
       i18n: {
         nl: {
           theme: 'Koninklijk paleis op de Dam',
@@ -2293,6 +2314,13 @@ const theHagueRoyal = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Mauritshuis was built in 1644 as the city palace of Johan Maurits, governor of Dutch Brazil. Today it holds 800 paintings including Vermeer\'s "Girl with a Pearl Earring," Rembrandt\'s "Anatomy Lesson," and Fabritius\'s "The Goldfinch."',
       trivia: { question: 'How big is "Girl with a Pearl Earring"?', options: ['About 4 metres tall', 'About 1.5 metres tall', 'Smaller than an A4 sheet (44 × 39 cm)', 'About 80 × 60 cm'], correctIndex: 2, explain: 'Just 44 by 39 cm — smaller than a sheet of A4 paper. Most visitors are surprised by how tiny it is in person.' },
+      puzzle: {
+        type: 'logic',
+        prompt: "I sit in a girl's ear in the most photographed painting of the Netherlands. People think I'm worth a fortune. The painter probably couldn't afford the real thing — I'm most likely tin or glass coated with shell powder. What am I?",
+        answer: 'PEARL',
+        hint: "The thing the painting is named for.",
+        explain: "Recent analysis suggests Vermeer's 'pearl' is painted from imagination — likely a tin or glass bead with mother-of-pearl varnish. Real pearls in the 1660s cost more than Vermeer's entire annual income.",
+      },
     },
     {
       id: 'clue_3', order: 3, icon: '🎨', theme: 'Optical illusions',
@@ -2369,6 +2397,13 @@ const rotterdamModern = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Architect Piet Blom designed the cubes as "trees" — each one represents a tree, and the whole cluster forms an "urban forest" above the street. Each apartment is 100m², spread across three floors with the walls all leaning at 54.7 degrees.',
       trivia: { question: 'What does each yellow cube represent in architect Piet Blom\'s concept?', options: ['A house', 'A tree', 'A ship', 'A flower'], correctIndex: 1, explain: 'A tree. The whole cluster is meant to read as an "urban forest" floating above pedestrian streets.' },
+      puzzle: {
+        type: 'wordplay',
+        prompt: "There are 38 of these tilted yellow boxes here. Each one represents a TREE. Together they form a single Dutch word for what stands on the ground when you look at them as a group. What word? (One Dutch word, English is also accepted.)",
+        answer: 'BOS|FOREST|WOOD|WOODS',
+        hint: "Many trees in one place. Dutch translation works too.",
+        explain: "Blom called the design a 'paalwoning bos' — a pile-dwelling forest. Each cube is a tree; the whole cluster is the bos (forest). The architectural concept won the 1984 Dutch innovation prize.",
+      },
     },
     {
       id: 'clue_2', order: 2, icon: '🏗️', theme: 'Market inside an apartment block',
@@ -2495,6 +2530,13 @@ const delftVermeer = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'On 10 July 1584, a Catholic Frenchman named Balthasar Gérard shot William the Silent on the staircase of his bedroom apartment. The two bullet holes in the plaster wall are preserved behind glass — the very first bullet holes ever made by a handgun on record. Gérard was caught and executed; William\'s death triggered the Dutch revolt that eventually won independence.',
       trivia: { question: 'William of Orange was the first head of state in history to be killed with what?', options: ['A bow and arrow', 'A handgun (an early wheel-lock pistol)', 'A bomb', 'A poisoned blade'], correctIndex: 1, explain: 'A wheel-lock pistol — the first known assassination of a head of state by handgun. The weapon is preserved in the Rijksmuseum.' },
+      puzzle: {
+        type: 'sequence',
+        prompt: "William of Orange was assassinated here in 1584. The Eighty Years' War ended in 1648 with Dutch independence. How many years did the war continue after his death?",
+        answer: '64',
+        hint: "1648 − 1584 = ?",
+        explain: "64 years — the war began in 1568, killed William in 1584, and ended only in 1648 with the Peace of Münster. His son Maurice and grandson Frederick Henry fought it the rest of the way.",
+      },
     },
     {
       id: 'clue_5', order: 5, icon: '🍶', theme: 'The original blue pottery',
@@ -2553,6 +2595,13 @@ const milanClassic = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Construction started in 1386 and the last spire was added in 1965. Milan\'s archbishops still own the Candoglia marble quarry that supplied every stone — it\'s a tax-free zone granted by the Visconti dukes in 1387 and never revoked. The roof is open to visitors and gives you a 360° view of the Alps on clear days.',
       trivia: { question: 'How long did the Duomo take to complete?', options: ['About 50 years', 'About 200 years', 'Almost 600 years', 'It\'s still not finished'], correctIndex: 2, explain: 'Started in 1386, the last spire (the small one near the back) was added in 1965 — about 579 years.' },
+      puzzle: {
+        type: 'sequence',
+        prompt: "The Duomo was started in 1386. The last spire was added in 1965. How many full centuries elapsed strictly BETWEEN those two dates (not including 1386 or 1965)?",
+        answer: '5',
+        hint: "List the centuries fully contained between the two: 1400s, 1500s, 1600s, 1700s, 1800s. Count them.",
+        explain: "Five full centuries — 15th through 19th — passed entirely while construction continued. The 1965 completion was the small spire on the apse, an addition almost nobody outside Milan noticed.",
+      },
       i18n: {
         it: { theme: 'Sei secoli di gotico', riddle: "Trova la più grande cattedrale gotica d'Italia. 135 guglie, 3.400 statue, 600 anni per completarla — Napoleone fu incoronato qui re d'Italia nel 1805, prima ancora che la facciata fosse finita.", locationName: 'Duomo di Milano', funFact: 'I lavori iniziarono nel 1386 e l\'ultima guglia fu aggiunta nel 1965. Gli arcivescovi di Milano possiedono ancora la cava di marmo di Candoglia che fornì ogni pietra — è una zona esentasse concessa dai Visconti nel 1387 e mai revocata. Il tetto è aperto al pubblico e nelle giornate limpide regala una vista a 360° sulle Alpi.' },
       },
@@ -2659,6 +2708,13 @@ const romeClassic = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Inaugurated in 80 AD with 100 days of games — 9,000 wild animals were killed in the opening alone. The half-missing outer wall is the result of two earthquakes (847 and 1349) plus centuries of papal-sanctioned stone quarrying — much of St. Peter\'s and the Palazzo Venezia is recycled Colosseum. The arena floor was wood, sand-covered, with trapdoors for trick entrances; the stone substructure underneath is what visitors see today.',
       trivia: { question: 'How many wild animals were killed during the Colosseum\'s 100-day inaugural games in 80 AD?', options: ['100', '900', '9,000', '90,000'], correctIndex: 2, explain: '9,000 — including lions, tigers, elephants, and rhinos shipped from across the empire. Many animal species were driven to local extinction by the demand for the games.' },
+      puzzle: {
+        type: 'logic',
+        prompt: "I am the largest of my kind ever built. Romans flooded me for naval battles and filled me with sand for gladiator fights. 50,000 watched. Half my outer wall is gone — the popes mined me for stone to build their basilica. What am I?",
+        answer: 'COLOSSEUM|COLOSSEO',
+        hint: "You're standing next to it. Either spelling — English or Italian — works.",
+        explain: "About a third of the Colosseum's travertine outer wall was mined between the 8th and 16th centuries. Most went into St. Peter's Basilica and Palazzo Venezia — Vatican-sanctioned recycling.",
+      },
       i18n: {
         it: { theme: 'L\'anfiteatro del sangue', riddle: "Trova il più grande anfiteatro mai costruito. 50.000 romani vi guardavano morire i gladiatori. L'arena veniva allagata per battaglie navali. La sua cortina esterna in travertino fu cavata per secoli per costruire San Pietro.", locationName: 'Colosseo', funFact: 'Inaugurato nell\'80 d.C. con 100 giorni di giochi — solo nell\'apertura morirono 9.000 animali selvatici. Il muro esterno mezzo crollato è il risultato di due terremoti (847 e 1349) più secoli di estrazione di pietra autorizzata dai papi — gran parte di San Pietro e Palazzo Venezia è Colosseo riciclato. Il pavimento dell\'arena era in legno coperto di sabbia, con botole; oggi si vede la sottostruttura in pietra.' },
       },

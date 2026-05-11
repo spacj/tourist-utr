@@ -1,7 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { useI18n } from '@/hooks/useI18n'
-import { Trivia } from '@/types'
+import { Trivia, Puzzle } from '@/types'
+import { PuzzleCard } from './PuzzleCard'
 
 interface Props {
   locationName: string
@@ -13,19 +14,32 @@ interface Props {
   perfectBonus?: number
   funFact?: string | null
   trivia?: Trivia | null
+  /** Logic / cipher / wordplay puzzle attached to this clue. */
+  puzzle?: Puzzle | null
+  /** Required when `puzzle` is present so the verifier knows the (session, clue) pair. */
+  sessionId?: string
+  clueId?: string
   huntComplete: boolean
   onNext: () => void
   onTriviaCorrect?: () => void
+  onPuzzleSolved?: (bonus: number) => void
 }
 
 export function ArrivalBanner({
   locationName, huntCity, pointsEarned, timeBonus, hintPenalty,
   streakBonus = 0, perfectBonus = 0, funFact, trivia,
-  huntComplete, onNext, onTriviaCorrect,
+  puzzle, sessionId, clueId,
+  huntComplete, onNext, onTriviaCorrect, onPuzzleSolved,
 }: Props) {
   const { t } = useI18n()
   const [picked, setPicked] = useState<number | null>(null)
   const [bonusClaimed, setBonusClaimed] = useState(false)
+  const [puzzleBonus, setPuzzleBonus] = useState(0)
+
+  const handlePuzzleSolved = (bonus: number) => {
+    setPuzzleBonus(bonus)
+    onPuzzleSolved?.(bonus)
+  }
 
   const pickTrivia = (i: number) => {
     if (picked !== null) return
@@ -94,9 +108,15 @@ export function ArrivalBanner({
               <span style={{ color: 'var(--red)' }}>−{hintPenalty}</span>
             </div>
           )}
+          {puzzleBonus > 0 && (
+            <div className="score-row">
+              <span style={{ color: 'var(--text-muted)' }}>🧩 {t('puzzleTitle').split('—')[0].trim()}</span>
+              <span style={{ color: 'var(--gold)' }}>+{puzzleBonus}</span>
+            </div>
+          )}
           <div className="score-row-total">
             <span style={{ color: 'var(--text-muted)' }}>{t('pointsEarned')}</span>
-            <span style={{ color: 'var(--gold)' }}>{pointsEarned + (bonusClaimed ? 25 : 0)}</span>
+            <span style={{ color: 'var(--gold)' }}>{pointsEarned + (bonusClaimed ? 25 : 0) + puzzleBonus}</span>
           </div>
         </div>
 
@@ -144,6 +164,15 @@ export function ArrivalBanner({
               </div>
             )}
           </div>
+        )}
+
+        {puzzle && sessionId && clueId && (
+          <PuzzleCard
+            puzzle={puzzle}
+            sessionId={sessionId}
+            clueId={clueId}
+            onSolved={handlePuzzleSolved}
+          />
         )}
 
         </div>

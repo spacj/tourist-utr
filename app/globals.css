@@ -159,22 +159,25 @@ a { color: inherit; }
 }
 .hero-overlay-title {
   font-family: var(--font-serif, Georgia), serif;
-  font-size: 38px;
+  /* Fluid: scales between 30 and 64px based on viewport width */
+  font-size: clamp(30px, 5.2vw + 12px, 64px);
   font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
   color: #fff;
-  margin: 0 0 6px 0;
-  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+  margin: 0 0 8px 0;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.4);
+  max-width: 18ch;
 }
 .hero-overlay-tagline {
   font-family: var(--font-serif, Georgia), serif;
-  font-size: 16px;
+  font-size: clamp(15px, 1.2vw + 10px, 22px);
   line-height: 1.4;
   font-weight: 400;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.92);
   margin: 0;
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.25);
+  max-width: 42ch;
 }
 
 /* Hero content below image */
@@ -4991,4 +4994,372 @@ a { color: inherit; }
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Design polish — desktop & mobile refinements (May 2026)
+   ═══════════════════════════════════════════════════════════════
+   Layered on top of earlier rules with higher specificity / larger
+   breakpoints so the homepage feels less stacked-vertical and more
+   chaptered. */
+
+/* ─── Fluid section heading ─── */
+.section-label {
+  font-size: clamp(13px, 0.5vw + 11px, 16px);
+  letter-spacing: 0.18em;
+}
+
+/* ─── Stats bar: bigger numbers, animated count-up on viewport entry ─── */
+.stat-num {
+  font-size: clamp(22px, 1.5vw + 14px, 38px);
+  /* Counter animation token used by JS */
+  font-variant-numeric: tabular-nums;
+}
+@media (min-width: 900px) {
+  .stats-bar {
+    padding: 26px 28px;
+    border-radius: 22px;
+    gap: 24px;
+  }
+  .stat-label { font-size: 11px; margin-top: 8px; }
+}
+
+/* ─── How-it-works: connecting progression line on desktop ─── */
+@media (min-width: 900px) {
+  .how-it-works {
+    flex-direction: row;
+    gap: 22px;
+    position: relative;
+    margin-bottom: 44px;
+  }
+  /* Dashed line behind the cards showing the 3-step progression */
+  .how-it-works::before {
+    content: "";
+    position: absolute;
+    top: 38px;
+    left: 12%;
+    right: 12%;
+    height: 2px;
+    background-image: linear-gradient(to right, rgba(255, 106, 19, 0.4) 50%, transparent 50%);
+    background-size: 16px 2px;
+    background-repeat: repeat-x;
+    z-index: 0;
+  }
+  .how-step {
+    flex: 1;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+    padding: 28px 22px 24px;
+    z-index: 1;
+    background: var(--surface);
+  }
+  .how-step-num {
+    width: 44px;
+    height: 44px;
+    font-size: 16px;
+    margin-bottom: 10px;
+    box-shadow: 0 6px 16px rgba(255, 106, 19, 0.30);
+  }
+  .how-step-icon {
+    font-size: 36px;
+    margin-bottom: 6px;
+  }
+  .how-step-title {
+    font-size: 18px;
+  }
+  .how-step-desc {
+    font-size: 14px;
+    max-width: 32ch;
+  }
+}
+
+/* ─── Why grid: 4-up on desktop ─── */
+@media (min-width: 900px) {
+  .why-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+  }
+  .why-card {
+    padding: 24px 20px;
+    border-radius: 16px;
+  }
+  .why-icon { font-size: 32px; margin-bottom: 12px; }
+  .why-title { font-size: 17px; }
+  .why-desc { font-size: 14px; }
+}
+
+/* ─── Reviews: 3-col on desktop, elevated cards ─── */
+@media (min-width: 900px) {
+  .reviews-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .review-card {
+    padding: 28px 24px;
+    border-radius: 18px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .review-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.08);
+  }
+  .review-text { font-size: 15px; line-height: 1.6; }
+}
+
+/* ─── City page hero: bigger image background on desktop ─── */
+@media (min-width: 900px) {
+  .city-hero {
+    padding: 48px 40px 40px;
+    border-radius: 28px;
+    min-height: 320px;
+  }
+  .city-hero-emoji { font-size: 120px; }
+  .city-hero-title { font-size: clamp(42px, 4vw + 16px, 64px); }
+  .city-hero-desc { font-size: 17px; max-width: 56ch; }
+}
+
+/* ─── Country hero on /country/[id]: taller + richer on desktop ─── */
+@media (min-width: 900px) {
+  .country-hero {
+    min-height: 320px;
+    padding: 56px 40px 44px;
+    border-radius: 28px;
+  }
+  .country-hero-flag { font-size: 56px; }
+  .country-hero-title { font-size: clamp(42px, 3.6vw + 18px, 60px); }
+  .country-hero-tagline { font-size: 14px; letter-spacing: 0.8px; }
+  .country-hero-desc { font-size: 16px; max-width: 56ch; }
+  .country-hero-stats strong { font-size: 22px; }
+}
+
+/* ─── Mid-CTA: roomier on desktop ─── */
+@media (min-width: 900px) {
+  .mid-cta {
+    padding: 36px 40px;
+    border-radius: 24px;
+  }
+  .mid-cta-title { font-size: 28px; }
+  .mid-cta-desc { font-size: 15px; }
+}
+
+/* ─── Final CTA section: more visual weight on desktop ─── */
+@media (min-width: 900px) {
+  .cta-section {
+    padding: 64px 56px;
+    border-radius: 32px;
+  }
+  .cta-title { font-size: clamp(32px, 3vw + 14px, 48px); }
+  .cta-subtitle { font-size: 17px; max-width: 52ch; margin-left: auto; margin-right: auto; }
+  .cta-primary-btn { padding: 18px 32px; font-size: 17px; }
+}
+
+/* ─── Footer: real breathing room + 3-col layout on desktop ─── */
+@media (min-width: 900px) {
+  .site-footer {
+    padding: 56px 0 32px;
+    margin-top: 56px;
+  }
+  .footer-top {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+  .footer-brand-icon { font-size: 32px; }
+  .footer-brand-desc {
+    font-size: 14px;
+    max-width: 40ch;
+    line-height: 1.6;
+    margin-top: 12px;
+  }
+  .footer-nav {
+    display: contents;          /* let footer-top control the columns */
+  }
+  .footer-nav-col { display: flex; flex-direction: column; gap: 8px; }
+  .footer-nav-title {
+    font-size: 12px;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .footer-nav-link {
+    font-size: 14px;
+    transition: color 0.18s ease, transform 0.18s ease;
+  }
+  .footer-nav-link:hover { color: var(--primary); transform: translateX(2px); }
+  .footer-bottom {
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+}
+
+/* ─── "From the blog" section: bigger desktop layout ─── */
+@media (min-width: 900px) {
+  .home-blog-section { margin: 56px 0; }
+  .home-blog-card-cover { aspect-ratio: 16 / 9; }
+  .home-blog-card-title { font-size: 19px; line-height: 1.25; }
+  .home-blog-card-excerpt { font-size: 14px; }
+}
+
+/* ═══ Scroll reveal — fade-up cards as they enter the viewport ═══
+   Applied via the useScrollReveal hook + .reveal class. */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.55s ease, transform 0.55s cubic-bezier(.22,.61,.36,1);
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal { transition: none; opacity: 1; transform: none; }
+}
+
+/* ─── Mobile spacing fixes ─── */
+@media (max-width: 767px) {
+  .container { padding-left: 16px; padding-right: 16px; }
+  /* Restore previous tighter section spacings on mobile */
+  .stats-bar { padding: 16px 14px; gap: 8px; border-radius: 14px; }
+  .why-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .why-card { padding: 14px; }
+  .reviews-grid { gap: 12px; }
+}
+
+/* ─── Tiny screens: keep title from overflowing ─── */
+@media (max-width: 360px) {
+  .hero-overlay-title { font-size: clamp(24px, 8vw, 30px); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PuzzleCard (renders inside ArrivalBanner, beneath trivia)
+   ═══════════════════════════════════════════════════════════════ */
+.puzzle-card {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(168, 85, 247, 0.04));
+  border: 1.5px solid rgba(99, 102, 241, 0.30);
+  border-radius: 14px;
+  padding: 14px 14px 12px;
+  margin-top: 14px;
+}
+.puzzle-card.is-solved {
+  background: linear-gradient(135deg, rgba(34, 201, 122, 0.10), rgba(34, 201, 122, 0.03));
+  border-color: rgba(34, 201, 122, 0.45);
+}
+
+.puzzle-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #6366f1;
+  margin-bottom: 8px;
+}
+.puzzle-card.is-solved .puzzle-head { color: var(--green); }
+.puzzle-icon { font-size: 16px; }
+
+.puzzle-prompt {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text);
+  margin: 0 0 10px;
+}
+
+.puzzle-input-row {
+  display: flex;
+  gap: 8px;
+}
+.puzzle-input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border-2);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease;
+  min-width: 0;
+}
+.puzzle-input:focus { border-color: #6366f1; }
+.puzzle-input:disabled { opacity: 0.6; }
+
+.puzzle-submit {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 10px;
+  background: #6366f1;
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease, transform 0.1s ease;
+  white-space: nowrap;
+}
+.puzzle-submit:hover:not(:disabled) { background: #4f46e5; }
+.puzzle-submit:active:not(:disabled) { transform: scale(0.97); }
+.puzzle-submit:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.puzzle-hint-toggle {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px dashed rgba(99, 102, 241, 0.4);
+  border-radius: 999px;
+  color: #6366f1;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.puzzle-hint-toggle:hover { background: rgba(99, 102, 241, 0.08); }
+
+.puzzle-hint {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(99, 102, 241, 0.10);
+  border-left: 3px solid #6366f1;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.puzzle-feedback {
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  animation: puzzle-shake 0.4s ease;
+}
+.puzzle-wrong { color: var(--red); }
+@keyframes puzzle-shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-4px); }
+  40%      { transform: translateX(4px); }
+  60%      { transform: translateX(-3px); }
+  80%      { transform: translateX(3px); }
+}
+
+.puzzle-solved {
+  margin-top: 2px;
+}
+.puzzle-solved-line {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--green);
+  margin-bottom: 6px;
+}
+.puzzle-explain {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-muted);
 }

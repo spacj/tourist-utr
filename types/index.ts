@@ -112,6 +112,38 @@ export interface Trivia {
   explain: string
 }
 
+/**
+ * A logic / cryptography puzzle attached to a clue. Lives separately from
+ * the trivia (which is a quick 4-option quiz). Puzzles are typed open-input
+ * — server-side `normalize()` strips case, whitespace, and punctuation
+ * before matching.
+ *
+ * Multiple accepted answers can be supplied with `|` separators:
+ *   answer: 'TWENTY|20|twenty'
+ */
+export type PuzzleType = 'cipher' | 'anagram' | 'logic' | 'sequence' | 'wordplay'
+
+export interface PuzzleI18n {
+  prompt?: string
+  answer?: string
+  hint?: string
+  explain?: string
+}
+
+export interface Puzzle {
+  type: PuzzleType
+  prompt: string
+  /** Server compares normalize(input) to normalize of each `|`-split alternative. */
+  answer: string
+  /** Optional progressive hint the user can reveal at no cost. */
+  hint?: string
+  /** Explanation shown after the player solves (or gives up). */
+  explain?: string
+  /** Bonus points awarded for the first correct solve. Defaults to SCORE.puzzleBonus. */
+  bonus?: number
+  i18n?: Partial<Record<Lang, PuzzleI18n>>
+}
+
 export interface ClueI18n {
   theme?: string
   riddle?: string
@@ -121,6 +153,7 @@ export interface ClueI18n {
   hint3?: string
   funFact?: string
   trivia?: Trivia
+  puzzle?: Puzzle
 }
 
 export interface Clue {
@@ -140,6 +173,8 @@ export interface Clue {
   hint3: string
   funFact: string
   trivia?: Trivia
+  /** Optional logic / cipher / wordplay puzzle awarded a separate bonus. */
+  puzzle?: Puzzle
   i18n?: Partial<Record<Lang, ClueI18n>>
 }
 
@@ -167,7 +202,23 @@ export function localizeClue(c: Clue, lang: Lang): Clue {
     hint3:        tr.hint3        ?? c.hint3,
     funFact:      tr.funFact      ?? c.funFact,
     trivia:       tr.trivia       ?? c.trivia,
+    puzzle: c.puzzle ? {
+      ...c.puzzle,
+      prompt:  tr.puzzle?.prompt  ?? c.puzzle.prompt,
+      hint:    tr.puzzle?.hint    ?? c.puzzle.hint,
+      explain: tr.puzzle?.explain ?? c.puzzle.explain,
+      // answer kept in source language for matching; server normalize() handles case/diacritics
+      answer: c.puzzle.answer,
+    } : undefined,
   }
+}
+
+/** Server-side answer normalization — used by /api/verify-puzzle and the seed. */
+export function normalizePuzzleAnswer(s: string): string {
+  return s
+    .normalize('NFKD').replace(/[̀-ͯ]/g, '') // strip diacritics
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '')                        // strip whitespace + punctuation
 }
 
 export interface VerifyResponse {
@@ -228,6 +279,8 @@ export const SCORE = {
   streakBonus: 15,
   perfectClueBonus: 50,
   triviaBonus: 25,
+  /** Awarded for solving the logic / cipher puzzle attached to a clue. */
+  puzzleBonus: 30,
   hint1Penalty: 0,
   hint2Penalty: 10,
   hint3Penalty: 25,
@@ -316,6 +369,12 @@ export const T: Dict = {
   didYouKnow:        { en: 'Did you know?', nl: 'Wist je dat?', de: 'Wusstest du?', fr: 'Le saviez-vous ?', it: 'Lo sapevi?', es: '¿Sabías que?' },
   quickQuiz:         { en: 'Quick quiz — +25 bonus', nl: 'Snelle quiz — +25 bonus', de: 'Kurzes Quiz — +25 Bonus', fr: 'Quiz rapide — +25 bonus', it: 'Quiz rapido — +25 bonus', es: 'Trivia rápida — +25 bonus' },
   correct:           { en: 'Correct! +25 points', nl: 'Goed! +25 punten', de: 'Richtig! +25 Punkte', fr: 'Correct ! +25 points', it: 'Esatto! +25 punti', es: '¡Correcto! +25 puntos' },
+  puzzleTitle:       { en: 'Brain teaser — +30 bonus', nl: 'Hersenkraker — +30 bonus', de: 'Knobelei — +30 Bonus', fr: 'Casse-tête — +30 bonus', it: 'Rompicapo — +30 bonus', es: 'Acertijo — +30 bonus' },
+  puzzleSubmit:      { en: 'Submit', nl: 'Verstuur', de: 'Senden', fr: 'Envoyer', it: 'Invia', es: 'Enviar' },
+  puzzlePlaceholder: { en: 'Your answer…', nl: 'Jouw antwoord…', de: 'Deine Antwort…', fr: 'Votre réponse…', it: 'La tua risposta…', es: 'Tu respuesta…' },
+  puzzleShowHint:    { en: 'Show hint', nl: 'Toon hint', de: 'Hinweis zeigen', fr: 'Voir l\'indice', it: 'Mostra suggerimento', es: 'Ver pista' },
+  puzzleCorrect:     { en: 'Solved! +30 points', nl: 'Opgelost! +30 punten', de: 'Gelöst! +30 Punkte', fr: 'Résolu ! +30 points', it: 'Risolto! +30 punti', es: '¡Resuelto! +30 puntos' },
+  puzzleTryAgain:    { en: 'Not quite — try again', nl: 'Niet helemaal — probeer opnieuw', de: 'Nicht ganz — versuch\'s nochmal', fr: 'Presque — réessayez', it: 'Quasi — riprova', es: 'Casi — inténtalo de nuevo' },
   notQuite:          { en: 'Not quite', nl: 'Niet helemaal', de: 'Nicht ganz', fr: 'Presque', it: 'Quasi', es: 'Casi' },
   continue:          { en: 'Continue', nl: 'Doorgaan', de: 'Weiter', fr: 'Continuer', it: 'Continua', es: 'Continuar' },
   nextClue:          { en: 'Next clue →', nl: 'Volgend raadsel →', de: 'Nächstes Rätsel →', fr: 'Prochaine énigme →', it: 'Prossimo indizio →', es: 'Siguiente pista →' },

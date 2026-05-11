@@ -4,6 +4,8 @@ import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
 import { Country, LANGUAGES, localizeCountry } from '@/types'
 import { ResumeRaceBanner } from '@/components/ResumeRaceBanner'
+import { AnimatedNumber } from '@/components/AnimatedNumber'
+import { useScrollReveal } from '@/hooks/useScrollReveal'
 import type { BlogPostMeta } from '@/lib/blog'
 
 function CountryCard({ country, t }: { country: Country; t: (key: string) => string }) {

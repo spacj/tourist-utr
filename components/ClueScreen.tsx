@@ -358,9 +358,13 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
             hintPenalty={arrivalData.hintPenalty ?? 0}
             funFact={clue.funFact}
             trivia={clue.trivia ?? null}
+            puzzle={clue.puzzle ?? null}
+            sessionId={sessionId}
+            clueId={clue.id}
             huntComplete={arrivalData.huntComplete ?? false}
             onNext={() => onComplete({ nextClue: arrivalData.nextClue ?? null, huntComplete: arrivalData.huntComplete ?? false })}
             onTriviaCorrect={() => setScore(s => s + 25)}
+            onPuzzleSolved={(bonus) => setScore(s => s + bonus)}
           />
         )}
       </div>
