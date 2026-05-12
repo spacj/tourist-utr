@@ -851,14 +851,17 @@ a { color: inherit; }
   min-height: 0;
 }
 .game-hud {
-  position: absolute;
+  position: fixed;
   top: calc(12px + env(safe-area-inset-top, 0px));
   left: 12px; right: 12px;
   display: flex;
   align-items: center;
   gap: 6px;
-  z-index: 10;
+  /* Above the bottom sheet (z-index 20) so credits/points/steps are always visible — even when the sheet is expanded */
+  z-index: 30;
+  pointer-events: none;
 }
+.game-hud > * { pointer-events: auto; }
 .hud-back {
   flex: none;
   width: 38px; height: 38px;
@@ -5445,19 +5448,6 @@ a { color: inherit; }
 }
 .puzzle-tile:hover {
   transform: translateY(-2px);
-}
-
-/* MAP — coordinate display */
-.puzzle-display-map {
-  font-family: ui-monospace, Menlo, monospace;
-  font-size: clamp(18px, 3.5vw + 6px, 26px);
-  font-weight: 700;
-  color: #c2410c;
-  background: linear-gradient(135deg, rgba(234, 88, 12, 0.08), rgba(245, 158, 11, 0.04));
-  border-color: rgba(234, 88, 12, 0.25);
-  white-space: pre-line;
-  line-height: 1.6;
-  letter-spacing: 0.04em;
 }
 
 /* SEQUENCE — math/numbers */

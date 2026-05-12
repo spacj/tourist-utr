@@ -340,6 +340,13 @@ const utrechtClassic = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Pandhof dates to 1390 and is one of the oldest cloister gardens in the Netherlands. Monks grew medicinal herbs here. It survived the 1674 tornado that destroyed the cathedral nave.',
       trivia: { question: 'What did medieval monks originally grow in the Pandhof?', options: ['Grapes for wine', 'Medicinal herbs', 'Tulips', 'Vegetables for market'], correctIndex: 1, explain: 'Herbs for healing — the cloister was effectively the city\'s pharmacy.' },
+      puzzle: {
+        type: 'wordplay',
+        prompt: "I am a kind of monastery walkway (think 'pan-' as in 'enclosed') joined to the Dutch word for 'court'. Behind the Dom you will find me — listen for the herbs and the silence.",
+        answer: 'PANDHOF',
+        hint: "Dutch 'pand' (cloister/walkway) + 'hof' (court). One word, 7 letters.",
+        explain: "PANDHOF — a cloister garden tucked behind the Dom Tower since 1390. Once the monks' pharmacy; today the quietest courtyard in central Utrecht.",
+      },
       i18n: {
         nl: {
           theme: 'Verborgen kloosterhof',
@@ -382,6 +389,13 @@ const utrechtClassic = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Museum Speelklok houses the world\'s most important collection of automatically playing musical instruments. It lives inside the Buurkerk — Utrecht\'s oldest parish church, built 1100 AD.',
       trivia: { question: 'What building houses Museum Speelklok?', options: ['A Gothic cathedral', 'Utrecht\'s oldest parish church', 'A former train station', 'A 17th-century granary'], correctIndex: 1, explain: 'The Buurkerk, built around 1100 AD — older than the Dom itself.' },
+      puzzle: {
+        type: 'wordplay',
+        prompt: "Two Dutch words: the verb meaning 'to play' (as a child plays a game) joined to the word for a chiming wall-instrument. Put them together — a museum that plays itself.",
+        answer: 'SPEELKLOK|MUSEUM SPEELKLOK',
+        hint: "'Speel' (to play) + 'klok' (clock/bell). One word.",
+        explain: "SPEELKLOK — literally 'playing-clock'. Mechanical musical instruments from music boxes to giant fairground organs, all housed inside Utrecht's oldest parish church.",
+      },
       i18n: {
         nl: {
           theme: 'Zelfspelende muziek',
@@ -424,6 +438,13 @@ const utrechtClassic = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Janskerk was founded in 1040. The square was originally the church\'s graveyard — "Janskerkhof" literally means "John\'s church yard". Farmers have sold flowers here since 1597.',
       trivia: { question: 'What did "Janskerkhof" originally mean?', options: ['John\'s garden', 'John\'s church yard (cemetery)', 'John\'s market', 'John\'s harbour'], correctIndex: 1, explain: '"Kerkhof" means graveyard — this whole square was once a cemetery.' },
+      puzzle: {
+        type: 'anagram',
+        prompt: 'F R A N J H E O S K K',
+        answer: 'JANSKERKHOF',
+        hint: "11 letters. A saint's name + the Dutch word for 'graveyard' (kerkhof) — today only tulips and café terraces remain on the bones.",
+        explain: "JANSKERKHOF — 'John's churchyard'. The square was a cemetery for 500 years; the bones were moved out in the 1800s when the flower market moved in.",
+      },
       i18n: {
         nl: {
           theme: 'Bloemenplein',
@@ -466,6 +487,13 @@ const utrechtClassic = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Miffy (Nijntje in Dutch) was created by Utrecht illustrator Dick Bruna in 1955, after he saw a rabbit hopping in the dunes on holiday. Over 85 million Miffy books have been sold in more than 50 languages.',
       trivia: { question: 'In what year was Miffy (Nijntje) created?', options: ['1935', '1955', '1975', '1995'], correctIndex: 1, explain: '1955 — Dick Bruna sketched her after a family holiday on the Dutch coast.' },
+      puzzle: {
+        type: 'cipher',
+        prompt: 'QLMQWMH',
+        answer: 'NIJNTJE|MIFFY|NIJNTJE PLEINTJE',
+        hint: "Caesar shift back by 3. Q→N, L→I, M→J… A small white rabbit, drawn in 1955 by Dick Bruna.",
+        explain: "Caesar -3. NIJNTJE is the Dutch name; English-speakers know her as MIFFY. Created in this city by Dick Bruna after a beach holiday.",
+      },
       i18n: {
         nl: {
           theme: 'Kindericoon',
@@ -508,6 +536,13 @@ const utrechtClassic = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Sonnenborgh was built in 1552 as part of Utrecht\'s star-shaped defensive wall. In 1853 it became the Netherlands\' first national weather and astronomy institute. The original 1850s telescope is still operational.',
       trivia: { question: 'What famous scientific institute was founded at Sonnenborgh in 1853?', options: ['A chemistry lab', 'The Dutch weather & astronomy institute (KNMI)', 'A medical school', 'An engineering academy'], correctIndex: 1, explain: 'The KNMI — still the Netherlands\' national weather service today.' },
+      puzzle: {
+        type: 'wordplay',
+        prompt: "What the sun rises into, joined to the Dutch word for 'castle' or 'fortress'. A defensive bastion that learned to look upward at the stars.",
+        answer: 'SONNENBORGH|ZONNENBURG',
+        hint: "German/Dutch 'sonne/zonne' (sun) + 'burgh/burg' (fortress).",
+        explain: "SONNENBORGH — built 1552 as part of Utrecht's star-shaped fortifications, repurposed in 1853 as the country's first observatory and weather institute (the KNMI).",
+      },
       i18n: {
         nl: {
           theme: 'Sterrenkijk-bastion',
@@ -695,6 +730,13 @@ const hiddenUtrecht = {
       hint2: 'Head to Pieterskerkhof — a serene grassy square hidden behind the cathedral district, lined with old trees.',
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Pieterskerk (1048) is the oldest of four churches built by Bishop Bernold in the shape of a cross around the Dom. The crypt beneath still has its original Romanesque columns. The church survived the 1674 tornado and centuries of Calvinist iconoclasm — it\'s effectively a frozen slice of 11th-century Utrecht.',
+      puzzle: {
+        type: 'cipher',
+        prompt: 'SLHWHUVNHUN',
+        answer: 'PIETERSKERK',
+        hint: "Caesar shift back by 3. S→P, L→I, H→E… Named for the saint who carried the keys.",
+        explain: "Caesar -3. PIETERSKERK — 'Peter's church'. Consecrated 1048, the oldest surviving stone church in the Netherlands.",
+      },
       trivia: { question: 'In what year was the Pieterskerk consecrated?', options: ['948', '1048', '1348', '1548'], correctIndex: 1, explain: '1048 — founded by Bishop Bernold as part of a cross of four churches around the Dom.' },
       i18n: {
         nl: {
@@ -786,6 +828,13 @@ const hiddenUtrecht = {
       hint2: 'Head to Kromme Nieuwegracht 49. Look for a richly ornamented facade — it\'s the oldest non-religious Renaissance building in the Netherlands.',
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Paushuize ("Pope\'s House") was built in 1517 for cardinal Adriaan Florisz Boeyens — who was elected Pope Adrian VI in 1522, becoming the first and only Dutch pope. He died in Rome before he could return to Utrecht. The house still features a stone relief of him and is now used for civic receptions.',
+      puzzle: {
+        type: 'wordplay',
+        prompt: "The Dutch word for the man who wears a fisherman's ring in Rome, joined to the diminutive of 'house'. Built for a Utrechter who got the job but never came home.",
+        answer: 'PAUSHUIZE|PAUS HUIZE',
+        hint: "'Paus' (pope) + 'huize' (house). One word.",
+        explain: "PAUSHUIZE — built 1517 for cardinal Adriaan Boeyens, the only Dutchman ever elected pope (Adrian VI, 1522). He died in Rome a year into the job, never seeing the house finished.",
+      },
       trivia: { question: 'How many Dutch popes have there ever been?', options: ['0', '1', '3', '7'], correctIndex: 1, explain: 'Exactly one — Adrian VI, the cardinal who built this very house.' },
       i18n: {
         nl: {
@@ -877,6 +926,13 @@ const hiddenUtrecht = {
       hint2: 'Head to the eastern part of the Singel canal ring. Lepelenburg is between Maliesingel and Servaasbolwerk — a green mound surrounded by water.',
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Lepelenburg is one of the last surviving bastions of Utrecht\'s 16th-century star-shaped city wall. When the walls were torn down in 1830, architect Jan David Zocher (who also designed Amsterdam\'s Vondelpark) turned Utrecht\'s bastions into a ring of romantic parks. In summer there\'s a free classical music festival here every Sunday.',
+      puzzle: {
+        type: 'anagram',
+        prompt: 'P U L B G N R L E E E',
+        answer: 'LEPELENBURG',
+        hint: "11 letters. A bastion turned park — its name starts with the Dutch word for 'spoon' (lepel).",
+        explain: "LEPELENBURG — literally 'spoon-fortress', from the curved shape of the original 1554 bastion seen from above. Disarmed in 1830 and turned into a park by the same architect who later designed Vondelpark.",
+      },
       trivia: { question: 'Who turned Utrecht\'s old bastions into parks in the 19th century?', options: ['Pierre Cuypers', 'Jan David Zocher', 'Gerrit Rietveld', 'Napoleon'], correctIndex: 1, explain: 'Jan David Zocher — the same landscape architect behind Amsterdam\'s Vondelpark.' },
       i18n: {
         nl: {
@@ -919,6 +975,13 @@ const hiddenUtrecht = {
       hint2: 'Head south along the Oudegracht until it meets the Vollerstraat and the Tolsteegsingel. The square gets its name from being the "empty yard" at the end of the canal.',
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Ledig Erf means "empty yard" — it was long an unpaved loading area at the end of the Oudegracht. Today it\'s home to Café Ledig Erf and Kafé België, two of the Netherlands\' most famous craft-beer cafés. On summer Sundays, the square\'s outdoor terraces fill up before noon.',
+      puzzle: {
+        type: 'reverse',
+        prompt: 'FRE GIDEL',
+        answer: 'LEDIG ERF|LEDIGERF',
+        hint: "Two words, both reversed. Dutch for 'empty yard' — though three canals meet here.",
+        explain: "LEDIG ERF — 'empty yard'. The name stuck from when this was an unpaved loading area; now it's the most famous craft-beer corner in Utrecht.",
+      },
       trivia: { question: 'What does "Ledig Erf" literally mean?', options: ['Lazy inn', 'Empty yard', 'Water gate', 'Beer market'], correctIndex: 1, explain: 'Empty yard — once the unpaved end of the canal where boats unloaded.' },
       i18n: {
         nl: {
@@ -1058,6 +1121,13 @@ const canalsCafes = {
       hint2: 'Head to the Oudegracht next to Utrecht\'s town hall. The square is tucked on the west side of the canal.',
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Ganzenmarkt ("Goose Market") has been a marketplace since at least 1358. The Stadhuis (city hall) next door was rebuilt in 1830 in neoclassical style — its back terrace overhangs the canal and is a lovely photo spot at sunset.',
+      puzzle: {
+        type: 'wordplay',
+        prompt: "The Dutch plural for a long-necked white waterbird, joined to the word for a place where things are sold. Honking livestock changed hands here for six centuries.",
+        answer: 'GANZENMARKT|GOOSE MARKET',
+        hint: "'Ganzen' (geese) + 'markt' (market). One word.",
+        explain: "GANZENMARKT — geese were traded here from at least 1358. The honking stopped centuries ago; the name and the cobbles stayed.",
+      },
       trivia: { question: 'Which century did geese start being sold at Ganzenmarkt?', options: ['13th', '14th', '16th', '18th'], correctIndex: 1, explain: 'Records mention the market as early as 1358 — the 14th century.' },
       i18n: {
         nl: {
@@ -1149,6 +1219,13 @@ const canalsCafes = {
       hint2: 'Head to Pausdam — a small square where the Nieuwegracht meets the Kromme Nieuwegracht, next to Paushuize.',
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Nieuwegracht was dug in the 14th century as an "overflow" canal for the Oudegracht. Unlike its rowdy sister, it\'s lined with patrician houses and former convents. At Pausdam you\'ll find the famous Paushuize — home of the only Dutch pope — and one of the narrowest bridges in Utrecht.',
+      puzzle: {
+        type: 'wordplay',
+        prompt: "The Dutch word for 'new' (opposite of 'oude'), joined to the word for the canal you've been walking along all morning. Quieter than its sister. Lined with convents.",
+        answer: 'NIEUWEGRACHT|NIEUWE GRACHT',
+        hint: "'Nieuwe' (new) + 'gracht' (canal). One word, paired against OUDEgracht.",
+        explain: "NIEUWEGRACHT — 'new canal'. Dug 1370 as overflow drainage for the Oudegracht, but it never grew loud. Today the most contemplative water in central Utrecht.",
+      },
       trivia: { question: 'When was the Nieuwegracht dug?', options: ['12th century', '14th century', '17th century', '19th century'], correctIndex: 1, explain: 'Around the 14th century — as an overflow channel for the busier Oudegracht.' },
       i18n: {
         nl: {
@@ -1191,6 +1268,13 @@ const canalsCafes = {
       hint2: 'Head to Twijnstraat aan de Werf. The street runs parallel to the canal for about 300 metres and is packed with tiny artisanal shops.',
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: '"Twijn" means "twine" — this was the medieval rope-makers\' quarter. Today Twijnstraat is a foodie pilgrimage: Jordy\'s Bakery, the Mama cheese shop, the famous stroopwafel stand, and a weekly organic farmers\' market on the wharf below.',
+      puzzle: {
+        type: 'wordplay',
+        prompt: "The Dutch word for 'twine' (the rope you'd braid for a ship), joined to the word for 'street'. Medieval rope-makers; modern stroopwafels.",
+        answer: 'TWIJNSTRAAT',
+        hint: "'Twijn' (twine) + 'straat' (street). One word.",
+        explain: "TWIJNSTRAAT — 'twine street'. Where Utrecht's medieval rope-makers worked. Today the same 300 metres is a foodie pilgrimage; the canal still smells of fresh bread instead of hemp.",
+      },
       trivia: { question: 'What did "Twijn" originally refer to?', options: ['Twin towers', 'Rope-makers\' trade', 'A type of bread', 'Wooden twin doors'], correctIndex: 1, explain: 'Twine — rope-makers worked here in the Middle Ages.' },
       i18n: {
         nl: {
@@ -1379,6 +1463,13 @@ const amsterdamClassic = {
       hint2: 'Head to the Oudekerksplein square. The church with the distinctive leaning tower and wooden ceiling is the Oude Kerk.',
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Oude Kerk was built around 1300, making it Amsterdam\'s oldest building. The wooden ceiling dates to 1390 and survived two city fires in 1421 and 1452. The church leans about 2 metres to the east due to ground settling. Famous people buried here include Rembrandt\'s wife Saskia.',
+      puzzle: {
+        type: 'wordplay',
+        prompt: "Dutch adjective for 'old' (used for canals, towers, and harbours alike), joined to the word for a building with stained glass and pews. Amsterdam's oldest.",
+        answer: 'OUDE KERK|OUDEKERK',
+        hint: "'Oude' (old) + 'kerk' (church). Two words.",
+        explain: "OUDE KERK — built around 1300 on what was then a sandbank. Rembrandt's wife Saskia is buried inside; the brothels of the Red Light District grew up around the churchyard.",
+      },
       trivia: { question: 'Who is buried in the Oude Kerk?', options: ['Rembrandt', 'Saskia van Uylenburgh', 'Vincent van Gogh', 'Anne Frank'], correctIndex: 1, explain: 'Saskia van Uylenburgh — Rembrandt\'s wife — buried in 1642.' },
       i18n: {
         nl: {
@@ -1470,6 +1561,13 @@ const amsterdamClassic = {
       hint2: 'Head to Museumplein. The Van Gogh Museum is the large modern building next to the Rijksmuseum.',
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Van Gogh Museum opened in 1973, designed by Gerrit Rietveld. The collection was assembled by Theo van Gogh\'s widow, Jo van Gogh-Bonger, who dedicated her life to preserving Vincent\'s legacy. The museum receives over 2 million visitors annually.',
+      puzzle: {
+        type: 'anagram',
+        prompt: 'G H N O V A G',
+        answer: 'VAN GOGH|VAN GOGH MUSEUM',
+        hint: "7 letters. The painter who cut off his own ear — and whose surname most non-Dutch people mispronounce.",
+        explain: "VAN GOGH — Vincent (1853–1890) lived just two years in Paris, then moved south to chase light. Of his 850 paintings, this museum holds 200 — the largest collection anywhere, saved by his sister-in-law Jo.",
+      },
       trivia: { question: 'Who saved and assembled Van Gogh\'s collection?', options: ['Vincent himself', 'Theo\'s widow Jo', 'A wealthy art dealer', 'The Dutch government'], correctIndex: 1, explain: 'Jo van Gogh-Bonger — Theo\'s widow — spent her life building the collection.' },
       i18n: {
         nl: {
@@ -1561,6 +1659,13 @@ const amsterdamClassic = {
       hint2: 'Head to the Egelantiersgracht canal. Café \'t Smalle sits on the corner with its distinctive brown-stained interior.',
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Café \'t Smalle has been open since 1642. The brown walls come from centuries of indoor tobacco smoke. The traditional Dutch jenever (gin) recipe used here hasn\'t changed since the 17th century. It survived the Napoleonic wars and both World Wars.',
+      puzzle: {
+        type: 'wordplay',
+        prompt: "The Dutch adjective for 'narrow' (the opposite of broad), prefixed with the definite article 't (a contraction of 'het'). Find me on a Jordaan corner — open since 1642, jenever still poured.",
+        answer: 'T SMALLE|\'T SMALLE|CAFE T SMALLE|CAFE \'T SMALLE|HET SMALLE',
+        hint: "'t (the) + 'smalle' (narrow). Two short words.",
+        explain: "'T SMALLE — 'the narrow [one]'. Opened 1642 as the jenever distillery of Pieter Hoppe, founder of the Hoppe gin family. The brown walls are 380 years of tobacco smoke.",
+      },
       trivia: { question: 'What gives brown cafés their distinctive colour?', options: ['Paint', 'Tobacco smoke', 'Aging wood', 'Spilled coffee'], correctIndex: 1, explain: 'Centuries of tobacco smoke stained the walls brown.' },
       i18n: {
         nl: {
@@ -1603,6 +1708,13 @@ const amsterdamClassic = {
       hint2: 'Head to the crossing of Stadhouderskade and Rijksmuseum tunnel. Look for the dedicated bicycle traffic lights.',
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Amsterdam has over 880,000 bicycles — more than its population. This intersection was redesigned in 2019 with 360-degree bike lanes and traffic lights that change every 4 seconds. The bicycle parking under the Rijksmuseum holds 12,000 bikes.',
+      puzzle: {
+        type: 'wordplay',
+        prompt: "The Dutch title for the regent who ruled a province before the king (the 'stadhouder'), joined to 'kade' — the word for a quayside road. The intersection of this avenue with Museumplein is the world's busiest bike crossing.",
+        answer: 'STADHOUDERSKADE|STADHOUDERS KADE',
+        hint: "'Stadhouder' (regent) + 'kade' (quay). One word.",
+        explain: "STADHOUDERSKADE — 'Stadtholder's quay'. Originally the 17th-century outer canal embankment, now best known as the world's busiest cycling intersection (>40,000 bikes/day).",
+      },
       trivia: { question: 'How many bicycles does Amsterdam have?', options: ['400,000', '600,000', '880,000', '1.2 million'], correctIndex: 2, explain: 'Over 880,000 — more than the city\'s population.' },
       i18n: {
         nl: {
@@ -1645,6 +1757,13 @@ const amsterdamClassic = {
       hint2: 'Walk along the Singel canal between Dam and Spui. Look for the impossibly thin building wedged between two larger houses.',
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Singel 7 was built in 1730 for a widow who couldn\'t afford a full-width house. At 2.02 metres wide, it\'s officially the narrowest house in Amsterdam. The interior has just one room per floor, reached by a steep staircase. It was a tax-avoidance trick: narrow front, deep inside.',
+      puzzle: {
+        type: 'logic',
+        prompt: "I am 2.02 metres wide — the narrowest house in Amsterdam. My address: the city's innermost canal (its name is the same word merchants used for the city's outer 'belt'), followed by the smallest single-digit prime number that isn't 2, 3, or 5. Name the address.",
+        answer: 'SINGEL 7|SINGEL SEVEN',
+        hint: "Canal name + a number. The number is the smallest single-digit prime greater than 5.",
+        explain: "SINGEL 7 — built 1730 for a widow who couldn't afford a full-width plot. The 'singel' was the 1428 city wall; the number is 7 (the smallest prime above 5).",
+      },
       trivia: { question: 'Why was Singel 7 built so narrow?', options: ['Tax evasion', 'Available space', 'Architectural experiment', 'Wind resistance'], correctIndex: 0, explain: 'Property tax was based on frontage width — narrow meant cheaper.' },
       i18n: {
         nl: {
@@ -1784,6 +1903,13 @@ const hiddenAmsterdam = {
       hint2: 'Head to Oudezijds Voorburgwal 38. Look for the inconspicuous door — the church is hidden on the top floors.',
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Ons\' Lieve Heer op Solder (Our Lord in the Attic) was built in 1663 as a secret Catholic church during the Protestant Reformation. Catholics were banned from public worship, so they worshipped in hidden "clandestine churches" inside ordinary houses. The church is remarkably intact with original baroque interiors.',
+      puzzle: {
+        type: 'wordplay',
+        prompt: "Five Dutch words, three of them tiny: the possessive 'our' + the adjective 'beloved' + the noun 'lord' + the preposition 'on the' + the word for an attic. A hidden church in a house.",
+        answer: 'ONS LIEVE HEER OP SOLDER|ONS\' LIEVE HEER OP SOLDER|OUR LORD IN THE ATTIC',
+        hint: "Ons / Lieve / Heer / op / Solder — five words.",
+        explain: "ONS' LIEVE HEER OP SOLDER — 'Our Dear Lord in the Attic'. A whole Baroque Catholic church squeezed into the top three storeys of a 1663 canal house, when Catholic worship was banned in the city.",
+      },
       trivia: { question: 'Why was the church hidden in an attic?', options: ['Building regulations', 'Religious persecution', 'Lack of space', 'Cost savings'], correctIndex: 1, explain: 'Catholics were banned from public worship during the Protestant Reformation.' },
       i18n: {
         nl: {
@@ -1875,6 +2001,13 @@ const hiddenAmsterdam = {
       hint2: 'Walk along the Singel between Koningsplein and Spui. Look for an old ship moored to the canal with bookshelves visible inside.',
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'De Roos (The Rose) is a bookshop housed on a 19th-century cargo ship. The ship has been converted into a floating library with over 35,000 books. The original ship\'s captain\'s cabin is now the rare book room. It has been moored on the Singel since 1986.',
+      puzzle: {
+        type: 'wordplay',
+        prompt: "The Dutch word for the place that sells novels, joined to the definite article + the name of a thorny flower. A bookshop that floats.",
+        answer: 'BOEKHANDEL DE ROOS|DE ROOS|BOEKHANDEL DEROOS',
+        hint: "'Boekhandel' (bookshop) + 'De Roos' (The Rose). Three words.",
+        explain: "BOEKHANDEL DE ROOS — 'The Rose Bookshop'. 35,000 books in the hold of a 19th-century cargo barge, moored on the Singel since 1986.",
+      },
       trivia: { question: 'How many books are in the floating bookshop?', options: ['5,000', '15,000', '35,000', '100,000'], correctIndex: 2, explain: 'Over 35,000 books on a converted 19th-century ship.' },
       i18n: {
         nl: {
@@ -1966,6 +2099,13 @@ const hiddenAmsterdam = {
       hint2: 'Head to Kerkstraat near the Leidseplein. The theater museum displays Amsterdam\'s theatrical history.',
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Amsterdam Theatre Museum sits on the site of the Stadsschouwburg, which burned down in 1772 during a performance. The fire killed several actors and audience members. The current building dates to 1894. The museum displays costumes, props, and stage designs from 400 years of Amsterdam theatre.',
+      puzzle: {
+        type: 'reverse',
+        prompt: 'MUESUM RETAEHT',
+        answer: 'THEATER MUSEUM|THEATERMUSEUM|AMSTERDAM THEATER MUSEUM',
+        hint: "Read both words backwards. A museum where costumes, props, and 400 years of stage history are kept.",
+        explain: "THEATER MUSEUM — built 1894 on the ruins of the original Stadsschouwburg (which burned down in 1772, mid-performance, killing fifty people). Today: costumes, set models, a single chair Sarah Bernhardt sat in.",
+      },
       trivia: { question: 'How many people died in the 1772 theatre fire?', options: ['5', '18', '50', '200'], correctIndex: 2, explain: 'Around 50 people died in the 1772 fire.' },
       i18n: {
         nl: {
@@ -2008,6 +2148,13 @@ const hiddenAmsterdam = {
       hint2: 'Walk along the Singel between Dam and Prinsengracht. Look for a houseboat with cats visible through the windows.',
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'De Poezenboot (The Cat Boat) was founded in 1968 by Henriette van Weelde. After finding stray cats in her garden, she bought a houseboat to provide shelter. Over 1,000 cats have been rescued. It\'s the only floating cat sanctuary in the world, and visitors can adopt cats or donate.',
+      puzzle: {
+        type: 'wordplay',
+        prompt: "Dutch definite article + the affectionate diminutive plural for whiskered hunters of mice + the word for a vessel that floats. The only one of its kind in the world.",
+        answer: 'POEZENBOOT|DE POEZENBOOT',
+        hint: "De + 'poezen' (kitties) + 'boot' (boat). Two words.",
+        explain: "DE POEZENBOOT — 'the cat boat'. A houseboat-turned-sanctuary on the Singel since 1968, rescuing strays. The world's only floating cat shelter and a tax-recognised charity in three countries.",
+      },
       trivia: { question: 'How many cats have been rescued at De Poezenboot?', options: ['100', '500', '1,000', '5,000'], correctIndex: 2, explain: 'Over 1,000 cats since 1968.' },
       i18n: {
         nl: {
@@ -2388,6 +2535,13 @@ const theHagueRoyal = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Binnenhof is one of the oldest still-functioning parliament buildings in the world. The Ridderzaal (Knights\' Hall) at its center dates to the 13th century — the king delivers his throne speech from here every September on Prinsjesdag.',
       trivia: { question: 'When does the Dutch king deliver his annual throne speech in the Ridderzaal?', options: ['Christmas', 'Prinsjesdag (third Tuesday of September)', 'Koningsdag (King\'s Day)', 'New Year'], correctIndex: 1, explain: 'Prinsjesdag — the third Tuesday of September. The royal carriage rides here from Noordeinde Palace.' },
+      puzzle: {
+        type: 'wordplay',
+        prompt: "The Dutch adjective for 'inner' or 'interior', joined to the word for a court or courtyard. The ministers meet inside; the journalists wait outside.",
+        answer: 'BINNENHOF',
+        hint: "'Binnen' (inner) + 'hof' (court). One word.",
+        explain: "BINNENHOF — 'inner court'. A medieval count built his hunting lodge here around 1230; eight centuries later it's still the working parliament of the Netherlands.",
+      },
     },
     {
       id: 'clue_2', order: 2, icon: '👧', theme: 'Girl with a Pearl Earring',
@@ -2432,6 +2586,13 @@ const theHagueRoyal = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Noordeinde is one of three official palaces of the Dutch monarch and the king\'s working residence. He doesn\'t live here — that\'s in nearby Huis ten Bosch — but he meets ministers, foreign leaders, and ambassadors here. The orange royal flag flies when he\'s present.',
       trivia: { question: 'How many official palaces does the Dutch monarch have?', options: ['One', 'Three', 'Five', 'Eleven'], correctIndex: 1, explain: 'Three: Noordeinde (working), Huis ten Bosch (residence), and the Royal Palace on Dam Square in Amsterdam (state events).' },
+      puzzle: {
+        type: 'wordplay',
+        prompt: "The Dutch word for 'north' joined to the word for 'end'. The street ends here; so does the king's working day.",
+        answer: 'NOORDEINDE|NOORDEINDE PALACE|PALEIS NOORDEINDE',
+        hint: "'Noord' (north) + 'einde' (end). One word.",
+        explain: "NOORDEINDE — 'north end'. The palace sits at the northern end of the original 17th-century street of the same name. King's working residence since the 1980s.",
+      },
     },
     {
       id: 'clue_5', order: 5, icon: '🕊️', theme: 'Where the world talks peace',
@@ -2459,6 +2620,13 @@ const theHagueRoyal = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Scheveningen ("Schevening-en") is famously hard for foreigners to pronounce — during WWII the Dutch resistance used it as a shibboleth to spot German infiltrators. The current pier opened in 1959; a Ferris wheel was added in 2016 for the views over the North Sea.',
       trivia: { question: 'Why was "Scheveningen" used as a shibboleth in WWII?', options: ['It contains uniquely Dutch sounds Germans can\'t pronounce', 'It was a code name for an underground bunker', 'It was banned by the German occupation', 'It was the first word of the Dutch national anthem'], correctIndex: 0, explain: 'The "sch-" cluster plus "-eveningen" trips up German speakers. Resistance fighters made suspects say the name.' },
+      puzzle: {
+        type: 'anagram',
+        prompt: 'V N C H E S E G I N N E',
+        answer: 'SCHEVENINGEN|SCHEVENINGEN PIER',
+        hint: "12 letters. Begins with 'sch-' — the hardest consonant cluster in Dutch. The Hague's beach district.",
+        explain: "SCHEVENINGEN — a single word with one of the hardest consonant clusters in any European language ('sch-' /sx/), used as a shibboleth by the Dutch resistance in WWII to identify German infiltrators.",
+      },
     },
   ],
 }
@@ -2529,6 +2697,13 @@ const rotterdamModern = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Witte Huis was Europe\'s first skyscraper, completed in 1898. When the Luftwaffe firebombed Rotterdam on 14 May 1940 and erased 24,000 buildings in 90 minutes, this tower survived almost untouched — pure luck of where the bombs fell. It\'s now a national monument.',
       trivia: { question: 'How many buildings did the May 1940 bombing of Rotterdam destroy?', options: ['About 800', 'About 5,000', 'About 24,000', 'About 100,000'], correctIndex: 2, explain: 'Around 24,000 buildings in 90 minutes. 850 people died and 80,000 were left homeless. The Witte Huis was one of the only structures left.' },
+      puzzle: {
+        type: 'wordplay',
+        prompt: "Dutch adjective for the colour of fresh snow + the word for a house. Europe's first skyscraper. Stood while a city burned around it.",
+        answer: 'WITTE HUIS|WHITE HOUSE',
+        hint: "'Witte' (white) + 'huis' (house). Two words.",
+        explain: "WITTE HUIS — 'white house'. Europe's first skyscraper (1898, 43m). The Luftwaffe bombed everything around it on 14 May 1940; the Witte Huis survived almost intact, a white ghost in a city of rubble.",
+      },
     },
     {
       id: 'clue_4', order: 4, icon: '⚓', theme: 'A floating city of glass',
@@ -2539,6 +2714,13 @@ const rotterdamModern = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Wilhelminapier was the Holland-America Line\'s departure pier — between 1873 and 1971, more than a million Dutch and German emigrants left for New York from here. The departure terminal is now Hotel New York. The three glass towers (De Rotterdam, Toren op Zuid, KPN) anchor what locals call the "Manhattan on the Maas."',
       trivia: { question: 'How many Europeans emigrated to America from Wilhelminapier between 1873 and 1971?', options: ['About 50,000', 'About 250,000', 'Over 1 million', 'Over 5 million'], correctIndex: 2, explain: 'More than a million emigrants — mostly Dutch, German, and Eastern European Jews — left for the US from this pier.' },
+      puzzle: {
+        type: 'wordplay',
+        prompt: "Take the name of the queen who reigned the Netherlands through two world wars, then add the Dutch word for the dock where boats are loaded. A million Europeans waved goodbye from here.",
+        answer: 'WILHELMINAPIER|WILHELMINA PIER',
+        hint: "Queen Wilhelmina (r. 1890–1948) + 'pier'. One word.",
+        explain: "WILHELMINAPIER — the Holland-America Line shipped over a million emigrants to New York from this quay between 1873 and 1971. The old departure terminal is now Hotel New York.",
+      },
     },
     {
       id: 'clue_5', order: 5, icon: '🌉', theme: 'The Swan',
@@ -2566,6 +2748,13 @@ const rotterdamModern = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Oude Haven was the first port dug in Rotterdam, around 1350. The Witte Huis stands at one corner; the maritime museum has working historic ships moored along the quays. After the 1940 bombing, this is one of the only stretches of pre-war Rotterdam still standing.',
       trivia: { question: 'When was Oude Haven first dug?', options: ['Around 1100', 'Around 1350', 'Around 1600', 'Around 1850'], correctIndex: 1, explain: 'Around 1350 — Rotterdam grew up around this dam in the Rotte river. The city\'s name comes from "dam in the Rotte."' },
+      puzzle: {
+        type: 'wordplay',
+        prompt: "Same adjective the Oude Kerk and Oudegracht both share, joined to the Dutch word for 'harbour' or 'port'. Where Rotterdam began — and one of the few corners of pre-war Rotterdam still standing.",
+        answer: 'OUDE HAVEN|OUDEHAVEN|OLD HARBOR|OLD HARBOUR',
+        hint: "'Oude' (old) + 'haven' (harbour). Two words.",
+        explain: "OUDE HAVEN — 'old harbour'. The first port dug in Rotterdam, around 1350. The bombs of May 1940 stopped just short; this is one of the only stretches of medieval Rotterdam still standing.",
+      },
     },
     {
       id: 'clue_7', order: 7, icon: '🗼', theme: 'The view from above',
@@ -2576,6 +2765,13 @@ const rotterdamModern = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Euromast opened in 1960 for the Floriade horticulture expo. The "Space Tower" rotating capsule was added in 1970 to claim the title of "tallest tower in the Netherlands" again — they\'d been overtaken by Utrecht. The roof was once the launch pad for an annual abseiling charity event.',
       trivia: { question: 'Why was the rotating capsule added on top of the Euromast in 1970?', options: ['Lighting was poor at the original height', 'To reclaim the "tallest in the Netherlands" title', 'For TV broadcasting', 'For weather measurement'], correctIndex: 1, explain: 'Utrecht\'s flat-screen TV tower had briefly become taller. The Space Tower added 84m and reclaimed the title.' },
+      puzzle: {
+        type: 'wordplay',
+        prompt: "Prefix it with the name of the continent we're walking through, then add the Dutch word for the wooden pole that holds up a ship's sails. Climb to 185m for a view that on a clear day stretches to Belgium.",
+        answer: 'EUROMAST',
+        hint: "'Euro' + 'mast'. One word.",
+        explain: "EUROMAST — built 1960 for the Floriade gardening expo, designed to look like the mast of a giant ship. The Space Tower rotating cabin was bolted on in 1970 to reclaim the 'tallest in the Netherlands' title from Utrecht.",
+      },
     },
   ],
 }
@@ -2612,6 +2808,13 @@ const delftVermeer = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Despite the name "New Church," this 14th-century building is older than most cathedrals. The royal crypt below holds 46 members of the House of Orange-Nassau, including William the Silent (1584) and the most recent royal interment, Prince Bernhard, in 2004. The tower has 376 steps.',
       trivia: { question: 'Who was the first member of the House of Orange-Nassau buried in the Nieuwe Kerk?', options: ['William of Orange ("the Silent"), assassinated 1584', 'Maurice of Orange, died 1625', 'Frederick Henry, died 1647', 'King Willem I, died 1843'], correctIndex: 0, explain: 'William the Silent — assassinated by a Spanish agent in 1584, in the Prinsenhof a few hundred metres from here. Every Dutch monarch since has been buried in the same crypt.' },
+      puzzle: {
+        type: 'wordplay',
+        prompt: "Dutch adjective for 'new' joined to the word for 'church'. Despite the name, it's 700 years old — and every Dutch monarch since 1584 lies beneath its floor.",
+        answer: 'NIEUWE KERK|NIEUWEKERK',
+        hint: "'Nieuwe' (new) + 'kerk' (church). Two words.",
+        explain: "NIEUWE KERK — 'new church', built from 1396. The royal crypt below holds 46 members of the House of Orange-Nassau; every Dutch king and queen since William the Silent has been buried here.",
+      },
     },
     {
       id: 'clue_2', order: 2, icon: '🎨', theme: 'Vermeer\'s home museum',
@@ -2639,6 +2842,13 @@ const delftVermeer = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Vermeer was buried here in 1675, aged 43, leaving his wife Catharina with eleven children and crushing debts (he died "in a frenzy and a fury," according to her petition for bankruptcy relief). The exact location of his grave was lost for two centuries; a memorial stone marks the approximate spot in the north transept.',
       trivia: { question: 'Why does the Oude Kerk\'s tower lean?', options: ['A bombing weakened the foundation', 'Built on soft canal-side soil that gave way', 'A failed 19th-century renovation', 'Earthquakes from gas extraction'], correctIndex: 1, explain: 'The tower stands on soft, canal-saturated soil and was already leaning by the early 1500s. Restoration in the 1990s stabilized it but kept the lean.' },
+      puzzle: {
+        type: 'wordplay',
+        prompt: "Same two-word formula as Amsterdam's oldest church. Dutch adjective for 'old' + the word for the building with stained glass. This one leans two metres east — and Vermeer is buried inside.",
+        answer: 'OUDE KERK|OUDEKERK',
+        hint: "'Oude' (old) + 'kerk' (church). Two words.",
+        explain: "OUDE KERK — 'old church', 1246. Vermeer's grave is somewhere beneath the floor (the precise spot was lost). The tower leans 2 metres east because the soil under it has slowly given way for 800 years.",
+      },
     },
     {
       id: 'clue_4', order: 4, icon: '🔫', theme: 'The bullet hole',
@@ -2683,6 +2893,13 @@ const delftVermeer = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Beestenmarkt ("Animal Market") is exactly what it sounds like — until 1960, this is where livestock was bought and sold every Thursday. The trees were planted in 1830 to give the animals shade. The cafés moved in once the cattle moved out, and the square is now arguably the best-positioned terrace in the Netherlands at golden hour.',
       trivia: { question: 'When did Beestenmarkt stop being an actual livestock market?', options: ['1820', '1900', '1960', 'It still is'], correctIndex: 2, explain: '1960 — within living memory. The livestock auction moved to a modern market hall on the city outskirts, and the square pivoted to cafés within a decade.' },
+      puzzle: {
+        type: 'wordplay',
+        prompt: "Dutch plural of 'beast' (think 'cattle' and 'pigs'), joined to the place where things are sold. The animals are gone — the trees they shaded remain.",
+        answer: 'BEESTENMARKT|ANIMAL MARKET',
+        hint: "'Beesten' (beasts/animals) + 'markt' (market). One word.",
+        explain: "BEESTENMARKT — cattle and pigs were auctioned here every Thursday until 1960. The plane trees were planted in 1830 to shade the animals; today they shade the café terraces.",
+      },
     },
   ],
 }
@@ -2722,11 +2939,11 @@ const milanClassic = {
       funFact: 'Construction started in 1386 and the last spire was added in 1965. Milan\'s archbishops still own the Candoglia marble quarry that supplied every stone — it\'s a tax-free zone granted by the Visconti dukes in 1387 and never revoked. The roof is open to visitors and gives you a 360° view of the Alps on clear days.',
       trivia: { question: 'How long did the Duomo take to complete?', options: ['About 50 years', 'About 200 years', 'Almost 600 years', 'It\'s still not finished'], correctIndex: 2, explain: 'Started in 1386, the last spire (the small one near the back) was added in 1965 — about 579 years.' },
       puzzle: {
-        type: 'map',
-        prompt: "45.4641° N\n9.1919° E",
-        answer: 'DUOMO|DUOMO DI MILANO|CATHEDRAL',
-        hint: "These coordinates pin Italy's largest Gothic cathedral. 135 spires, 600 years to finish. Name it.",
-        explain: "DUOMO DI MILANO — started 1386, last spire added 1965. Napoleon was crowned king of Italy here in 1805 before the façade was even finished.",
+        type: 'logic',
+        prompt: "I have 135 of one and 3,400 of another. I took 600 years to finish — first stone 1386, last spire 1965. Napoleon crowned himself king of Italy beneath my still-unfinished façade. The gilded Madonnina on my tallest spire watches over a city in my name. Name me.",
+        answer: 'DUOMO|DUOMO DI MILANO|MILAN CATHEDRAL',
+        hint: "Italian word for 'cathedral' — also the name of the square it sits on.",
+        explain: "DUOMO DI MILANO — third-largest cathedral in the world by interior volume. By tradition no Milan skyscraper may rise above the gilded Madonnina (1774) on its tallest spire.",
       },
       i18n: {
         it: { theme: 'Sei secoli di gotico', riddle: "Trova la più grande cattedrale gotica d'Italia. 135 guglie, 3.400 statue, 600 anni per completarla — Napoleone fu incoronato qui re d'Italia nel 1805, prima ancora che la facciata fosse finita.", locationName: 'Duomo di Milano', funFact: 'I lavori iniziarono nel 1386 e l\'ultima guglia fu aggiunta nel 1965. Gli arcivescovi di Milano possiedono ancora la cava di marmo di Candoglia che fornì ogni pietra — è una zona esentasse concessa dai Visconti nel 1387 e mai revocata. Il tetto è aperto al pubblico e nelle giornate limpide regala una vista a 360° sulle Alpi.' },
@@ -2780,6 +2997,13 @@ const milanClassic = {
       hint2: 'Piazza Castello — about 10 minutes\' walk from La Scala. The main entrance is the Filarete tower facing south.',
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Built in 1370 as the Visconti castle, transformed in the 15th century into the Renaissance court of the Sforza dukes. Leonardo da Vinci frescoed the Sala delle Asse with a canopy of intertwined trees in 1498 — fragments survive. Michelangelo\'s Rondanini Pietà — the unfinished sculpture he was working on six days before his death in 1564 — sits in a quiet ground-floor room. Free entry to the courtyards.',
+      puzzle: {
+        type: 'wordplay',
+        prompt: "Italian word for 'castle' + the adjective form of the surname of the family that ruled Renaissance Milan (think 'Ludovico il Moro'). A fortress turned Renaissance court.",
+        answer: 'CASTELLO SFORZESCO|CASTELLO|SFORZESCO',
+        hint: "Castello + Sforzesco (from 'Sforza'). Two words.",
+        explain: "CASTELLO SFORZESCO — built 1370 by the Visconti, taken over and rebuilt 1450 by the Sforza family. Leonardo painted its ceilings; Michelangelo's last sculpture sits in a ground-floor room.",
+      },
       trivia: { question: 'What was Michelangelo doing six days before his death?', options: ['Painting the Sistine Chapel', 'Sculpting the Rondanini Pietà', 'Designing St. Peter\'s dome', 'Writing his autobiography'], correctIndex: 1, explain: 'He was carving the Rondanini Pietà — a marble he kept reworking for the last decade of his life. The chisel marks visible today are his last.' },
       i18n: {
         it: { theme: 'La fortezza degli Sforza', riddle: "Dieci minuti a nord-ovest, trova la fortezza medievale in mattoni che fu sede dei duchi Sforza. All'interno, Leonardo affrescò un soffitto a forma di foresta. Qui c'è anche l'ultima scultura di Michelangelo.", locationName: 'Castello Sforzesco', funFact: 'Costruito nel 1370 come castello dei Visconti, trasformato nel \'400 nella corte rinascimentale degli Sforza. Leonardo affrescò la Sala delle Asse con una volta di alberi intrecciati nel 1498 — frammenti sopravvivono. La Pietà Rondanini di Michelangelo — la scultura non finita a cui lavorava sei giorni prima di morire nel 1564 — si trova in una stanza tranquilla al piano terra. Cortili aperti gratis.' },
@@ -2793,6 +3017,13 @@ const milanClassic = {
       hint2: 'Via Brera 28. The entrance is through an arched courtyard with a bronze statue of Napoleon — naked, in the style of a Roman emperor.',
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Pinacoteca was founded by Napoleon in 1809 as a public gallery — the seized art of conquered Italian states, redistributed for "civic education." Today it holds 400 paintings including Caravaggio\'s "Supper at Emmaus," Raphael\'s "Sposalizio della Vergine," and Mantegna\'s shockingly foreshortened "Dead Christ." The streets around (Via Fiori Chiari, Via Madonnina) are Milan\'s closest equivalent to Paris\'s Marais.',
+      puzzle: {
+        type: 'wordplay',
+        prompt: "Italian word for a 'painting gallery' (think 'pinacoteca'), followed by 'di' and the bohemian Milan district named for a 14th-century convent. Napoleon stole the paintings to fill it.",
+        answer: 'PINACOTECA DI BRERA|PINACOTECA BRERA|BRERA',
+        hint: "Pinacoteca + di + Brera. Three words.",
+        explain: "PINACOTECA DI BRERA — founded by Napoleon in 1809 with art looted from churches across northern Italy. Caravaggio, Raphael, Mantegna's vertigo-inducing Dead Christ — all under one Baroque roof.",
+      },
       trivia: { question: 'Who founded the Pinacoteca di Brera as a public gallery?', options: ['The Sforza dukes', 'The House of Savoy', 'Napoleon Bonaparte', 'Mussolini'], correctIndex: 2, explain: 'Napoleon, in 1809. He seized art from churches and noble houses across northern Italy and made it publicly viewable — propaganda by way of access to Caravaggios.' },
       i18n: {
         it: { theme: 'La Brera bohémien', riddle: "Tagli a est verso il quartiere bohémien di Milano. Strade acciottolate, gallerie d'arte e la principale pinacoteca della città — con l'unica pala d'altare di Caravaggio a Milano e lo Sposalizio della Vergine di Raffaello.", locationName: 'Pinacoteca di Brera', funFact: 'Fondata da Napoleone nel 1809 come galleria pubblica — l\'arte sequestrata agli stati italiani conquistati, ridistribuita per "educazione civica." Oggi ospita 400 dipinti tra cui la "Cena di Emmaus" di Caravaggio, lo "Sposalizio della Vergine" di Raffaello e il "Cristo morto" di Mantegna, di un audace scorcio prospettico. Le strade intorno (Via Fiori Chiari, Via Madonnina) sono il Marais milanese.' },
@@ -2806,6 +3037,13 @@ const milanClassic = {
       hint2: 'Corso di Porta Ticinese, near the Basilica di San Lorenzo Maggiore. About 15 minutes\' walk south from Piazza del Duomo.',
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The 16 Corinthian columns date to the 2nd century AD — probably from a Roman temple or bath complex. Early Christians moved them here in the 4th century to grace the new Basilica di San Lorenzo, one of the oldest churches in the western Roman empire. The square in front fills with Milanese students every evening for an unofficial outdoor aperitivo.',
+      puzzle: {
+        type: 'wordplay',
+        prompt: "Italian plural of the tall round pillar that holds up a temple roof, followed by 'di' and the name of a saint who was roasted on a gridiron. Sixteen of them line a basilica square — students drink aperitivos beneath.",
+        answer: 'COLONNE DI SAN LORENZO|COLONNE SAN LORENZO|COLONNE',
+        hint: "'Colonne' (columns) + 'di San Lorenzo' (of Saint Lawrence). Four words.",
+        explain: "COLONNE DI SAN LORENZO — 16 Corinthian columns from a 2nd-century Roman temple, lifted and reused in the 4th century to honour the new basilica. The aperitivo crowd has been drinking under them since the 1980s.",
+      },
       trivia: { question: 'How old are the columns themselves?', options: ['Built specifically for the basilica in the 4th century', 'Reused from a 2nd-century Roman building', 'Built in the Middle Ages', 'Built during the Renaissance to look ancient'], correctIndex: 1, explain: 'The columns are about 200 years OLDER than the basilica behind them — repurposed Roman material that was the cheapest way to build monumental Christian churches in late antiquity.' },
       i18n: {
         it: { theme: 'Milano romana', riddle: "Chiudi l'anello a sud del centro. Sedici antiche colonne romane in fila davanti a una basilica del IV secolo — ciò che resta di un tempio dedicato a chissà quale dio, riutilizzato dai primi cristiani.", locationName: 'Colonne di San Lorenzo', funFact: 'Le 16 colonne corinzie risalgono al II secolo d.C. — probabilmente da un tempio o complesso termale romano. I primi cristiani le spostarono qui nel IV secolo per ornare la nuova Basilica di San Lorenzo, una delle più antiche chiese dell\'impero romano d\'occidente. Il sagrato si riempie ogni sera di studenti milanesi per un aperitivo all\'aperto non ufficiale.' },
@@ -2867,6 +3105,13 @@ const romeClassic = {
       hint2: 'Largo della Salara Vecchia 5/6 — the main entrance. About 5 minutes\' walk from the Colosseum, sharing the same ticket.',
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Forum was Rome\'s political, commercial, and religious center for 1,200 years. Julius Caesar\'s body was cremated on the spot now marked by the Temple of Caesar — fresh flowers still appear daily. The Curia (Senate house) you can enter is the third on the spot, rebuilt by Diocletian in 305 AD; it survived because it was converted into a church. The Via Sacra paving stones are the same ones triumphal generals walked on.',
+      puzzle: {
+        type: 'wordplay',
+        prompt: "Italian word for an open public marketplace where Romans argued politics, joined to the adjective form of the empire's name. Caesar's pyre was here; senators argued here for 1,200 years.",
+        answer: 'FORO ROMANO|ROMAN FORUM',
+        hint: "'Foro' (forum) + 'Romano' (Roman). Two words.",
+        explain: "FORO ROMANO — the central plaza of the Roman Republic and Empire for 1,200 years. The cobblestones of the Via Sacra are the same ones Caesar walked.",
+      },
       trivia: { question: 'Where was Julius Caesar\'s body cremated in the Forum?', options: ['On the steps of the Senate (where he was killed)', 'At the Temple of Vesta', 'On the spot now marked by the Temple of Caesar', 'On the Capitoline Hill'], correctIndex: 2, explain: 'Mark Antony cremated him in the Forum, on the spot the Temple of the Divine Caesar was later built. Locals still leave flowers there every day.' },
       i18n: {
         it: { theme: 'Il Foro Romano', riddle: "Cammina a ovest, in una lunga valle di frammenti di marmo. I senatori discutevano qui, Cesare fu cremato qui, e la strada che partiva da qui finiva in ogni altra città romana. \"Tutte le strade portano a qui,\" davvero.", locationName: 'Foro Romano', funFact: 'Per 1.200 anni il Foro fu il centro politico, commerciale e religioso di Roma. Cesare fu cremato dove oggi sorge il Tempio del Divo Giulio — fiori freschi appaiono ogni giorno. La Curia visitabile è la terza nel sito, ricostruita da Diocleziano nel 305 d.C. e sopravvissuta perché trasformata in chiesa. Le pietre della Via Sacra sono le stesse che calpestavano i generali nei trionfi.' },
@@ -2900,6 +3145,13 @@ const romeClassic = {
       hint2: 'About 3 minutes\' walk west of the Pantheon. The piazza is unmistakable — long, oval, ringed with cafés and street artists.',
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The piazza\'s shape preserves the foot-print of the Stadium of Domitian (86 AD) — a 30,000-seat venue for athletic contests. Bernini\'s Fountain of the Four Rivers (1651) personifies the Nile, Ganges, Danube, and Río de la Plata. Rumor says one figure shields his eyes against the church Borromini designed across the piazza — Bernini\'s rival — but the church wasn\'t finished when Bernini sculpted the figure.',
+      puzzle: {
+        type: 'wordplay',
+        prompt: "Italian word for a 'square' or 'plaza', joined to a Greek-rooted name meaning 'athletic contest' (the Stadium of Domitian once filled it). Bernini sculpted four rivers here.",
+        answer: 'PIAZZA NAVONA',
+        hint: "Piazza + Navona (from Greek 'agones', contests). Two words.",
+        explain: "PIAZZA NAVONA — the shape is the footprint of Domitian's Stadium (86 AD). 'Navona' comes from 'agones' (Greek for athletic games) which became 'in agone' in Latin, then slurred into 'navona' over centuries.",
+      },
       trivia: { question: 'Why is Piazza Navona shaped like a long oval?', options: ['Built around a Renaissance horse-racing track', 'Preserves the footprint of an ancient Roman stadium', 'Designed that way by Bernini for visual effect', 'Originally a medieval marketplace'], correctIndex: 1, explain: 'The Stadium of Domitian — built 86 AD for athletic contests, including running races and chariot events. Excavations are open to visitors below the piazza.' },
       i18n: {
         it: { theme: 'I fiumi di Bernini', riddle: "Tre minuti a piedi a ovest, trova una lunga piazza ovale costruita sulle rovine di uno stadio dove i romani correvano coi carri. Al centro, una fontana con quattro figure — quattro fiumi — il dispetto di Bernini contro un architetto che disprezzava.", locationName: 'Piazza Navona', funFact: 'La forma della piazza conserva l\'impianto dello Stadio di Domiziano (86 d.C.) — un anfiteatro da 30.000 posti per competizioni atletiche. La Fontana dei Quattro Fiumi di Bernini (1651) personifica Nilo, Gange, Danubio e Río de la Plata. Si dice che una figura si protegga dalla chiesa progettata da Borromini — rivale di Bernini — ma in realtà la chiesa non era ancora finita quando Bernini scolpì la statua.' },
@@ -2933,6 +3185,13 @@ const romeClassic = {
       hint2: 'Piazza di Spagna. About 5 minutes\' walk north of Trevi. The Barcaccia (boat-shaped) fountain at the bottom was sculpted by Bernini\'s father.',
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: '135 steps, completed in 1725 to connect the Spanish embassy at the bottom with the French church Trinità dei Monti at the top. The pink house immediately to the right of the steps is the Keats-Shelley House — John Keats died there of tuberculosis aged 25 in February 1821. His narrow bedroom and a lock of his hair are preserved. Sitting on the steps was banned in 2019 by Roman law — €400 fine if caught.',
+      puzzle: {
+        type: 'wordplay',
+        prompt: "Italian word for 'plaza', 'di' (of), and the Italian name of the Iberian country whose embassy sits at the base. 135 marble steps lead up to a French church.",
+        answer: 'PIAZZA DI SPAGNA|PIAZZA SPAGNA|SPANISH STEPS',
+        hint: "Piazza + di + Spagna (Italian for Spain). Three words.",
+        explain: "PIAZZA DI SPAGNA — 'square of Spain'. Named for the Spanish embassy at the bottom of the steps. The steps themselves were paid for by the French ambassador, leading up to a French church. The 135 marble stairs were finished in 1725.",
+      },
       trivia: { question: 'Which Romantic poet died in the pink house at the foot of the Spanish Steps?', options: ['Lord Byron', 'Percy Bysshe Shelley', 'John Keats', 'William Wordsworth'], correctIndex: 2, explain: 'John Keats, in February 1821, aged 25, of tuberculosis. He came to Rome hoping the climate would heal him; it didn\'t. The house is now the Keats-Shelley Memorial Museum.' },
       i18n: {
         it: { theme: 'La scalinata di Trinità dei Monti', riddle: "Finisci la giornata su 135 scalini di marmo che collegano una chiesa francese a un'ambasciata spagnola. John Keats morì nella casetta rosa in fondo nel 1821 — la sua camera è oggi un museo a lui dedicato.", locationName: 'Piazza di Spagna', funFact: '135 gradini, completati nel 1725 per collegare l\'ambasciata spagnola in basso alla chiesa francese di Trinità dei Monti in alto. La casetta rosa subito a destra della scalinata è la Keats-Shelley House — Keats vi morì di tubercolosi a 25 anni nel febbraio 1821. La sua piccola camera e una ciocca dei suoi capelli sono conservate. Sedersi sui gradini è vietato dal 2019 — multa di 400 euro.' },

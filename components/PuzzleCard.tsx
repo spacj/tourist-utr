@@ -21,7 +21,6 @@ const TYPE_META: Record<Puzzle['type'], { icon: string; label: string; color: st
   logic:    { icon: '🧠', label: 'Logic',      color: '#0891b2' },
   sequence: { icon: '🔢', label: 'Sequence',   color: '#16a34a' },
   wordplay: { icon: '✍️', label: 'Wordplay',   color: '#db2777' },
-  map:      { icon: '🗺️', label: 'Map',        color: '#ea580c' },
   reverse:  { icon: '🔁', label: 'Reverse',    color: '#7c3aed' },
 }
 
@@ -50,9 +49,6 @@ function PromptDisplay({ puzzle }: { puzzle: Puzzle }) {
         </div>
       )
     }
-
-    case 'map':
-      return <div className="puzzle-display puzzle-display-map">{text}</div>
 
     case 'sequence':
       return <div className="puzzle-display puzzle-display-sequence">{text}</div>
