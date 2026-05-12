@@ -1,4 +1,9 @@
-export type HintTier = 1 | 2 | 3
+/**
+ * Hint tiers:
+ *   1, 2, 3 — progressive GPS-direction hints (free / cheap / expensive)
+ *   'puzzle' — reveals the per-puzzle author hint (decoding instructions, etc.)
+ */
+export type HintTier = 1 | 2 | 3 | 'puzzle'
 export type Difficulty = 'easy' | 'medium' | 'hard'
 
 export const CITY_UNLOCK_PRICE_EUROS = 5
@@ -269,8 +274,9 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
   { id: 'large',  credits: 40, priceCents: 499, label: '40 extra hints', badge: 'Best value' },
 ]
 
-// Rebalanced: tier 1 is free (generous first hint), tier 2 & 3 cost more
-export const HINT_COSTS: Record<HintTier, number> = { 1: 0, 2: 2, 3: 4 }
+// Rebalanced: tier 1 is free (generous first hint), tier 2 & 3 cost more.
+// 'puzzle' unlocks the author's instructions for a clue's puzzle.
+export const HINT_COSTS: Record<HintTier, number> = { 1: 0, 2: 2, 3: 4, puzzle: 3 }
 
 export const SCORE = {
   base: 100,
@@ -375,6 +381,10 @@ export const T: Dict = {
   puzzleShowHint:    { en: 'Show hint', nl: 'Toon hint', de: 'Hinweis zeigen', fr: 'Voir l\'indice', it: 'Mostra suggerimento', es: 'Ver pista' },
   puzzleCorrect:     { en: 'Solved! +30 points', nl: 'Opgelost! +30 punten', de: 'Gelöst! +30 Punkte', fr: 'Résolu ! +30 points', it: 'Risolto! +30 punti', es: '¡Resuelto! +30 puntos' },
   puzzleTryAgain:    { en: 'Not quite — try again', nl: 'Niet helemaal — probeer opnieuw', de: 'Nicht ganz — versuch\'s nochmal', fr: 'Presque — réessayez', it: 'Quasi — riprova', es: 'Casi — inténtalo de nuevo' },
+  historyTitle:      { en: 'Past stops', nl: 'Vorige stops', de: 'Frühere Stationen', fr: 'Étapes passées', it: 'Tappe precedenti', es: 'Paradas anteriores' },
+  historySub:        { en: 'Re-read the stories and facts you\'ve unlocked.', nl: 'Lees de verhalen en feiten die je hebt vrijgespeeld terug.', de: 'Lies die Geschichten und Fakten, die du freigeschaltet hast, erneut.', fr: 'Relisez les histoires et anecdotes que vous avez débloquées.', it: 'Rileggi le storie e i fatti che hai sbloccato.', es: 'Vuelve a leer las historias y datos que has desbloqueado.' },
+  historyEmpty:      { en: 'No past stops yet — solve your first clue to start your trail.', nl: 'Nog geen vorige stops — los je eerste raadsel op om je spoor te starten.', de: 'Noch keine früheren Stationen — löse deine erste Aufgabe, um deinen Pfad zu beginnen.', fr: 'Aucune étape pour l\'instant — résolvez votre première énigme pour commencer le parcours.', it: 'Nessuna tappa precedente — risolvi il primo enigma per iniziare il percorso.', es: 'Aún no hay paradas — resuelve tu primera pista para empezar tu ruta.' },
+  history:           { en: 'History', nl: 'Geschiedenis', de: 'Verlauf', fr: 'Historique', it: 'Cronologia', es: 'Historial' },
   notQuite:          { en: 'Not quite', nl: 'Niet helemaal', de: 'Nicht ganz', fr: 'Presque', it: 'Quasi', es: 'Casi' },
   continue:          { en: 'Continue', nl: 'Doorgaan', de: 'Weiter', fr: 'Continuer', it: 'Continua', es: 'Continuar' },
   nextClue:          { en: 'Next clue →', nl: 'Volgend raadsel →', de: 'Nächstes Rätsel →', fr: 'Prochaine énigme →', it: 'Prossimo indizio →', es: 'Siguiente pista →' },

@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useI18n } from '@/hooks/useI18n'
-import { Puzzle } from '@/types'
+import { Puzzle, HINT_COSTS } from '@/types'
 
 interface Props {
   puzzle: Puzzle
@@ -13,6 +13,12 @@ interface Props {
   theme?: string
   /** Called once the player solves the puzzle. */
   onSolved?: (bonus: number) => void
+  /** Live credit balance, for showing the hint price and gating affordability. */
+  credits: number
+  /** Spends credits and unlocks the puzzle hint; resolves true if unlocked. */
+  onUnlockHint: () => Promise<boolean>
+  /** Opens the credit shop when the player can't afford the hint. */
+  onOpenShop: () => void
 }
 
 const TYPE_META: Record<Puzzle['type'], { icon: string; label: string; color: string }> = {
@@ -60,7 +66,7 @@ function PromptDisplay({ puzzle }: { puzzle: Puzzle }) {
   }
 }
 
-export function PuzzleCard({ puzzle, sessionId, clueId, storyOnSolve, theme, onSolved }: Props) {
+export function PuzzleCard({ puzzle, sessionId, clueId, storyOnSolve, theme, onSolved, credits, onUnlockHint, onOpenShop }: Props) {
   const { t } = useI18n()
   const [answer, setAnswer] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -68,9 +74,21 @@ export function PuzzleCard({ puzzle, sessionId, clueId, storyOnSolve, theme, onS
   const [solvedAnswer, setSolvedAnswer] = useState<string | null>(null)
   const [wrongTryAt, setWrongTryAt] = useState<number | null>(null)
   const [hintShown, setHintShown] = useState(false)
+  const [unlockingHint, setUnlockingHint] = useState(false)
   const [bonus, setBonus] = useState(0)
 
   const meta = TYPE_META[puzzle.type]
+  const hintCost = HINT_COSTS.puzzle
+  const canAffordHint = credits >= hintCost
+
+  const requestHint = async () => {
+    if (hintShown || unlockingHint) return
+    if (!canAffordHint) { onOpenShop(); return }
+    setUnlockingHint(true)
+    const ok = await onUnlockHint()
+    setUnlockingHint(false)
+    if (ok) setHintShown(true)
+  }
 
   const submit = async () => {
     if (submitting || solved || !answer.trim()) return
@@ -176,10 +194,11 @@ export function PuzzleCard({ puzzle, sessionId, clueId, storyOnSolve, theme, onS
         <button
           type="button"
           className="puzzle-hint-toggle"
-          onClick={() => setHintShown(true)}
+          onClick={requestHint}
+          disabled={unlockingHint}
           style={{ borderColor: `${meta.color}66`, color: meta.color }}
         >
-          💡 {t('puzzleShowHint')}
+          💡 {unlockingHint ? '…' : `${t('puzzleShowHint')} · 💎 ${hintCost}`}
         </button>
       )}
       {puzzle.hint && hintShown && (

@@ -7,11 +7,13 @@ import { useDeviceOrientation } from '@/hooks/useDeviceOrientation'
 import { haversineM, bearingDeg } from '@/lib/geo'
 import { useCredits } from '@/hooks/useCredits'
 import { useI18n } from '@/hooks/useI18n'
+import { useIsAdmin } from '@/hooks/useIsAdmin'
 import { MapView } from './MapView'
 import { ProximityRing } from './ProximityRing'
 import { ArrivalBanner } from './ArrivalBanner'
 import { CreditShop } from './CreditShop'
 import { PuzzleCard } from './PuzzleCard'
+import { ClueHistory } from './ClueHistory'
 import { HINT_COSTS } from '@/types'
 
 interface Props {
@@ -24,9 +26,11 @@ interface Props {
   // Full clue list for the hunt — passed in so we can compute the next clue
   // client-side when an arrival happens while offline.
   allClues?: Clue[]
+  /** Clues the player has already finished — viewable from the History sheet. */
+  completedClues?: Clue[]
 }
 
-export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits, totalScore, onComplete, allClues }: Props) {
+export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits, totalScore, onComplete, allClues, completedClues = [] }: Props) {
   const { t, lang } = useI18n()
   const clue = localizeClue(rawClue, lang)
   const [arrived,       setArrived]       = useState(false)
@@ -35,6 +39,7 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
   const [unlockedTiers, setUnlockedTiers] = useState<Set<number>>(new Set())
   const [openHint,      setOpenHint]      = useState<number | null>(null)
   const [shopOpen,      setShopOpen]      = useState(false)
+  const [historyOpen,   setHistoryOpen]   = useState(false)
   const [showIntro,     setShowIntro]     = useState(true)
   const [reading,       setReading]       = useState(false)
   const [score,         setScore]         = useState(totalScore)
@@ -66,6 +71,7 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
   }
 
   const { credits, canAfford, unlockHint, startCheckout } = useCredits(initialCredits, sessionId)
+  const isAdmin = useIsAdmin()
 
   // Hide intro after 2.8s auto-dismiss and reset local state per-clue
   useEffect(() => {
@@ -330,7 +336,21 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
         <div className="hud-pill hud-score">
           ⭐ {score}
         </div>
+        {completedClues.length > 0 && (
+          <button
+            onClick={() => setHistoryOpen(true)}
+            className="hud-pill hud-history"
+            aria-label={t('history')}
+            title={t('history')}
+          >
+            📜 {completedClues.length}
+          </button>
+        )}
       </div>
+
+      {historyOpen && (
+        <ClueHistory completedClues={completedClues} onClose={() => setHistoryOpen(false)} />
+      )}
 
       {/* Map */}
       <div className="game-map">
@@ -396,8 +416,8 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
           <span className="dot-trail-label">{clue.order - 1}/{clue.totalClues}</span>
         </div>
 
-        {/* Debug: skip to location */}
-        {!arrived && (
+        {/* Admin-only: skip to location (dev/test affordance — hidden from normal users) */}
+        {!arrived && isAdmin && (
           <button onClick={fakeArrive} className="btn-ghost" style={{ justifyContent: 'center' }}>
             ⚡ {t('skipTest')}
           </button>
@@ -422,6 +442,9 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
               setPuzzleBonus(bonus)
               setScore(s => s + bonus)
             }}
+            credits={credits}
+            onUnlockHint={() => unlockHint(clue.id, 'puzzle')}
+            onOpenShop={() => setShopOpen(true)}
           />
         ) : (
           <div className="clue-card">

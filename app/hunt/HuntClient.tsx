@@ -62,6 +62,10 @@ export function HuntClient({ initialClue, huntCity, sessionId, roomId, huntId, i
     }, 600)
   }
 
+  // Clues with order < current are already completed — derived from allClues
+  // so the history viewer survives page reloads without needing a server round-trip.
+  const completedClues = (allClues as unknown as Clue[]).filter((c) => c.order < clue.order)
+
   return (
     <>
       <div className={`game-transition ${transitioning ? 'fade-out' : 'fade-in'}`}>
@@ -73,6 +77,7 @@ export function HuntClient({ initialClue, huntCity, sessionId, roomId, huntId, i
           totalScore={score}
           onComplete={handleComplete}
           allClues={allClues as unknown as Clue[]}
+          completedClues={completedClues}
         />
       </div>
       {roomId && huntId && <RoomScoreboard roomId={roomId} totalClues={clue.totalClues} huntId={huntId} />}

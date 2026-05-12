@@ -909,6 +909,154 @@ a { color: inherit; }
   color: var(--orange);
   border-color: rgba(245,165,74,.3);
 }
+.hud-history {
+  background: rgba(34, 201, 122, 0.14);
+  color: #16a34a;
+  border-color: rgba(34, 201, 122, 0.32);
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+.hud-history:hover { background: rgba(34, 201, 122, 0.26); }
+.hud-history:active { transform: scale(0.94); }
+
+/* ═══ Past stops / history sheet ═══ */
+.history-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 20, 30, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: fadeIn 0.18s ease-out;
+}
+.history-sheet {
+  width: 100%;
+  max-width: 560px;
+  max-height: 88dvh;
+  background: var(--surface);
+  border-radius: 22px 22px 0 0;
+  padding: 18px 20px max(28px, calc(20px + env(safe-area-inset-bottom, 0px)));
+  overflow-y: auto;
+  box-shadow: 0 -16px 40px rgba(20, 20, 30, 0.25);
+  animation: slideUp 0.22s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+@keyframes slideUp { from { transform: translateY(20%); opacity: 0.85; } to { transform: translateY(0); opacity: 1; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.history-title {
+  font-size: 19px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text);
+}
+.history-close {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface-2, rgba(0, 0, 0, 0.03));
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+.history-close:hover { background: rgba(255, 106, 19, 0.12); color: var(--gold); }
+.history-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0 0 14px 0;
+}
+.history-empty {
+  font-size: 14px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 32px 12px;
+}
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.history-item {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-2, rgba(255, 255, 255, 0.55));
+  overflow: hidden;
+}
+.history-item.is-open { border-color: rgba(255, 106, 19, 0.45); }
+.history-item-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--text);
+  text-align: left;
+  font-family: inherit;
+}
+.history-stop {
+  flex: none;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: rgba(255, 106, 19, 0.16);
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.history-icon { font-size: 18px; }
+.history-name { flex: 1; font-weight: 600; font-size: 15px; }
+.history-chevron { color: var(--text-muted); font-size: 12px; }
+.history-item-body {
+  padding: 0 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.history-theme {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+.history-riddle {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  font-style: italic;
+  margin: 0;
+}
+.history-fact, .history-trivia {
+  background: rgba(245, 165, 74, 0.10);
+  border-left: 3px solid var(--orange);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.history-trivia { background: rgba(108, 99, 245, 0.10); border-left-color: var(--primary-2); }
+.history-fact p, .history-trivia p { margin: 4px 0; }
+.history-fact-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.history-trivia-q { font-weight: 600; }
+.history-trivia-a { color: #16a34a; font-weight: 600; }
+.history-trivia-explain { color: var(--text-muted); font-size: 12.5px; }
 
 /* ── Bottom sheet ── */
 .bottom-sheet {
