@@ -5363,3 +5363,164 @@ a { color: inherit; }
   line-height: 1.55;
   color: var(--text-muted);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   PuzzleCard primary-clue redesign — solving the puzzle IS the clue
+   ═══════════════════════════════════════════════════════════════ */
+
+/* When the puzzle is the primary clue display (not the bonus add-on),
+   it gets a bigger, more "puzzle game" feel. */
+.puzzle-card-primary {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(168, 85, 247, 0.02));
+  border-width: 2px;
+  border-radius: 18px;
+  padding: 18px 18px 16px;
+  margin: 0 0 16px;
+}
+.puzzle-card-primary .puzzle-head {
+  margin-bottom: 14px;
+}
+.puzzle-theme {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0.2px;
+  margin-left: 4px;
+}
+
+/* ─── Display variants per puzzle type ─── */
+.puzzle-display {
+  margin: 4px 0 18px;
+  padding: 22px 16px;
+  border-radius: 14px;
+  text-align: center;
+  background: rgba(20, 20, 30, 0.04);
+  border: 1px solid var(--border);
+}
+
+/* CIPHER / REVERSE — encrypted-looking monospace ciphertext */
+.puzzle-display-cipher {
+  font-family: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, monospace;
+  font-size: clamp(22px, 5vw + 6px, 36px);
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  color: #4f46e5;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.10), rgba(168, 85, 247, 0.05));
+  border-color: rgba(99, 102, 241, 0.25);
+  text-transform: uppercase;
+  word-break: break-all;
+}
+
+/* ANAGRAM — scattered letter tiles */
+.puzzle-display-anagram {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  background: rgba(168, 85, 247, 0.06);
+  border-color: rgba(168, 85, 247, 0.20);
+}
+.puzzle-tiles {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+.puzzle-tile {
+  width: clamp(28px, 6vw, 38px);
+  height: clamp(28px, 6vw, 38px);
+  display: grid;
+  place-items: center;
+  background: #fff;
+  border: 1.5px solid rgba(168, 85, 247, 0.40);
+  border-radius: 8px;
+  font-family: ui-monospace, Menlo, monospace;
+  font-weight: 800;
+  font-size: clamp(15px, 2.2vw + 8px, 19px);
+  color: #7c3aed;
+  text-transform: uppercase;
+  box-shadow: 0 2px 6px rgba(168, 85, 247, 0.12);
+  transition: transform 0.18s ease;
+}
+.puzzle-tile:hover {
+  transform: translateY(-2px);
+}
+
+/* MAP — coordinate display */
+.puzzle-display-map {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: clamp(18px, 3.5vw + 6px, 26px);
+  font-weight: 700;
+  color: #c2410c;
+  background: linear-gradient(135deg, rgba(234, 88, 12, 0.08), rgba(245, 158, 11, 0.04));
+  border-color: rgba(234, 88, 12, 0.25);
+  white-space: pre-line;
+  line-height: 1.6;
+  letter-spacing: 0.04em;
+}
+
+/* SEQUENCE — math/numbers */
+.puzzle-display-sequence {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: clamp(22px, 5vw + 6px, 32px);
+  font-weight: 700;
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.06);
+  border-color: rgba(22, 163, 74, 0.20);
+  letter-spacing: 0.15em;
+}
+
+/* LOGIC / WORDPLAY — prose */
+.puzzle-display-prose {
+  font-family: var(--font-serif, Georgia), serif;
+  font-size: clamp(15px, 1vw + 12px, 18px);
+  line-height: 1.55;
+  color: var(--text);
+  text-align: left;
+  background: var(--surface);
+}
+
+/* ─── Solved state: reveal the answer + the original prose riddle as flavor ─── */
+.puzzle-card.is-solved.puzzle-card-primary {
+  background: linear-gradient(135deg, rgba(34, 201, 122, 0.10), rgba(34, 201, 122, 0.03));
+}
+.puzzle-reveal {
+  margin: 10px 0 14px;
+  padding: 18px 16px;
+  background: rgba(34, 201, 122, 0.10);
+  border: 1.5px solid rgba(34, 201, 122, 0.35);
+  border-radius: 14px;
+  text-align: center;
+}
+.puzzle-reveal-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 6px;
+}
+.puzzle-reveal-answer {
+  font-family: var(--font-serif, Georgia), serif;
+  font-size: clamp(22px, 4vw + 8px, 32px);
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--text);
+  line-height: 1.15;
+}
+.puzzle-story {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  margin: 0 0 10px;
+  font-style: italic;
+  border-left: 3px solid rgba(34, 201, 122, 0.4);
+  padding-left: 12px;
+}
+
+/* Mobile tightening */
+@media (max-width: 540px) {
+  .puzzle-card-primary { padding: 14px 14px 12px; margin-bottom: 12px; }
+  .puzzle-display { padding: 18px 12px; }
+}

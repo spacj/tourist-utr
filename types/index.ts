@@ -121,7 +121,7 @@ export interface Trivia {
  * Multiple accepted answers can be supplied with `|` separators:
  *   answer: 'TWENTY|20|twenty'
  */
-export type PuzzleType = 'cipher' | 'anagram' | 'logic' | 'sequence' | 'wordplay'
+export type PuzzleType = 'cipher' | 'anagram' | 'logic' | 'sequence' | 'wordplay' | 'map' | 'reverse'
 
 export interface PuzzleI18n {
   prompt?: string

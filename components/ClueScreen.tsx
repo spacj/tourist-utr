@@ -407,42 +407,44 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
           {gpsError && <p style={{ fontSize: 12, color: 'var(--red)', textAlign: 'center' }}>{gpsError}</p>}
         </div>
 
-        {/* Clue card */}
-        <div className="clue-card">
-          <div className="clue-card-header">
-            <div className="clue-icon">{clue.icon ?? '📍'}</div>
-            <div style={{ textAlign: 'right' }}>
-              <div className="clue-label">{t('yourClue')}</div>
-              {clue.theme && <div className="clue-theme">{clue.theme}</div>}
-            </div>
-          </div>
-          <p className="clue-text">{clue.riddle}</p>
-          <div className="clue-actions">
-            <button
-              className={`btn-ghost ${reading ? 'active' : ''}`}
-              onClick={toggleReadAloud}
-              aria-label={t('readAloud')}
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                {reading ? <path d="M15.5 8.5a5 5 0 0 1 0 7" /> : <><path d="M15.5 8.5a5 5 0 0 1 0 7" /><path d="M19 5a9 9 0 0 1 0 14" /></>}
-              </svg>
-              {reading ? '…' : t('readAloud')}
-            </button>
-          </div>
-        </div>
-
-        {/* Puzzle (cipher / anagram / logic) — solved during the clue phase, before arrival */}
-        {clue.puzzle && !arrived && (
+        {/* Clue card: if the clue has a puzzle, the puzzle IS the clue.
+            The prose riddle becomes flavor text revealed once solved. */}
+        {clue.puzzle && !arrived ? (
           <PuzzleCard
             puzzle={clue.puzzle}
             sessionId={sessionId}
             clueId={clue.id}
+            theme={clue.theme}
+            storyOnSolve={clue.riddle}
             onSolved={(bonus) => {
               setPuzzleBonus(bonus)
               setScore(s => s + bonus)
             }}
           />
+        ) : (
+          <div className="clue-card">
+            <div className="clue-card-header">
+              <div className="clue-icon">{clue.icon ?? '📍'}</div>
+              <div style={{ textAlign: 'right' }}>
+                <div className="clue-label">{t('yourClue')}</div>
+                {clue.theme && <div className="clue-theme">{clue.theme}</div>}
+              </div>
+            </div>
+            <p className="clue-text">{clue.riddle}</p>
+            <div className="clue-actions">
+              <button
+                className={`btn-ghost ${reading ? 'active' : ''}`}
+                onClick={toggleReadAloud}
+                aria-label={t('readAloud')}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  {reading ? <path d="M15.5 8.5a5 5 0 0 1 0 7" /> : <><path d="M15.5 8.5a5 5 0 0 1 0 7" /><path d="M19 5a9 9 0 0 1 0 14" /></>}
+                </svg>
+                {reading ? '…' : t('readAloud')}
+              </button>
+            </div>
+          </div>
         )}
 
         {/* Hints */}
