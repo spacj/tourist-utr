@@ -550,6 +550,13 @@ const utrechtClassic = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Rietveld Schröder House (1924) is the only building ever built fully according to the De Stijl movement — the same art school as Piet Mondrian. UNESCO World Heritage since 2000.',
       trivia: { question: 'The Rietveld Schröder House is built fully according to which art movement?', options: ['Bauhaus', 'Art Deco', 'De Stijl', 'Brutalism'], correctIndex: 2, explain: 'De Stijl — the same movement as painter Piet Mondrian\'s primary-colour grids.' },
+      puzzle: {
+        type: 'anagram',
+        prompt: 'D V E R T I L E',
+        answer: 'RIETVELD|RIETVELD SCHRODER HOUSE|RIETVELD SCHRÖDER HOUSE',
+        hint: "8 letters. The Dutch architect — also a furniture designer (the famous red-blue chair was his).",
+        explain: "RIETVELD — Gerrit Rietveld, member of De Stijl. His 1924 house turned Piet Mondrian's grids into 3D for one client: Truus Schröder-Schräder.",
+      },
       i18n: {
         nl: {
           theme: 'Modernistisch meesterwerk',
@@ -640,6 +647,13 @@ const hiddenUtrecht = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Flora\'s Hof sits on the footprint of the medieval bishop\'s palace — gone for 300 years. The statue at its centre honours Saint Willibrord, the English monk who founded Utrecht\'s bishopric in 695 AD. Locals use it as a lunch spot that tourists never find.',
       trivia: { question: 'Who is honoured by the statue in Flora\'s Hof?', options: ['Willem of Orange', 'Saint Willibrord', 'Rembrandt', 'Charlemagne'], correctIndex: 1, explain: 'Willibrord — the English missionary who founded the Utrecht diocese in 695 AD.' },
+      puzzle: {
+        type: 'wordplay',
+        prompt: "I share my name with the Roman goddess of blossoms. Add the Dutch word for 'court' and you have a tiny hidden garden behind the Dom.",
+        answer: 'FLORAS HOF|FLORA\'S HOF',
+        hint: "Roman flower goddess + Dutch 'hof' (court/courtyard).",
+        explain: "Flora was the Roman goddess of flowers and spring; 'hof' is Dutch for an enclosed courtyard. Put together: Utrecht\'s smallest secret garden.",
+      },
       i18n: {
         nl: {
           theme: 'Tuin van vergeten rozen',
@@ -724,6 +738,13 @@ const hiddenUtrecht = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'De Zeven Steegjes ("the seven little alleys") were built in 1830–1850 by a Catholic charity to house the city\'s poorest workers. The houses are only 4 metres wide and 50 m² inside. Despite being right next to the city centre, the streets still feel like a 19th-century village — named mostly after birds.',
       trivia: { question: 'Why were the Zeven Steegjes built in the 1830s?', options: ['As student housing', 'Workers\' cottages by a Catholic charity', 'Stable blocks', 'Quarantine housing'], correctIndex: 1, explain: 'Built by a Catholic charity to shelter the city\'s poorest working families.' },
+      puzzle: {
+        type: 'wordplay',
+        prompt: "Take the Dutch word for the number after six. Follow it with the diminutive plural of 'steeg' (narrow lane). You'll be standing where you need to stand.",
+        answer: 'ZEVEN STEEGJES|DE ZEVEN STEEGJES|SEVEN ALLEYS',
+        hint: "Dutch 'seven' + 'little alleys'. Two words.",
+        explain: "ZEVEN = 7 in Dutch; STEEGJES is the diminutive plural of 'steeg' (alley). A 19th-century pocket of workers' cottages — seven narrow streets that still feel like 1850.",
+      },
       i18n: {
         nl: {
           theme: 'Zeven smalle steegjes',
@@ -808,6 +829,13 @@ const hiddenUtrecht = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Winkel van Sinkel opened in 1839 and invented the modern department store in the Netherlands — goods sold at fixed prices, no haggling. The four gigantic female statues flanking the entrance were shipped from England; they were so heavy the crane broke while unloading them. That incident created the Dutch saying "daar helpt geen lieve moederen aan" — "even a loving mother can\'t help now."',
       trivia: { question: 'What broke while the famous statues were being unloaded?', options: ['The wharf', 'The crane', 'A barge', 'The front door'], correctIndex: 1, explain: 'The crane snapped — the statues were so heavy it gave birth to a Dutch proverb.' },
+      puzzle: {
+        type: 'cipher',
+        prompt: 'XJOLFM WBO TJOLFM',
+        answer: 'WINKEL VAN SINKEL',
+        hint: "Caesar shift back by 1. X→W, J→I, O→N, L→K…",
+        explain: "A shift-by-1 cipher (Caesar shift -1). Fittingly, the Winkel van Sinkel was itself a shift in shopping — fixed prices, no haggling.",
+      },
       i18n: {
         nl: {
           theme: 'Eerste warenhuis',
@@ -982,6 +1010,13 @@ const canalsCafes = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The old main post office on Neude (1917) was reopened in 2020 as Utrecht\'s Central Library. Inside, you can look up into an Art Deco parabolic ceiling covered in gold leaf. The square has been a marketplace since the 14th century.',
       trivia: { question: 'What is the Neude post-office building now used for?', options: ['A cinema', 'Utrecht\'s Central Library', 'A hotel', 'A parking garage'], correctIndex: 1, explain: 'It became the Central Library in 2020 — free to enter, and the ceiling alone is worth the visit.' },
+      puzzle: {
+        type: 'anagram',
+        prompt: 'D U N E E',
+        answer: 'NEUDE',
+        hint: "5 letters — Utrecht's biggest open square, the city's 'living room'.",
+        explain: "NEUDE — possibly from medieval Dutch 'neud' (need/urgency), or from a low-lying corner of the city. Marketplace since the 14th century.",
+      },
       i18n: {
         nl: {
           theme: 'Terrassenplein',
@@ -1066,6 +1101,13 @@ const canalsCafes = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Bakkerbrug literally means "Baker\'s bridge" — there was a medieval bakery at its eastern end, and the bridge\'s stones still bear scorch marks from a fire in 1634. The view from Bakkerbrug toward the Dom Tower is the single most photographed vista in Utrecht.',
       trivia: { question: 'What caused the dark scorch marks still visible on the Bakkerbrug stones?', options: ['A 1634 fire', 'World War II bombing', 'Lightning in 1812', 'A 1999 boat crash'], correctIndex: 0, explain: 'A 1634 fire at the bakery beside the bridge — the scorched stones were re-used when the bridge was repaired.' },
+      puzzle: {
+        type: 'wordplay',
+        prompt: "I cross water. My name is the Dutch trade of someone who works with flour and ovens, plus the Dutch word for a crossing over a canal. Find me.",
+        answer: 'BAKKERBRUG|BAKKER BRUG|BAKERS BRIDGE',
+        hint: "Dutch 'bakker' (baker) + 'brug' (bridge). One word, lowercase or uppercase OK.",
+        explain: "BAKKER (baker) + BRUG (bridge) = Bakkerbrug. A medieval bakery stood at its eastern end — the scorched stones are still visible.",
+      },
       i18n: {
         nl: {
           theme: 'Bakkersbrug',
@@ -1192,6 +1234,13 @@ const canalsCafes = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Ledig Erf ("empty yard") is the traditional finish line of a canal walk. Café Ledig Erf and Kafé België between them serve over 300 different beers. On summer evenings, locals bring their own deck chairs and park them along the canal.',
       trivia: { question: 'Between them, roughly how many beers do Ledig Erf\'s two cafés serve?', options: ['30', '100', '300', '1000'], correctIndex: 2, explain: 'Around 300 — from Belgian Trappist to local Utrecht craft beers.' },
+      puzzle: {
+        type: 'logic',
+        prompt: "Three meet at me, but I am called 'empty'. Three canals here pour into one — my name is the opposite of full + the word for a piece of land. What am I?",
+        answer: 'LEDIG ERF|EMPTY YARD',
+        hint: "Dutch 'ledig' = empty + 'erf' = yard. Two words.",
+        explain: "LEDIG (empty) + ERF (yard) — yet three canals meet here. A linguistic joke that's stuck around for 400 years.",
+      },
       i18n: {
         nl: {
           theme: 'Drie-grachten finale',
@@ -1373,6 +1422,13 @@ const amsterdamClassic = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Anne Frank House was built as a warehouse in 1635. Anne Frank and her family hid in the secret annex from July 1942 until August 1944. The diary was published in 1947 and has been translated into 70+ languages. Today the museum receives over 1.3 million visitors annually.',
       trivia: { question: 'How many visitors does the Anne Frank House receive per year?', options: ['300,000', '800,000', '1.3 million', '3 million'], correctIndex: 2, explain: 'Over 1.3 million — the most visited museum in the Netherlands.' },
+      puzzle: {
+        type: 'reverse',
+        prompt: 'SIUH KNARF ENNA',
+        answer: 'ANNA FRANK HUIS|ANNE FRANK HOUSE|ANNE FRANK HUIS',
+        hint: "Read it the other way around. Then walk to the canal-side warehouse where eight people hid.",
+        explain: "Three words, all reversed. The annex was reached only through a hinged bookcase — a literal reversal of a normal door.",
+      },
       i18n: {
         nl: {
           theme: 'Geheime achterhuis',
@@ -1457,6 +1513,13 @@ const amsterdamClassic = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Herengracht (Gentlemen\'s Canal) is the first of the three main canals. The Golden Bend (Gouden Bocht) section has the widest mansions — some 30 metres deep. Many houses originally had two entrances: one for business (canal side) and one for family (street side).',
       trivia: { question: 'How deep are some of the grandest Herengracht mansions?', options: ['10 metres', '20 metres', '30 metres', '50 metres'], correctIndex: 2, explain: 'Up to 30 metres deep — narrow on the front, deep inside.' },
+      puzzle: {
+        type: 'wordplay',
+        prompt: "The Dutch plural for 'gentleman' + the Dutch word for 'canal'. Two roots, one canal. The grandest of the three rings.",
+        answer: 'HERENGRACHT|GENTLEMENS CANAL',
+        hint: "'Heren' (gentlemen) + 'gracht' (canal) — one word.",
+        explain: "HEREN (gentlemen) + GRACHT (canal). Dug 1612 for the city's wealthiest merchants — they paid a premium to have their gables face this particular ring.",
+      },
       i18n: {
         nl: {
           theme: 'Grote grachtengordel',
@@ -1673,6 +1736,13 @@ const hiddenAmsterdam = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Begijnhof was founded in 1346 as a sanctuary for Beguines — devout women who lived communally without taking monastic vows. The oldest house (het Houten Huys) dates to 1425 and is Amsterdam\'s oldest wooden building. One resident was secretly Catholic — she hid her faith behind a secret church.',
       trivia: { question: 'What were the Beguines?', options: ['Nuns', 'Devout unmarried women', 'Prostitutes', 'Merchants'], correctIndex: 1, explain: 'Devout unmarried women who lived communally without taking formal vows.' },
+      puzzle: {
+        type: 'anagram',
+        prompt: 'F G I N J H E B O',
+        answer: 'BEGIJNHOF',
+        hint: "9 letters. A medieval courtyard, hidden off the Spui — once home to devout women called 'beguines'.",
+        explain: "BEGIJNHOF — 'court of the beguines'. Sanctuary since 1346, still ringed by 17th-century almshouses with the city's oldest wooden building inside.",
+      },
       i18n: {
         nl: {
           theme: 'Begijnhof binnenplaats',
@@ -1757,6 +1827,13 @@ const hiddenAmsterdam = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Waag was built as St. Anthony\'s Gate in 1488, part of the medieval city wall. After the wall was demolished, it became a weighing house (waag). The night watchman locked the gate every evening and opened it at dawn. Today it houses a restaurant and the facade still bears the original gate slots.',
       trivia: { question: 'What was the Waag originally built as?', options: ['A church', 'A city gate', 'A market hall', 'A prison'], correctIndex: 1, explain: 'St. Anthony\'s Gate — a defensive city gate built in 1488.' },
+      puzzle: {
+        type: 'reverse',
+        prompt: 'GAAW',
+        answer: 'WAAG|DE WAAG',
+        hint: "Read it the other way. The Dutch word for a public weighing house.",
+        explain: "WAAG, read backwards — fitting, since the building was first a city gate, then weighed back into use as a market scale.",
+      },
       i18n: {
         nl: {
           theme: 'Middeleeuwse stadspoort',
@@ -1841,6 +1918,13 @@ const hiddenAmsterdam = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Hortus Botanicus Amsterdam (Hortus) is the oldest botanical garden in the Netherlands, founded in 1638 by the Dutch East India Company (VOC) to study exotic plants from the colonies. It houses over 6,000 plant species. The greenhouse contains a 300-year-old cycad — one of the oldest cultivated plants in Europe.',
       trivia: { question: 'How old is the cycad in the Hortus Botanicus greenhouse?', options: ['50 years', '100 years', '300 years', '500 years'], correctIndex: 2, explain: 'Over 300 years old — one of the oldest cultivated plants in Europe.' },
+      puzzle: {
+        type: 'cipher',
+        prompt: 'KRUWXV ERWDQLFXV',
+        answer: 'HORTUS BOTANICUS',
+        hint: "Caesar shift back by 3. K→H, R→O, U→T…",
+        explain: "Caesar -3. Fitting that the garden's name is Latin — the VOC founded it in 1638 to catalogue plants from the colonies, and Latin was the language of botany.",
+      },
       i18n: {
         nl: {
           theme: 'Geheime tuin',
@@ -2331,6 +2415,13 @@ const theHagueRoyal = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'M.C. Escher (1898–1972) drew his impossible architecture from real places he visited in Italy. The chandeliers in the museum are sculptures by Hans van Bentem and change every few years — past versions included a giant skull and a UFO.',
       trivia: { question: 'Which of these is NOT a real M.C. Escher print?', options: ['Drawing Hands', 'Relativity', 'The Persistence of Memory', 'Belvedere'], correctIndex: 2, explain: '"The Persistence of Memory" is by Salvador Dalí — the melting clocks. Escher made the other three.' },
+      puzzle: {
+        type: 'reverse',
+        prompt: 'REHCSE',
+        answer: 'ESCHER|ESCHER IN HET PALEIS|ESCHER IN THE PALACE',
+        hint: "The artist's surname, written backward. A man who built impossible architecture would appreciate a name that reads the same as a mirror.",
+        explain: "ESCHER — and yes, his name happens not to be a palindrome, but his art constantly inverts perspective. A small museum joke.",
+      },
     },
     {
       id: 'clue_4', order: 4, icon: '👑', theme: 'Working royal palace',
@@ -2351,6 +2442,13 @@ const theHagueRoyal = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Peace Palace opened in 1913 and is funded by a $1.5 million donation from Andrew Carnegie. It hosts the International Court of Justice — the highest court of the United Nations. The visitor center next door is free; tours of the palace itself require booking weeks ahead.',
       trivia: { question: 'Which UN body sits inside the Peace Palace?', options: ['UN Security Council', 'International Criminal Court', 'International Court of Justice', 'UNHCR'], correctIndex: 2, explain: 'The International Court of Justice. The ICC (which prosecutes individuals) is also in The Hague but in a different building.' },
+      puzzle: {
+        type: 'cipher',
+        prompt: 'OFBDF QBMBDF',
+        answer: 'PEACE PALACE|VREDESPALEIS',
+        hint: "Caesar shift back by 1. O→N→… wait, try the other direction. O→P, F→E…",
+        explain: "Caesar shift -1 (each letter back one). Built on a Carnegie donation, dedicated 1913 — and a year later, Europe walked into the First World War.",
+      },
     },
     {
       id: 'clue_6', order: 6, icon: '🌊', theme: 'Where the Dutch go to the beach',
@@ -2414,6 +2512,13 @@ const rotterdamModern = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Markthal opened in 2014. The 11,000 m² ceiling mural — fruits, vegetables, and flowers — is by Arno Coenen and Iris Roskam, printed on 4,000 perforated panels. The 228 apartments wrap the arch with windows facing out (and into the market). Best free art in Rotterdam.',
       trivia: { question: 'How many apartments are inside the Markthal\'s arch?', options: ['25', '88', '228', '500'], correctIndex: 2, explain: '228 apartments wrap the arch on the outside curve. The inside curve is the painted ceiling.' },
+      puzzle: {
+        type: 'anagram',
+        prompt: 'A R T L M A K H',
+        answer: 'MARKTHAL|MARKET HALL',
+        hint: "8 letters. Dutch for 'market hall' — and the largest single artwork in the country lives on its ceiling.",
+        explain: "MARKTHAL — Europe's first covered market that's also an apartment block. Open 2014, ceiling painted with 11,000 m² of fruits and flowers.",
+      },
     },
     {
       id: 'clue_3', order: 3, icon: '🏯', theme: 'The white tower that survived',
@@ -2444,6 +2549,13 @@ const rotterdamModern = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Designed by Ben van Berkel, the Erasmusbrug opened in 1996 and immediately became Rotterdam\'s logo. Its 139-metre pylon leans 8 degrees. The southern bascule section opens 1,200 times a year to let ships pass — the timing is published online so locals can plan around it.',
       trivia: { question: 'Why is the Erasmusbrug nicknamed "The Swan"?', options: ['It was painted white originally', 'The asymmetric pylon resembles a swan\'s neck and head', 'It was financed by a swan-shaped statue', 'Swans nest underneath'], correctIndex: 1, explain: 'The asymmetric leaning pylon with the cable-stays curving down looks like a swan\'s neck arching over the river.' },
+      puzzle: {
+        type: 'cipher',
+        prompt: 'HUDVPXVEUXJ',
+        answer: 'ERASMUSBRUG|ERASMUS BRIDGE',
+        hint: "Caesar shift back by 3. H→E, U→R, D→A…",
+        explain: "Caesar -3. Named after Erasmus of Rotterdam, the 16th-century humanist born here in 1466 — a philosopher whose name is now stretched cable-by-cable across his hometown.",
+      },
     },
     {
       id: 'clue_6', order: 6, icon: '⛵', theme: 'The oldest harbor',
@@ -2510,6 +2622,13 @@ const delftVermeer = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The Vermeer Centrum doesn\'t hold any original Vermeer paintings — those are in Amsterdam, The Hague, New York, Paris, and so on. What it does hold is reproductions of all 36 of his known works in one room, staged at their original sizes, alongside reconstructions of his studio and the camera obscura he probably used.',
       trivia: { question: 'How many paintings is Vermeer known to have completed?', options: ['About 12', 'About 36', 'About 80', 'Over 200'], correctIndex: 1, explain: 'Just 36 attributed works survive. Some scholars argue 34, some 37 — the precise count is debated for two contested paintings.' },
+      puzzle: {
+        type: 'anagram',
+        prompt: 'V E R E E R M',
+        answer: 'VERMEER|VERMEER CENTRUM',
+        hint: "7 letters. The painter's surname — born in this town, died in this town, and never travelled far from this town.",
+        explain: "VERMEER — Johannes Vermeer (1632–1675). Painted just 36 known works, all close to home. The Centrum tells his story without owning a single original.",
+      },
     },
     {
       id: 'clue_3', order: 3, icon: '🪦', theme: 'The painter\'s grave',
@@ -2547,6 +2666,13 @@ const delftVermeer = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'In the 17th century there were 32 Delftware factories in this city; war and industrial cheap-imitation killed all but one. Royal Delft (founded 1653 as De Porceleyne Fles) survives because the Dutch royal family bought a share and granted it the "Royal" title. Each piece still goes through eight hand-applied glazes; the cobalt blue paint comes from a single mine in Saxony.',
       trivia: { question: 'Where does the cobalt for "Delft Blue" actually come from?', options: ['Delft itself', 'A mine in Saxony, Germany', 'Imported from China', 'A volcano in Indonesia'], correctIndex: 1, explain: 'Saxony — Royal Delft has used the same German cobalt source for centuries. The "Chinese-style" decorations were originally imitations of Ming porcelain.' },
+      puzzle: {
+        type: 'wordplay',
+        prompt: "Add a regal English adjective to this city's name. The result is the only original 17th-century pottery still firing kilns here.",
+        answer: 'ROYAL DELFT|KONINKLIJKE PORCELEYNE FLES|DELFT',
+        hint: "'Royal' + the city you're standing in. Two words.",
+        explain: "ROYAL DELFT — founded 1653 as De Porceleyne Fles. 31 rival potteries closed; this one survived because the Dutch royals bought a share and gave it the 'Koninklijke' (Royal) prefix.",
+      },
     },
     {
       id: 'clue_6', order: 6, icon: '🍻', theme: 'The animal market',
@@ -2615,6 +2741,13 @@ const milanClassic = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Designed by Giuseppe Mengoni, who fell to his death from the scaffolding three days before the inauguration. The Galleria houses the original Prada (founded 1913) and the Camparino bar where the Negroni Sbagliato was invented. The famous mosaic bull on the floor — symbol of Turin — has its testicles worn flat by a century of locals spinning on them for luck.',
       trivia: { question: 'Why do Milanese spin on the mosaic bull\'s testicles?', options: ['It\'s required for new university students', 'For luck — the tradition is to do a 360° spin on your heel', 'To win the lottery', 'It was a fascist-era political ritual'], correctIndex: 1, explain: 'A 360° heel-spin on the bull\'s testicles is supposed to bring luck. The mosaic has been re-tiled three times — same spot wears down each cycle.' },
+      puzzle: {
+        type: 'wordplay',
+        prompt: "The Italian word for 'gallery' + the name of the king who unified Italy in 1861, plus a Roman numeral two. Step inside — the floor will tell you you've arrived.",
+        answer: 'GALLERIA VITTORIO EMANUELE II|GALLERIA VITTORIO EMANUELE|GALLERIA',
+        hint: "Galleria + Vittorio Emanuele + II.",
+        explain: "GALLERIA VITTORIO EMANUELE II — the world's oldest active shopping arcade, opened 1877 to honour the first king of a unified Italy.",
+      },
       i18n: {
         it: { theme: 'Il centro commerciale più antico del mondo', riddle: "Entra in un'arcata di ferro e vetro su quattro piani, inaugurata nel 1877. Sul pavimento a mosaico c'è un toro — la tradizione milanese dice di girare sui suoi testicoli per portafortuna.", locationName: 'Galleria Vittorio Emanuele II', funFact: 'Progettata da Giuseppe Mengoni, caduto dall\'impalcatura tre giorni prima dell\'inaugurazione. La Galleria ospita lo storico Prada (1913) e il Camparino, dove fu inventato il Negroni Sbagliato. Il famoso toro a mosaico — simbolo di Torino — ha i testicoli consumati da un secolo di milanesi che ci girano sopra per superstizione.' },
       },
@@ -2628,6 +2761,13 @@ const milanClassic = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Built in 1778 on the ruins of the church of Santa Maria alla Scala (hence the name). Verdi premiered "Nabucco," "Otello," and "Falstaff" here. Maria Callas\'s 1955 "La Traviata" is still discussed by opera fans as the night opera reached its peak. The museum next door has Verdi\'s top hat and Liszt\'s piano.',
       trivia: { question: 'Which Verdi opera did NOT premiere at La Scala?', options: ['Nabucco', 'Aida', 'Otello', 'Falstaff'], correctIndex: 1, explain: '"Aida" premiered in Cairo in 1871 — commissioned to celebrate the opening of the Suez Canal. The other three are La Scala originals.' },
+      puzzle: {
+        type: 'reverse',
+        prompt: 'ALACS AL',
+        answer: 'LA SCALA|TEATRO ALLA SCALA',
+        hint: "Two words, both reversed — Italian for 'the staircase'.",
+        explain: "LA SCALA — built in 1778 on the ruins of a church called Santa Maria alla Scala. Verdi, Toscanini, Callas — the place where opera became religion.",
+      },
       i18n: {
         it: { theme: 'Dove l\'opera è diventata religione', riddle: "Attraversa la Galleria fino a una piazza con una statua di Leonardo. Dietro di lui sorge l'opera più prestigiosa al mondo — Verdi vi debuttò, Toscanini diresse, la Callas vi cantò.", locationName: 'Teatro alla Scala', funFact: 'Costruito nel 1778 sulle rovine della chiesa di Santa Maria alla Scala (da cui il nome). Verdi vi debuttò "Nabucco," "Otello" e "Falstaff." La "Traviata" del 1955 con la Callas è ancora discussa come la sera in cui l\'opera ha toccato il suo apice. Il museo accanto custodisce il cappello a cilindro di Verdi e il pianoforte di Liszt.' },
       },
@@ -2741,6 +2881,13 @@ const romeClassic = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'Rebuilt by Hadrian in 126 AD on the site of an earlier Agrippa temple (Hadrian kept Agrippa\'s name on the inscription out of modesty). The dome\'s diameter is exactly its height — 43.3m — making it a perfect sphere by geometry. The oculus is open to the sky; rain falls through and drains via 22 small holes in the marble floor that have been quietly working for 19 centuries. Raphael is buried inside.',
       trivia: { question: 'What happens when it rains through the Pantheon\'s open oculus?', options: ['Staff close it with a tarp', 'Water drains through 22 small holes in the marble floor', 'The floor is convex so water runs off the sides', 'Rome\'s humidity is so low rain rarely enters'], correctIndex: 1, explain: '22 small drainage holes in the marble floor handle the rain — they\'ve been doing it since 126 AD with no upgrades.' },
+      puzzle: {
+        type: 'cipher',
+        prompt: 'SDQWKHRQ',
+        answer: 'PANTHEON',
+        hint: "Caesar shift back by 3. S→P, D→A, Q→N…",
+        explain: "Caesar -3. The name means 'all gods' in Greek — every Roman deity worshipped under one (unsupported) dome.",
+      },
       i18n: {
         it: { theme: 'La cupola senza armatura', riddle: "Cammina 15 minuti a nord-ovest fino a un tempio-chiesa di 2.000 anni. La cupola sopra di te è in calcestruzzo non armato ed è stata la più grande al mondo per 1.300 anni. Nel soffitto c'è un foro di 9 metri — c'è sempre stato.", locationName: 'Pantheon', funFact: 'Ricostruito da Adriano nel 126 d.C. sul sito di un precedente tempio di Agrippa (Adriano mantenne l\'iscrizione di Agrippa per modestia). Il diametro della cupola coincide con la sua altezza — 43,3m — per cui forma una sfera perfetta. L\'oculo è aperto sul cielo; la pioggia scende e drena attraverso 22 piccoli fori nel pavimento di marmo, perfettamente funzionanti da 19 secoli. Raffaello è sepolto qui.' },
       },
@@ -2767,6 +2914,13 @@ const romeClassic = {
       hint3: 'Static fallback — live GPS nudge computed from server.',
       funFact: 'The fountain marks the terminus of the Aqua Virgo aqueduct, built in 19 BC by Agrippa and still feeding water to it today. The current baroque façade was completed in 1762 by Nicola Salvi. About €1.5 million in coins are collected each year and donated to Caritas, the Catholic charity — they fund a soup kitchen and supermarket for Rome\'s homeless. Throwing the coin became a tradition after the 1954 Hollywood film "Three Coins in the Fountain."',
       trivia: { question: 'Where do the coins thrown into the Trevi Fountain go?', options: ['Italian state treasury', 'Donated to Caritas, the Catholic charity', 'Restoration of Rome\'s monuments', 'Local Roman government'], correctIndex: 1, explain: 'About €1.5 million per year goes to Caritas, which runs a homeless soup kitchen and supermarket in Rome. The municipal government tried to claim them in 2017 — public outcry forced a reversal.' },
+      puzzle: {
+        type: 'logic',
+        prompt: "I am where 'three streets' (tre vie) once met — and my name still carries the number. Add the Italian word for 'fountain' before me. Throw a coin to find me.",
+        answer: 'TREVI|FONTANA DI TREVI|TREVI FOUNTAIN',
+        hint: "'Tre vie' = three streets. The name shortened to 'Trevi' over centuries.",
+        explain: "FONTANA DI TREVI — at the meeting of three streets ('tre vie'), the terminus of an aqueduct Agrippa built in 19 BC and which is still running.",
+      },
       i18n: {
         it: { theme: 'Tre monete', riddle: "Dieci minuti a est, trova la più grande fontana barocca di Roma. La leggenda: una moneta per tornare a Roma, due per l'amore, tre per il matrimonio — sopra la spalla sinistra, con la mano destra. Un milione e mezzo di euro finisce nella vasca ogni anno.", locationName: 'Fontana di Trevi', funFact: 'La fontana è il punto d\'arrivo dell\'Acqua Vergine, l\'acquedotto costruito da Agrippa nel 19 a.C. e ancora in funzione. La facciata barocca attuale fu completata nel 1762 da Nicola Salvi. Circa 1,5 milioni di euro in monete vengono raccolti ogni anno e donati alla Caritas — finanziano una mensa e un supermercato per i senzatetto di Roma. Il rito di lanciare la moneta divenne tradizione dopo il film hollywoodiano del 1954 "Tre soldi nella fontana."' },
       },
