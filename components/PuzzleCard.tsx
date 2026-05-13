@@ -1,7 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { useI18n } from '@/hooks/useI18n'
-import { Puzzle, HINT_COSTS } from '@/types'
+import { Puzzle, HINT_COSTS, normalizePuzzleAnswer, SCORE } from '@/types'
+import { enqueue } from '@/lib/offlineQueue'
 
 interface Props {
   puzzle: Puzzle
@@ -21,13 +22,15 @@ interface Props {
   onOpenShop: () => void
 }
 
-const TYPE_META: Record<Puzzle['type'], { icon: string; label: string; color: string }> = {
-  cipher:   { icon: '🔐', label: 'Cipher',     color: '#6366f1' },
-  anagram:  { icon: '🔤', label: 'Anagram',    color: '#a855f7' },
-  logic:    { icon: '🧠', label: 'Logic',      color: '#0891b2' },
-  sequence: { icon: '🔢', label: 'Sequence',   color: '#16a34a' },
-  wordplay: { icon: '✍️', label: 'Wordplay',   color: '#db2777' },
-  reverse:  { icon: '🔁', label: 'Reverse',    color: '#7c3aed' },
+// Icon + accent color per puzzle type. The label is translated via i18n
+// keys (puzzleTypeCipher, puzzleTypeAnagram, …) and resolved at render time.
+const TYPE_META: Record<Puzzle['type'], { icon: string; labelKey: string; color: string }> = {
+  cipher:   { icon: '🔐', labelKey: 'puzzleTypeCipher',   color: '#6366f1' },
+  anagram:  { icon: '🔤', labelKey: 'puzzleTypeAnagram',  color: '#a855f7' },
+  logic:    { icon: '🧠', labelKey: 'puzzleTypeLogic',    color: '#0891b2' },
+  sequence: { icon: '🔢', labelKey: 'puzzleTypeSequence', color: '#16a34a' },
+  wordplay: { icon: '✍️', labelKey: 'puzzleTypeWordplay', color: '#db2777' },
+  reverse:  { icon: '🔁', labelKey: 'puzzleTypeReverse',  color: '#7c3aed' },
 }
 
 /** First successful display of the puzzle prompt — styled per type. */
@@ -76,6 +79,7 @@ export function PuzzleCard({ puzzle, sessionId, clueId, storyOnSolve, theme, onS
   const [hintShown, setHintShown] = useState(false)
   const [unlockingHint, setUnlockingHint] = useState(false)
   const [bonus, setBonus] = useState(0)
+  const [solvedOffline, setSolvedOffline] = useState(false)
 
   const meta = TYPE_META[puzzle.type]
   const hintCost = HINT_COSTS.puzzle
@@ -88,6 +92,15 @@ export function PuzzleCard({ puzzle, sessionId, clueId, storyOnSolve, theme, onS
     const ok = await onUnlockHint()
     setUnlockingHint(false)
     if (ok) setHintShown(true)
+  }
+
+  // Local check using the same normalization the server applies. Used as the
+  // single source of truth for the offline fallback (and as a cheap optimism
+  // if the network is reachable but slow — we still confirm with the server).
+  const isLocallyCorrect = (raw: string): boolean => {
+    const accepted = puzzle.answer.split('|').map(normalizePuzzleAnswer).filter(Boolean)
+    const submitted = normalizePuzzleAnswer(raw)
+    return submitted.length > 0 && accepted.includes(submitted)
   }
 
   const submit = async () => {
@@ -113,7 +126,29 @@ export function PuzzleCard({ puzzle, sessionId, clueId, storyOnSolve, theme, onS
         try { (navigator as any).vibrate?.([15, 20, 15]) } catch {}
       }
     } catch {
-      setWrongTryAt(Date.now())
+      // Network failed — fall back to client-side verification. The puzzle's
+      // accepted-answers list is part of the Clue payload (already on-device
+      // from the initial seed/cache), so we can verify locally and queue the
+      // claim for replay when the network returns. The server-side route is
+      // idempotent (puzzleClaims/{clueId}), so a successful replay credits
+      // the bonus exactly once.
+      if (isLocallyCorrect(answer)) {
+        const optimisticBonus = puzzle.bonus ?? SCORE.puzzleBonus
+        await enqueue({
+          url: '/api/verify-puzzle',
+          body: { sessionId, clueId, answer },
+          reconcileKey: `puzzle:${sessionId}:${clueId}`,
+        })
+        setSolved(true)
+        setSolvedOffline(true)
+        setSolvedAnswer(answer.trim())
+        setBonus(optimisticBonus)
+        onSolved?.(optimisticBonus)
+        try { (navigator as any).vibrate?.([40, 30, 60]) } catch {}
+      } else {
+        setWrongTryAt(Date.now())
+        try { (navigator as any).vibrate?.([15, 20, 15]) } catch {}
+      }
     } finally {
       setSubmitting(false)
     }
@@ -146,6 +181,9 @@ export function PuzzleCard({ puzzle, sessionId, clueId, storyOnSolve, theme, onS
         {puzzle.explain && (
           <div className="puzzle-explain">{puzzle.explain}</div>
         )}
+        {solvedOffline && (
+          <div className="puzzle-offline-note">📡 {t('puzzleOfflineSolved')}</div>
+        )}
       </div>
     )
   }
@@ -158,7 +196,7 @@ export function PuzzleCard({ puzzle, sessionId, clueId, storyOnSolve, theme, onS
       <div className="puzzle-head">
         <span className="puzzle-icon" aria-hidden>{meta.icon}</span>
         <span className="puzzle-label" style={{ color: meta.color }}>
-          {meta.label}
+          {t(meta.labelKey)}
         </span>
         {theme && <span className="puzzle-theme">· {theme}</span>}
       </div>

@@ -385,6 +385,15 @@ export const T: Dict = {
   historySub:        { en: 'Re-read the stories and facts you\'ve unlocked.', nl: 'Lees de verhalen en feiten die je hebt vrijgespeeld terug.', de: 'Lies die Geschichten und Fakten, die du freigeschaltet hast, erneut.', fr: 'Relisez les histoires et anecdotes que vous avez débloquées.', it: 'Rileggi le storie e i fatti che hai sbloccato.', es: 'Vuelve a leer las historias y datos que has desbloqueado.' },
   historyEmpty:      { en: 'No past stops yet — solve your first clue to start your trail.', nl: 'Nog geen vorige stops — los je eerste raadsel op om je spoor te starten.', de: 'Noch keine früheren Stationen — löse deine erste Aufgabe, um deinen Pfad zu beginnen.', fr: 'Aucune étape pour l\'instant — résolvez votre première énigme pour commencer le parcours.', it: 'Nessuna tappa precedente — risolvi il primo enigma per iniziare il percorso.', es: 'Aún no hay paradas — resuelve tu primera pista para empezar tu ruta.' },
   history:           { en: 'History', nl: 'Geschiedenis', de: 'Verlauf', fr: 'Historique', it: 'Cronologia', es: 'Historial' },
+  // Puzzle type labels — surfaced on the puzzle card header
+  puzzleTypeCipher:  { en: 'Cipher',   nl: 'Geheimschrift', de: 'Geheimcode', fr: 'Chiffre',   it: 'Cifrato',     es: 'Cifrado' },
+  puzzleTypeAnagram: { en: 'Anagram',  nl: 'Anagram',       de: 'Anagramm',   fr: 'Anagramme', it: 'Anagramma',   es: 'Anagrama' },
+  puzzleTypeLogic:   { en: 'Logic',    nl: 'Logica',        de: 'Logik',      fr: 'Logique',   it: 'Logica',      es: 'Lógica' },
+  puzzleTypeSequence:{ en: 'Sequence', nl: 'Reeks',         de: 'Reihe',      fr: 'Suite',     it: 'Sequenza',    es: 'Secuencia' },
+  puzzleTypeWordplay:{ en: 'Wordplay', nl: 'Woordspel',     de: 'Wortspiel',  fr: 'Jeu de mots', it: 'Gioco di parole', es: 'Juego de palabras' },
+  puzzleTypeReverse: { en: 'Reverse',  nl: 'Omgekeerd',     de: 'Umgekehrt',  fr: 'À l\'envers', it: 'Al contrario', es: 'Al revés' },
+  // Offline puzzle status messages
+  puzzleOfflineSolved: { en: 'Solved offline — score will sync when you reconnect.', nl: 'Offline opgelost — je score wordt gesynchroniseerd zodra je weer online bent.', de: 'Offline gelöst — dein Punktestand wird beim nächsten Verbinden synchronisiert.', fr: 'Résolu hors ligne — votre score sera synchronisé à la reconnexion.', it: 'Risolto offline — il punteggio si sincronizzerà alla riconnessione.', es: 'Resuelto sin conexión — la puntuación se sincronizará al reconectar.' },
   notQuite:          { en: 'Not quite', nl: 'Niet helemaal', de: 'Nicht ganz', fr: 'Presque', it: 'Quasi', es: 'Casi' },
   continue:          { en: 'Continue', nl: 'Doorgaan', de: 'Weiter', fr: 'Continuer', it: 'Continua', es: 'Continuar' },
   nextClue:          { en: 'Next clue →', nl: 'Volgend raadsel →', de: 'Nächstes Rätsel →', fr: 'Prochaine énigme →', it: 'Prossimo indizio →', es: 'Siguiente pista →' },
