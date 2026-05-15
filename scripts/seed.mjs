@@ -259,6 +259,7 @@ const utrechtClassic = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'De Domtoren werd in 60 jaar gebouwd (1321–1382) en telt 465 treden. In WO II diende hij als schuilplaats voor verzetsstrijders. Het 13e-eeuwse carillon — een van de oudste ter wereld — speelt nog steeds elk kwartier.',
           trivia: { question: 'Hoeveel treden tellen tot de top van de Domtoren?', options: ['265', '365', '465', '565'], correctIndex: 2, explain: '465 treden — en op een heldere dag reikt het uitzicht 50 km ver.' },
+          puzzle: { prompt: 'Caesar-cijfer: GRP WRZHU. Schuif elke letter drie posities terug in het alfabet om de Engelse naam van Utrechts beroemdste landmark te onthullen.', hint: 'Caesar-verschuiving -3. G→D, R→O, P→M…', explain: 'Caesar -3. DOM TOWER (Domtoren) — Julius Caesar gebruikte deze +3 verschuiving rond 50 v.Chr. voor zijn privécorrespondentie.' },
         },
         de: {
           theme: 'Mittelalterlicher Riese',
@@ -269,6 +270,7 @@ const utrechtClassic = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Der Domturm wurde in 60 Jahren erbaut (1321–1382) und hat 465 Stufen. Im Zweiten Weltkrieg diente er als Versteck für Widerstandskämpfer. Das Glockenspiel aus dem 13. Jahrhundert — eines der ältesten der Welt — schlägt noch alle 15 Minuten.',
           trivia: { question: 'Wie viele Stufen hat der Domturm bis zur Spitze?', options: ['265', '365', '465', '565'], correctIndex: 2, explain: '465 Stufen — und der Blick reicht an klaren Tagen 50 km weit.' },
+          puzzle: { prompt: 'Caesar-Chiffre: GRP WRZHU. Verschiebe jeden Buchstaben um drei Stellen rückwärts im Alphabet, um den englischen Namen von Utrechts berühmtestem Wahrzeichen zu enthüllen.', hint: 'Caesar-Verschiebung -3. G→D, R→O, P→M…', explain: 'Caesar -3. DOM TOWER (Domturm) — Julius Cäsar nutzte diese +3-Verschiebung um 50 v. Chr. für seine private Korrespondenz.' },
         },
         fr: {
           theme: 'Géant médiéval',
@@ -279,6 +281,7 @@ const utrechtClassic = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'La Tour du Dôme fut bâtie en 60 ans (1321–1382) et compte 465 marches. Pendant la Seconde Guerre, elle servit de cachette à la Résistance. Le carillon du XIIIᵉ siècle — l\'un des plus anciens au monde — sonne toujours tous les quarts d\'heure.',
           trivia: { question: 'Combien de marches mène-t-il jusqu\'au sommet de la Tour du Dôme ?', options: ['265', '365', '465', '565'], correctIndex: 2, explain: '465 marches — et la vue porte à 50 km par temps clair.' },
+          puzzle: { prompt: 'Chiffre de César : GRP WRZHU. Décale chaque lettre de trois positions en arrière dans l\'alphabet pour révéler le nom anglais du monument le plus célèbre d\'Utrecht.', hint: 'Décalage César -3. G→D, R→O, P→M…', explain: 'César -3. DOM TOWER (Tour du Dôme) — Jules César utilisait ce décalage +3 vers 50 av. J.-C. pour sa correspondance privée.' },
         },
       },
     },
@@ -308,6 +311,7 @@ const utrechtClassic = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'De Oudegracht is uniek in Europa — geen andere stad kent deze dubbele werf. De onderste werven werden in de 13e eeuw aangelegd zodat handelaren goederen direct vanuit hun boot in de kelders konden lossen.',
           trivia: { question: 'Waarom werd het dubbele werfsysteem van de Oudegracht noodzakelijk?', options: ['Bescherming tegen overstromingen', 'Direct lossen van boot in kelder', 'Verdedigingsgracht', 'Parkeerplaats voor koetsen'], correctIndex: 1, explain: 'Handelaren losten direct in hun pakhuiskelders — sneller, en met minder diefstal.' },
+          puzzle: { prompt: 'Anagram: H D T R E A C O G U. 10 letters. Nederlands voor "oude gracht" — de ruggengraat van het Utrechtse centrum.', hint: '10 letters. Nederlands voor "oude gracht" — de ruggengraat van het Utrechtse centrum.', explain: 'OUDEGRACHT — gegraven in de 12e eeuw als verdedigingsgracht, binnen 200 jaar omgevormd tot Utrechts belangrijkste handelsader en de enige gracht in Nederland met dubbele werven.' },
         },
         de: {
           theme: 'Zweistöckige Gracht',
@@ -318,6 +322,7 @@ const utrechtClassic = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Die Oudegracht ist einzigartig in Europa — nirgendwo sonst gibt es dieses zweistöckige Werftsystem. Die unteren Werften entstanden im 13. Jahrhundert, damit Händler direkt vom Boot in ihre Keller laden konnten.',
           trivia: { question: 'Wozu diente die zweistöckige Bauweise der Oudegracht?', options: ['Hochwasserschutz', 'Direktes Entladen Boot–Keller', 'Wehrgraben', 'Kutschenparkplatz'], correctIndex: 1, explain: 'Händler luden direkt in ihre Lagerkeller — schneller und diebstahlsicher.' },
+          puzzle: { prompt: 'Anagramm: H D T R E A C O G U. 10 Buchstaben. Niederländisch für „alter Kanal" — das Rückgrat der Utrechter Altstadt.', hint: '10 Buchstaben. Niederländisch für „alter Kanal" — das Rückgrat der Utrechter Altstadt.', explain: 'OUDEGRACHT — im 12. Jh. als Verteidigungsgracht ausgehoben, binnen 200 Jahren zur wichtigsten Handelsader Utrechts geworden — und der einzige Kanal der Niederlande mit Zweietagenwerften.' },
         },
         fr: {
           theme: 'Canal à deux niveaux',
@@ -328,6 +333,7 @@ const utrechtClassic = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'L\'Oudegracht est unique en Europe — aucune autre ville n\'a ce système à deux niveaux. Les quais bas ont été creusés au XIIIᵉ siècle pour que les marchands déchargent directement leurs bateaux dans les caves.',
           trivia: { question: 'Pourquoi avoir conçu l\'Oudegracht sur deux niveaux ?', options: ['Protection contre les crues', 'Déchargement direct bateau-cave', 'Douve défensive', 'Stationnement de carrosses'], correctIndex: 1, explain: 'Les marchands déchargeaient droit dans leurs caves — commerce rapide, moins de vols.' },
+          puzzle: { prompt: 'Anagramme : H D T R E A C O G U. 10 lettres. Néerlandais pour « vieux canal » — la colonne vertébrale du centre d\'Utrecht.', hint: '10 lettres. Néerlandais pour « vieux canal » — la colonne vertébrale du centre d\'Utrecht.', explain: 'OUDEGRACHT — creusé au XIIᵉ siècle comme douve défensive, transformé en deux siècles en l\'artère commerciale principale d\'Utrecht et le seul canal des Pays-Bas avec des quais à deux niveaux.' },
         },
       },
     },
@@ -357,6 +363,7 @@ const utrechtClassic = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'De Pandhof dateert uit 1390 en is een van de oudste kloostertuinen van Nederland. Monniken kweekten hier geneeskrachtige kruiden. Hij overleefde de tornado van 1674 die het schip van de kathedraal verwoestte.',
           trivia: { question: 'Wat verbouwden middeleeuwse monniken oorspronkelijk in de Pandhof?', options: ['Wijndruiven', 'Geneeskrachtige kruiden', 'Tulpen', 'Marktgroenten'], correctIndex: 1, explain: 'Kruiden voor genezing — het klooster was eigenlijk de apotheek van de stad.' },
+          puzzle: { prompt: "Ik ben een soort kloostergang (denk aan 'pand-' als omsloten) samengevoegd met het Nederlandse woord voor 'hof'. Achter de Dom vind je me — luister naar de kruiden en de stilte.", hint: "Nederlands 'pand' (kloostergang) + 'hof'. Eén woord, 7 letters.", explain: 'PANDHOF — een kloostertuin verstopt achter de Dom sinds 1390. Ooit de apotheek van de monniken; nu de stilste binnentuin van centraal Utrecht.' },
         },
         de: {
           theme: 'Verborgener Klosterhof',
@@ -367,6 +374,7 @@ const utrechtClassic = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Der Pandhof stammt aus 1390 und ist einer der ältesten Klostergärten der Niederlande. Mönche zogen hier Heilkräuter. Er überstand den Tornado von 1674, der das Kirchenschiff zerstörte.',
           trivia: { question: 'Was bauten die Mönche ursprünglich im Pandhof an?', options: ['Weintrauben', 'Heilkräuter', 'Tulpen', 'Marktgemüse'], correctIndex: 1, explain: 'Heilkräuter — der Klostergarten war praktisch die Apotheke der Stadt.' },
+          puzzle: { prompt: 'Ich bin eine Art Klostergang (denke an „pand-" wie umschlossen), verbunden mit dem niederländischen Wort für „Hof". Hinter dem Dom wirst du mich finden — lausche den Kräutern und der Stille.', hint: "Niederländisch 'pand' (Klostergang) + 'hof'. Ein Wort, 7 Buchstaben.", explain: 'PANDHOF — ein Klostergarten hinter dem Domturm seit 1390. Einst die Apotheke der Mönche; heute der stillste Innenhof in der Utrechter Innenstadt.' },
         },
         fr: {
           theme: 'Cloître caché',
@@ -377,6 +385,7 @@ const utrechtClassic = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'Le Pandhof date de 1390 et est l\'un des plus anciens jardins de cloître des Pays-Bas. Les moines y cultivaient des plantes médicinales. Il a survécu à la tornade de 1674 qui détruisit la nef de la cathédrale.',
           trivia: { question: 'Que cultivaient les moines au Pandhof à l\'origine ?', options: ['Vignes', 'Plantes médicinales', 'Tulipes', 'Légumes de marché'], correctIndex: 1, explain: 'Des plantes médicinales — le cloître servait de pharmacie pour la ville.' },
+          puzzle: { prompt: 'Je suis une sorte de galerie monastique (pense à « pand- » comme enclos), jointe au mot néerlandais pour « cour ». Derrière le Dôme tu me trouveras — écoute les herbes et le silence.', hint: "Néerlandais 'pand' (galerie de cloître) + 'hof'. Un mot, 7 lettres.", explain: 'PANDHOF — un jardin de cloître caché derrière la Tour du Dôme depuis 1390. Jadis l\'apothicairerie des moines ; aujourd\'hui la cour la plus calme du centre d\'Utrecht.' },
         },
       },
     },
@@ -406,6 +415,7 @@ const utrechtClassic = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'Museum Speelklok herbergt de belangrijkste collectie zelfspelende muziekinstrumenten ter wereld. Het zit in de Buurkerk — de oudste parochiekerk van Utrecht, gebouwd rond 1100.',
           trivia: { question: 'In welk gebouw zit Museum Speelklok?', options: ['Een gotische kathedraal', 'Utrechts oudste parochiekerk', 'Een voormalig station', 'Een 17e-eeuwse graanschuur'], correctIndex: 1, explain: 'De Buurkerk, rond 1100 gebouwd — ouder dan de Dom zelf.' },
+          puzzle: { prompt: "Twee Nederlandse woorden: het werkwoord voor 'spelen' (zoals een kind speelt) gekoppeld aan het woord voor een tikkend wandinstrument. Voeg ze samen — een museum dat zichzelf bespeelt.", hint: "'Speel' (spelen) + 'klok'. Eén woord.", explain: "SPEELKLOK — letterlijk 'spelende klok'. Mechanische muziekinstrumenten van speeldoosjes tot reusachtige kermisorgels, in Utrechts oudste parochiekerk." },
         },
         de: {
           theme: 'Selbstspielende Musik',
@@ -416,6 +426,7 @@ const utrechtClassic = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Das Museum Speelklok beherbergt die weltweit bedeutendste Sammlung selbstspielender Musikinstrumente. Es liegt in der Buurkerk — der ältesten Pfarrkirche Utrechts, erbaut um 1100.',
           trivia: { question: 'In welchem Gebäude befindet sich das Museum Speelklok?', options: ['Eine gotische Kathedrale', 'Utrechts älteste Pfarrkirche', 'Ein ehemaliger Bahnhof', 'Ein Speicher aus dem 17. Jh.'], correctIndex: 1, explain: 'Die Buurkerk, um 1100 erbaut — älter als der Dom selbst.' },
+          puzzle: { prompt: 'Zwei niederländische Wörter: das Verb für „spielen" (wie ein Kind spielt), verbunden mit dem Wort für ein schlagendes Wandinstrument. Zusammen: ein Museum, das sich selbst spielt.', hint: "'Speel' (spielen) + 'klok' (Uhr/Glocke). Ein Wort.", explain: 'SPEELKLOK — wörtlich „spielende Uhr". Mechanische Musikinstrumente von Spieldosen bis zu Jahrmarktsorgeln, in Utrechts ältester Pfarrkirche.' },
         },
         fr: {
           theme: 'Musique automatique',
@@ -426,6 +437,7 @@ const utrechtClassic = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'Le Museum Speelklok abrite la plus importante collection au monde d\'instruments de musique automatiques. Il occupe la Buurkerk — la plus ancienne église paroissiale d\'Utrecht, bâtie vers 1100.',
           trivia: { question: 'Quel bâtiment abrite le Museum Speelklok ?', options: ['Une cathédrale gothique', 'La plus ancienne paroisse d\'Utrecht', 'Une ancienne gare', 'Un grenier du XVIIᵉ siècle'], correctIndex: 1, explain: 'La Buurkerk, bâtie vers 1100 — plus ancienne que le Dôme lui-même.' },
+          puzzle: { prompt: 'Deux mots néerlandais : le verbe « jouer » (comme un enfant joue), joint au mot pour un instrument mural qui sonne. Mis ensemble : un musée qui se joue lui-même.', hint: "'Speel' (jouer) + 'klok' (horloge/cloche). Un mot.", explain: 'SPEELKLOK — littéralement « horloge qui joue ». Instruments mécaniques, des boîtes à musique aux orgues de foire, dans la plus ancienne paroisse d\'Utrecht.' },
         },
       },
     },
@@ -455,6 +467,7 @@ const utrechtClassic = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'De Janskerk is gesticht in 1040. Het plein was oorspronkelijk het kerkhof van de kerk — "Janskerkhof" betekent letterlijk "kerkhof van Sint Jan". Boeren verkopen hier al sinds 1597 bloemen.',
           trivia: { question: 'Wat betekende "Janskerkhof" oorspronkelijk?', options: ['Tuin van Jan', 'Kerkhof van Sint Jan', 'Markt van Jan', 'Haven van Jan'], correctIndex: 1, explain: '"Kerkhof" betekent begraafplaats — dit hele plein was ooit een kerkhof.' },
+          puzzle: { prompt: 'Anagram: F R A N J H E O S K K. 11 letters. De naam van een heilige + het Nederlandse woord "kerkhof" — tegenwoordig staan er alleen nog tulpen en cafétertrassen op de botten.', hint: '11 letters. Naam van een heilige + "kerkhof" — vandaag staan er tulpen en terrassen.', explain: 'JANSKERKHOF — "kerkhof van Sint Jan". Het plein was 500 jaar lang een begraafplaats; de botten werden in de 19e eeuw weggehaald toen de bloemenmarkt erin trok.' },
         },
         de: {
           theme: 'Blumenplatz',
@@ -465,6 +478,7 @@ const utrechtClassic = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Die Janskerk wurde 1040 gegründet. Der Platz war ursprünglich der Friedhof der Kirche — "Janskerkhof" bedeutet wörtlich "Johannes-Kirchhof". Bauern verkaufen hier seit 1597 Blumen.',
           trivia: { question: 'Was bedeutete „Janskerkhof" ursprünglich?', options: ['Johannes-Garten', 'Johannes-Kirchhof (Friedhof)', 'Johannes-Markt', 'Johannes-Hafen'], correctIndex: 1, explain: '„Kerkhof" heißt Friedhof — der ganze Platz war einst ein Friedhof.' },
+          puzzle: { prompt: 'Anagramm: F R A N J H E O S K K. 11 Buchstaben. Ein Heiligenname + das niederländische Wort „kerkhof" (Friedhof) — heute stehen über den Gebeinen nur noch Tulpen und Caféterrassen.', hint: '11 Buchstaben. Heiligenname + „kerkhof" (Friedhof) — heute Tulpen und Terrassen.', explain: 'JANSKERKHOF — „Johannes-Kirchhof". Der Platz war 500 Jahre lang Friedhof; die Gebeine wurden im 19. Jh. entfernt, als der Blumenmarkt einzog.' },
         },
         fr: {
           theme: 'Place aux fleurs',
@@ -475,6 +489,7 @@ const utrechtClassic = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'La Janskerk fut fondée en 1040. La place était à l\'origine son cimetière — « Janskerkhof » signifie littéralement « cimetière Saint-Jean ». Les paysans y vendent des fleurs depuis 1597.',
           trivia: { question: 'Que voulait dire « Janskerkhof » à l\'origine ?', options: ['Jardin de Jean', 'Cimetière Saint-Jean', 'Marché de Jean', 'Port de Jean'], correctIndex: 1, explain: '« Kerkhof » veut dire cimetière — cette place fut jadis un cimetière.' },
+          puzzle: { prompt: 'Anagramme : F R A N J H E O S K K. 11 lettres. Le nom d\'un saint + le mot néerlandais « kerkhof » (cimetière) — aujourd\'hui seuls les tulipes et les terrasses subsistent sur les ossements.', hint: '11 lettres. Nom d\'un saint + « kerkhof » (cimetière) — aujourd\'hui tulipes et terrasses.', explain: 'JANSKERKHOF — « cimetière Saint-Jean ». La place fut un cimetière pendant 500 ans ; les ossements furent retirés au XIXᵉ siècle quand le marché aux fleurs y prit place.' },
         },
       },
     },
@@ -504,6 +519,7 @@ const utrechtClassic = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'Nijntje is in 1955 bedacht door de Utrechtse illustrator Dick Bruna, nadat hij op vakantie een konijntje in de duinen zag huppelen. Er zijn meer dan 85 miljoen Nijntje-boekjes verkocht in meer dan 50 talen.',
           trivia: { question: 'In welk jaar werd Nijntje bedacht?', options: ['1935', '1955', '1975', '1995'], correctIndex: 1, explain: '1955 — Dick Bruna tekende haar na een familievakantie aan de Nederlandse kust.' },
+          puzzle: { prompt: 'Caesar-cijfer: QLMQWMH. Schuif elke letter drie posities terug om de Nederlandse naam te onthullen van een klein wit konijntje dat in 1955 in Utrecht werd geboren.', hint: 'Caesar -3. Q→N, L→I, M→J… Een klein wit konijntje, in 1955 getekend door Dick Bruna.', explain: 'Caesar -3. NIJNTJE — buiten Nederland bekend als MIFFY. Bedacht door Dick Bruna na een familievakantie aan de Nederlandse kust.' },
         },
         de: {
           theme: 'Kinderbuch-Ikone',
@@ -514,6 +530,7 @@ const utrechtClassic = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Miffy (Nijntje) wurde 1955 vom Utrechter Illustrator Dick Bruna erfunden, nachdem er im Urlaub ein Kaninchen in den Dünen hüpfen sah. Über 85 Millionen Miffy-Bücher wurden in mehr als 50 Sprachen verkauft.',
           trivia: { question: 'In welchem Jahr entstand Miffy (Nijntje)?', options: ['1935', '1955', '1975', '1995'], correctIndex: 1, explain: '1955 — Dick Bruna skizzierte sie nach einem Familienurlaub an der niederländischen Küste.' },
+          puzzle: { prompt: 'Caesar-Chiffre: QLMQWMH. Verschiebe jeden Buchstaben drei Stellen rückwärts, um den niederländischen Namen eines kleinen weißen Kaninchens zu enthüllen, das 1955 in Utrecht geboren wurde.', hint: 'Caesar -3. Q→N, L→I, M→J… Ein kleines weißes Kaninchen, 1955 von Dick Bruna gezeichnet.', explain: 'Caesar -3. NIJNTJE — außerhalb der Niederlande bekannt als MIFFY. Von Dick Bruna nach einem Familienurlaub an der niederländischen Küste erfunden.' },
         },
         fr: {
           theme: 'Icône d\'enfance',
@@ -524,6 +541,7 @@ const utrechtClassic = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'Miffy (Nijntje en néerlandais) a été créée en 1955 par l\'illustrateur d\'Utrecht Dick Bruna, après avoir vu un lapin sauter dans les dunes pendant ses vacances. Plus de 85 millions de livres Miffy ont été vendus dans plus de 50 langues.',
           trivia: { question: 'En quelle année Miffy (Nijntje) a-t-elle été créée ?', options: ['1935', '1955', '1975', '1995'], correctIndex: 1, explain: '1955 — Dick Bruna l\'a esquissée après des vacances en famille sur la côte néerlandaise.' },
+          puzzle: { prompt: 'Chiffre de César : QLMQWMH. Décale chaque lettre de trois positions en arrière pour révéler le nom néerlandais d\'un petit lapin blanc né à Utrecht en 1955.', hint: 'César -3. Q→N, L→I, M→J… Un petit lapin blanc, dessiné en 1955 par Dick Bruna.', explain: 'César -3. NIJNTJE — connue hors des Pays-Bas sous le nom de MIFFY. Inventée par Dick Bruna après des vacances en famille sur la côte néerlandaise.' },
         },
       },
     },
@@ -553,6 +571,7 @@ const utrechtClassic = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'Sonnenborgh werd in 1552 gebouwd als onderdeel van Utrechts stervormige verdedigingsmuur. In 1853 werd het Nederlands eerste nationale meteorologisch- en sterrenkundig instituut. De oorspronkelijke telescoop uit de jaren 1850 werkt nog steeds.',
           trivia: { question: 'Welk beroemd wetenschappelijk instituut werd in 1853 op Sonnenborgh opgericht?', options: ['Een scheikundig laboratorium', 'Het KNMI', 'Een medische faculteit', 'Een technische academie'], correctIndex: 1, explain: 'Het KNMI — nog steeds de nationale weerdienst van Nederland.' },
+          puzzle: { prompt: "De ster waar de dag in ontwaakt, gekoppeld aan het Nederlandse woord voor 'burcht'. Een verdedigingsbastion dat omhoog leerde kijken — naar de sterren.", hint: "'Zon/sonne' + 'burgh/burg'. Eén woord.", explain: 'SONNENBORGH — gebouwd in 1552 als deel van Utrechts stervormige vesting, in 1853 hergebruikt als de eerste sterrenwacht en weerinstituut van Nederland (het KNMI).' },
         },
         de: {
           theme: 'Sternwarten-Bastion',
@@ -563,6 +582,7 @@ const utrechtClassic = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Sonnenborgh wurde 1552 als Teil von Utrechts sternförmiger Stadtmauer erbaut. 1853 wurde es zum ersten nationalen Wetter- und Astronomieinstitut der Niederlande. Das Originalteleskop von 1850 funktioniert bis heute.',
           trivia: { question: 'Welches berühmte Wissenschaftsinstitut wurde 1853 auf Sonnenborgh gegründet?', options: ['Ein Chemielabor', 'Das niederländische Wetter- und Astronomieinstitut (KNMI)', 'Eine medizinische Schule', 'Eine Ingenieursakademie'], correctIndex: 1, explain: 'Das KNMI — bis heute der nationale Wetterdienst der Niederlande.' },
+          puzzle: { prompt: 'Worin die Sonne aufgeht, verbunden mit dem niederländischen Wort für „Burg". Eine Verteidigungsbastion, die lernte, in den Himmel zu schauen.', hint: '„Sonne/zonne" + „Burg/burgh". Ein Wort.', explain: 'SONNENBORGH — 1552 als Teil der sternförmigen Stadtmauer Utrechts erbaut, 1853 zur ersten Sternwarte und Wetterstation der Niederlande (KNMI) umgewidmet.' },
         },
         fr: {
           theme: 'Bastion d\'astronomie',
@@ -573,6 +593,7 @@ const utrechtClassic = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'Sonnenborgh fut bâti en 1552 dans le cadre du rempart en étoile d\'Utrecht. En 1853 il devint le premier institut national de météorologie et d\'astronomie des Pays-Bas. Le télescope d\'origine des années 1850 fonctionne encore.',
           trivia: { question: 'Quel célèbre institut scientifique fut fondé à Sonnenborgh en 1853 ?', options: ['Un laboratoire de chimie', 'L\'institut météorologique et astronomique néerlandais (KNMI)', 'Une école de médecine', 'Une académie d\'ingénierie'], correctIndex: 1, explain: 'Le KNMI — encore aujourd\'hui le service météo national des Pays-Bas.' },
+          puzzle: { prompt: 'Ce dans quoi le soleil se lève, joint au mot néerlandais pour « forteresse ». Un bastion défensif qui apprit à regarder vers le haut — vers les étoiles.', hint: '« Sonne/zonne » (soleil) + « burgh/burg » (forteresse).', explain: 'SONNENBORGH — bâtie en 1552 dans le cadre des remparts en étoile d\'Utrecht, reconvertie en 1853 en premier observatoire et institut météorologique du pays (le KNMI).' },
         },
       },
     },
@@ -602,6 +623,7 @@ const utrechtClassic = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'Het Rietveld Schröderhuis (1924) is het enige gebouw dat volledig is ontworpen volgens De Stijl — dezelfde kunstbeweging als Piet Mondriaan. UNESCO-werelderfgoed sinds 2000.',
           trivia: { question: 'Volgens welke kunststroming is het Rietveld Schröderhuis volledig ontworpen?', options: ['Bauhaus', 'Art Deco', 'De Stijl', 'Brutalisme'], correctIndex: 2, explain: 'De Stijl — dezelfde stroming als Mondriaans primaire kleurvlakken.' },
+          puzzle: { prompt: 'Anagram: D V E R T I L E. 8 letters. De Nederlandse architect — ook meubelontwerper (de beroemde rood-blauwe stoel was van hem).', hint: '8 letters. De Nederlandse architect — ook meubelontwerper.', explain: 'RIETVELD — Gerrit Rietveld, lid van De Stijl. Zijn huis uit 1924 vertaalde Mondriaans rasters in 3D voor één opdrachtgever: Truus Schröder-Schräder.' },
         },
         de: {
           theme: 'Modernistisches Meisterwerk',
@@ -612,6 +634,7 @@ const utrechtClassic = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Das Rietveld-Schröder-Haus (1924) ist das einzige Gebäude, das vollständig nach den Prinzipien von De Stijl gebaut wurde — derselben Kunstrichtung wie Piet Mondrian. Seit 2000 UNESCO-Weltkulturerbe.',
           trivia: { question: 'Welcher Kunstrichtung folgt das Rietveld-Schröder-Haus vollständig?', options: ['Bauhaus', 'Art déco', 'De Stijl', 'Brutalismus'], correctIndex: 2, explain: 'De Stijl — dieselbe Bewegung wie Mondrians Primärfarben-Gitter.' },
+          puzzle: { prompt: 'Anagramm: D V E R T I L E. 8 Buchstaben. Der niederländische Architekt — auch Möbeldesigner (der berühmte Rot-Blau-Stuhl stammt von ihm).', hint: '8 Buchstaben. Niederländischer Architekt — auch Möbeldesigner.', explain: 'RIETVELD — Gerrit Rietveld, Mitglied von De Stijl. Sein Haus von 1924 übersetzte Mondrians Raster in 3D für eine einzige Auftraggeberin: Truus Schröder-Schräder.' },
         },
         fr: {
           theme: 'Chef-d\'œuvre moderniste',
@@ -622,6 +645,7 @@ const utrechtClassic = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'La Maison Rietveld Schröder (1924) est le seul bâtiment construit entièrement selon les principes de De Stijl — le même mouvement artistique que Piet Mondrian. Patrimoine mondial UNESCO depuis 2000.',
           trivia: { question: 'À quel mouvement artistique la Maison Rietveld Schröder se conforme-t-elle entièrement ?', options: ['Bauhaus', 'Art déco', 'De Stijl', 'Brutalisme'], correctIndex: 2, explain: 'De Stijl — le même mouvement que les grilles de couleurs primaires de Mondrian.' },
+          puzzle: { prompt: 'Anagramme : D V E R T I L E. 8 lettres. L\'architecte néerlandais — aussi designer de meubles (la fameuse chaise rouge-bleue est de lui).', hint: '8 lettres. Architecte néerlandais — aussi designer de meubles.', explain: 'RIETVELD — Gerrit Rietveld, membre de De Stijl. Sa maison de 1924 traduisit en 3D les grilles de Mondrian pour une seule cliente : Truus Schröder-Schräder.' },
         },
       },
     },
