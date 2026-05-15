@@ -723,6 +723,7 @@ const hiddenUtrecht = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'Flora\'s Hof ligt op de plek van het middeleeuwse bisschoppelijk paleis — al 300 jaar verdwenen. Het beeldje in het midden eert Sint Willibrord, de Engelse monnik die in 695 het Utrechtse bisdom stichtte. Locals lunchen hier graag, toeristen vinden het zelden.',
           trivia: { question: 'Wie wordt geëerd met het beeld in Flora\'s Hof?', options: ['Willem van Oranje', 'Sint Willibrord', 'Rembrandt', 'Karel de Grote'], correctIndex: 1, explain: 'Willibrord — de Engelse missionaris die in 695 het bisdom Utrecht stichtte.' },
+          puzzle: { prompt: "Ik deel mijn naam met de Romeinse godin van de bloesem. Voeg er het Nederlandse woord voor 'hof' aan toe en je hebt een klein verborgen tuintje achter de Dom.", hint: "Romeinse bloemengodin + Nederlands 'hof'.", explain: "Flora was de Romeinse godin van bloemen en lente; 'hof' is Nederlands voor omsloten binnenplaats. Samen: Utrechts kleinste verborgen tuin." },
         },
         de: {
           theme: 'Garten vergessener Rosen',
@@ -733,6 +734,7 @@ const hiddenUtrecht = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Flora\'s Hof steht auf den Grundmauern des mittelalterlichen Bischofspalasts — seit 300 Jahren verschwunden. Die Statue ehrt den heiligen Willibrord, den englischen Mönch, der 695 das Bistum Utrecht gründete. Einheimische lunchen hier — Touristen finden es kaum.',
           trivia: { question: 'Wem ist die Statue in Flora\'s Hof gewidmet?', options: ['Wilhelm von Oranien', 'Heiliger Willibrord', 'Rembrandt', 'Karl der Große'], correctIndex: 1, explain: 'Willibrord — der englische Missionar, der 695 das Bistum Utrecht gründete.' },
+          puzzle: { prompt: 'Ich teile meinen Namen mit der römischen Göttin der Blüten. Füge das niederländische Wort für „Hof" hinzu und du hast einen winzigen versteckten Garten hinter dem Dom.', hint: 'Römische Blumengöttin + niederländisch „hof".', explain: 'Flora war die römische Göttin der Blumen und des Frühlings; „hof" ist Niederländisch für umschlossenen Innenhof. Zusammen: Utrechts kleinster versteckter Garten.' },
         },
         fr: {
           theme: 'Jardin aux roses oubliées',
@@ -743,6 +745,7 @@ const hiddenUtrecht = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'Flora\'s Hof se trouve sur l\'emplacement du palais épiscopal médiéval — disparu depuis 300 ans. La statue centrale honore saint Willibrord, le moine anglais qui fonda l\'évêché d\'Utrecht en 695. Les locaux y déjeunent — les touristes ne le trouvent presque jamais.',
           trivia: { question: 'À qui rend hommage la statue de Flora\'s Hof ?', options: ['Guillaume d\'Orange', 'Saint Willibrord', 'Rembrandt', 'Charlemagne'], correctIndex: 1, explain: 'Willibrord — le missionnaire anglais qui fonda le diocèse d\'Utrecht en 695.' },
+          puzzle: { prompt: 'Je partage mon nom avec la déesse romaine des fleurs. Ajoute le mot néerlandais pour « cour » et tu as un minuscule jardin caché derrière le Dôme.', hint: 'Déesse romaine des fleurs + « hof » néerlandais (cour).', explain: "Flora était la déesse romaine des fleurs et du printemps ; « hof » signifie cour close en néerlandais. Ensemble : le plus petit jardin secret d'Utrecht." },
         },
       },
     },
@@ -772,6 +775,7 @@ const hiddenUtrecht = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'De Pieterskerk (1048) is de oudste van vier kerken die bisschop Bernold in een kruisvorm rond de Dom liet bouwen. De crypte heeft nog haar oorspronkelijke Romaanse zuilen. De kerk overleefde de tornado van 1674 en eeuwen calvinistische beeldenstorm — een bevroren stukje 11e-eeuws Utrecht.',
           trivia: { question: 'In welk jaar werd de Pieterskerk gewijd?', options: ['948', '1048', '1348', '1548'], correctIndex: 1, explain: '1048 — gesticht door bisschop Bernold als deel van een kruis van vier kerken rond de Dom.' },
+          puzzle: { prompt: 'Caesar-cijfer: SLHWHUVNHUN. Schuif elke letter drie posities terug om de Nederlandse naam van de oudste stenen kerk van Nederland te onthullen. Genoemd naar de heilige met de sleutels.', hint: 'Caesar-verschuiving -3. S→P, L→I, H→E…', explain: 'Caesar -3. PIETERSKERK — gewijd in 1048 door bisschop Bernold. De oudste nog overeind staande stenen kerk van Nederland; de Romaanse crypte eronder dateert nog uit de elfde eeuw.' },
         },
         de: {
           theme: 'Ältester Stein der Niederlande',
@@ -782,6 +786,7 @@ const hiddenUtrecht = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Die Pieterskerk (1048) ist die älteste von vier Kirchen, die Bischof Bernold kreuzförmig um den Dom errichten ließ. Die Krypta darunter hat noch ihre ursprünglichen romanischen Säulen. Die Kirche überstand den Tornado von 1674 und Jahrhunderte calvinistischen Bildersturms — eine eingefrorene Scheibe Utrechts aus dem 11. Jahrhundert.',
           trivia: { question: 'In welchem Jahr wurde die Pieterskerk geweiht?', options: ['948', '1048', '1348', '1548'], correctIndex: 1, explain: '1048 — von Bischof Bernold als Teil eines Kreuzes von vier Kirchen um den Dom gegründet.' },
+          puzzle: { prompt: 'Caesar-Chiffre: SLHWHUVNHUN. Verschiebe jeden Buchstaben drei Stellen rückwärts, um den niederländischen Namen der ältesten Steinkirche der Niederlande zu enthüllen. Benannt nach dem Heiligen mit den Schlüsseln.', hint: 'Caesar-Verschiebung -3. S→P, L→I, H→E…', explain: 'Caesar -3. PIETERSKERK — 1048 von Bischof Bernold geweiht. Die älteste noch stehende Steinkirche der Niederlande; die romanische Krypta darunter stammt noch aus dem 11. Jh.' },
         },
         fr: {
           theme: 'Plus vieille pierre des Pays-Bas',
@@ -792,6 +797,7 @@ const hiddenUtrecht = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'La Pieterskerk (1048) est la plus ancienne des quatre églises bâties par l\'évêque Bernold en forme de croix autour du Dôme. La crypte conserve ses colonnes romanes d\'origine. L\'église a survécu à la tornade de 1674 et aux siècles d\'iconoclasme calviniste — une tranche figée d\'Utrecht au XIᵉ siècle.',
           trivia: { question: 'En quelle année la Pieterskerk fut-elle consacrée ?', options: ['948', '1048', '1348', '1548'], correctIndex: 1, explain: '1048 — fondée par Mgr Bernold dans le cadre d\'une croix de quatre églises autour du Dôme.' },
+          puzzle: { prompt: 'Chiffre de César : SLHWHUVNHUN. Décale chaque lettre de trois positions en arrière pour révéler le nom néerlandais de la plus ancienne église en pierre des Pays-Bas. Nommée d\'après le saint aux clés.', hint: 'Décalage César -3. S→P, L→I, H→E…', explain: 'César -3. PIETERSKERK — consacrée en 1048 par Mgr Bernold. La plus ancienne église en pierre encore debout des Pays-Bas ; la crypte romane en dessous date encore du XIᵉ siècle.' },
         },
       },
     },
@@ -821,6 +827,7 @@ const hiddenUtrecht = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'De Zeven Steegjes werden in 1830–1850 gebouwd door een katholieke liefdadigheidsstichting voor de armste arbeidersgezinnen. De huisjes zijn slechts 4 m breed en 50 m² groot. Vlak naast het centrum voelen de straatjes nog altijd als een 19e-eeuws dorpje — meestal vernoemd naar vogels.',
           trivia: { question: 'Waarom werden de Zeven Steegjes in de jaren 1830 gebouwd?', options: ['Als studentenhuisvesting', 'Arbeiderswoningen van een katholieke stichting', 'Stalblokken', 'Quarantainehuizen'], correctIndex: 1, explain: 'Gebouwd door een katholieke stichting voor de armste arbeidersgezinnen.' },
+          puzzle: { prompt: "Neem het Nederlandse woord voor het getal na zes. Volg het met het verkleinwoord-meervoud van 'steeg' (smal straatje). Je staat waar je moet staan.", hint: "Nederlands 'zeven' + 'steegjes'. Twee woorden.", explain: "ZEVEN = 7; STEEGJES is het verkleinwoord-meervoud van 'steeg' (smal straatje). Een 19e-eeuws buurtje met arbeiderswoningen — zeven smalle straatjes die nog steeds aanvoelen als 1850." },
         },
         de: {
           theme: 'Sieben kleine Gassen',
@@ -831,6 +838,7 @@ const hiddenUtrecht = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Die Zeven Steegjes („sieben kleine Gassen") wurden 1830–1850 von einer katholischen Stiftung für die ärmsten Arbeiterfamilien gebaut. Die Häuser sind nur 4 m breit und 50 m² groß. Direkt am Zentrum, doch die Gassen wirken bis heute wie ein Dorf des 19. Jahrhunderts — meist nach Vögeln benannt.',
           trivia: { question: 'Warum wurden die Zeven Steegjes in den 1830ern gebaut?', options: ['Als Studentenheime', 'Arbeiterhäuser einer katholischen Stiftung', 'Stallgebäude', 'Quarantäne-Wohnungen'], correctIndex: 1, explain: 'Erbaut von einer katholischen Stiftung für die ärmsten Arbeiterfamilien.' },
+          puzzle: { prompt: 'Nimm das niederländische Wort für die Zahl nach sechs. Hänge die Diminutiv-Mehrzahl von „steeg" (schmale Gasse) an. Du stehst, wo du stehen musst.', hint: 'Niederländisch „sieben" + „kleine Gassen". Zwei Wörter.', explain: 'ZEVEN = 7 auf Niederländisch; STEEGJES ist die Diminutiv-Mehrzahl von „steeg" (Gasse). Eine Arbeitersiedlung des 19. Jh. — sieben schmale Gässchen, die sich noch immer wie 1850 anfühlen.' },
         },
         fr: {
           theme: 'Sept ruelles minuscules',
@@ -841,6 +849,7 @@ const hiddenUtrecht = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'Les Zeven Steegjes (« sept petites ruelles ») ont été bâties en 1830–1850 par une œuvre catholique pour les familles ouvrières les plus pauvres. Les maisons font 4 m de large et 50 m² à l\'intérieur. Tout près du centre, l\'ambiance reste celle d\'un village du XIXᵉ — la plupart sont nommées d\'après des oiseaux.',
           trivia: { question: 'Pourquoi les Zeven Steegjes ont-elles été construites dans les années 1830 ?', options: ['Logements étudiants', 'Maisons ouvrières d\'une œuvre catholique', 'Écuries', 'Logements de quarantaine'], correctIndex: 1, explain: 'Bâties par une œuvre catholique pour les familles ouvrières les plus modestes.' },
+          puzzle: { prompt: 'Prends le mot néerlandais pour le nombre qui suit six. Fais-le suivre du pluriel diminutif de « steeg » (ruelle étroite). Tu te tiens là où tu dois te tenir.', hint: 'Néerlandais « sept » + « petites ruelles ». Deux mots.', explain: 'ZEVEN = 7 en néerlandais ; STEEGJES est le pluriel diminutif de « steeg » (ruelle). Un quartier ouvrier du XIXᵉ siècle — sept ruelles étroites qui ont gardé l\'âme de 1850.' },
         },
       },
     },
@@ -870,6 +879,7 @@ const hiddenUtrecht = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'Paushuize is in 1517 gebouwd voor kardinaal Adriaan Florisz Boeyens — die in 1522 tot paus Adrianus VI werd gekozen, de enige Nederlandse paus ooit. Hij stierf in Rome voor hij naar Utrecht kon terugkeren. Het huis heeft nog een stenen reliëf van hem en wordt nu gebruikt voor stedelijke ontvangsten.',
           trivia: { question: 'Hoeveel Nederlandse pausen zijn er ooit geweest?', options: ['0', '1', '3', '7'], correctIndex: 1, explain: 'Precies één — Adrianus VI, de kardinaal die dit huis bouwde.' },
+          puzzle: { prompt: "Het Nederlandse woord voor de man die in Rome de vissersring draagt, samengevoegd met het verkleinwoord van 'huis'. Gebouwd voor een Utrechter die de baan kreeg maar nooit terugkwam.", hint: "'Paus' + 'huize'. Eén woord.", explain: "PAUSHUIZE — gebouwd in 1517 voor kardinaal Adriaan Boeyens, de enige Nederlander die ooit tot paus werd gekozen (Adrianus VI, 1522). Hij stierf een jaar later in Rome en zag het huis nooit voltooid." },
         },
         de: {
           theme: 'Erster niederländischer Papst',
@@ -880,6 +890,7 @@ const hiddenUtrecht = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Paushuize („Papsthaus") wurde 1517 für Kardinal Adriaan Florisz Boeyens erbaut — der 1522 als Papst Hadrian VI. gewählt wurde, der erste und einzige niederländische Papst. Er starb in Rom, bevor er zurückkehren konnte. Ein Steinrelief von ihm prangt noch immer dort, das Haus dient heute städtischen Empfängen.',
           trivia: { question: 'Wie viele niederländische Päpste gab es je?', options: ['0', '1', '3', '7'], correctIndex: 1, explain: 'Genau einen — Hadrian VI., den Kardinal, der dieses Haus baute.' },
+          puzzle: { prompt: 'Das niederländische Wort für den Mann, der in Rom den Fischerring trägt, verbunden mit der Verkleinerungsform von „huis" (Haus). Gebaut für einen Utrechter, der den Job bekam, aber nie heimkehrte.', hint: '„Paus" (Papst) + „huize" (Häuschen). Ein Wort.', explain: 'PAUSHUIZE — 1517 für Kardinal Adriaan Boeyens gebaut, den einzigen je gewählten niederländischen Papst (Hadrian VI., 1522). Er starb ein Jahr später in Rom, ohne das fertige Haus je gesehen zu haben.' },
         },
         fr: {
           theme: 'Premier pape néerlandais',
@@ -890,6 +901,7 @@ const hiddenUtrecht = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'Paushuize (« la Maison du Pape ») fut bâtie en 1517 pour le cardinal Adriaan Florisz Boeyens — élu pape Adrien VI en 1522, le premier et unique pape néerlandais. Il mourut à Rome avant de pouvoir rentrer. La maison conserve un bas-relief le représentant et accueille aujourd\'hui des réceptions officielles.',
           trivia: { question: 'Combien de papes néerlandais ont existé ?', options: ['0', '1', '3', '7'], correctIndex: 1, explain: 'Un seul — Adrien VI, le cardinal qui fit construire cette maison.' },
+          puzzle: { prompt: "Le mot néerlandais pour l'homme qui porte l'anneau du pêcheur à Rome, joint au diminutif de « huis » (maison). Bâtie pour un Utrechtois qui obtint le poste mais ne rentra jamais.", hint: "« Paus » (pape) + « huize » (petite maison). Un mot.", explain: "PAUSHUIZE — bâtie en 1517 pour le cardinal Adriaan Boeyens, le seul Néerlandais jamais élu pape (Adrien VI, 1522). Il mourut un an plus tard à Rome sans avoir vu la maison achevée." },
         },
       },
     },
@@ -919,6 +931,7 @@ const hiddenUtrecht = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'De Winkel van Sinkel opende in 1839 en vond het moderne warenhuis in Nederland uit — vaste prijzen, geen afdingen. De vier reuzinnen aan de gevel kwamen uit Engeland; ze waren zo zwaar dat de hijskraan brak bij het lossen. Daar komt de uitdrukking "daar helpt geen lieve moederen aan" vandaan.',
           trivia: { question: 'Wat brak er tijdens het lossen van de beroemde beelden?', options: ['De werf', 'De hijskraan', 'Een schip', 'De voordeur'], correctIndex: 1, explain: 'De hijskraan brak — de beelden waren zo zwaar dat het een spreekwoord opleverde.' },
+          puzzle: { prompt: 'Caesar-cijfer: XJOLFM WBO TJOLFM. Schuif elke letter één positie terug om de naam te onthullen van het eerste warenhuis van Nederland.', hint: 'Caesar -1. X→W, J→I, O→N, L→K…', explain: 'Caesar -1. WINKEL VAN SINKEL — passend, want de Winkel van Sinkel was zelf een verschuiving in winkelen: vaste prijzen, geen afdingen.' },
         },
         de: {
           theme: 'Erstes Kaufhaus',
@@ -929,6 +942,7 @@ const hiddenUtrecht = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Der Winkel van Sinkel eröffnete 1839 und erfand das moderne Kaufhaus in den Niederlanden — Festpreise statt Feilschen. Die vier riesigen Frauenstatuen am Eingang kamen aus England; sie waren so schwer, dass der Kran beim Entladen brach. Daraus entstand das niederländische Sprichwort „daar helpt geen lieve moederen aan" — „da hilft nicht einmal eine liebe Mutter".',
           trivia: { question: 'Was zerbrach beim Entladen der berühmten Statuen?', options: ['Die Werft', 'Der Kran', 'Ein Lastkahn', 'Die Eingangstür'], correctIndex: 1, explain: 'Der Kran brach — die Statuen waren so schwer, dass daraus ein Sprichwort wurde.' },
+          puzzle: { prompt: 'Caesar-Chiffre: XJOLFM WBO TJOLFM. Verschiebe jeden Buchstaben eine Stelle rückwärts, um den Namen des ersten Kaufhauses der Niederlande zu enthüllen.', hint: 'Caesar -1. X→W, J→I, O→N, L→K…', explain: 'Caesar -1. WINKEL VAN SINKEL — passend, denn der Winkel van Sinkel war selbst eine Verschiebung im Einkaufen: Festpreise, kein Feilschen.' },
         },
         fr: {
           theme: 'Premier grand magasin',
@@ -939,6 +953,7 @@ const hiddenUtrecht = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'Winkel van Sinkel ouvrit en 1839 et inventa le grand magasin moderne aux Pays-Bas — prix fixes, sans marchandage. Les quatre statues de femmes encadrant l\'entrée venaient d\'Angleterre ; elles étaient si lourdes que la grue se rompit au déchargement. D\'où le proverbe néerlandais « daar helpt geen lieve moederen aan » — « même une bonne mère n\'y peut rien ».',
           trivia: { question: 'Qu\'est-ce qui s\'est rompu lors du déchargement des fameuses statues ?', options: ['Le quai', 'La grue', 'Une barge', 'La porte d\'entrée'], correctIndex: 1, explain: 'La grue cassa — les statues étaient si lourdes que cela donna naissance à un proverbe.' },
+          puzzle: { prompt: 'Chiffre de César : XJOLFM WBO TJOLFM. Décale chaque lettre d\'une position en arrière pour révéler le nom du premier grand magasin des Pays-Bas.', hint: 'César -1. X→W, J→I, O→N, L→K…', explain: 'César -1. WINKEL VAN SINKEL — approprié, car le Winkel van Sinkel fut lui-même une révolution du commerce : prix fixes, aucun marchandage.' },
         },
       },
     },
@@ -968,6 +983,7 @@ const hiddenUtrecht = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'Lepelenburg is een van de laatste overgebleven bastions van Utrechts 16e-eeuwse stervormige stadsmuur. Toen de muren in 1830 werden gesloopt, vormde architect Jan David Zocher (van het Amsterdamse Vondelpark) de bastions om tot een ring van romantische parken. ‘s Zomers is hier elke zondag een gratis klassiek muziekfestival.',
           trivia: { question: 'Wie maakte van Utrechts oude bastions in de 19e eeuw parken?', options: ['Pierre Cuypers', 'Jan David Zocher', 'Gerrit Rietveld', 'Napoleon'], correctIndex: 1, explain: 'Jan David Zocher — dezelfde landschapsarchitect achter het Vondelpark in Amsterdam.' },
+          puzzle: { prompt: 'Anagram: P U L B G N R L E E E. 11 letters. Een bastion dat park werd — de naam begint met het Nederlandse woord voor "lepel".', hint: '11 letters. Bastion-park; naam begint met "lepel".', explain: 'LEPELENBURG — letterlijk "lepel-burcht", naar de gebogen vorm van het oorspronkelijke bastion uit 1554, gezien van bovenaf. In 1830 ontwapend en door dezelfde architect die later Vondelpark ontwierp tot park omgevormd.' },
         },
         de: {
           theme: 'Geheimer Wallpark',
@@ -978,6 +994,7 @@ const hiddenUtrecht = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Lepelenburg ist eine der letzten erhaltenen Bastionen von Utrechts sternförmiger Stadtmauer aus dem 16. Jh. Als die Mauern 1830 abgerissen wurden, verwandelte Landschaftsarchitekt Jan David Zocher (auch verantwortlich für Amsterdams Vondelpark) die Bastionen in einen Ring romantischer Parks. Im Sommer findet hier jeden Sonntag ein kostenloses Klassikfestival statt.',
           trivia: { question: 'Wer verwandelte Utrechts alte Bastionen im 19. Jh. in Parks?', options: ['Pierre Cuypers', 'Jan David Zocher', 'Gerrit Rietveld', 'Napoleon'], correctIndex: 1, explain: 'Jan David Zocher — derselbe Landschaftsarchitekt, der auch den Vondelpark in Amsterdam plante.' },
+          puzzle: { prompt: 'Anagramm: P U L B G N R L E E E. 11 Buchstaben. Eine zur Parkanlage umgebaute Bastion — der Name beginnt mit dem niederländischen Wort für „Löffel" (lepel).', hint: '11 Buchstaben. Bastion-Park; Name beginnt mit „lepel" (Löffel).', explain: 'LEPELENBURG — wörtlich „Löffel-Burg", nach der geschwungenen Form der ursprünglichen Bastion von 1554 (aus der Vogelperspektive). 1830 entwaffnet und von demselben Architekten, der später den Vondelpark entwarf, in eine Parkanlage umgewandelt.' },
         },
         fr: {
           theme: 'Parc-rempart secret',
@@ -988,6 +1005,7 @@ const hiddenUtrecht = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'Lepelenburg est l\'un des derniers bastions subsistants des remparts en étoile d\'Utrecht au XVIᵉ siècle. Quand les murs furent abattus en 1830, l\'architecte Jan David Zocher (à qui l\'on doit aussi le Vondelpark d\'Amsterdam) transforma les bastions en une ceinture de parcs romantiques. Chaque dimanche d\'été s\'y tient un festival classique gratuit.',
           trivia: { question: 'Qui transforma les anciens bastions d\'Utrecht en parcs au XIXᵉ siècle ?', options: ['Pierre Cuypers', 'Jan David Zocher', 'Gerrit Rietveld', 'Napoléon'], correctIndex: 1, explain: 'Jan David Zocher — l\'architecte paysagiste qui conçut aussi le Vondelpark à Amsterdam.' },
+          puzzle: { prompt: 'Anagramme : P U L B G N R L E E E. 11 lettres. Un bastion devenu parc — le nom commence par le mot néerlandais pour « cuillère » (lepel).', hint: '11 lettres. Bastion-parc ; le nom commence par « lepel » (cuillère).', explain: 'LEPELENBURG — littéralement « forteresse-cuillère », d\'après la forme incurvée du bastion de 1554 vu d\'en haut. Désarmé en 1830 et transformé en parc par le même architecte qui dessina plus tard le Vondelpark.' },
         },
       },
     },
@@ -1017,6 +1035,7 @@ const hiddenUtrecht = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'Ledig Erf betekent letterlijk "leeg erf" — lang een onverhard laadterrein aan het einde van de Oudegracht. Nu zit hier Café Ledig Erf en Kafé België, twee van Nederlands beroemdste speciaalbiercafés. Op zomerse zondagen zijn de terrassen voor de middag al vol.',
           trivia: { question: 'Wat betekent "Ledig Erf" letterlijk?', options: ['Luie herberg', 'Leeg erf', 'Waterpoort', 'Biermarkt'], correctIndex: 1, explain: 'Leeg erf — ooit het onverharde einde van de gracht waar boten losten.' },
+          puzzle: { prompt: 'Lees beide woorden achterstevoren: FRE GIDEL. Nederlands voor "leeg erf" — al komen er drie grachten samen.', hint: 'Twee woorden, beide omgekeerd. Nederlands voor "leeg erf".', explain: 'LEDIG ERF — "leeg erf". De naam stamt uit de tijd dat dit een onverhard laadterrein was; nu de beroemdste speciaalbier-hoek van Utrecht.' },
         },
         de: {
           theme: 'Wo drei Grachten sich treffen',
@@ -1027,6 +1046,7 @@ const hiddenUtrecht = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Ledig Erf bedeutet „leerer Hof" — lange ein unbefestigter Verladeplatz am Ende der Oudegracht. Heute beherbergt der Platz Café Ledig Erf und Kafé België, zwei der berühmtesten Craft-Beer-Cafés der Niederlande. An Sommersonntagen sind die Terrassen schon vor Mittag voll.',
           trivia: { question: 'Was bedeutet „Ledig Erf" wörtlich?', options: ['Faules Wirtshaus', 'Leerer Hof', 'Wassertor', 'Biermarkt'], correctIndex: 1, explain: 'Leerer Hof — einst das unbefestigte Ende der Gracht, wo Boote entluden.' },
+          puzzle: { prompt: 'Lies beide Wörter rückwärts: FRE GIDEL. Niederländisch für „leerer Hof" — obwohl hier drei Grachten zusammenlaufen.', hint: 'Zwei Wörter, beide rückwärts. Niederländisch für „leerer Hof".', explain: 'LEDIG ERF — „leerer Hof". Der Name stammt aus der Zeit, als hier ein unbefestigter Verladeplatz war; heute die berühmteste Craft-Beer-Ecke Utrechts.' },
         },
         fr: {
           theme: 'Où trois canaux se rencontrent',
@@ -1037,6 +1057,7 @@ const hiddenUtrecht = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'Ledig Erf signifie littéralement « cour vide » — longtemps une aire de chargement non pavée au bout de l\'Oudegracht. On y trouve aujourd\'hui Café Ledig Erf et Kafé België, deux des cafés craft-beer les plus célèbres des Pays-Bas. Les dimanches d\'été, les terrasses sont pleines avant midi.',
           trivia: { question: 'Que signifie littéralement « Ledig Erf » ?', options: ['Auberge paresseuse', 'Cour vide', 'Porte d\'eau', 'Marché à la bière'], correctIndex: 1, explain: 'Cour vide — autrefois le bout non pavé du canal où les bateaux déchargeaient.' },
+          puzzle: { prompt: 'Lis les deux mots à l\'envers : FRE GIDEL. Néerlandais pour « cour vide » — pourtant trois canaux s\'y rejoignent.', hint: 'Deux mots, tous deux à l\'envers. Néerlandais pour « cour vide ».', explain: 'LEDIG ERF — « cour vide ». Le nom date de l\'époque où c\'était une zone de chargement non pavée ; aujourd\'hui le coin le plus célèbre de la bière artisanale d\'Utrecht.' },
         },
       },
     },
