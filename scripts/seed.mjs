@@ -1456,6 +1456,7 @@ const amsterdamClassic = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'Het Koninklijk Paleis werd gebouwd als stadhuis van Amsterdam van 1648–1655, op 13.659 houten palen. Het werd een koninklijk paleis in 1808 toen Lodewijk Napoleon, broer van Keizer Napoleon, erin trok. De Burgerzaal marmeren vloer toont de grootste bekende middeleeuwse kaart.',
           trivia: { question: 'Hoeveel houten palen dragen het Koninklijk Paleis?', options: ['3.659', '13.659', '23.659', '33.659'], correctIndex: 1, explain: '13.659 palen — gedreven in de zandige grond van de Dam.' },
+          puzzle: { prompt: 'Caesar-cijfer: URBDO SDODFH. Schuif elke letter drie posities terug. Twee woorden — het tweede betekent "paleis".', hint: 'Caesar -3. U→R, R→O, B→Y… Eindigt op PALACE/PALEIS.', explain: 'Caesar -3. ROYAL PALACE — het 17e-eeuwse stadhuis van Amsterdam dat in 1808 de residentie werd van Lodewijk Napoleon en nu nog steeds gebruikt wordt door de Nederlandse koninklijke familie.' },
         },
         de: {
           theme: 'Königspalast auf dem Dam',
@@ -1466,6 +1467,7 @@ const amsterdamClassic = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Der Königliche Palast wurde als Amsterdamer Rathaus 1648–1655 auf 13.659 Holzpfählen gebaut. Er wurde 1808 zum königlichen Palast, als Louis Napoleon, Bruder von Kaiser Napoleon, einzog. Der Marmorboden des Bürgersaals zeigt die größte bekannte mittelalterliche Karte.',
           trivia: { question: 'Wie viele Holzpfähle stützen den Königlichen Palast?', options: ['3.659', '13.659', '23.659', '33.659'], correctIndex: 1, explain: '13.659 Pfähle — in den sandigen Boden des Dam getrieben.' },
+          puzzle: { prompt: 'Caesar-Chiffre: URBDO SDODFH. Verschiebe jeden Buchstaben drei Stellen rückwärts. Zwei Wörter — das zweite bedeutet „Palast".', hint: 'Caesar -3. U→R, R→O, B→Y… Endet auf PALACE.', explain: 'Caesar -3. ROYAL PALACE — das Amsterdamer Rathaus aus dem 17. Jh., das 1808 Residenz von Louis Napoleon wurde und bis heute von der niederländischen Königsfamilie genutzt wird.' },
         },
         fr: {
           theme: 'Palais royal sur le Dam',
@@ -1476,6 +1478,7 @@ const amsterdamClassic = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'Le Palais Royal fut construit comme hôtel de ville d\'Amsterdam de 1648 à 1655, sur 13 659 pieux en bois. Il devint palais royal en 1808 lorsque Louis Napoléon, frère de l\'Empereur Napoléon, emménagea. Le sol en marbre de la Salle des Citoyens présente la plus grande carte médiévale connue.',
           trivia: { question: 'Combien de pieux en bois soutiennent le Palais Royal?', options: ['3 659', '13 659', '23 659', '33 659'], correctIndex: 1, explain: '13 659 pieux — enfoncés dans le sol sablonneux du Dam.' },
+          puzzle: { prompt: 'Chiffre de César : URBDO SDODFH. Décale chaque lettre de trois positions en arrière. Deux mots — le second signifie « palais ».', hint: 'César -3. U→R, R→O, B→Y… Se termine par PALACE.', explain: 'César -3. ROYAL PALACE — l\'hôtel de ville d\'Amsterdam du XVIIᵉ siècle devenu résidence de Louis Napoléon en 1808, encore utilisé aujourd\'hui par la famille royale néerlandaise.' },
         },
       },
     },
@@ -1505,6 +1508,7 @@ const amsterdamClassic = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'De Oude Kerk werd gebouwd rond 1300, wat het oudste gebouw van Amsterdam maakt. Het houten plafond dateert van 1390 en overleefde twee stadsbranden in 1421 en 1452. De kerk leunt ongeveer 2 meter naar het oosten door grondverzakking. Beroemde mensen hier begraven zijn onder meer Rembrandts vrouw Saskia.',
           trivia: { question: 'Wie is begraven in de Oude Kerk?', options: ['Rembrandt', 'Saskia van Uylenburgh', 'Vincent van Gogh', 'Anne Frank'], correctIndex: 1, explain: 'Saskia van Uylenburgh — Rembrandts vrouw — begraven in 1642.' },
+          puzzle: { prompt: "Nederlands bijvoeglijk naamwoord voor 'oud' (zoals bij oude grachten, oude torens, oude havens), samengevoegd met het woord voor een gebouw met glas-in-lood en kerkbanken. Amsterdams oudste.", hint: "'Oude' (oud) + 'kerk'. Twee woorden.", explain: 'OUDE KERK — gebouwd rond 1300 op wat toen een zandbank was. Rembrandts vrouw Saskia ligt hier begraven; de Wallen ontstonden rond het kerkhof.' },
         },
         de: {
           theme: 'Älteste Kirche in Amsterdam',
@@ -1515,6 +1519,7 @@ const amsterdamClassic = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Die Oude Kerk wurde um 1300 gebaut, was sie zum ältesten Gebäude Amsterdams macht. Die Holzdecke stammt von 1390 und überlebte zwei Stadtbrände 1421 und 1452. Die Kirche lehnt etwa 2 Meter nach Osten aufgrund von Bodensenkung. Berühmte hier begraben sind unter anderem Rembrandts Frau Saskia.',
           trivia: { question: 'Wer ist in der Oude Kerk begraben?', options: ['Rembrandt', 'Saskia van Uylenburgh', 'Vincent van Gogh', 'Anne Frank'], correctIndex: 1, explain: 'Saskia van Uylenburgh — Rembrandts Frau — begraben 1642.' },
+          puzzle: { prompt: 'Niederländisches Adjektiv für „alt" (für alte Grachten, alte Türme, alte Häfen gleichermaßen), verbunden mit dem Wort für ein Gebäude mit Buntglas und Kirchenbänken. Amsterdams älteste.', hint: "'Oude' (alt) + 'kerk' (Kirche). Zwei Wörter.", explain: 'OUDE KERK — um 1300 auf einer Sandbank erbaut. Rembrandts Frau Saskia liegt hier begraben; das Rotlichtviertel entstand rings um den Kirchhof.' },
         },
         fr: {
           theme: 'Plus ancienne église d\'Amsterdam',
@@ -1525,6 +1530,7 @@ const amsterdamClassic = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'L\'Oude Kerk fut construite vers 1300, ce qui en fait le plus ancien bâtiment d\'Amsterdam. Le plafond en bois date de 1390 et a survécu à deux incendies en 1421 et 1452. L\'église penche d\'environ 2 mètres vers l\'est à cause de l\'affaissement du sol. Des personnalités enterrées ici incluent la femme de Rembrandt, Saskia.',
           trivia: { question: 'Qui est enterré dans l\'Oude Kerk?', options: ['Rembrandt', 'Saskia van Uylenburgh', 'Vincent van Gogh', 'Anne Frank'], correctIndex: 1, explain: 'Saskia van Uylenburgh — la femme de Rembrandt — enterrée en 1642.' },
+          puzzle: { prompt: "Adjectif néerlandais signifiant « vieux » (pour vieux canaux, vieilles tours, vieux ports), joint au mot pour un bâtiment avec vitraux et bancs. La plus ancienne d'Amsterdam.", hint: "'Oude' (vieux) + 'kerk' (église). Deux mots.", explain: "OUDE KERK — construite vers 1300 sur un banc de sable. La femme de Rembrandt, Saskia, y est enterrée ; le Quartier rouge s'est développé autour du cimetière." },
         },
       },
     },
@@ -1554,6 +1560,7 @@ const amsterdamClassic = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'Het Anne Frank Huis werd gebouwd als pakhuis in 1635. Anne Frank en haar familie verstopten zich in het geheime achterhuis van juli 1942 tot augustus 1944. Het dagboek werd gepubliceerd in 1947 en is vertaald in meer dan 70 talen. Vandaag ontvangt het museum meer dan 1,3 miljoen bezoekers per jaar.',
           trivia: { question: 'Hoeveel bezoekers ontvangt het Anne Frank Huis per jaar?', options: ['300.000', '800.000', '1,3 miljoen', '3 miljoen'], correctIndex: 2, explain: 'Meer dan 1,3 miljoen — het meest bezochte museum van Nederland.' },
+          puzzle: { prompt: 'Lees achterstevoren: SIUH KNARF ENNA. Loop dan naar het pakhuis aan de gracht waar acht mensen zich verborgen hielden.', hint: 'Lees het andersom. Drie woorden — een meisje, een achternaam, een gebouw.', explain: 'Drie woorden, allemaal omgekeerd. Het achterhuis was alleen bereikbaar via een draaibare boekenkast — een letterlijke omkering van een normale deur.' },
         },
         de: {
           theme: 'Geheimes Hinterhaus',
@@ -1564,6 +1571,7 @@ const amsterdamClassic = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Das Anne Frank Haus wurde 1635 als Lagerhaus gebaut. Anne Frank und ihre Familie versteckten sich im geheimen Hinterhaus von Juli 1942 bis August 1944. Das Tagebuch wurde 1947 veröffentlicht und wurde in über 70 Sprachen übersetzt. Heute empfängt das Museum über 1,3 Millionen Besucher jährlich.',
           trivia: { question: 'Wie viele Besucher empfängt das Anne Frank Haus pro Jahr?', options: ['300.000', '800.000', '1,3 Millionen', '3 Millionen'], correctIndex: 2, explain: 'Über 1,3 Millionen — das meistbesuchte Museum der Niederlande.' },
+          puzzle: { prompt: 'Lies rückwärts: SIUH KNARF ENNA. Geh dann zum Lagerhaus an der Gracht, in dem sich acht Menschen versteckten.', hint: 'Lies es andersherum. Drei Wörter — ein Mädchen, ein Nachname, ein Gebäude.', explain: 'Drei Wörter, alle rückwärts. Der Anbau war nur durch ein drehbares Bücherregal zugänglich — eine wörtliche Umkehrung einer normalen Tür.' },
         },
         fr: {
           theme: 'Annexe secrète',
@@ -1574,6 +1582,7 @@ const amsterdamClassic = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'La Maison d\'Anne Frank fut construite comme entrepôt en 1635. Anne Frank et sa famille se sont cachées dans l\'annexe secrète de juillet 1942 à août 1944. Le journal fut publié en 1947 et a été traduit en plus de 70 langues. Aujourd\'hui le musée reçoit plus d\'1,3 million de visiteurs annuellement.',
           trivia: { question: 'Combien de visiteurs la Maison d\'Anne Frank reçoit-elle par an?', options: ['300 000', '800 000', '1,3 million', '3 millions'], correctIndex: 2, explain: 'Plus d\'1,3 million — le musée le plus visité des Pays-Bas.' },
+          puzzle: { prompt: "Lis à l'envers : SIUH KNARF ENNA. Marche ensuite jusqu'à l'entrepôt du canal où huit personnes se cachèrent.", hint: 'Lis dans l\'autre sens. Trois mots — une fille, un nom, un bâtiment.', explain: 'Trois mots, tous renversés. L\'annexe n\'était accessible que par une bibliothèque pivotante — un renversement littéral d\'une porte ordinaire.' },
         },
       },
     },
@@ -1603,6 +1612,7 @@ const amsterdamClassic = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'Het Van Gogh Museum opende in 1973, ontworpen door Gerrit Rietveld. De collectie werd samengesteld door Theo van Gogh\'s weduwe, Jo van Gogh-Bonger, die haar leven wijdde aan het bewaren van Vincent\'s nalatenschap. Het museum ontvangt meer dan 2 miljoen bezoekers per jaar.',
           trivia: { question: 'Wie redde en verzamelde Van Gogh\'s collectie?', options: ['Vincent zelf', 'Theo\'s weduwe Jo', 'Een rijke kunsthandelaar', 'De Nederlandse overheid'], correctIndex: 1, explain: 'Jo van Gogh-Bonger — Theo\'s weduwe — spendeerde haar leven aan het opbouwen van de collectie.' },
+          puzzle: { prompt: 'Anagram: G H N O V A G. 7 letters. De schilder die zijn eigen oor afsneed — en wiens achternaam de meeste niet-Nederlanders verkeerd uitspreken.', hint: '7 letters. De schilder van de zonnebloemen.', explain: 'VAN GOGH — Vincent (1853–1890) woonde slechts twee jaar in Parijs en trok daarna zuidwaarts achter het licht aan. Van zijn 850 schilderijen heeft dit museum er 200 — de grootste collectie ter wereld, gered door zijn schoonzus Jo.' },
         },
         de: {
           theme: 'Van Goghs Vision',
@@ -1613,6 +1623,7 @@ const amsterdamClassic = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Das Van Gogh Museum wurde 1973 eröffnet, entworfen von Gerrit Rietveld. Die Sammlung wurde von Theo van Goghs Witwe, Jo van Gogh-Bonger, zusammengetragen, die ihr Leben der Bewahrung von Vincents Vermächtnis widmete. Das Museum empfängt über 2 Millionen Besucher jährlich.',
           trivia: { question: 'Wer rettete und sammelte Van Goghs Sammlung?', options: ['Vincent selbst', 'Theos Witwe Jo', 'Ein reicher Kunsthändler', 'Die niederländische Regierung'], correctIndex: 1, explain: 'Jo van Gogh-Bonger — Theos Witwe — verbrachte ihr Leben mit dem Aufbau der Sammlung.' },
+          puzzle: { prompt: 'Anagramm: G H N O V A G. 7 Buchstaben. Der Maler, der sich sein eigenes Ohr abschnitt — und dessen Nachname die meisten Nicht-Niederländer falsch aussprechen.', hint: '7 Buchstaben. Der Maler der Sonnenblumen.', explain: 'VAN GOGH — Vincent (1853–1890) lebte nur zwei Jahre in Paris, dann zog er dem Licht hinterher in den Süden. Von seinen 850 Gemälden besitzt dieses Museum 200 — die größte Sammlung weltweit, gerettet von seiner Schwägerin Jo.' },
         },
         fr: {
           theme: 'La vision de Van Gogh',
@@ -1623,6 +1634,7 @@ const amsterdamClassic = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'Le Musée Van Gogh a ouvert en 1973, conçu par Gerrit Rietveld. La collection a été assemblée par la veuve de Theo van Gogh, Jo van Gogh-Bonger, qui a consacré sa vie à préserver l\'héritage de Vincent. Le musée reçoit plus de 2 millions de visiteurs annuellement.',
           trivia: { question: 'Qui a sauvé et assemblé la collection de Van Gogh?', options: ['Vincent lui-même', 'La veuve de Theo Jo', 'Un riche marchand d\'art', 'Le gouvernement néerlandais'], correctIndex: 1, explain: 'Jo van Gogh-Bonger — la veuve de Theo — a consacré sa vie à constituer la collection.' },
+          puzzle: { prompt: 'Anagramme : G H N O V A G. 7 lettres. Le peintre qui se trancha lui-même l\'oreille — et dont la plupart des non-Néerlandais écorchent le nom.', hint: '7 lettres. Le peintre des tournesols.', explain: 'VAN GOGH — Vincent (1853–1890) ne vécut que deux ans à Paris, puis partit chercher la lumière dans le sud. Sur ses 850 toiles, ce musée en possède 200 — la plus grande collection au monde, sauvée par sa belle-sœur Jo.' },
         },
       },
     },
@@ -1652,6 +1664,7 @@ const amsterdamClassic = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'De Herengracht is de eerste van de drie hoofdgrachten. De Gouden Bocht sectie heeft de breedste herenhuizen — sommige 30 meter diep. Veel huizen hadden oorspronkelijk twee ingangen: één voor zaken (grachtzijde) en één voor familie (straatzijde).',
           trivia: { question: 'Hoe diep zijn sommige van de meest grandioze Herengracht-herenhuizen?', options: ['10 meter', '20 meter', '30 meter', '50 meter'], correctIndex: 2, explain: 'Tot 30 meter diep — smal aan de voorkant, diep van binnen.' },
+          puzzle: { prompt: "Het Nederlandse meervoud voor 'heer', gevolgd door het woord voor 'gracht'. Twee stammen, één gracht. De grandste van de drie ringen.", hint: "'Heren' + 'gracht' — één woord.", explain: 'HEREN + GRACHT. Gegraven in 1612 voor de rijkste handelaren van de stad — zij betaalden extra om hun gevels juist aan deze ring te laten uitkomen.' },
         },
         de: {
           theme: 'Großer Grachtengürtel',
@@ -1662,6 +1675,7 @@ const amsterdamClassic = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Die Herengracht ist die erste der drei Hauptgrachten. Die Gouden Bocht-Sektion hat die breitesten Herrenhäuser — manche 30 Meter tief. Viele Häuser hatten ursprünglich zwei Eingänge: einen für Geschäfte (Grachtseite) und einen für Familie (Straßenseite).',
           trivia: { question: 'Wie tief sind einige der grandiosesten Herengracht-Herrenhäuser?', options: ['10 Meter', '20 Meter', '30 Meter', '50 Meter'], correctIndex: 2, explain: 'Bis zu 30 Meter tief — schmal an der Vorderseite, tief im Inneren.' },
+          puzzle: { prompt: 'Der niederländische Plural für „Herr", gefolgt vom Wort für „Gracht". Zwei Stämme, eine Gracht. Die grandioseste der drei Ringe.', hint: "'Heren' (Herren) + 'gracht' (Gracht). Ein Wort.", explain: 'HEREN + GRACHT. 1612 für die reichsten Kaufleute der Stadt gegraben — sie zahlten einen Aufpreis, damit ihre Giebel gerade an diesem Ring lagen.' },
         },
         fr: {
           theme: 'Grand canal en ceinture',
@@ -1672,6 +1686,7 @@ const amsterdamClassic = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'L\'Herengracht est le premier des trois canaux principaux. La section Gouden Bocht (Courbe dorée) a les demeures les plus larges — certaines de 30 mètres de profondeur. Beaucoup de maisons avaient à l\'origine deux entrées : une pour les affaires (côté canal) et une pour la famille (côté rue).',
           trivia: { question: 'Quelle est la profondeur de certaines des plus grandes demeures de l\'Herengracht?', options: ['10 mètres', '20 mètres', '30 mètres', '50 mètres'], correctIndex: 2, explain: 'Jusqu\'à 30 mètres de profondeur — étroites à l\'avant, profondes à l\'intérieur.' },
+          puzzle: { prompt: "Le pluriel néerlandais de « monsieur », suivi du mot pour « canal ». Deux racines, un canal. Le plus grandiose des trois anneaux.", hint: "'Heren' (messieurs) + 'gracht' (canal). Un mot.", explain: 'HEREN + GRACHT. Creusé en 1612 pour les marchands les plus riches de la ville — ils payaient un supplément pour que leurs pignons donnent précisément sur cet anneau.' },
         },
       },
     },
@@ -1701,6 +1716,7 @@ const amsterdamClassic = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'Café \'t Smalle is open sinds 1642. De bruine muren komen van eeuwen tabaksrook binnen. Het traditionele Nederlandse jeneverrecept dat hier gebruikt wordt is niet veranderd sinds de 17e eeuw. Het overleefde de Napoleontische oorlogen en beide Wereldoorlogen.',
           trivia: { question: 'Wat geeft bruine cafés hun kenmerkende kleur?', options: ['Verf', 'Tabaksrook', 'Verouderd hout', 'Gemorste koffie'], correctIndex: 1, explain: 'Eeuwen tabaksrook kleurden de muren bruin.' },
+          puzzle: { prompt: "Het Nederlandse bijvoeglijk naamwoord voor 'smal' (tegenovergesteld aan breed), voorafgegaan door het lidwoord 't (samentrekking van 'het'). Vind me op een Jordaan-hoek — open sinds 1642, jenever wordt nog steeds geschonken.", hint: "'t (het) + 'smalle' (smal). Twee korte woorden.", explain: "'T SMALLE — 'de smalle [een]'. Geopend in 1642 als jeneverstokerij van Pieter Hoppe, grondlegger van de Hoppe-gindynastie. De bruine muren zijn 380 jaar tabaksrook." },
         },
         de: {
           theme: 'Braun-Café-Erbe',
@@ -1711,6 +1727,7 @@ const amsterdamClassic = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Café \'t Smalle ist seit 1642 geöffnet. Die braunen Wände kommen von Jahrhunderten Tabakrauch in Innenräumen. Das traditionelle niederländische Jenever-Rezept, das hier verwendet wird, hat sich seit dem 17. Jahrhundert nicht geändert. Es überlebte die Napoleonischen Kriege und beide Weltkriege.',
           trivia: { question: 'Was gibt Braun-Cafés ihre charakteristische Farbe?', options: ['Farbe', 'Tabakrauch', 'Alterndes Holz', 'Verschütteter Kaffee'], correctIndex: 1, explain: 'Jahrhunderte Tabakrauch färbten die Wände braun.' },
+          puzzle: { prompt: 'Das niederländische Adjektiv für „schmal" (Gegenteil von breit), mit dem bestimmten Artikel ’t (Kurzform von „het") davor. Suche mich an einer Ecke im Jordaan — geöffnet seit 1642, der Jenever fließt noch immer.', hint: '’t (das) + smalle (schmal). Zwei kurze Wörter.', explain: '’T SMALLE — „der/das Schmale". 1642 als Jenever-Brennerei von Pieter Hoppe eröffnet, dem Gründer der Hoppe-Gin-Familie. Die braunen Wände sind 380 Jahre Tabakrauch.' },
         },
         fr: {
           theme: 'Patrimoine café brun',
@@ -1721,6 +1738,7 @@ const amsterdamClassic = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'Café \'t Smalle est ouvert depuis 1642. Les murs bruns viennent de siècles de fumée de tabac en intérieur. La recette traditionnelle de genièvre hollandais utilisée ici n\'a pas changé depuis le XVIIᵉ siècle. Il a survécu aux guerres napoléoniennes et aux deux guerres mondiales.',
           trivia: { question: 'Qu\'est-ce qui donne aux cafés bruns leur couleur distinctive?', options: ['Peinture', 'Fumée de tabac', 'Bois vieilli', 'Café renversé'], correctIndex: 1, explain: 'Des siècles de fumée de tabac ont teint les murs en brun.' },
+          puzzle: { prompt: 'L\'adjectif néerlandais pour « étroit » (le contraire de large), précédé de l\'article ’t (contraction de « het »). Trouve-moi au coin d\'une rue du Jordaan — ouvert depuis 1642, le genièvre coule encore.', hint: '’t (le/la) + smalle (étroit). Deux mots courts.', explain: '’T SMALLE — « l\'Étroit ». Ouvert en 1642 comme distillerie de genièvre de Pieter Hoppe, fondateur de la dynastie du gin Hoppe. Les murs bruns sont 380 ans de fumée de tabac.' },
         },
       },
     },
@@ -1750,6 +1768,7 @@ const amsterdamClassic = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'Amsterdam heeft meer dan 880.000 fietsen — meer dan haar inwoners. Deze kruising werd herontworpen in 2019 met 360-graden fietspaden en verkeerslichten die elke 4 seconden wisselen. De fietsenstalling onder het Rijksmuseum houdt 12.000 fietsen.',
           trivia: { question: 'Hoeveel fietsen heeft Amsterdam?', options: ['400.000', '600.000', '880.000', '1,2 miljoen'], correctIndex: 2, explain: 'Meer dan 880.000 — meer dan de bevolking van de stad.' },
+          puzzle: { prompt: "De Nederlandse titel voor de regent die een provincie bestuurde vóór de koning (de 'stadhouder'), samengevoegd met 'kade' — het woord voor een kadeweg. Het kruispunt van deze laan met het Museumplein is 's werelds drukste fietskruising.", hint: "'Stadhouder' (regent) + 'kade'. Eén woord.", explain: 'STADHOUDERSKADE — oorspronkelijk de 17e-eeuwse buitenste grachtenkade, nu vooral bekend als de drukste fietskruising ter wereld (>40.000 fietsen/dag).' },
         },
         de: {
           theme: 'Fahrradstadt',
@@ -1760,6 +1779,7 @@ const amsterdamClassic = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Amsterdam hat über 880.000 Fahrräder — mehr als seine Bevölkerung. Diese Kreuzung wurde 2019 mit 360-Grad-Fahrradwegen und Ampeln umgestaltet, die alle 4 Sekunden wechseln. Der Fahrradparkplatz unter dem Rijksmuseum fasst 12.000 Fahrräder.',
           trivia: { question: 'Wie viele Fahrräder hat Amsterdam?', options: ['400.000', '600.000', '880.000', '1,2 Millionen'], correctIndex: 2, explain: 'Über 880.000 — mehr als die Stadtbevölkerung.' },
+          puzzle: { prompt: 'Der niederländische Titel für den Regenten, der eine Provinz vor dem König regierte (den „stadhouder"), verbunden mit „kade" — dem Wort für eine Uferstraße. Die Kreuzung dieser Allee mit dem Museumplein ist die meistbefahrene Fahrradkreuzung der Welt.', hint: '„Stadhouder" (Statthalter) + „kade" (Kai). Ein Wort.', explain: 'STADHOUDERSKADE — ursprünglich der äußere Grachtendamm aus dem 17. Jh., heute vor allem bekannt als die meistbefahrene Radkreuzung der Welt (>40.000 Räder/Tag).' },
         },
         fr: {
           theme: 'Ville cyclable',
@@ -1770,6 +1790,7 @@ const amsterdamClassic = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'Amsterdam a plus de 880 000 vélos — plus que sa population. Cette intersection a été redessinée en 2019 avec des pistes cyclables à 360 degrés et des feux qui changent toutes les 4 secondes. Le parking à vélos sous le Rijksmuseum accueille 12 000 vélos.',
           trivia: { question: 'Combien de vélos Amsterdam possède-t-elle?', options: ['400 000', '600 000', '880 000', '1,2 million'], correctIndex: 2, explain: 'Plus de 880 000 — plus que la population de la ville.' },
+          puzzle: { prompt: 'Le titre néerlandais du régent qui gouvernait une province avant le roi (le « stadhouder »), joint à « kade » — le mot pour une voie de quai. Le croisement de cette avenue avec le Museumplein est l\'intersection cyclable la plus fréquentée du monde.', hint: '« Stadhouder » (régent) + « kade » (quai). Un mot.', explain: 'STADHOUDERSKADE — à l\'origine la digue extérieure du XVIIᵉ siècle, aujourd\'hui surtout connue comme l\'intersection cyclable la plus fréquentée du monde (>40 000 vélos/jour).' },
         },
       },
     },
@@ -1799,6 +1820,7 @@ const amsterdamClassic = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'Singel 7 werd gebouwd in 1730 voor een weduwe die zich geen huis van volledige breedte kon veroorloven. Met 2,02 meter breed is het officieel het smalste huis van Amsterdam. Het interieur heeft slechts één kamer per verdieping, bereikt via een steile trap. Het was een belastingontwijking truc: smalle voorkant, diep van binnen.',
           trivia: { question: 'Waarom werd Singel 7 zo smal gebouwd?', options: ['Belastingontduiking', 'Beschikbare ruimte', 'Architecturaal experiment', 'Windweerstand'], correctIndex: 0, explain: 'Onroerendgoedbelasting was gebaseerd op breedte — smal betekende goedkoper.' },
+          puzzle: { prompt: "Ik ben 2,02 meter breed — het smalste huis van Amsterdam. Mijn adres: de binnenste gracht van de stad (haar naam is hetzelfde woord dat kooplieden gebruikten voor de buitenste 'gordel' van de stad), gevolgd door het kleinste enkelcijferige priemgetal dat niet 2, 3 of 5 is. Noem het adres.", hint: 'Naam van de gracht + een nummer. Het kleinste enkelcijferige priemgetal groter dan 5.', explain: "SINGEL 7 — gebouwd in 1730 voor een weduwe die geen volledig perceel kon betalen. De 'singel' was de stadsmuur van 1428; het getal is 7 (het kleinste priemgetal boven 5)." },
         },
         de: {
           theme: 'Schmalstes Haus',
@@ -1809,6 +1831,7 @@ const amsterdamClassic = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Singel 7 wurde 1730 für eine Witwe gebaut, die sich kein Haus mit voller Breite leisten konnte. Mit 2,02 Metern Breite ist es offiziell das schmalste Haus in Amsterdam. Das Innere hat nur einen Raum pro Etage, erreichbar über eine steile Treppe. Es war ein Steuertrick: schmale Front, tief innen.',
           trivia: { question: 'Warum wurde Singel 7 so schmal gebaut?', options: ['Steuerhinterziehung', 'Verfügbarer Raum', 'Architektonisches Experiment', 'Windwiderstand'], correctIndex: 0, explain: 'Die Grundsteuer basierte auf der Frontbreite — schmal bedeutete günstiger.' },
+          puzzle: { prompt: 'Ich bin 2,02 Meter breit — das schmalste Haus Amsterdams. Meine Adresse: die innerste Gracht der Stadt (ihr Name entspricht dem Wort, das die Kaufleute für den äußeren „Gürtel" der Stadt nutzten), gefolgt von der kleinsten einstelligen Primzahl, die nicht 2, 3 oder 5 ist. Nenne die Adresse.', hint: 'Name der Gracht + eine Zahl. Die kleinste einstellige Primzahl größer als 5.', explain: 'SINGEL 7 — 1730 für eine Witwe gebaut, die kein volles Grundstück bezahlen konnte. Die „Singel" war die Stadtmauer von 1428; die Zahl ist 7 (kleinste Primzahl > 5).' },
         },
         fr: {
           theme: 'Maison la plus étroite',
@@ -1819,6 +1842,7 @@ const amsterdamClassic = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'Singel 7 fut construite en 1730 pour une veuve qui ne pouvait pas se permettre une maison de pleine largeur. Avec 2,02 mètres de large, c\'est officiellement la maison la plus étroite d\'Amsterdam. L\'intérieur n\'a qu\'une pièce par étage, accessible par un escalier raide. C\'était une astuce fiscale : façade étroite, profond à l\'intérieur.',
           trivia: { question: 'Pourquoi Singel 7 a-t-elle été construite si étroite?', options: ['Fraude fiscale', 'Espace disponible', 'Expérience architecturale', 'Résistance au vent'], correctIndex: 0, explain: 'L\'impôt foncier était basé sur la largeur de façade — étroit signifiait moins cher.' },
+          puzzle: { prompt: 'Je fais 2,02 mètres de large — la maison la plus étroite d\'Amsterdam. Mon adresse : le canal le plus intérieur de la ville (son nom est le même mot que les marchands employaient pour la « ceinture » extérieure de la ville), suivi du plus petit nombre premier à un chiffre qui n\'est ni 2, ni 3, ni 5. Donne l\'adresse.', hint: 'Nom du canal + un nombre. Le plus petit nombre premier à un chiffre supérieur à 5.', explain: 'SINGEL 7 — bâtie en 1730 pour une veuve qui ne pouvait pas se payer un terrain pleine largeur. Le « singel » était le rempart de 1428 ; le nombre est 7 (plus petit nombre premier > 5).' },
         },
       },
     },
