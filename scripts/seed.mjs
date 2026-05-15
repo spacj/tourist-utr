@@ -1959,6 +1959,7 @@ const hiddenAmsterdam = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'Het Begijnhof werd opgericht in 1346 als toevluchtsoord voor Begijnen — vrome vrouwen die gemeenschappelijk leefden zonder monniksgeloften. Het oudste huis (het Houten Huys) dateert van 1425 en is het oudste houten gebouw van Amsterdam. Eén bewoner was stiekem katholiek — ze verborg haar geloof achter een geheime kerk.',
           trivia: { question: 'Wat waren de Begijnen?', options: ['Nonnen', 'Vrome ongehuwde vrouwen', 'Prostituees', 'Kooplieden'], correctIndex: 1, explain: 'Vrome ongehuwde vrouwen die gemeenschappelijk leefden zonder formele geloften.' },
+          puzzle: { prompt: "Anagram: F G I N J H E B O. 9 letters. Een middeleeuwse binnenhof, verstopt achter het Spui — ooit het thuis van vrome vrouwen die 'begijnen' werden genoemd.", hint: "9 letters. Een middeleeuwse binnenhof — thuis van de begijnen.", explain: "BEGIJNHOF — 'hof van de begijnen'. Toevluchtsoord sinds 1346, nog steeds omringd door 17e-eeuwse hofjes met daarbinnen het oudste houten huis van de stad." },
         },
         de: {
           theme: 'Begijnhof-Innenhof',
@@ -1969,6 +1970,7 @@ const hiddenAmsterdam = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Der Begijnhof wurde 1346 als Zufluchtsort für Beginen gegründet — fromme Frauen, die gemeinschaftlich ohne Klostergelübde lebten. Das älteste Haus (het Houten Huys) stammt von 1425 und ist das älteste Holzgebäude Amsterdams. Eine Bewohnerin war heimlich katholisch — sie verbarg ihren Glauben hinter einer geheimen Kirche.',
           trivia: { question: 'Was waren die Beginen?', options: ['Nonnen', 'Fromme unverheiratete Frauen', 'Prostituierte', 'Kaufleute'], correctIndex: 1, explain: 'Fromme unverheiratete Frauen, die gemeinschaftlich ohne formelle Gelübde lebten.' },
+          puzzle: { prompt: 'Anagramm: F G I N J H E B O. 9 Buchstaben. Ein mittelalterlicher Innenhof, versteckt am Spui — einst Heim frommer Frauen, „Beginen" genannt.', hint: '9 Buchstaben. Ein mittelalterlicher Innenhof — Heim der Beginen.', explain: 'BEGIJNHOF — „Hof der Beginen". Zufluchtsort seit 1346, noch immer von Hofhäusern aus dem 17. Jh. umringt, mit Amsterdams ältestem Holzgebäude in der Mitte.' },
         },
         fr: {
           theme: 'Cour du Begijnhof',
@@ -1979,6 +1981,7 @@ const hiddenAmsterdam = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'Le Begijnhof fut fondé en 1346 comme refuge pour les Béguines — femmes pieuses vivant en communauté sans vœux monastiques. La plus ancienne maison (het Houten Huys) date de 1425 et est le plus ancien bâtiment en bois d\'Amsterdam. Une résidente était secrètement catholique — elle cachait sa foi derrière une église secrète.',
           trivia: { question: 'Qu\'étaient les Béguines?', options: ['Des nonnes', 'Des femmes célibataires pieuses', 'Des prostituées', 'Des marchands'], correctIndex: 1, explain: 'Des femmes célibataires pieuses vivant en communauté sans vœux formels.' },
+          puzzle: { prompt: 'Anagramme : F G I N J H E B O. 9 lettres. Une cour médiévale, cachée près du Spui — autrefois la demeure de femmes pieuses appelées « béguines ».', hint: '9 lettres. Une cour médiévale — la maison des béguines.', explain: 'BEGIJNHOF — « cour des béguines ». Refuge depuis 1346, encore entouré d\'hospices du XVIIᵉ siècle abritant la plus ancienne maison en bois de la ville.' },
         },
       },
     },
@@ -2008,6 +2011,7 @@ const hiddenAmsterdam = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'Ons\' Lieve Heer op Solder werd gebouwd in 1663 als een geheime katholieke kerk tijdens de Reformatie. Katholieken waren verboden van openbare eredienst, dus aanbaden ze in verborgen "schuilkerken" in gewone huizen. De kerk is opmerkelijk intact met originele barokke interieurs.',
           trivia: { question: 'Waarom was de kerk verborgen op een zolder?', options: ['Bouwvoorschriften', 'Religieuze vervolging', 'Gebrek aan ruimte', 'Kostenbesparing'], correctIndex: 1, explain: 'Katholieken waren verboden van openbare eredienst tijdens de Reformatie.' },
+          puzzle: { prompt: 'Vijf Nederlandse woorden, drie ervan klein: het bezittelijk voornaamwoord "onze" + het bijvoeglijk naamwoord "lieve" + het zelfstandig naamwoord "heer" + het voorzetsel "op" + het woord voor een zolder. Een verborgen kerk in een huis.', hint: "Ons / Lieve / Heer / op / Solder — vijf woorden.", explain: "ONS' LIEVE HEER OP SOLDER — 'Onze Lieve Heer op Zolder'. Een complete barokke katholieke kerk gepropt in de bovenste drie verdiepingen van een grachtenpand uit 1663, toen katholieke eredienst in de stad verboden was." },
         },
         de: {
           theme: 'Versteckte katholische Kirche',
@@ -2018,6 +2022,7 @@ const hiddenAmsterdam = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Ons\' Lieve Heer op Solder wurde 1663 als geheime katholische Kirche während der Reformation gebaut. Katholiken waren vom öffentlichen Gottesdienst ausgeschlossen, also beteten sie in versteckten "geheimen Kirchen" in gewöhnlichen Häusern. Die Kirche ist bemerkenswert intakt mit originalen Barockinterieurs.',
           trivia: { question: 'Warum wurde die Kirche auf einem Dachboden versteckt?', options: ['Bauvorschriften', 'Religiöse Verfolgung', 'Platzmangel', 'Kostenersparnis'], correctIndex: 1, explain: 'Katholiken waren während der Reformation vom öffentlichen Gottesdienst ausgeschlossen.' },
+          puzzle: { prompt: 'Fünf niederländische Wörter, drei davon winzig: das Possessivpronomen „unser" + das Adjektiv „lieber" + das Nomen „Herr" + die Präposition „auf dem" + das Wort für Dachboden. Eine versteckte Kirche in einem Haus.', hint: 'Ons / Lieve / Heer / op / Solder — fünf Wörter.', explain: 'ONS\' LIEVE HEER OP SOLDER — „Unser lieber Herr auf dem Dachboden". Eine vollständige katholische Barockkirche in die obersten drei Stockwerke eines Grachtenhauses von 1663 gequetscht, als katholischer Gottesdienst in der Stadt verboten war.' },
         },
         fr: {
           theme: 'Église catholique cachée',
@@ -2028,6 +2033,7 @@ const hiddenAmsterdam = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'Ons\' Lieve Heer op Solder fut construite en 1663 comme église catholique secrète pendant la Réforme. Les catholiques étaient interdits de culte public, donc ils priaient dans des « églises clandestines » cachées dans des maisons ordinaires. L\'église est remarquablement intacte avec des intérieurs baroques originaux.',
           trivia: { question: 'Pourquoi l\'église était-elle cachée dans un grenier?', options: ['Règlements de construction', 'Persécution religieuse', 'Manque d\'espace', 'Économies'], correctIndex: 1, explain: 'Les catholiques étaient interdits de culte public pendant la Réforme.' },
+          puzzle: { prompt: 'Cinq mots néerlandais, dont trois minuscules : le possessif « notre » + l\'adjectif « bien-aimé » + le nom « seigneur » + la préposition « au » + le mot pour grenier. Une église cachée dans une maison.', hint: 'Ons / Lieve / Heer / op / Solder — cinq mots.', explain: 'ONS\' LIEVE HEER OP SOLDER — « Notre Seigneur au grenier ». Toute une église baroque catholique tassée dans les trois derniers étages d\'une maison de canal de 1663, lorsque le culte catholique était interdit en ville.' },
         },
       },
     },
@@ -2057,6 +2063,7 @@ const hiddenAmsterdam = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'De Waag werd gebouwd als Sint Antoniespoort in 1488, onderdeel van de middeleeuwse stadswal. Nadat de muur werd gesloopt, werd het een weeghuis. De nachtwachter sloot de poort elke avond en opende hem bij dageraad. Vandaag huisvest het een restaurant en de gevel draagt nog steeds de originele poortopeningen.',
           trivia: { question: 'Waarvoor werd de Waag oorspronkelijk gebouwd?', options: ['Een kerk', 'Een stadspoort', 'Een markthal', 'Een gevangenis'], correctIndex: 1, explain: 'Sint Antoniespoort — een verdedigingsstadspoort gebouwd in 1488.' },
+          puzzle: { prompt: 'Lees het andersom: GAAW. Het Nederlandse woord voor een openbaar weeghuis.', hint: 'Lees achterstevoren. Het Nederlandse woord voor een openbaar weeghuis.', explain: 'WAAG, achterstevoren gelezen — passend, want het gebouw werd eerst stadspoort, daarna marktweeghuis: een gewogen overgang.' },
         },
         de: {
           theme: 'Mittelalterliches Stadttor',
@@ -2067,6 +2074,7 @@ const hiddenAmsterdam = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Die Waag wurde 1488 als St. Antonius-Tor gebaut, Teil der mittelalterlichen Stadtmauer. Nachdem die Mauer abgerissen wurde, wurde es ein Wiegehaus. Der Nachtwächter schloss das Tor jeden Abend und öffnete es bei Sonnenaufgang. Heute beherbergt es ein Restaurant und die Fassade trägt noch die originalen Toröffnungen.',
           trivia: { question: 'Wofür wurde die Waag ursprünglich gebaut?', options: ['Eine Kirche', 'Ein Stadttor', 'Eine Markthalle', 'Ein Gefängnis'], correctIndex: 1, explain: 'St. Antonius-Tor — ein Verteidigungs-Stadttor gebaut 1488.' },
+          puzzle: { prompt: 'Lies es andersherum: GAAW. Das niederländische Wort für ein öffentliches Wiegehaus.', hint: 'Lies rückwärts. Niederländisch für „öffentliches Wiegehaus".', explain: 'WAAG, rückwärts gelesen — passend, denn das Gebäude war erst Stadttor, dann Marktwaage: ein abgewogener Übergang.' },
         },
         fr: {
           theme: 'Porte médiévale',
@@ -2077,6 +2085,7 @@ const hiddenAmsterdam = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'La Waag fut construite comme Porte Saint-Antoine en 1488, partie du rempart médiéval. Après la démolition du mur, elle devint une maison de pesage. Le veilleur de nuit fermait la porte chaque soir et l\'ouvrait à l\'aube. Aujourd\'hui elle abrite un restaurant et la façade porte encore les ouvertures de porte originales.',
           trivia: { question: 'Pour quoi la Waag fut-elle construite à l\'origine?', options: ['Une église', 'Une porte de ville', 'Une halle de marché', 'Une prison'], correctIndex: 1, explain: 'Porte Saint-Antoine — une porte de ville défensive construite en 1488.' },
+          puzzle: { prompt: 'Lis-le à l\'envers : GAAW. Le mot néerlandais pour un poids public.', hint: 'Lis à l\'envers. Néerlandais pour « bascule publique ».', explain: 'WAAG, lu à l\'envers — approprié, car le bâtiment fut d\'abord porte de ville, puis poids du marché : une transition bien pesée.' },
         },
       },
     },
@@ -2106,6 +2115,7 @@ const hiddenAmsterdam = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'De Roos is een boekwinkel gehuisvest op een 19e-eeuws vrachtschip. Het schip is omgebouwd tot een drijvende bibliotheek met meer dan 35.000 boeken. De originele kapiteinscabine is nu de zeldzame boekenkamer. Het is afgemeerd op de Singel sinds 1986.',
           trivia: { question: 'Hoeveel boeken zijn er in de drijvende boekwinkel?', options: ['5.000', '15.000', '35.000', '100.000'], correctIndex: 2, explain: 'Meer dan 35.000 boeken op een omgebouwd 19e-eeuws schip.' },
+          puzzle: { prompt: "Het Nederlandse woord voor de zaak die romans verkoopt, samengevoegd met het bepaald lidwoord + de naam van een doornige bloem. Een boekwinkel die drijft.", hint: "'Boekhandel' + 'De Roos'. Drie woorden.", explain: 'BOEKHANDEL DE ROOS — "Boekhandel De Roos". 35.000 boeken in het ruim van een 19e-eeuwse vrachtschuit, sinds 1986 afgemeerd aan de Singel.' },
         },
         de: {
           theme: 'Schwimmende Bibliothek',
@@ -2116,6 +2126,7 @@ const hiddenAmsterdam = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'De Roos ist eine Buchhandlung auf einem Frachtschiff aus dem 19. Jahrhundert. Das Schiff wurde in eine schwimmende Bibliothek mit über 35.000 Büchern umgewandelt. Die originale Kapitänskajüte ist jetzt der seltene Bücherraum. Es ist am Singel festgemacht seit 1986.',
           trivia: { question: 'Wie viele Bücher sind in der schwimmenden Buchhandlung?', options: ['5.000', '15.000', '35.000', '100.000'], correctIndex: 2, explain: 'Über 35.000 Bücher auf einem umgebauten Schiff aus dem 19. Jahrhundert.' },
+          puzzle: { prompt: 'Das niederländische Wort für den Laden, in dem Romane verkauft werden, verbunden mit dem bestimmten Artikel + dem Namen einer dornigen Blume. Eine Buchhandlung, die schwimmt.', hint: '„Boekhandel" + „De Roos". Drei Wörter.', explain: 'BOEKHANDEL DE ROOS — „Die Rose-Buchhandlung". 35.000 Bücher im Laderaum eines Frachtkahns aus dem 19. Jh., seit 1986 am Singel vertäut.' },
         },
         fr: {
           theme: 'Bibliothèque flottante',
@@ -2126,6 +2137,7 @@ const hiddenAmsterdam = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'De Roos est une librairie logée sur un cargo du XIXᵉ siècle. Le bateau a été converti en bibliothèque flottante avec plus de 35 000 livres. La cabine du capitaine originale est maintenant la salle des livres rares. Il est amarré sur le Singel depuis 1986.',
           trivia: { question: 'Combien de livres y a-t-il dans la librairie flottante?', options: ['5 000', '15 000', '35 000', '100 000'], correctIndex: 2, explain: 'Plus de 35 000 livres sur un bateau converti du XIXᵉ siècle.' },
+          puzzle: { prompt: 'Le mot néerlandais pour la boutique qui vend des romans, joint à l\'article défini + le nom d\'une fleur épineuse. Une librairie qui flotte.', hint: '« Boekhandel » + « De Roos ». Trois mots.', explain: 'BOEKHANDEL DE ROOS — « La librairie La Rose ». 35 000 livres dans la cale d\'une péniche du XIXᵉ siècle, amarrée au Singel depuis 1986.' },
         },
       },
     },
@@ -2155,6 +2167,7 @@ const hiddenAmsterdam = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'De Hortus Botanicus Amsterdam is de oudste botanische tuin van Nederland, opgericht in 1638 door de VOC om exotische planten uit de koloniën te bestuderen. Het huisvest meer dan 6.000 plantensoorten. De kas bevat een 300 jaar oude cycad — een van de oudste gekweekte planten in Europa.',
           trivia: { question: 'Hoe oud is de cycad in de Hortus Botanicus kas?', options: ['50 jaar', '100 jaar', '300 jaar', '500 jaar'], correctIndex: 2, explain: 'Meer dan 300 jaar oud — een van de oudste gekweekte planten in Europa.' },
+          puzzle: { prompt: 'Caesar-cijfer: KRUWXV ERWDQLFXV. Schuif elke letter drie posities terug. Twee Latijnse woorden — passend, want de tuin werd opgericht in een tijdperk waarin botanie nog in het Latijn werd beoefend.', hint: 'Caesar -3. K→H, R→O, U→T…', explain: 'Caesar -3. HORTUS BOTANICUS — Latijn voor "botanische tuin". De VOC stichtte hem in 1638 om planten uit de koloniën te catalogiseren; Latijn was destijds de wereldwijde taal van de plantkunde.' },
         },
         de: {
           theme: 'Geheimer Garten',
@@ -2165,6 +2178,7 @@ const hiddenAmsterdam = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Der Hortus Botanicus Amsterdam ist der älteste botanische Garten der Niederlande, gegründet 1638 von der VOC, um exotische Pflanzen aus den Kolonien zu studieren. Er beherbergt über 6.000 Pflanzenarten. Das Gewächshaus enthält einen 300 Jahre alten Cycad — eine der ältesten kultivierten Pflanzen in Europa.',
           trivia: { question: 'Wie alt ist der Cycad im Gewächshaus des Hortus Botanicus?', options: ['50 Jahre', '100 Jahre', '300 Jahre', '500 Jahre'], correctIndex: 2, explain: 'Über 300 Jahre alt — eine der ältesten kultivierten Pflanzen in Europa.' },
+          puzzle: { prompt: 'Caesar-Chiffre: KRUWXV ERWDQLFXV. Verschiebe jeden Buchstaben drei Stellen rückwärts. Zwei lateinische Wörter — passend, denn der Garten wurde in einer Zeit gegründet, in der Botanik noch auf Latein betrieben wurde.', hint: 'Caesar -3. K→H, R→O, U→T…', explain: 'Caesar -3. HORTUS BOTANICUS — Latein für „botanischer Garten". Die VOC gründete ihn 1638, um Pflanzen aus den Kolonien zu katalogisieren; Latein war damals die weltweite Sprache der Botanik.' },
         },
         fr: {
           theme: 'Jardin secret',
@@ -2175,6 +2189,7 @@ const hiddenAmsterdam = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'L\'Hortus Botanicus Amsterdam est le plus ancien jardin botanique des Pays-Bas, fondé en 1638 par la VOC pour étudier les plantes exotiques des colonies. Il abrite plus de 6 000 espèces de plantes. La serre contient un cycad de 300 ans — l\'une des plus anciennes plantes cultivées en Europe.',
           trivia: { question: 'Quel âge a le cycad dans la serre de l\'Hortus Botanicus?', options: ['50 ans', '100 ans', '300 ans', '500 ans'], correctIndex: 2, explain: 'Plus de 300 ans — l\'une des plus anciennes plantes cultivées en Europe.' },
+          puzzle: { prompt: 'Chiffre de César : KRUWXV ERWDQLFXV. Décale chaque lettre de trois positions en arrière. Deux mots latins — approprié, car le jardin fut fondé à une époque où la botanique se pratiquait encore en latin.', hint: 'César -3. K→H, R→O, U→T…', explain: 'César -3. HORTUS BOTANICUS — latin pour « jardin botanique ». La VOC le fonda en 1638 pour cataloguer les plantes des colonies ; le latin était alors la langue mondiale de la botanique.' },
         },
       },
     },
@@ -2204,6 +2219,7 @@ const hiddenAmsterdam = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'Het Amsterdamse Theater Museum zit op de locatie van de Stadsschouwburg, die afbrandde in 1772 tijdens een voorstelling. Het vuur doodde verschillende acteurs en pubiek. Het huidige gebouw dateert van 1894. Het museum toont kostuums, rekwisieten en decorontwerpen van 400 jaar Amsterdamse theater.',
           trivia: { question: 'Hoeveel mensen stierven in het theater vuur van 1772?', options: ['5', '18', '50', '200'], correctIndex: 2, explain: 'Ongeveer 50 mensen stierven in het vuur van 1772.' },
+          puzzle: { prompt: 'Lees beide woorden achterstevoren: MUESUM RETAEHT. Een museum waar kostuums, rekwisieten en vier eeuwen toneelgeschiedenis bewaard worden.', hint: 'Lees beide woorden achterstevoren — Engels voor "theater museum".', explain: 'THEATER MUSEUM — gebouwd in 1894 op de resten van de oorspronkelijke Stadsschouwburg (die in 1772 afbrandde tijdens een voorstelling en vijftig mensen het leven kostte). Vandaag: kostuums, decormaquettes, een enkele stoel waarop Sarah Bernhardt zat.' },
         },
         de: {
           theme: 'Theater der Geheimnisse',
@@ -2214,6 +2230,7 @@ const hiddenAmsterdam = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Das Amsterdam Theater Museum sitzt auf dem Gelände der Stadsschouwburg, die 1772 während einer Vorstellung abbrannte. Das Feuer tötete mehrere Schauspieler und Publikum. Das aktuelle Gebäude stammt von 1894. Das Museum zeigt Kostüme, Requisiten und Bühnenbilder aus 400 Jahren Amsterdamer Theater.',
           trivia: { question: 'Wie viele Menschen starben im Theaterfeuer von 1772?', options: ['5', '18', '50', '200'], correctIndex: 2, explain: 'Rund 50 Menschen starben im Feuer von 1772.' },
+          puzzle: { prompt: 'Lies beide Wörter rückwärts: MUESUM RETAEHT. Ein Museum, in dem Kostüme, Requisiten und vier Jahrhunderte Bühnengeschichte aufbewahrt werden.', hint: 'Lies beide Wörter rückwärts — Englisch für „theater museum".', explain: 'THEATER MUSEUM — 1894 auf den Ruinen der ursprünglichen Stadsschouwburg erbaut (die 1772 mitten in einer Aufführung niederbrannte und fünfzig Menschen das Leben kostete). Heute: Kostüme, Bühnenmodelle und ein einzelner Stuhl, auf dem Sarah Bernhardt saß.' },
         },
         fr: {
           theme: 'Théâtre des secrets',
@@ -2224,6 +2241,7 @@ const hiddenAmsterdam = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'Le Théâtre Musée d\'Amsterdam se trouve sur le site de la Stadsschouwburg, qui brûla en 1772 pendant une représentation. L\'incendie tua plusieurs acteurs et spectateurs. Le bâtiment actuel date de 1894. Le musée expose des costumes, des accessoires et des décors de 400 ans de théâtre amsterdamois.',
           trivia: { question: 'Combien de personnes sont mortes dans l\'incendie du théâtre de 1772?', options: ['5', '18', '50', '200'], correctIndex: 2, explain: 'Environ 50 personnes sont mortes dans l\'incendie de 1772.' },
+          puzzle: { prompt: 'Lis les deux mots à l\'envers : MUESUM RETAEHT. Un musée où costumes, accessoires et quatre siècles d\'histoire de la scène sont conservés.', hint: 'Lis les deux mots à l\'envers — anglais pour « musée du théâtre ».', explain: 'THEATER MUSEUM — bâti en 1894 sur les ruines de l\'ancienne Stadsschouwburg (qui brûla en pleine représentation en 1772, tuant cinquante personnes). Aujourd\'hui : costumes, maquettes de décor et la chaise unique sur laquelle Sarah Bernhardt s\'assit.' },
         },
       },
     },
@@ -2253,6 +2271,7 @@ const hiddenAmsterdam = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'De Poezenboot werd opgericht in 1968 door Henriette van Weelde. Nadat ze zwerfkatten in haar tuin vond, kocht ze een woonboot om onderdak te bieden. Meer dan 1.000 katten zijn gered. Het is het enige drijvende kattenopvang ter wereld, en bezoekers kunnen katten adopteren of doneren.',
           trivia: { question: 'Hoeveel katten zijn gered bij De Poezenboot?', options: ['100', '500', '1.000', '5.000'], correctIndex: 2, explain: 'Meer dan 1.000 katten sinds 1968.' },
+          puzzle: { prompt: 'Nederlands bepaald lidwoord + het liefkozende verkleinwoord-meervoud voor snorhebbende muizenjagers + het woord voor een vaartuig dat drijft. Het enige in zijn soort ter wereld.', hint: "De + 'poezen' + 'boot'. Drie woorden.", explain: 'DE POEZENBOOT — "de kattenboot". Een woonschip-toevluchtsoord aan de Singel sinds 1968, voor zwerfkatten. Het enige drijvende kattenasiel ter wereld en in drie landen erkend als goed doel.' },
         },
         de: {
           theme: 'Katzenboot-Zuflucht',
@@ -2263,6 +2282,7 @@ const hiddenAmsterdam = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'De Poezenboot wurde 1968 von Henriette van Weelde gegründet. Nachdem sie streunende Katzen in ihrem Garten fand, kaufte sie ein Hausboot, um Unterkunft zu bieten. Über 1.000 Katzen wurden gerettet. Es ist die einzige schwimmende Katzenzuflucht der Welt, und Besucher können Katzen adoptieren oder spenden.',
           trivia: { question: 'Wie viele Katzen wurden bei De Poezenboot gerettet?', options: ['100', '500', '1.000', '5.000'], correctIndex: 2, explain: 'Über 1.000 Katzen seit 1968.' },
+          puzzle: { prompt: 'Niederländischer bestimmter Artikel + die liebevolle Verkleinerungsform-Mehrzahl für schnurrhaarbewehrte Mäusejäger + das Wort für ein schwimmendes Gefährt. Das einzige seiner Art auf der Welt.', hint: 'De + „poezen" (Kätzchen) + „boot" (Boot). Drei Wörter.', explain: 'DE POEZENBOOT — „das Katzenboot". Ein Hausboot-Zufluchtsort am Singel seit 1968, für Straßenkatzen. Das einzige schwimmende Katzenheim der Welt und in drei Ländern als gemeinnützig anerkannt.' },
         },
         fr: {
           theme: 'Refuge de bateaux à chats',
@@ -2273,6 +2293,7 @@ const hiddenAmsterdam = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'De Poezenboot a été fondée en 1968 par Henriette van Weelde. Après avoir trouvé des chats errants dans son jardin, elle a acheté une péniche pour fournir un abri. Plus de 1 000 chats ont été sauvés. C\'est le seul refuge flottant pour chats au monde, et les visiteurs peuvent adopter des chats ou faire des dons.',
           trivia: { question: 'Combien de chats ont été sauvés à De Poezenboot?', options: ['100', '500', '1 000', '5 000'], correctIndex: 2, explain: 'Plus de 1 000 chats depuis 1968.' },
+          puzzle: { prompt: 'Article défini néerlandais + le pluriel diminutif affectueux pour des chasseurs de souris à moustaches + le mot pour une embarcation qui flotte. Le seul du genre au monde.', hint: 'De + « poezen » (minous) + « boot » (bateau). Trois mots.', explain: 'DE POEZENBOOT — « la péniche aux chats ». Un bateau-refuge sur le Singel depuis 1968, pour les chats errants. Le seul refuge flottant pour chats au monde, reconnu d\'utilité publique dans trois pays.' },
         },
       },
     },
