@@ -5646,6 +5646,19 @@ a { color: inherit; }
   background: var(--surface);
 }
 
+/* OBSERVE — on-site "stand here and look for X" instruction */
+.puzzle-display-observe {
+  font-family: var(--font-sans, system-ui), sans-serif;
+  font-size: clamp(15px, 1vw + 12px, 18px);
+  line-height: 1.55;
+  color: #0f766e;
+  text-align: left;
+  background: rgba(13, 148, 136, 0.06);
+  border-color: rgba(13, 148, 136, 0.25);
+  border-left: 4px solid #0d9488;
+  padding-left: 14px;
+}
+
 /* ─── Solved state: reveal the answer + the original prose riddle as flavor ─── */
 .puzzle-card.is-solved.puzzle-card-primary {
   background: linear-gradient(135deg, rgba(34, 201, 122, 0.10), rgba(34, 201, 122, 0.03));

@@ -31,6 +31,7 @@ const TYPE_META: Record<Puzzle['type'], { icon: string; labelKey: string; color:
   sequence: { icon: '🔢', labelKey: 'puzzleTypeSequence', color: '#16a34a' },
   wordplay: { icon: '✍️', labelKey: 'puzzleTypeWordplay', color: '#db2777' },
   reverse:  { icon: '🔁', labelKey: 'puzzleTypeReverse',  color: '#7c3aed' },
+  observe:  { icon: '👀', labelKey: 'puzzleTypeObserve',  color: '#0d9488' },
 }
 
 /** First successful display of the puzzle prompt — styled per type. */
@@ -61,6 +62,10 @@ function PromptDisplay({ puzzle }: { puzzle: Puzzle }) {
 
     case 'sequence':
       return <div className="puzzle-display puzzle-display-sequence">{text}</div>
+
+    case 'observe':
+      // "Stand here and look for X" — styled as an on-site instruction card.
+      return <p className="puzzle-display puzzle-display-observe">{text}</p>
 
     case 'logic':
     case 'wordplay':

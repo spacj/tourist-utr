@@ -347,11 +347,11 @@ const utrechtClassic = {
       funFact: 'The Pandhof dates to 1390 and is one of the oldest cloister gardens in the Netherlands. Monks grew medicinal herbs here. It survived the 1674 tornado that destroyed the cathedral nave.',
       trivia: { question: 'What did medieval monks originally grow in the Pandhof?', options: ['Grapes for wine', 'Medicinal herbs', 'Tulips', 'Vegetables for market'], correctIndex: 1, explain: 'Herbs for healing — the cloister was effectively the city\'s pharmacy.' },
       puzzle: {
-        type: 'wordplay',
-        prompt: "I am a kind of monastery walkway (think 'pan-' as in 'enclosed') joined to the Dutch word for 'court'. Behind the Dom you will find me — listen for the herbs and the silence.",
-        answer: 'PANDHOF',
-        hint: "Dutch 'pand' (cloister/walkway) + 'hof' (court). One word, 7 letters.",
-        explain: "PANDHOF — a cloister garden tucked behind the Dom Tower since 1390. Once the monks' pharmacy; today the quietest courtyard in central Utrecht.",
+        type: 'observe',
+        prompt: "You're standing inside the Pandhof cloister. Look up at the painted statue of Bishop Willibrord set high in the wall. What number is carved into the stone tablet directly beneath his feet?",
+        answer: '1924|1924 AD',
+        hint: "It's a four-digit year, carved into the stone tablet right under the bishop's statue. Look at the stone block, not the plaque.",
+        explain: "1924 — the year the carved memorial to Willibrord was placed in the cloister wall, marking 1,200 years since the saint began his mission to Utrecht.",
       },
       i18n: {
         nl: {
@@ -363,7 +363,7 @@ const utrechtClassic = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'De Pandhof dateert uit 1390 en is een van de oudste kloostertuinen van Nederland. Monniken kweekten hier geneeskrachtige kruiden. Hij overleefde de tornado van 1674 die het schip van de kathedraal verwoestte.',
           trivia: { question: 'Wat verbouwden middeleeuwse monniken oorspronkelijk in de Pandhof?', options: ['Wijndruiven', 'Geneeskrachtige kruiden', 'Tulpen', 'Marktgroenten'], correctIndex: 1, explain: 'Kruiden voor genezing — het klooster was eigenlijk de apotheek van de stad.' },
-          puzzle: { prompt: "Ik ben een soort kloostergang (denk aan 'pand-' als omsloten) samengevoegd met het Nederlandse woord voor 'hof'. Achter de Dom vind je me — luister naar de kruiden en de stilte.", hint: "Nederlands 'pand' (kloostergang) + 'hof'. Eén woord, 7 letters.", explain: 'PANDHOF — een kloostertuin verstopt achter de Dom sinds 1390. Ooit de apotheek van de monniken; nu de stilste binnentuin van centraal Utrecht.' },
+          puzzle: { prompt: 'Je staat in de Pandhof. Kijk omhoog naar het geschilderde beeldje van bisschop Willibrord hoog in de muur. Welk getal staat er in de stenen plaat direct onder zijn voeten gehouwen?', hint: 'Een viercijferig jaartal, in de stenen plaat direct onder het beeld. Kijk naar het steenblok, niet naar het plaatje.', explain: '1924 — het jaar waarin de gedenksteen voor Willibrord in de muur van de Pandhof werd geplaatst, ter herinnering aan 1.200 jaar sinds de heilige zijn missie in Utrecht begon.' },
         },
         de: {
           theme: 'Verborgener Klosterhof',
@@ -374,7 +374,7 @@ const utrechtClassic = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Der Pandhof stammt aus 1390 und ist einer der ältesten Klostergärten der Niederlande. Mönche zogen hier Heilkräuter. Er überstand den Tornado von 1674, der das Kirchenschiff zerstörte.',
           trivia: { question: 'Was bauten die Mönche ursprünglich im Pandhof an?', options: ['Weintrauben', 'Heilkräuter', 'Tulpen', 'Marktgemüse'], correctIndex: 1, explain: 'Heilkräuter — der Klostergarten war praktisch die Apotheke der Stadt.' },
-          puzzle: { prompt: 'Ich bin eine Art Klostergang (denke an „pand-" wie umschlossen), verbunden mit dem niederländischen Wort für „Hof". Hinter dem Dom wirst du mich finden — lausche den Kräutern und der Stille.', hint: "Niederländisch 'pand' (Klostergang) + 'hof'. Ein Wort, 7 Buchstaben.", explain: 'PANDHOF — ein Klostergarten hinter dem Domturm seit 1390. Einst die Apotheke der Mönche; heute der stillste Innenhof in der Utrechter Innenstadt.' },
+          puzzle: { prompt: 'Du stehst im Pandhof-Kreuzgang. Blicke hinauf zur farbig gefassten Figur des Bischofs Willibrord, die hoch in der Mauer steht. Welche Zahl ist in den Steinblock direkt unter seinen Füßen gemeißelt?', hint: 'Eine vierstellige Jahreszahl, in den Steinblock direkt unter dem Standbild gemeißelt — auf dem Stein selbst, nicht auf der Tafel.', explain: '1924 — das Jahr, in dem das Steindenkmal für Willibrord in die Wand des Pandhofs gesetzt wurde, zur Erinnerung an 1.200 Jahre seit dem Beginn seiner Mission in Utrecht.' },
         },
         fr: {
           theme: 'Cloître caché',
@@ -385,7 +385,7 @@ const utrechtClassic = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'Le Pandhof date de 1390 et est l\'un des plus anciens jardins de cloître des Pays-Bas. Les moines y cultivaient des plantes médicinales. Il a survécu à la tornade de 1674 qui détruisit la nef de la cathédrale.',
           trivia: { question: 'Que cultivaient les moines au Pandhof à l\'origine ?', options: ['Vignes', 'Plantes médicinales', 'Tulipes', 'Légumes de marché'], correctIndex: 1, explain: 'Des plantes médicinales — le cloître servait de pharmacie pour la ville.' },
-          puzzle: { prompt: 'Je suis une sorte de galerie monastique (pense à « pand- » comme enclos), jointe au mot néerlandais pour « cour ». Derrière le Dôme tu me trouveras — écoute les herbes et le silence.', hint: "Néerlandais 'pand' (galerie de cloître) + 'hof'. Un mot, 7 lettres.", explain: 'PANDHOF — un jardin de cloître caché derrière la Tour du Dôme depuis 1390. Jadis l\'apothicairerie des moines ; aujourd\'hui la cour la plus calme du centre d\'Utrecht.' },
+          puzzle: { prompt: 'Tu es dans le cloître du Pandhof. Lève les yeux vers la statue peinte de l\'évêque Willibrord, haut dans le mur. Quel chiffre est gravé dans le bloc de pierre directement sous ses pieds ?', hint: 'Une année à quatre chiffres, gravée dans le bloc de pierre sous la statue — sur la pierre même, pas sur la plaque.', explain: '1924 — l\'année où le mémorial de pierre dédié à Willibrord fut posé dans le mur du Pandhof, pour les 1 200 ans depuis le début de sa mission à Utrecht.' },
         },
       },
     },

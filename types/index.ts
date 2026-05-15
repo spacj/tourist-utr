@@ -126,7 +126,13 @@ export interface Trivia {
  * Multiple accepted answers can be supplied with `|` separators:
  *   answer: 'TWENTY|20|twenty'
  */
-export type PuzzleType = 'cipher' | 'anagram' | 'logic' | 'sequence' | 'wordplay' | 'reverse'
+/**
+ * Puzzle kinds:
+ *   cipher / anagram / reverse — language-neutral letter manipulations
+ *   logic / sequence / wordplay — prose riddles with a textual or numeric answer
+ *   observe — "stand here and count/look at X" — answer comes from on-site observation
+ */
+export type PuzzleType = 'cipher' | 'anagram' | 'logic' | 'sequence' | 'wordplay' | 'reverse' | 'observe'
 
 export interface PuzzleI18n {
   prompt?: string
@@ -392,6 +398,7 @@ export const T: Dict = {
   puzzleTypeSequence:{ en: 'Sequence', nl: 'Reeks',         de: 'Reihe',      fr: 'Suite',     it: 'Sequenza',    es: 'Secuencia' },
   puzzleTypeWordplay:{ en: 'Wordplay', nl: 'Woordspel',     de: 'Wortspiel',  fr: 'Jeu de mots', it: 'Gioco di parole', es: 'Juego de palabras' },
   puzzleTypeReverse: { en: 'Reverse',  nl: 'Omgekeerd',     de: 'Umgekehrt',  fr: 'À l\'envers', it: 'Al contrario', es: 'Al revés' },
+  puzzleTypeObserve: { en: 'Spot it',  nl: 'Spot het',      de: 'Finde es',   fr: 'Repère-le', it: 'Trovalo',     es: 'Encuéntralo' },
   // Offline puzzle status messages
   puzzleOfflineSolved: { en: 'Solved offline — score will sync when you reconnect.', nl: 'Offline opgelost — je score wordt gesynchroniseerd zodra je weer online bent.', de: 'Offline gelöst — dein Punktestand wird beim nächsten Verbinden synchronisiert.', fr: 'Résolu hors ligne — votre score sera synchronisé à la reconnexion.', it: 'Risolto offline — il punteggio si sincronizzerà alla riconnessione.', es: 'Resuelto sin conexión — la puntuación se sincronizará al reconectar.' },
   notQuite:          { en: 'Not quite', nl: 'Niet helemaal', de: 'Nicht ganz', fr: 'Presque', it: 'Quasi', es: 'Casi' },
