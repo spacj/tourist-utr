@@ -2710,6 +2710,11 @@ const theHagueRoyal = {
         hint: "'Binnen' (inner) + 'hof' (court). One word.",
         explain: "BINNENHOF — 'inner court'. A medieval count built his hunting lodge here around 1230; eight centuries later it's still the working parliament of the Netherlands.",
       },
+      i18n: {
+        nl: { puzzle: { prompt: "Het Nederlandse bijvoeglijk naamwoord voor 'binnen', samengevoegd met het woord voor een hof. De ministers vergaderen binnen; de journalisten wachten buiten.", hint: "'Binnen' + 'hof'. Eén woord.", explain: "BINNENHOF — 'binnenhof'. Een middeleeuwse graaf bouwde hier rond 1230 een jachtslot; acht eeuwen later is het nog steeds het werkende parlement van Nederland." } },
+        de: { puzzle: { prompt: 'Das niederländische Adjektiv für „innen" oder „inwendig", verbunden mit dem Wort für „Hof". Drinnen tagen die Minister; draußen warten die Journalisten.', hint: '„Binnen" (innen) + „hof" (Hof). Ein Wort.', explain: 'BINNENHOF — „Innenhof". Ein mittelalterlicher Graf baute hier um 1230 sein Jagdschloss; acht Jahrhunderte später ist es noch das arbeitende Parlament der Niederlande.' } },
+        fr: { puzzle: { prompt: "L'adjectif néerlandais pour « intérieur », joint au mot pour « cour ». Les ministres se rencontrent dedans ; les journalistes attendent dehors.", hint: "« Binnen » (intérieur) + « hof » (cour). Un mot.", explain: "BINNENHOF — « cour intérieure ». Un comte médiéval y bâtit son pavillon de chasse vers 1230 ; huit siècles plus tard, c'est encore le parlement en activité des Pays-Bas." } },
+      },
     },
     {
       id: 'clue_2', order: 2, icon: '👧', theme: 'Girl with a Pearl Earring',
@@ -2726,6 +2731,11 @@ const theHagueRoyal = {
         answer: 'MAURITSHUIS',
         hint: "11 letters, named after a 17th-century governor of Dutch Brazil. Houses 'Girl with a Pearl Earring'.",
         explain: "MAURITSHUIS — the small honey-coloured palace next to the Hofvijver, built in 1644 as the residence of Johan Maurits and now home to Vermeer, Rembrandt, and Fabritius.",
+      },
+      i18n: {
+        nl: { puzzle: { prompt: 'Anagram: I S T S U H M A R I U. 11 letters, vernoemd naar een 17e-eeuwse gouverneur van Nederlands-Brazilië. Hier hangt "Het meisje met de parel".', hint: '11 letters. Vernoemd naar een 17e-eeuwse gouverneur van Nederlands-Brazilië.', explain: 'MAURITSHUIS — het honingkleurige paleisje naast de Hofvijver, gebouwd in 1644 als residentie van Johan Maurits, nu het thuis van Vermeer, Rembrandt en Fabritius.' } },
+        de: { puzzle: { prompt: 'Anagramm: I S T S U H M A R I U. 11 Buchstaben, benannt nach einem Gouverneur Niederländisch-Brasiliens aus dem 17. Jh. Hier hängt „Das Mädchen mit dem Perlenohrring".', hint: '11 Buchstaben. Benannt nach einem niederländischen Gouverneur Brasiliens im 17. Jh.', explain: 'MAURITSHUIS — der honigfarbene Palast neben dem Hofvijver, 1644 als Residenz Johan Maurits\' erbaut, heute Heimat von Vermeer, Rembrandt und Fabritius.' } },
+        fr: { puzzle: { prompt: "Anagramme : I S T S U H M A R I U. 11 lettres, du nom d'un gouverneur du Brésil hollandais au XVIIᵉ siècle. La « Jeune fille à la perle » s'y trouve.", hint: "11 lettres. Du nom d'un gouverneur néerlandais du Brésil au XVIIᵉ siècle.", explain: "MAURITSHUIS — le petit palais couleur miel près du Hofvijver, bâti en 1644 comme résidence de Johan Maurits, abrite aujourd'hui Vermeer, Rembrandt et Fabritius." } },
       },
     },
     {
@@ -2744,6 +2754,11 @@ const theHagueRoyal = {
         hint: "The artist's surname, written backward. A man who built impossible architecture would appreciate a name that reads the same as a mirror.",
         explain: "ESCHER — and yes, his name happens not to be a palindrome, but his art constantly inverts perspective. A small museum joke.",
       },
+      i18n: {
+        nl: { puzzle: { prompt: 'Lees achterstevoren: REHCSE. De achternaam van de kunstenaar — een man die onmogelijke architectuur tekende, zou een naam waarderen die als een spiegel leest.', hint: 'Achternaam achterstevoren geschreven. Onmogelijke trappen, vissen die in vogels veranderen.', explain: 'ESCHER — zijn naam is geen palindroom, maar zijn kunst keert het perspectief voortdurend om. Een museumgrap.' } },
+        de: { puzzle: { prompt: 'Lies rückwärts: REHCSE. Der Nachname des Künstlers — ein Mann, der unmögliche Architektur zeichnete, würde einen Namen schätzen, der wie ein Spiegel zu lesen ist.', hint: 'Nachname rückwärts geschrieben. Unmögliche Treppen, Fische, die zu Vögeln werden.', explain: 'ESCHER — sein Name ist zwar kein Palindrom, doch seine Kunst kehrt die Perspektive ständig um. Ein Museumswitz.' } },
+        fr: { puzzle: { prompt: "Lis à l'envers : REHCSE. Le nom de l'artiste — un homme qui dessinait des architectures impossibles apprécierait un nom qui se lit comme un miroir.", hint: "Nom de famille écrit à l'envers. Escaliers impossibles, poissons devenant oiseaux.", explain: "ESCHER — son nom n'est pas un palindrome, mais son art renverse sans cesse la perspective. Une plaisanterie de musée." } },
+      },
     },
     {
       id: 'clue_4', order: 4, icon: '👑', theme: 'Working royal palace',
@@ -2760,6 +2775,11 @@ const theHagueRoyal = {
         answer: 'NOORDEINDE|NOORDEINDE PALACE|PALEIS NOORDEINDE',
         hint: "'Noord' (north) + 'einde' (end). One word.",
         explain: "NOORDEINDE — 'north end'. The palace sits at the northern end of the original 17th-century street of the same name. King's working residence since the 1980s.",
+      },
+      i18n: {
+        nl: { puzzle: { prompt: "Het Nederlandse woord voor 'noord' samengevoegd met het woord voor 'einde'. De straat eindigt hier; de werkdag van de koning ook.", hint: "'Noord' + 'einde'. Eén woord.", explain: 'NOORDEINDE — "noordelijk einde". Het paleis ligt aan het noordelijke einde van de gelijknamige 17e-eeuwse straat. Werkresidentie van de koning sinds de jaren 80.' } },
+        de: { puzzle: { prompt: 'Das niederländische Wort für „Norden" verbunden mit dem Wort für „Ende". Die Straße endet hier; der Arbeitstag des Königs auch.', hint: '„Noord" (Norden) + „einde" (Ende). Ein Wort.', explain: 'NOORDEINDE — „Nordende". Der Palast liegt am nördlichen Ende der gleichnamigen Straße aus dem 17. Jh. Arbeitsresidenz des Königs seit den 1980ern.' } },
+        fr: { puzzle: { prompt: "Le mot néerlandais pour « nord » joint au mot pour « fin ». La rue se termine ici ; la journée de travail du roi aussi.", hint: '« Noord » (nord) + « einde » (fin). Un mot.', explain: 'NOORDEINDE — « extrémité nord ». Le palais se dresse au bout nord de la rue éponyme du XVIIᵉ siècle. Résidence de travail du roi depuis les années 1980.' } },
       },
     },
     {
@@ -2778,6 +2798,11 @@ const theHagueRoyal = {
         hint: "Caesar shift back by 1. O→N→… wait, try the other direction. O→P, F→E…",
         explain: "Caesar shift -1 (each letter back one). Built on a Carnegie donation, dedicated 1913 — and a year later, Europe walked into the First World War.",
       },
+      i18n: {
+        nl: { puzzle: { prompt: 'Caesar-cijfer: OFBDF QBMBDF. Schuif elke letter één positie terug om de Engelse naam te onthullen van het paleis waar internationale geschillen worden beslecht.', hint: 'Caesar -1. O→N, F→E, B→A, D→C…', explain: 'Caesar -1. PEACE PALACE (Vredespaleis) — gebouwd met een donatie van Carnegie, ingewijd in 1913. Een jaar later viel Europa in de Eerste Wereldoorlog.' } },
+        de: { puzzle: { prompt: 'Caesar-Chiffre: OFBDF QBMBDF. Verschiebe jeden Buchstaben eine Stelle rückwärts, um den englischen Namen des Palasts zu enthüllen, in dem internationale Streitigkeiten verhandelt werden.', hint: 'Caesar -1. O→N, F→E, B→A, D→C…', explain: 'Caesar -1. PEACE PALACE (Friedenspalast) — auf einer Carnegie-Spende erbaut, 1913 eingeweiht. Ein Jahr später stürzte Europa in den Ersten Weltkrieg.' } },
+        fr: { puzzle: { prompt: "Chiffre de César : OFBDF QBMBDF. Décale chaque lettre d'une position en arrière pour révéler le nom anglais du palais où se règlent les différends internationaux.", hint: "César -1. O→N, F→E, B→A, D→C…", explain: "César -1. PEACE PALACE (Palais de la Paix) — bâti grâce à un don Carnegie, inauguré en 1913. Un an plus tard, l'Europe entrait dans la Première Guerre mondiale." } },
+      },
     },
     {
       id: 'clue_6', order: 6, icon: '🌊', theme: 'Where the Dutch go to the beach',
@@ -2794,6 +2819,11 @@ const theHagueRoyal = {
         answer: 'SCHEVENINGEN|SCHEVENINGEN PIER',
         hint: "12 letters. Begins with 'sch-' — the hardest consonant cluster in Dutch. The Hague's beach district.",
         explain: "SCHEVENINGEN — a single word with one of the hardest consonant clusters in any European language ('sch-' /sx/), used as a shibboleth by the Dutch resistance in WWII to identify German infiltrators.",
+      },
+      i18n: {
+        nl: { puzzle: { prompt: "Anagram: V N C H E S E G I N N E. 12 letters. Begint met 'sch-' — de zwaarste medeklinkergroep van het Nederlands. Den Haags badplaats.", hint: "12 letters. Begint met 'sch-'.", explain: "SCHEVENINGEN — één woord met een van de moeilijkste medeklinkergroepen in welke Europese taal ook ('sch-' /sx/), in WO II door het Nederlandse verzet als shibboleth gebruikt om Duitse infiltranten te ontmaskeren." } },
+        de: { puzzle: { prompt: 'Anagramm: V N C H E S E G I N N E. 12 Buchstaben. Beginnt mit „sch-" — der schwersten Konsonantenfolge des Niederländischen. Haager Badeort.', hint: '12 Buchstaben. Beginnt mit „sch-".', explain: 'SCHEVENINGEN — ein einziges Wort mit einer der härtesten Konsonantenfolgen jeder europäischen Sprache („sch-" /sx/), im 2. WK von der niederländischen Résistance als Schibboleth genutzt, um deutsche Spitzel zu enttarnen.' } },
+        fr: { puzzle: { prompt: "Anagramme : V N C H E S E G I N N E. 12 lettres. Commence par « sch- » — le groupe consonantique le plus difficile du néerlandais. La station balnéaire de La Haye.", hint: "12 lettres. Commence par « sch- ».", explain: "SCHEVENINGEN — un seul mot avec l'un des groupes consonantiques les plus difficiles de toute langue européenne (« sch- » /sx/), utilisé comme shibboleth par la Résistance néerlandaise pendant la 2ᵉ Guerre pour démasquer les infiltrés allemands." } },
       },
     },
   ],
@@ -2838,6 +2868,11 @@ const rotterdamModern = {
         hint: "Geometry meets housing. Piet Blom designed us in 1984.",
         explain: "CUBE HOUSES (Kubuswoningen) — Piet Blom called the design a 'pile-dwelling forest'. The roof is open to one of the cubes as a 'show home' you can tour for €4.",
       },
+      i18n: {
+        nl: { puzzle: { prompt: "Ik ben er 38, gekanteld op mijn hoeken. Elk is een boom in een architectenvisie; samen vormen we een stadsbos. Mensen wonen er met diamantvormige vloeren en muren onder 54,7 graden. We zijn felgeel. Hoe noemen toeristen ons in twee Engelse woorden?", hint: 'Geometrie ontmoet huisvesting. Piet Blom ontwierp ons in 1984.', explain: 'CUBE HOUSES (KUBUSWONINGEN) — Piet Blom noemde het ontwerp een "paalwoning-bos". Een van de kubussen is open als modelwoning voor €4.' } },
+        de: { puzzle: { prompt: 'Ich bin 38 von mir, auf meine Ecken gekippt. Jeder ist ein Baum in der Vision eines Architekten; zusammen sind wir ein Stadtwald. Menschen wohnen drin, mit rautenförmigen Böden und Wänden im 54,7-Grad-Winkel. Wir sind leuchtend gelb. Wie nennen Touristen uns mit zwei englischen Wörtern?', hint: 'Geometrie trifft Wohnen. Piet Blom entwarf uns 1984.', explain: 'CUBE HOUSES (KUBUSWONINGEN) — Piet Blom nannte den Entwurf einen „Pfahldorf-Wald". Eine der Kuben ist als Musterwohnung für €4 begehbar.' } },
+        fr: { puzzle: { prompt: "Je suis 38 de moi, basculé sur mes coins. Chacun est un arbre dans la vision d'un architecte ; ensemble nous formons une forêt urbaine. On y vit, sols en losange, murs à 54,7 degrés. Nous sommes jaune vif. Comment les touristes nous appellent-ils en deux mots anglais ?", hint: "Géométrie et habitat. Piet Blom nous a conçus en 1984.", explain: 'CUBE HOUSES (KUBUSWONINGEN) — Piet Blom a appelé le projet une « forêt sur pilotis ». L\'un des cubes ouvre comme maison-témoin pour 4 €.' } },
+      },
     },
     {
       id: 'clue_2', order: 2, icon: '🏗️', theme: 'Market inside an apartment block',
@@ -2854,6 +2889,11 @@ const rotterdamModern = {
         answer: 'MARKTHAL|MARKET HALL',
         hint: "8 letters. Dutch for 'market hall' — and the largest single artwork in the country lives on its ceiling.",
         explain: "MARKTHAL — Europe's first covered market that's also an apartment block. Open 2014, ceiling painted with 11,000 m² of fruits and flowers.",
+      },
+      i18n: {
+        nl: { puzzle: { prompt: 'Anagram: A R T L M A K H. 8 letters. Nederlands voor "markthal" — en het grootste kunstwerk van het land leeft op het plafond.', hint: '8 letters. Nederlands voor "markthal".', explain: 'MARKTHAL — Europa\'s eerste overdekte markt die tegelijk een wooncomplex is. Geopend in 2014, het plafond beschilderd met 11.000 m² aan fruit en bloemen.' } },
+        de: { puzzle: { prompt: 'Anagramm: A R T L M A K H. 8 Buchstaben. Niederländisch für „Markthalle" — und das größte Einzelkunstwerk des Landes lebt auf ihrer Decke.', hint: '8 Buchstaben. Niederländisch für „Markthalle".', explain: 'MARKTHAL — Europas erster überdachter Markt, der zugleich Wohnkomplex ist. 2014 eröffnet, die Decke mit 11.000 m² Obst und Blumen bemalt.' } },
+        fr: { puzzle: { prompt: 'Anagramme : A R T L M A K H. 8 lettres. Néerlandais pour « halle de marché » — et la plus grande œuvre d\'art du pays vit au plafond.', hint: '8 lettres. Néerlandais pour « halle de marché ».', explain: "MARKTHAL — le premier marché couvert d'Europe qui est aussi un immeuble d'habitation. Ouvert en 2014, plafond peint de 11 000 m² de fruits et de fleurs." } },
       },
     },
     {
@@ -2872,6 +2912,11 @@ const rotterdamModern = {
         hint: "'Witte' (white) + 'huis' (house). Two words.",
         explain: "WITTE HUIS — 'white house'. Europe's first skyscraper (1898, 43m). The Luftwaffe bombed everything around it on 14 May 1940; the Witte Huis survived almost intact, a white ghost in a city of rubble.",
       },
+      i18n: {
+        nl: { puzzle: { prompt: "Nederlands bijvoeglijk naamwoord voor de kleur van verse sneeuw + het woord voor een huis. Europa's eerste wolkenkrabber. Bleef staan terwijl een stad om hem heen brandde.", hint: "'Witte' + 'huis'. Twee woorden.", explain: "WITTE HUIS — Europa's eerste wolkenkrabber (1898, 43m). De Luftwaffe bombardeerde op 14 mei 1940 alles eromheen weg; de Witte Huis bleef vrijwel intact, een wit spook in een stad van puin." } },
+        de: { puzzle: { prompt: 'Niederländisches Adjektiv für die Farbe frischen Schnees + das Wort für ein Haus. Europas erster Wolkenkratzer. Stand, während eine Stadt um es herum brannte.', hint: "'Witte' (weiß) + 'huis' (Haus). Zwei Wörter.", explain: 'WITTE HUIS — „weißes Haus". Europas erster Wolkenkratzer (1898, 43 m). Die Luftwaffe legte am 14. Mai 1940 alles ringsum in Schutt; das Witte Huis überstand fast unversehrt, ein weißes Gespenst in einer Trümmerstadt.' } },
+        fr: { puzzle: { prompt: "Adjectif néerlandais pour la couleur de la neige fraîche + le mot pour une maison. Premier gratte-ciel d'Europe. Resta debout pendant qu'une ville brûlait autour de lui.", hint: "« Witte » (blanc) + « huis » (maison). Deux mots.", explain: "WITTE HUIS — « maison blanche ». Premier gratte-ciel d'Europe (1898, 43 m). La Luftwaffe rasa tout autour le 14 mai 1940 ; le Witte Huis survécut presque intact, fantôme blanc dans une ville en ruines." } },
+      },
     },
     {
       id: 'clue_4', order: 4, icon: '⚓', theme: 'A floating city of glass',
@@ -2888,6 +2933,11 @@ const rotterdamModern = {
         answer: 'WILHELMINAPIER|WILHELMINA PIER',
         hint: "Queen Wilhelmina (r. 1890–1948) + 'pier'. One word.",
         explain: "WILHELMINAPIER — the Holland-America Line shipped over a million emigrants to New York from this quay between 1873 and 1971. The old departure terminal is now Hotel New York.",
+      },
+      i18n: {
+        nl: { puzzle: { prompt: 'Neem de naam van de koningin die Nederland door twee wereldoorlogen loodste, en voeg het Nederlandse woord voor de kade toe waar boten geladen worden. Een miljoen Europeanen zwaaiden hier gedag.', hint: "Koningin Wilhelmina (1890–1948) + 'pier'. Eén woord.", explain: 'WILHELMINAPIER — de Holland-Amerika Lijn voer tussen 1873 en 1971 meer dan een miljoen emigranten van deze kade naar New York. Het oude vertrekgebouw is nu Hotel New York.' } },
+        de: { puzzle: { prompt: 'Nimm den Namen der Königin, die die Niederlande durch zwei Weltkriege führte, und füge das niederländische Wort für den Kai hinzu, an dem Schiffe beladen werden. Eine Million Europäer winkten von hier zum Abschied.', hint: 'Königin Wilhelmina (1890–1948) + „pier". Ein Wort.', explain: 'WILHELMINAPIER — die Holland-Amerika-Linie verschiffte zwischen 1873 und 1971 über eine Million Auswanderer von diesem Kai nach New York. Das alte Abfertigungsgebäude ist heute das Hotel New York.' } },
+        fr: { puzzle: { prompt: "Prends le nom de la reine qui mena les Pays-Bas à travers deux guerres mondiales, puis ajoute le mot néerlandais pour le quai où l'on charge les bateaux. Un million d'Européens y firent leurs adieux.", hint: 'Reine Wilhelmine (1890–1948) + « pier » (quai). Un mot.', explain: "WILHELMINAPIER — la ligne Holland-America transporta plus d'un million d'émigrants vers New York depuis ce quai entre 1873 et 1971. L'ancien terminal est aujourd'hui l'Hotel New York." } },
       },
     },
     {
@@ -2906,6 +2956,11 @@ const rotterdamModern = {
         hint: "Caesar shift back by 3. H→E, U→R, D→A…",
         explain: "Caesar -3. Named after Erasmus of Rotterdam, the 16th-century humanist born here in 1466 — a philosopher whose name is now stretched cable-by-cable across his hometown.",
       },
+      i18n: {
+        nl: { puzzle: { prompt: 'Caesar-cijfer: HUDVPXVEUXJ. Schuif elke letter drie posities terug om de Nederlandse naam te onthullen van de tuibrug die de bijnaam "de Zwaan" draagt.', hint: 'Caesar -3. H→E, U→R, D→A…', explain: 'Caesar -3. ERASMUSBRUG — vernoemd naar Erasmus van Rotterdam, de 16e-eeuwse humanist die hier in 1466 werd geboren. Zijn naam wordt nu kabel-na-kabel over zijn geboortestad uitgespannen.' } },
+        de: { puzzle: { prompt: 'Caesar-Chiffre: HUDVPXVEUXJ. Verschiebe jeden Buchstaben drei Stellen rückwärts, um den niederländischen Namen der Schrägseilbrücke zu enthüllen, die den Spitznamen „der Schwan" trägt.', hint: 'Caesar -3. H→E, U→R, D→A…', explain: 'Caesar -3. ERASMUSBRUG — benannt nach Erasmus von Rotterdam, dem Humanisten des 16. Jh., der 1466 hier geboren wurde. Sein Name wird heute Kabel um Kabel über seine Heimatstadt gespannt.' } },
+        fr: { puzzle: { prompt: 'Chiffre de César : HUDVPXVEUXJ. Décale chaque lettre de trois positions en arrière pour révéler le nom néerlandais du pont à haubans surnommé « le Cygne ».', hint: 'César -3. H→E, U→R, D→A…', explain: 'César -3. ERASMUSBRUG — nommé d\'après Érasme de Rotterdam, l\'humaniste du XVIᵉ siècle né ici en 1466. Son nom s\'étend désormais câble après câble au-dessus de sa ville natale.' } },
+      },
     },
     {
       id: 'clue_6', order: 6, icon: '⛵', theme: 'The oldest harbor',
@@ -2923,6 +2978,11 @@ const rotterdamModern = {
         hint: "'Oude' (old) + 'haven' (harbour). Two words.",
         explain: "OUDE HAVEN — 'old harbour'. The first port dug in Rotterdam, around 1350. The bombs of May 1940 stopped just short; this is one of the only stretches of medieval Rotterdam still standing.",
       },
+      i18n: {
+        nl: { puzzle: { prompt: "Hetzelfde bijvoeglijk naamwoord dat de Oude Kerk en Oudegracht delen, samengevoegd met het Nederlandse woord voor 'haven'. Waar Rotterdam begon — en een van de weinige hoeken van vooroorlogs Rotterdam die nog overeind staan.", hint: "'Oude' + 'haven'. Twee woorden.", explain: 'OUDE HAVEN — de eerste haven gegraven in Rotterdam, rond 1350. De bommen van mei 1940 stopten net daarvoor; dit is een van de weinige stukken middeleeuws Rotterdam dat nog staat.' } },
+        de: { puzzle: { prompt: 'Dasselbe Adjektiv, das die Oude Kerk und die Oudegracht teilen, verbunden mit dem niederländischen Wort für „Hafen". Wo Rotterdam begann — und eine der wenigen Ecken des Vorkriegs-Rotterdam, die noch stehen.', hint: '„Oude" (alt) + „haven" (Hafen). Zwei Wörter.', explain: 'OUDE HAVEN — der erste in Rotterdam gegrabene Hafen, um 1350. Die Bomben vom Mai 1940 hörten knapp davor auf; einer der wenigen Streifen mittelalterlichen Rotterdams, der noch steht.' } },
+        fr: { puzzle: { prompt: "Le même adjectif que partagent l'Oude Kerk et l'Oudegracht, joint au mot néerlandais pour « port ». Là où Rotterdam est née — et l'un des rares coins de Rotterdam d'avant-guerre encore debout.", hint: "'Oude' (vieux) + 'haven' (port). Deux mots.", explain: "OUDE HAVEN — le premier port creusé à Rotterdam, vers 1350. Les bombes de mai 1940 s'arrêtèrent juste avant ; c'est l'un des seuls morceaux de Rotterdam médiéval encore debout." } },
+      },
     },
     {
       id: 'clue_7', order: 7, icon: '🗼', theme: 'The view from above',
@@ -2939,6 +2999,11 @@ const rotterdamModern = {
         answer: 'EUROMAST',
         hint: "'Euro' + 'mast'. One word.",
         explain: "EUROMAST — built 1960 for the Floriade gardening expo, designed to look like the mast of a giant ship. The Space Tower rotating cabin was bolted on in 1970 to reclaim the 'tallest in the Netherlands' title from Utrecht.",
+      },
+      i18n: {
+        nl: { puzzle: { prompt: "Zet het continent waar we doorheen lopen ervoor, en voeg dan het Nederlandse woord toe voor de houten paal die de zeilen van een schip hooghoudt. Beklim 185 meter voor een uitzicht dat op heldere dagen tot België reikt.", hint: "'Euro' + 'mast'. Eén woord.", explain: 'EUROMAST — gebouwd in 1960 voor de Floriade, ontworpen als de mast van een reuzenschip. De roterende Space Tower-cabine werd in 1970 bovenop gemonteerd om de titel "hoogste van Nederland" terug te winnen van Utrecht.' } },
+        de: { puzzle: { prompt: 'Setze den Namen des Kontinents davor, durch den wir gehen, und füge das niederländische Wort für den Holzpfahl hinzu, der die Segel eines Schiffes hält. Steig auf 185 m für einen Blick, der an klaren Tagen bis Belgien reicht.', hint: '„Euro" + „mast". Ein Wort.', explain: 'EUROMAST — 1960 für die Floriade-Gartenausstellung gebaut, im Stil eines Riesenschiffsmasts entworfen. Die rotierende Space-Tower-Kabine wurde 1970 oben aufgesetzt, um Utrecht den Titel „höchster Turm der Niederlande" wieder abzunehmen.' } },
+        fr: { puzzle: { prompt: 'Place devant le nom du continent que nous traversons, puis ajoute le mot néerlandais pour le poteau de bois qui soutient les voiles d\'un navire. Monte à 185 m pour une vue qui, par temps clair, porte jusqu\'à la Belgique.', hint: '« Euro » + « mast » (mât). Un mot.', explain: 'EUROMAST — bâti en 1960 pour la Floriade, conçu comme le mât d\'un navire géant. La cabine rotative Space Tower fut posée au sommet en 1970 pour reprendre à Utrecht le titre de « plus haute tour des Pays-Bas ».' } },
       },
     },
   ],
@@ -2983,6 +3048,11 @@ const delftVermeer = {
         hint: "'Nieuwe' (new) + 'kerk' (church). Two words.",
         explain: "NIEUWE KERK — 'new church', built from 1396. The royal crypt below holds 46 members of the House of Orange-Nassau; every Dutch king and queen since William the Silent has been buried here.",
       },
+      i18n: {
+        nl: { puzzle: { prompt: "Nederlands bijvoeglijk naamwoord voor 'nieuw' samengevoegd met het woord voor 'kerk'. Ondanks de naam 700 jaar oud — en elke Nederlandse monarch sinds 1584 ligt onder de vloer.", hint: "'Nieuwe' + 'kerk'. Twee woorden.", explain: 'NIEUWE KERK — gebouwd vanaf 1396. De koninklijke crypte eronder herbergt 46 leden van het Huis van Oranje-Nassau; alle Nederlandse koningen en koninginnen sinds Willem van Oranje liggen hier.' } },
+        de: { puzzle: { prompt: 'Niederländisches Adjektiv für „neu" verbunden mit dem Wort für „Kirche". Trotz des Namens 700 Jahre alt — und jeder niederländische Monarch seit 1584 ruht unter dem Fußboden.', hint: '„Nieuwe" (neu) + „kerk" (Kirche). Zwei Wörter.', explain: 'NIEUWE KERK — „neue Kirche", erbaut ab 1396. Die königliche Krypta darunter birgt 46 Mitglieder des Hauses Oranien-Nassau; jeder niederländische König und jede Königin seit Wilhelm dem Schweiger ist hier bestattet.' } },
+        fr: { puzzle: { prompt: 'Adjectif néerlandais pour « nouveau » joint au mot pour « église ». Malgré le nom, vieille de 700 ans — et chaque monarque néerlandais depuis 1584 repose sous le pavé.', hint: '« Nieuwe » (nouvelle) + « kerk » (église). Deux mots.', explain: 'NIEUWE KERK — « nouvelle église », bâtie à partir de 1396. La crypte royale en dessous abrite 46 membres de la Maison d\'Orange-Nassau ; chaque roi et reine des Pays-Bas depuis Guillaume le Taciturne y est enterré.' } },
+      },
     },
     {
       id: 'clue_2', order: 2, icon: '🎨', theme: 'Vermeer\'s home museum',
@@ -2999,6 +3069,11 @@ const delftVermeer = {
         answer: 'VERMEER|VERMEER CENTRUM',
         hint: "7 letters. The painter's surname — born in this town, died in this town, and never travelled far from this town.",
         explain: "VERMEER — Johannes Vermeer (1632–1675). Painted just 36 known works, all close to home. The Centrum tells his story without owning a single original.",
+      },
+      i18n: {
+        nl: { puzzle: { prompt: 'Anagram: V E R E E R M. 7 letters. De achternaam van de schilder — geboren in deze stad, gestorven in deze stad, nooit ver weg getrokken.', hint: '7 letters. De achternaam van de schilder.', explain: 'VERMEER — Johannes Vermeer (1632–1675). Slechts 36 bekende werken, allemaal dicht bij huis. Het Centrum vertelt zijn verhaal zonder één origineel te bezitten.' } },
+        de: { puzzle: { prompt: 'Anagramm: V E R E E R M. 7 Buchstaben. Der Nachname des Malers — in dieser Stadt geboren, in dieser Stadt gestorben, nie weit gereist.', hint: '7 Buchstaben. Der Nachname des Malers.', explain: 'VERMEER — Johannes Vermeer (1632–1675). Nur 36 bekannte Werke, alle in Heimatnähe. Das Centrum erzählt seine Geschichte, ohne ein einziges Original zu besitzen.' } },
+        fr: { puzzle: { prompt: 'Anagramme : V E R E E R M. 7 lettres. Le nom de famille du peintre — né dans cette ville, mort dans cette ville, jamais éloigné.', hint: '7 lettres. Le nom de famille du peintre.', explain: 'VERMEER — Johannes Vermeer (1632–1675). Seulement 36 œuvres connues, toutes proches de chez lui. Le Centrum raconte son histoire sans posséder un seul original.' } },
       },
     },
     {
@@ -3017,6 +3092,11 @@ const delftVermeer = {
         hint: "'Oude' (old) + 'kerk' (church). Two words.",
         explain: "OUDE KERK — 'old church', 1246. Vermeer's grave is somewhere beneath the floor (the precise spot was lost). The tower leans 2 metres east because the soil under it has slowly given way for 800 years.",
       },
+      i18n: {
+        nl: { puzzle: { prompt: "Zelfde tweewoordsformule als Amsterdams oudste kerk. Nederlands bijvoeglijk naamwoord voor 'oud' + het woord voor het gebouw met glas-in-lood. Deze leunt twee meter naar het oosten — en Vermeer ligt erbinnen begraven.", hint: "'Oude' + 'kerk'. Twee woorden.", explain: "OUDE KERK — 1246. Vermeers graf ligt ergens onder de vloer (de exacte plek is verloren gegaan). De toren helt twee meter naar het oosten omdat de bodem 800 jaar geleidelijk heeft toegegeven." } },
+        de: { puzzle: { prompt: 'Dieselbe Zweiwortformel wie Amsterdams älteste Kirche. Niederländisches Adjektiv für „alt" + das Wort für ein Gebäude mit Buntglas. Diese hier neigt sich zwei Meter ostwärts — und Vermeer liegt darin begraben.', hint: '„Oude" (alt) + „kerk" (Kirche). Zwei Wörter.', explain: 'OUDE KERK — „alte Kirche", 1246. Vermeers Grab liegt irgendwo unter dem Boden (die genaue Stelle ist verloren). Der Turm neigt sich zwei Meter ostwärts, weil sich der Boden seit 800 Jahren langsam senkt.' } },
+        fr: { puzzle: { prompt: "Même formule en deux mots que la plus ancienne église d'Amsterdam. Adjectif néerlandais pour « vieux » + le mot pour le bâtiment aux vitraux. Celle-ci penche de deux mètres vers l'est — et Vermeer y est enterré.", hint: "'Oude' (vieux) + 'kerk' (église). Deux mots.", explain: "OUDE KERK — « vieille église », 1246. La tombe de Vermeer se trouve quelque part sous le pavé (l'emplacement exact est perdu). Le clocher penche de deux mètres vers l'est parce que le sol s'enfonce lentement depuis 800 ans." } },
+      },
     },
     {
       id: 'clue_4', order: 4, icon: '🔫', theme: 'The bullet hole',
@@ -3033,6 +3113,11 @@ const delftVermeer = {
         answer: 'PRINSENHOF',
         hint: "Read it backwards — it's a 10-letter Dutch word.",
         explain: "PRINSENHOF — 'the Prince's court'. The 14th-century convent that became William of Orange's residence and the site of his 1584 assassination. The bullet holes are still in the staircase wall.",
+      },
+      i18n: {
+        nl: { puzzle: { prompt: 'Lees achterstevoren: FOHNESNIRP. Een Nederlands woord van 10 letters — letterlijk "hof van de prins".', hint: 'Lees achterstevoren — een Nederlands woord van 10 letters.', explain: 'PRINSENHOF — "hof van de prins". Het 14e-eeuwse klooster dat de residentie werd van Willem van Oranje, en de plek waar hij in 1584 werd vermoord. De kogelgaten zitten nog in de trapwand.' } },
+        de: { puzzle: { prompt: 'Lies rückwärts: FOHNESNIRP. Ein niederländisches Wort mit 10 Buchstaben — wörtlich „Hof des Prinzen".', hint: 'Lies rückwärts — ein niederländisches Wort mit 10 Buchstaben.', explain: 'PRINSENHOF — „Hof des Prinzen". Das Kloster aus dem 14. Jh. wurde Residenz Wilhelms von Oranien und Ort seiner Ermordung 1584. Die Einschusslöcher stecken noch in der Treppenwand.' } },
+        fr: { puzzle: { prompt: 'Lis à l\'envers : FOHNESNIRP. Un mot néerlandais de 10 lettres — littéralement « cour du prince ».', hint: 'Lis à l\'envers — un mot néerlandais de 10 lettres.', explain: 'PRINSENHOF — « cour du prince ». L\'ancien couvent du XIVᵉ siècle devenu résidence de Guillaume d\'Orange et lieu de son assassinat en 1584. Les impacts de balles sont encore dans le mur de l\'escalier.' } },
       },
     },
     {
@@ -3051,6 +3136,11 @@ const delftVermeer = {
         hint: "'Royal' + the city you're standing in. Two words.",
         explain: "ROYAL DELFT — founded 1653 as De Porceleyne Fles. 31 rival potteries closed; this one survived because the Dutch royals bought a share and gave it the 'Koninklijke' (Royal) prefix.",
       },
+      i18n: {
+        nl: { puzzle: { prompt: "Voeg een vorstelijk Engels bijvoeglijk naamwoord toe aan de naam van deze stad. Het resultaat is de enige originele 17e-eeuwse pottenbakkerij die hier nog ovens stookt.", hint: "'Royal' + de stad waar je staat. Twee woorden.", explain: "ROYAL DELFT — opgericht in 1653 als De Porceleyne Fles. 31 concurrenten sloten; deze overleefde omdat het Nederlandse koningshuis een aandeel kocht en het de toevoeging 'Koninklijke' gaf." } },
+        de: { puzzle: { prompt: 'Füge ein königliches englisches Adjektiv vor den Namen dieser Stadt. Das Ergebnis ist die einzige originale Töpferei aus dem 17. Jh., die hier noch Brennöfen anheizt.', hint: '„Royal" + die Stadt, in der du stehst. Zwei Wörter.', explain: 'ROYAL DELFT — 1653 als De Porceleyne Fles gegründet. 31 Konkurrenten gingen ein; diese überlebte, weil das niederländische Königshaus Anteile kaufte und ihr das Präfix „Koninklijke" (königlich) verlieh.' } },
+        fr: { puzzle: { prompt: 'Ajoute un adjectif anglais royal devant le nom de cette ville. Le résultat est la seule poterie d\'origine du XVIIᵉ siècle qui chauffe encore ici ses fours.', hint: '« Royal » + la ville où tu te trouves. Deux mots.', explain: 'ROYAL DELFT — fondée en 1653 sous le nom De Porceleyne Fles. 31 concurrentes fermèrent ; celle-ci survécut parce que la famille royale néerlandaise prit une part et lui octroya le titre « Koninklijke » (royal).' } },
+      },
     },
     {
       id: 'clue_6', order: 6, icon: '🍻', theme: 'The animal market',
@@ -3067,6 +3157,11 @@ const delftVermeer = {
         answer: 'BEESTENMARKT|ANIMAL MARKET',
         hint: "'Beesten' (beasts/animals) + 'markt' (market). One word.",
         explain: "BEESTENMARKT — cattle and pigs were auctioned here every Thursday until 1960. The plane trees were planted in 1830 to shade the animals; today they shade the café terraces.",
+      },
+      i18n: {
+        nl: { puzzle: { prompt: "Nederlands meervoud van 'beest' (denk aan koeien en varkens), samengevoegd met het woord voor de plek waar dingen worden verkocht. De dieren zijn weg — de bomen die hen schaduw gaven staan er nog.", hint: "'Beesten' + 'markt'. Eén woord.", explain: 'BEESTENMARKT — vee en varkens werden hier elke donderdag verhandeld tot 1960. De platanen zijn in 1830 geplant om de dieren schaduw te geven; nu schaduwen ze de cafétertrassen.' } },
+        de: { puzzle: { prompt: 'Niederländischer Plural von „Vieh" (denke an Rinder und Schweine), verbunden mit dem Ort, an dem Dinge verkauft werden. Die Tiere sind fort — die Bäume, die sie schatteten, blieben.', hint: "'Beesten' (Tiere) + 'markt' (Markt). Ein Wort.", explain: 'BEESTENMARKT — Rinder und Schweine wurden hier bis 1960 jeden Donnerstag versteigert. Die Platanen wurden 1830 als Schatten für die Tiere gepflanzt; heute beschatten sie die Caféterrassen.' } },
+        fr: { puzzle: { prompt: "Pluriel néerlandais de « bête » (bétail et porcs), joint à l'endroit où l'on vend. Les animaux ont disparu — les arbres qui les abritaient sont restés.", hint: "« Beesten » (bêtes) + « markt » (marché). Un mot.", explain: "BEESTENMARKT — bétail et porcs y étaient vendus aux enchères chaque jeudi jusqu'en 1960. Les platanes furent plantés en 1830 pour ombrager les animaux ; aujourd'hui ils ombragent les terrasses." } },
       },
     },
   ],
