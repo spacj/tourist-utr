@@ -1135,6 +1135,7 @@ const canalsCafes = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'Het oude hoofdpostkantoor aan de Neude (1917) heropende in 2020 als Centrale Bibliotheek van Utrecht. Binnen kijk je omhoog naar een Art-Deco parabolisch plafond bedekt met bladgoud. Het plein is al sinds de 14e eeuw een markt.',
           trivia: { question: 'Waar wordt het postkantoorgebouw aan de Neude nu voor gebruikt?', options: ['Bioscoop', 'Centrale Bibliotheek Utrecht', 'Hotel', 'Parkeergarage'], correctIndex: 1, explain: 'Sinds 2020 de Centrale Bibliotheek — gratis toegang, alleen al voor het plafond de moeite waard.' },
+          puzzle: { prompt: 'Anagram: D U N E E. 5 letters. Utrechts grootste open plein — de "huiskamer" van de stad.', hint: '5 letters. Utrechts grootste open plein.', explain: 'NEUDE — mogelijk afgeleid van middeleeuws Nederlands "neud" (nood) of van een laaggelegen hoek van de stad. Marktplein sinds de 14e eeuw.' },
         },
         de: {
           theme: 'Terrassenplatz',
@@ -1145,6 +1146,7 @@ const canalsCafes = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Das alte Hauptpostamt am Neude (1917) wurde 2020 als Zentralbibliothek von Utrecht wiedereröffnet. Innen erstreckt sich eine parabolische Art-déco-Decke, mit Blattgold überzogen. Der Platz ist seit dem 14. Jahrhundert Marktplatz.',
           trivia: { question: 'Wozu wird das alte Postamt am Neude heute genutzt?', options: ['Kino', 'Utrechts Zentralbibliothek', 'Hotel', 'Parkhaus'], correctIndex: 1, explain: 'Seit 2020 die Zentralbibliothek — kostenloser Eintritt, allein wegen der Decke lohnt der Besuch.' },
+          puzzle: { prompt: 'Anagramm: D U N E E. 5 Buchstaben. Utrechts größter offener Platz — das „Wohnzimmer" der Stadt.', hint: '5 Buchstaben. Utrechts größter offener Platz.', explain: 'NEUDE — möglicherweise aus dem mittelniederländischen „neud" (Not/Drang) oder vom tiefen Stadtwinkel. Marktplatz seit dem 14. Jh.' },
         },
         fr: {
           theme: 'Place aux terrasses',
@@ -1155,6 +1157,7 @@ const canalsCafes = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'L\'ancien hôtel des postes de Neude (1917) a rouvert en 2020 comme Bibliothèque centrale d\'Utrecht. À l\'intérieur, on lève les yeux vers un plafond parabolique Art déco recouvert de feuilles d\'or. La place est un marché depuis le XIVᵉ siècle.',
           trivia: { question: 'À quoi sert aujourd\'hui le bâtiment de la poste sur le Neude ?', options: ['Cinéma', 'Bibliothèque centrale d\'Utrecht', 'Hôtel', 'Parking'], correctIndex: 1, explain: 'Devenu la Bibliothèque centrale en 2020 — entrée gratuite, le plafond mérite à lui seul la visite.' },
+          puzzle: { prompt: 'Anagramme : D U N E E. 5 lettres. La plus grande place ouverte d\'Utrecht — le « salon » de la ville.', hint: '5 lettres. La plus grande place ouverte d\'Utrecht.', explain: 'NEUDE — peut-être du moyen-néerlandais « neud » (besoin / urgence) ou du coin bas de la ville. Place de marché depuis le XIVᵉ siècle.' },
         },
       },
     },
@@ -1184,6 +1187,7 @@ const canalsCafes = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'De Ganzenmarkt is al sinds minstens 1358 een marktplaats. Het naastgelegen stadhuis werd in 1830 in neoclassicistische stijl herbouwd — het achterterras hangt boven de gracht en is bij zonsondergang een prachtige fotoplek.',
           trivia: { question: 'In welke eeuw werden er voor het eerst ganzen verkocht op de Ganzenmarkt?', options: ['13e', '14e', '16e', '18e'], correctIndex: 1, explain: 'De markt wordt al in 1358 vermeld — de 14e eeuw.' },
+          puzzle: { prompt: 'Het Nederlandse meervoud voor een langnekkige witte watervogel, samengevoegd met het woord voor een plek waar dingen worden verkocht. Snaterende levende have wisselde hier zes eeuwen lang van eigenaar.', hint: "'Ganzen' + 'markt'. Eén woord.", explain: 'GANZENMARKT — ganzen werden hier vanaf zeker 1358 verhandeld. Het gesnater verdween eeuwen geleden; de naam en de keien bleven.' },
         },
         de: {
           theme: 'Gänsemarkt',
@@ -1194,6 +1198,7 @@ const canalsCafes = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Der Ganzenmarkt („Gänsemarkt") ist seit mindestens 1358 ein Marktplatz. Das benachbarte Rathaus wurde 1830 klassizistisch umgebaut — seine Rückterrasse überragt die Gracht und ist bei Sonnenuntergang ein wunderschöner Fotospot.',
           trivia: { question: 'In welchem Jahrhundert begann der Gänseverkauf am Ganzenmarkt?', options: ['13.', '14.', '16.', '18.'], correctIndex: 1, explain: 'Erwähnt schon 1358 — also im 14. Jahrhundert.' },
+          puzzle: { prompt: 'Der niederländische Plural für einen langhalsigen weißen Wasservogel, verbunden mit dem Wort für einen Ort, an dem Dinge verkauft werden. Schnatterndes Lebendvieh wechselte hier sechs Jahrhunderte lang den Besitzer.', hint: '„Ganzen" (Gänse) + „markt" (Markt). Ein Wort.', explain: 'GANZENMARKT — Gänse wurden hier ab spätestens 1358 gehandelt. Das Geschnatter verstummte vor Jahrhunderten; Name und Pflaster blieben.' },
         },
         fr: {
           theme: 'Marché aux oies',
@@ -1204,6 +1209,7 @@ const canalsCafes = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'Ganzenmarkt (« marché aux oies ») est un marché depuis au moins 1358. L\'hôtel de ville voisin fut reconstruit en 1830 dans un style néoclassique — sa terrasse arrière surplombe le canal et offre un superbe point de vue au coucher du soleil.',
           trivia: { question: 'À partir de quel siècle vendait-on des oies à Ganzenmarkt ?', options: ['XIIIᵉ', 'XIVᵉ', 'XVIᵉ', 'XVIIIᵉ'], correctIndex: 1, explain: 'Le marché est mentionné dès 1358 — le XIVᵉ siècle.' },
+          puzzle: { prompt: "Le pluriel néerlandais d'un oiseau d'eau blanc au long cou, joint au mot pour un lieu où l'on vend. Du bétail vivant et bruyant changea de mains ici pendant six siècles.", hint: "« Ganzen » (oies) + « markt » (marché). Un mot.", explain: 'GANZENMARKT — les oies y étaient vendues dès au moins 1358. Le caquètement a cessé il y a des siècles ; le nom et les pavés sont restés.' },
         },
       },
     },
@@ -1233,6 +1239,7 @@ const canalsCafes = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'Bakkerbrug betekent letterlijk "bakkersbrug" — aan de oostzijde stond een middeleeuwse bakkerij en de stenen dragen nog zwartblakers van een brand in 1634. Het uitzicht vanaf de Bakkerbrug richting de Domtoren is het meest gefotografeerde plaatje van Utrecht.',
           trivia: { question: 'Wat veroorzaakte de donkere zwartblakers op de stenen van de Bakkerbrug?', options: ['Brand in 1634', 'Bombardement in WO II', 'Bliksem in 1812', 'Botsing in 1999'], correctIndex: 0, explain: 'Een brand in 1634 bij de bakkerij naast de brug — de geblakerde stenen werden hergebruikt bij reparatie.' },
+          puzzle: { prompt: 'Ik steek water over. Mijn naam: het Nederlandse beroep van iemand die met meel en ovens werkt, plus het Nederlandse woord voor een oversteek over een gracht. Vind me.', hint: "'Bakker' + 'brug'. Eén woord.", explain: 'BAKKER + BRUG = BAKKERBRUG. Aan de oostzijde van de brug stond een middeleeuwse bakkerij — de zwartgeblakerde stenen zijn nog zichtbaar.' },
         },
         de: {
           theme: 'Bäckerbrücke',
@@ -1243,6 +1250,7 @@ const canalsCafes = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Bakkerbrug heißt wörtlich „Bäckerbrücke" — am Ostende stand eine mittelalterliche Bäckerei, und die Steine tragen noch Brandspuren von einem Feuer 1634. Der Blick von der Bakkerbrug zum Domturm ist das meistfotografierte Motiv Utrechts.',
           trivia: { question: 'Wodurch entstanden die dunklen Brandspuren an den Steinen der Bakkerbrug?', options: ['Brand 1634', 'Bombardierung im 2. WK', 'Blitzschlag 1812', 'Bootskollision 1999'], correctIndex: 0, explain: 'Ein Brand 1634 in der Bäckerei neben der Brücke — die verkohlten Steine wurden bei der Reparatur wiederverwendet.' },
+          puzzle: { prompt: 'Ich überquere Wasser. Mein Name: der niederländische Beruf eines Menschen, der mit Mehl und Öfen arbeitet, plus das niederländische Wort für „Brücke". Finde mich.', hint: '„Bakker" (Bäcker) + „brug" (Brücke). Ein Wort.', explain: 'BAKKER + BRUG = BAKKERBRUG. Am Ostende der Brücke stand eine mittelalterliche Bäckerei — die rußgeschwärzten Steine sind noch sichtbar.' },
         },
         fr: {
           theme: 'Pont du boulanger',
@@ -1253,6 +1261,7 @@ const canalsCafes = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'Bakkerbrug signifie littéralement « pont du boulanger » — une boulangerie médiévale se trouvait à son extrémité est, et les pierres portent encore les traces noires d\'un incendie de 1634. La vue du Bakkerbrug vers la Tour du Dôme est la perspective la plus photographiée d\'Utrecht.',
           trivia: { question: 'Qu\'est-ce qui a causé les traces noires encore visibles sur les pierres du Bakkerbrug ?', options: ['Un incendie en 1634', 'Un bombardement de la 2ᵉ Guerre', 'La foudre en 1812', 'Une collision de bateau en 1999'], correctIndex: 0, explain: 'Un incendie de 1634 à la boulangerie voisine — les pierres noircies ont été réutilisées lors des réparations.' },
+          puzzle: { prompt: "Je franchis l'eau. Mon nom : le métier néerlandais de celui qui travaille la farine et les fours, plus le mot néerlandais pour une traversée au-dessus d'un canal. Trouve-moi.", hint: "« Bakker » (boulanger) + « brug » (pont). Un mot.", explain: "BAKKER + BRUG = BAKKERBRUG. Une boulangerie médiévale se trouvait à l'extrémité est du pont — les pierres noircies sont encore visibles." },
         },
       },
     },
@@ -1282,6 +1291,7 @@ const canalsCafes = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'De Nieuwegracht werd in de 14e eeuw gegraven als overlooppartij van de Oudegracht. Anders dan haar drukke zus is ze omzoomd door herenhuizen en voormalige kloosters. Bij de Pausdam vind je het beroemde Paushuize — huis van de enige Nederlandse paus — en een van de smalste bruggetjes van Utrecht.',
           trivia: { question: 'Wanneer werd de Nieuwegracht gegraven?', options: ['12e eeuw', '14e eeuw', '17e eeuw', '19e eeuw'], correctIndex: 1, explain: 'Rond de 14e eeuw — als overlooppartij van de drukkere Oudegracht.' },
+          puzzle: { prompt: "Het Nederlandse woord voor 'nieuw' (het tegenovergestelde van 'oude'), samengevoegd met het woord voor de gracht waar je vanochtend langsliep. Rustiger dan haar zus. Omringd door voormalige kloosters.", hint: "'Nieuwe' + 'gracht'. Eén woord, tegenover OUDEgracht.", explain: 'NIEUWEGRACHT — "nieuwe gracht". Gegraven in 1370 als overloop voor de Oudegracht, maar nooit luidruchtig geworden. Vandaag het meest contemplatieve water in centraal Utrecht.' },
         },
         de: {
           theme: 'Stille Schwestergracht',
@@ -1292,6 +1302,7 @@ const canalsCafes = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Die Nieuwegracht wurde im 14. Jahrhundert als „Überlauf" für die Oudegracht angelegt. Anders als ihre lebhafte Schwester ist sie von Patrizierhäusern und ehemaligen Klöstern gesäumt. Am Pausdam findest du das berühmte Paushuize — Haus des einzigen niederländischen Papstes — und eine der schmalsten Brücken Utrechts.',
           trivia: { question: 'Wann wurde die Nieuwegracht angelegt?', options: ['12. Jh.', '14. Jh.', '17. Jh.', '19. Jh.'], correctIndex: 1, explain: 'Etwa im 14. Jahrhundert — als Überlaufkanal für die stark frequentierte Oudegracht.' },
+          puzzle: { prompt: 'Das niederländische Wort für „neu" (Gegenteil von „oude"), verbunden mit dem Wort für die Gracht, an der du heute Morgen entlangliefst. Ruhiger als ihre Schwester. Gesäumt von einstigen Klöstern.', hint: '„Nieuwe" + „gracht". Ein Wort, im Gegensatz zur OUDEgracht.', explain: 'NIEUWEGRACHT — „neue Gracht". 1370 als Überlauf der Oudegracht gegraben, doch nie laut geworden. Heute das kontemplativste Wasser im Zentrum Utrechts.' },
         },
         fr: {
           theme: 'Sœur paisible du canal',
@@ -1302,6 +1313,7 @@ const canalsCafes = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'La Nieuwegracht fut creusée au XIVᵉ siècle comme canal de « trop-plein » pour l\'Oudegracht. À la différence de sa sœur turbulente, elle est bordée d\'hôtels patriciens et d\'anciens couvents. Au Pausdam, on trouve la célèbre Paushuize — la maison de l\'unique pape néerlandais — et l\'un des plus étroits ponts d\'Utrecht.',
           trivia: { question: 'Quand fut creusée la Nieuwegracht ?', options: ['XIIᵉ siècle', 'XIVᵉ siècle', 'XVIIᵉ siècle', 'XIXᵉ siècle'], correctIndex: 1, explain: 'Vers le XIVᵉ siècle — comme canal de trop-plein pour l\'Oudegracht très fréquentée.' },
+          puzzle: { prompt: 'Le mot néerlandais pour « nouveau » (opposé de « oude »), joint au mot pour le canal que tu longes depuis ce matin. Plus calme que sa sœur. Bordé d\'anciens couvents.', hint: '« Nieuwe » + « gracht ». Un mot, opposé d\'OUDEgracht.', explain: "NIEUWEGRACHT — « nouveau canal ». Creusé en 1370 comme trop-plein de l'Oudegracht, mais jamais devenu bruyant. Aujourd'hui l'eau la plus contemplative du centre d'Utrecht." },
         },
       },
     },
@@ -1331,6 +1343,7 @@ const canalsCafes = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: '"Twijn" betekent twijn — dit was in de middeleeuwen de wijk van de touwslagers. Tegenwoordig is de Twijnstraat een culinaire bedevaart: Jordy\'s Bakery, kaaswinkel Mama, de beroemde stroopwafelkraam en wekelijks een biologische boerenmarkt op de werf eronder.',
           trivia: { question: 'Waar verwees "Twijn" oorspronkelijk naar?', options: ['Tweelingtorens', 'Touwslagerij', 'Een soort brood', 'Houten dubbele deuren'], correctIndex: 1, explain: 'Twijn — touwslagers werkten hier in de middeleeuwen.' },
+          puzzle: { prompt: 'Het Nederlandse woord voor "twijn" (het touw dat je voor een schip zou vlechten), samengevoegd met het woord voor "straat". Middeleeuwse touwslagers; moderne stroopwafels.', hint: "'Twijn' + 'straat'. Eén woord.", explain: 'TWIJNSTRAAT — "twijnstraat". Waar de middeleeuwse touwslagers van Utrecht werkten. Dezelfde 300 meter is vandaag een foodie-pelgrimsroute; de gracht ruikt nu naar vers brood in plaats van hennep.' },
         },
         de: {
           theme: 'Alte Marktstraße',
@@ -1341,6 +1354,7 @@ const canalsCafes = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: '„Twijn" bedeutet Zwirn — hier arbeiteten im Mittelalter die Seiler. Heute ist die Twijnstraat ein Pilgerort für Feinschmecker: Jordy\'s Bakery, der Käseladen Mama, der berühmte Stroopwafel-Stand und ein wöchentlicher Bio-Bauernmarkt auf der Werft unten.',
           trivia: { question: 'Worauf bezog sich „Twijn" ursprünglich?', options: ['Zwillingstürme', 'Seilerhandwerk', 'Eine Brotsorte', 'Hölzerne Doppeltüren'], correctIndex: 1, explain: 'Zwirn — hier arbeiteten im Mittelalter die Seiler.' },
+          puzzle: { prompt: 'Das niederländische Wort für „Zwirn" (das Seil, das du für ein Schiff flechten würdest), verbunden mit dem Wort für „Straße". Mittelalterliche Seiler; moderne Stroopwafels.', hint: '„Twijn" (Zwirn) + „straat" (Straße). Ein Wort.', explain: 'TWIJNSTRAAT — „Zwirnstraße". Wo Utrechts mittelalterliche Seiler arbeiteten. Dieselben 300 Meter sind heute eine Foodie-Pilgerstrecke; die Gracht riecht statt nach Hanf nach frischem Brot.' },
         },
         fr: {
           theme: 'Vieille rue marchande',
@@ -1351,6 +1365,7 @@ const canalsCafes = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: '« Twijn » veut dire « ficelle » — c\'était le quartier des cordiers au Moyen Âge. Aujourd\'hui, Twijnstraat est un haut lieu gourmand : la boulangerie Jordy\'s, la fromagerie Mama, le célèbre stand de stroopwafels et un marché bio hebdomadaire sur le quai en contrebas.',
           trivia: { question: 'À quoi se référait « Twijn » à l\'origine ?', options: ['Tours jumelles', 'Métier de cordier', 'Un type de pain', 'Portes jumelles en bois'], correctIndex: 1, explain: 'Ficelle — les cordiers travaillaient ici au Moyen Âge.' },
+          puzzle: { prompt: 'Le mot néerlandais pour « ficelle » (la corde qu\'on tresserait pour un bateau), joint au mot pour « rue ». Cordiers médiévaux ; stroopwafels modernes.', hint: '« Twijn » (ficelle) + « straat » (rue). Un mot.', explain: 'TWIJNSTRAAT — « rue de la ficelle ». Là où travaillaient les cordiers médiévaux d\'Utrecht. Les mêmes 300 mètres sont aujourd\'hui un pèlerinage de gourmands ; le canal sent maintenant le pain frais et non plus le chanvre.' },
         },
       },
     },
@@ -1380,6 +1395,7 @@ const canalsCafes = {
           hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.',
           funFact: 'Ledig Erf ("leeg erf") is de traditionele eindstreep van een grachtenwandeling. Café Ledig Erf en Kafé België schenken samen meer dan 300 verschillende bieren. Op zomeravonden zetten locals hun eigen klapstoeltjes neer langs de gracht.',
           trivia: { question: 'Hoeveel bieren schenken de twee cafés van Ledig Erf samen ongeveer?', options: ['30', '100', '300', '1000'], correctIndex: 2, explain: 'Ongeveer 300 — van Belgische trappist tot lokaal Utrechts speciaalbier.' },
+          puzzle: { prompt: "Drie komen samen bij mij, maar ik heet 'leeg'. Drie grachten stromen hier in één — mijn naam is het tegenovergestelde van vol + het woord voor een stuk grond. Wat ben ik?", hint: "Nederlands 'ledig' = leeg + 'erf' = stuk grond. Twee woorden.", explain: 'LEDIG (leeg) + ERF (stuk grond) — toch komen hier drie grachten samen. Een taalgrap die al 400 jaar standhoudt.' },
         },
         de: {
           theme: 'Drei-Grachten-Finale',
@@ -1390,6 +1406,7 @@ const canalsCafes = {
           hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.',
           funFact: 'Ledig Erf („leerer Hof") ist die traditionelle Ziellinie einer Grachten-Wanderung. Café Ledig Erf und Kafé België servieren gemeinsam über 300 verschiedene Biere. An Sommerabenden bringen Einheimische ihre eigenen Klappstühle und stellen sie an die Gracht.',
           trivia: { question: 'Wie viele Biere servieren die beiden Cafés am Ledig Erf etwa zusammen?', options: ['30', '100', '300', '1000'], correctIndex: 2, explain: 'Rund 300 — vom belgischen Trappistenbier bis zum lokalen Utrechter Craft Beer.' },
+          puzzle: { prompt: 'Drei treffen sich bei mir, aber ich heiße „leer". Drei Grachten fließen hier zusammen — mein Name ist das Gegenteil von „voll" + das Wort für ein Stück Land. Was bin ich?', hint: 'Niederländisch „ledig" = leer + „erf" = Hof. Zwei Wörter.', explain: 'LEDIG (leer) + ERF (Hof) — dabei treffen sich hier drei Grachten. Ein sprachlicher Witz, der seit 400 Jahren hält.' },
         },
         fr: {
           theme: 'Finale aux trois canaux',
@@ -1400,6 +1417,7 @@ const canalsCafes = {
           hint3: 'Texte statique — indice GPS en direct calculé côté serveur.',
           funFact: 'Ledig Erf (« cour vide ») est la ligne d\'arrivée traditionnelle d\'une balade le long des canaux. Café Ledig Erf et Kafé België servent ensemble plus de 300 bières différentes. Les soirs d\'été, les locaux y apportent leurs propres chaises pliantes le long du canal.',
           trivia: { question: 'Combien de bières servent ensemble les deux cafés de Ledig Erf, environ ?', options: ['30', '100', '300', '1000'], correctIndex: 2, explain: 'Environ 300 — des trappistes belges aux bières artisanales utrechtoises.' },
+          puzzle: { prompt: 'Trois se rencontrent chez moi, mais je m\'appelle « vide ». Trois canaux se déversent ici en un — mon nom est l\'opposé de « plein » + le mot pour un morceau de terre. Que suis-je ?', hint: 'Néerlandais « ledig » = vide + « erf » = cour. Deux mots.', explain: 'LEDIG (vide) + ERF (cour) — pourtant trois canaux s\'y rejoignent. Une blague linguistique qui tient depuis 400 ans.' },
         },
       },
     },
