@@ -4181,58 +4181,75 @@ a { color: inherit; }
   .tour-map-control { width: 36px; height: 36px; }
 }
 
-/* ─── Tour markers (2-layer DOM: outer owned by MapLibre, inner styled) ───
-   The visual is an SVG teardrop pin. anchor: 'bottom' on the MapLibre
-   Marker means the bottom tip of the SVG sits on the actual coordinate. */
+/* ─── Tour markers ───
+   Flat circular badge anchored on the lat/lng (anchor: 'center').
+   2-layer DOM: outer root is owned by MapLibre (translate3d) so we never
+   touch its transform; .tour-marker-inner carries the visual + scale. */
 .tour-marker {
-  /* Root: positioned by MapLibre — never override transform/cssText here. */
   pointer-events: auto;
 }
 .tour-marker-inner {
   position: relative;
+  width: 30px;
+  height: 30px;
   cursor: pointer;
   user-select: none;
-  transition: transform 0.18s cubic-bezier(.22,.61,.36,1);
-  /* Anchor the visual so the pin's tip lands on the lat/lng. */
-  transform-origin: 50% 100%;
+  transition: transform 0.2s cubic-bezier(.22,.61,.36,1);
+  transform-origin: 50% 50%;
 }
-.tour-marker-inner:hover { transform: scale(1.08); }
-.tour-marker-inner.is-selected { transform: scale(1.20); z-index: 1; }
-.tour-marker-svg {
+.tour-marker-inner:hover { transform: scale(1.10); }
+.tour-marker-inner.is-selected { transform: scale(1.28); z-index: 1; }
+.tour-marker-badge {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--primary, #ff6a13);
+  border: 2.5px solid #fff;
+  box-shadow:
+    0 4px 12px rgba(20, 20, 30, 0.22),
+    0 0 0 1px rgba(20, 20, 30, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  letter-spacing: 0.02em;
+  transition: box-shadow 0.18s ease;
+}
+.tour-marker-inner.is-selected .tour-marker-badge {
+  box-shadow:
+    0 6px 18px rgba(20, 20, 30, 0.30),
+    0 0 0 4px rgba(255, 255, 255, 0.55);
+}
+.tour-marker-label {
   display: block;
-  /* slight bottom padding so the drop shadow doesn't get clipped */
-  overflow: visible;
-}
-.tour-marker-text {
-  /* Pin text auto-colors via JS to match the pin fill. */
+  line-height: 1;
   pointer-events: none;
 }
 
-/* Halo around selected marker — pulsing ring sized to the SVG. */
+/* Halo around selected marker — pulsing ring sized to the badge. */
 .tour-marker-halo {
   position: absolute;
-  left: 50%;
-  bottom: 22px; /* center on the disc area, not the tip */
-  transform: translate(-50%, 50%);
-  width: 22px;
-  height: 22px;
+  inset: 0;
   border-radius: 50%;
   pointer-events: none;
   opacity: 0;
-  background: rgba(255, 106, 19, 0.45);
+  background: rgba(255, 106, 19, 0.40);
   transition: opacity 0.2s ease;
 }
 .tour-marker-inner.is-selected .tour-marker-halo {
   opacity: 1;
-  animation: tour-marker-halo 1.6s ease-out infinite;
+  animation: tour-marker-halo 1.8s ease-out infinite;
 }
 .tour-marker-inner.is-visited.is-selected .tour-marker-halo {
-  background: rgba(34, 201, 122, 0.45);
+  background: rgba(34, 201, 122, 0.40);
 }
 @keyframes tour-marker-halo {
-  0%   { transform: translate(-50%, 50%) scale(1);   opacity: 0.65; }
-  70%  { transform: translate(-50%, 50%) scale(2.2); opacity: 0; }
-  100% { transform: translate(-50%, 50%) scale(2.2); opacity: 0; }
+  0%   { transform: scale(1);   opacity: 0.7; }
+  70%  { transform: scale(2.4); opacity: 0; }
+  100% { transform: scale(2.4); opacity: 0; }
 }
 
 .tour-user-marker { width: 0; height: 0; display: flex; align-items: center; justify-content: center; }

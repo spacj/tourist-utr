@@ -15,9 +15,6 @@ interface Props {
   accentColor?: string
 }
 
-const ROUTE_SOURCE_ID = 'tour-route'
-const ROUTE_LAYER_ID = 'tour-route-line'
-
 /**
  * Build a 2-layer marker DOM tree:
  *   .tour-marker       <- root, MapLibre sets transform: translate3d(...) on this
@@ -36,20 +33,14 @@ function buildMarkerDom(): { root: HTMLDivElement; inner: HTMLDivElement } {
   root.className = 'tour-marker'
   const inner = document.createElement('div')
   inner.className = 'tour-marker-inner'
+  // Flat circular badge — cleaner than the old teardrop, reads better at small
+  // sizes and aligns visually with the rest of the modern UI (badges, pills).
+  // The label/number is rendered as a child <span>; we only mutate that, so
+  // MapLibre's translate3d on root keeps working.
   inner.innerHTML = `
-    <svg class="tour-marker-svg" width="34" height="44" viewBox="0 0 34 44" aria-hidden="true">
-      <defs>
-        <filter id="tm-shadow" x="-50%" y="-50%" width="200%" height="200%">
-          <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.32"/>
-        </filter>
-      </defs>
-      <path class="tour-marker-pin"
-        d="M17 1 C8.16 1 1 8.16 1 17 C1 26 9 33 17 43 C25 33 33 26 33 17 C33 8.16 25.84 1 17 1 Z"
-        stroke="#fff" stroke-width="2" filter="url(#tm-shadow)"
-      />
-      <circle class="tour-marker-disc" cx="17" cy="16" r="9" fill="#fff" />
-      <text class="tour-marker-text" x="17" y="20" text-anchor="middle" font-size="12" font-weight="800" font-family="system-ui, -apple-system, sans-serif"></text>
-    </svg>
+    <span class="tour-marker-badge" aria-hidden>
+      <span class="tour-marker-label"></span>
+    </span>
     <span class="tour-marker-halo" aria-hidden></span>
   `
   root.appendChild(inner)
@@ -62,13 +53,10 @@ function applyMarkerState(
 ) {
   const { number, visited, selected, accentColor } = opts
   const fill = visited ? '#22c97a' : accentColor
-  const pin = inner.querySelector('.tour-marker-pin') as SVGPathElement | null
-  const text = inner.querySelector('.tour-marker-text') as SVGTextElement | null
-  if (pin) pin.setAttribute('fill', fill)
-  if (text) {
-    text.textContent = visited ? '✓' : String(number)
-    text.setAttribute('fill', fill)
-  }
+  const badge = inner.querySelector('.tour-marker-badge') as HTMLElement | null
+  const label = inner.querySelector('.tour-marker-label') as HTMLElement | null
+  if (badge) badge.style.background = fill
+  if (label) label.textContent = visited ? '✓' : String(number)
   inner.classList.toggle('is-selected', selected)
   inner.classList.toggle('is-visited', visited)
 }
@@ -116,27 +104,10 @@ export function TourMapView({
     map.on('pitchstart', onUserMove)
 
     map.on('load', () => {
-      const coordinates = clues.map(c => [c.lng, c.lat] as [number, number])
-      map.addSource(ROUTE_SOURCE_ID, {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          properties: {},
-          geometry: { type: 'LineString', coordinates },
-        },
-      })
-      map.addLayer({
-        id: ROUTE_LAYER_ID,
-        type: 'line',
-        source: ROUTE_SOURCE_ID,
-        layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: {
-          'line-color': accentColor,
-          'line-width': 4,
-          'line-opacity': 0.55,
-          'line-dasharray': [1.5, 1.5],
-        },
-      })
+      // No connecting polyline: tour stops are presented as a set of independent
+      // points on the map, not as a strict sequenced route. The numbered markers
+      // already convey order; drawing a path between them implied a single
+      // mandatory walking sequence.
       setMapReady(true)
     })
 
@@ -172,7 +143,9 @@ export function TourMapView({
           ev.stopPropagation()
           onSelect(clue.id)
         })
-        const marker = new maplibregl.Marker({ element: root, anchor: 'bottom' })
+        // Circular badge — anchor on center so the disc sits exactly on the
+        // lat/lng (instead of the bottom edge that the old teardrop needed).
+        const marker = new maplibregl.Marker({ element: root, anchor: 'center' })
           .setLngLat([clue.lng, clue.lat])
           .addTo(map)
         entry = { marker, inner }
