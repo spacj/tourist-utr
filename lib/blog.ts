@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { parseFrontmatter, extractCtas, renderMarkdown, splitByCtaMarkers, type CtaSpec, type Frontmatter } from '@/lib/md'
+import { parseFrontmatter, extractCtas, extractPlaces, renderMarkdown, splitByCtaMarkers, type CtaSpec, type Frontmatter, type PlacesSpec, type BlogPostType } from '@/lib/md'
 
 const POSTS_DIR = path.join(process.cwd(), 'content', 'blog')
 
@@ -13,6 +13,9 @@ export interface BlogPost extends BlogPostMeta {
   htmlSegments: string[]
   /** CTA specs in order — htmlSegments.length === ctas.length + 1 */
   ctas: CtaSpec[]
+  /** Parsed `places` JSON block from a `type: places-guide` post.
+   *  Null for standard posts (or if the block is missing/invalid). */
+  places: PlacesSpec | null
 }
 
 /**
@@ -20,6 +23,7 @@ export interface BlogPost extends BlogPostMeta {
  * defaults so a missing field doesn't crash the page render.
  */
 function coerceMeta(slug: string, raw: Record<string, any>): BlogPostMeta {
+  const type: BlogPostType = raw.type === 'places-guide' ? 'places-guide' : 'standard'
   return {
     slug,
     title:        String(raw.title ?? slug),
@@ -34,6 +38,7 @@ function coerceMeta(slug: string, raw: Record<string, any>): BlogPostMeta {
     readMinutes:  Number.isFinite(raw.readMinutes) ? Number(raw.readMinutes) : 5,
     relatedCities: Array.isArray(raw.relatedCities) ? raw.relatedCities.map(String) : undefined,
     relatedHunts:  Array.isArray(raw.relatedHunts)  ? raw.relatedHunts.map(String)  : undefined,
+    type,
   }
 }
 
@@ -75,10 +80,13 @@ export function getPost(slug: string): BlogPost | null {
     return null
   }
   const { meta, body } = parseFrontmatter(raw)
-  const { body: bodyWithMarkers, ctas } = extractCtas(body)
+  // Strip the ```places``` block first — only places-guide posts use it and
+  // it must not be rendered as a fenced JSON code block in the article body.
+  const { body: bodyNoPlaces, places } = extractPlaces(body)
+  const { body: bodyWithMarkers, ctas } = extractCtas(bodyNoPlaces)
   const html = renderMarkdown(bodyWithMarkers)
   const htmlSegments = splitByCtaMarkers(html)
-  return { ...coerceMeta(slug, meta), htmlSegments, ctas }
+  return { ...coerceMeta(slug, meta), htmlSegments, ctas, places }
 }
 
 export function getAllSlugs(): string[] {

@@ -4782,6 +4782,228 @@ a { color: inherit; }
   max-width: 320px;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   Places-guide article — map-first blog layout (uses tour-fullscreen
+   shell from the walking-tour styles for the map / sheet shell).
+   ═══════════════════════════════════════════════════════════════ */
+
+.places-guide-topbar { gap: 10px; }
+.places-guide-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(20, 20, 30, 0.08);
+  border-radius: 12px;
+  padding: 6px 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.places-guide-meta-count {
+  font-family: var(--font-serif, serif);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--gold, #ff6a13);
+}
+.places-guide-meta-label {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+/* Category filter chip strip — sits between the top bar and the sheet. */
+.places-guide-cats {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  z-index: 4;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  padding: 0 12px 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  pointer-events: none;
+}
+.places-guide-cats::-webkit-scrollbar { display: none; }
+.tour-fullscreen.sheet-list .places-guide-cats { display: none; }
+.places-guide-cat {
+  flex: none;
+  pointer-events: auto;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(20, 20, 30, 0.10);
+  background: rgba(255, 255, 255, 0.96);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: background 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
+}
+.places-guide-cat:active { transform: scale(0.96); }
+.places-guide-cat.is-active { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16); }
+
+/* Place marker — same DOM pattern as tour markers, but the badge contains
+ * the category icon (emoji) instead of a number. */
+.place-marker { pointer-events: auto; }
+.place-marker-inner {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+  user-select: none;
+  transform-origin: 50% 50%;
+  transition: transform 0.2s cubic-bezier(.22,.61,.36,1);
+}
+.place-marker-inner:hover { transform: scale(1.10); }
+.place-marker-inner.is-selected { transform: scale(1.28); z-index: 1; }
+.place-marker-badge {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 2.5px solid #fff;
+  box-shadow:
+    0 4px 12px rgba(20, 20, 30, 0.22),
+    0 0 0 1px rgba(20, 20, 30, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.place-marker-inner.is-selected .place-marker-badge {
+  box-shadow:
+    0 6px 18px rgba(20, 20, 30, 0.30),
+    0 0 0 4px rgba(255, 255, 255, 0.55);
+}
+.place-marker-icon {
+  font-size: 16px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));
+}
+.place-marker-halo {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.40);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.place-marker-inner.is-selected .place-marker-halo {
+  opacity: 1;
+  animation: tour-marker-halo 1.8s ease-out infinite;
+}
+
+/* Place card (bottom-sheet 'card' mode) */
+.places-guide-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 4px 12px;
+}
+.places-guide-card-image {
+  margin: 0 -16px;
+  height: 180px;
+  overflow: hidden;
+  background: var(--surface-2, #f3f4f6);
+}
+.places-guide-card-image img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.places-guide-card-cat {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.places-guide-card-name {
+  font-family: var(--font-serif, serif);
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1.15;
+  letter-spacing: -0.3px;
+  margin: 0;
+  color: var(--text);
+}
+.places-guide-card-addr {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.places-guide-card-desc {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--text);
+  margin: 0;
+}
+.places-guide-card-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 4px;
+}
+.places-guide-card-link {
+  flex: 1;
+  text-align: center;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  background: var(--primary);
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+.places-guide-card-link:active { transform: scale(0.97); }
+.places-guide-card-link:hover { filter: brightness(1.06); }
+
+/* List mode — article body sits above the place list */
+.places-guide-list-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.places-guide-article {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+}
+.places-guide-article-lede {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 8px 0 14px;
+}
+.places-guide-article .blog-post-body {
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.places-guide-article .blog-h2 {
+  font-size: 18px;
+  margin-top: 18px;
+}
+.places-guide-article .blog-h3 {
+  font-size: 16px;
+  margin-top: 14px;
+}
+.places-guide-list-heading {
+  font-family: var(--font-serif, serif);
+  font-weight: 700;
+  font-size: 16px;
+  margin: 4px 0 8px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
 @media (max-width: 540px) {
   .tour-hero { padding: 22px 18px 20px; }
   .tour-hero-title { font-size: 26px; }

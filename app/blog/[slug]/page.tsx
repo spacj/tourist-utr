@@ -5,6 +5,7 @@ import { db } from '@/lib/firebase'
 import { doc, getDoc } from 'firebase/firestore'
 import { getAllSlugs, getPost } from '@/lib/blog'
 import type { CtaSpec } from '@/lib/md'
+import { PlacesGuide } from '@/components/PlacesGuide'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tourhunts.com'
 
@@ -116,6 +117,48 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
   const resolvedCtas = await Promise.all(post.ctas.map(c => resolveCta(c)))
   const url = `${SITE_URL}/blog/${post.slug}`
+
+  // Places-guide posts use the full-screen map layout instead of the
+  // standard prose layout. We still build the CTA cards so they can be
+  // inlined inside the article body that lives in the bottom sheet.
+  if (post.type === 'places-guide' && post.places) {
+    const ctaCards = resolvedCtas.map((cta, i) => cta && (
+      <a key={i} href={cta.href} className="blog-cta">
+        <div className="blog-cta-content">
+          <span className="blog-cta-badge">{cta.badge}</span>
+          <div className="blog-cta-title">{cta.title}</div>
+          <div className="blog-cta-desc">{cta.description}</div>
+        </div>
+        <div className="blog-cta-arrow" aria-hidden>→</div>
+      </a>
+    ))
+    return (
+      <>
+        <PlacesGuide
+          title={post.title}
+          excerpt={post.excerpt}
+          category={post.category}
+          publishedAt={post.publishedAt}
+          readMinutes={post.readMinutes}
+          spec={post.places}
+          htmlSegments={post.htmlSegments}
+          ctaCards={ctaCards}
+        />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'Article',
+          headline: post.title,
+          description: post.excerpt,
+          image: [post.heroImage].filter(Boolean),
+          datePublished: post.publishedAt,
+          dateModified: post.updatedAt ?? post.publishedAt,
+          author: { '@type': 'Organization', name: post.author },
+          mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+          keywords: post.tags.join(', '),
+        }) }} />
+      </>
+    )
+  }
 
   const articleJsonLd = {
     '@context': 'https://schema.org',
