@@ -39,6 +39,15 @@
   padding: 0;
 }
 
+html {
+  /* Smooth-scroll for in-page anchor links — the places-guide [..](#place-id)
+   * jumps look fluid instead of teleporting. Reduce-motion users get instant. */
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
 html,
 body {
   height: 100%;
@@ -47,6 +56,30 @@ body {
   font-family: 'Twemoji Country Flags', var(--font-sans, system-ui), -apple-system, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
+  /* Kill the 300ms tap-delay on older Safari — every interactive element
+   * gets manipulation, so taps register immediately. */
+  touch-action: manipulation;
+}
+
+/* Brand-tinted text selection — small detail, makes the app feel curated. */
+::selection { background: rgba(255, 106, 19, 0.22); color: var(--text); }
+
+/* Visible focus ring for keyboard users; mouse/touch users don't see it. */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid rgba(255, 106, 19, 0.55);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Hover affordances belong on devices that can hover. On touch screens the
+ * "hover" state sticks after a tap and feels broken — guard everything in
+ * this app's hover rules with @media (hover: hover) where it matters most. */
+@media (hover: none) {
+  /* Card-level transforms that get stuck on touch — reset them. */
+  .country-card:hover,
+  .city-card:hover,
+  .hunt-card:hover { transform: none; }
 }
 
 /* When a hunt is on the screen, freeze the outer document so the URL bar,
@@ -94,13 +127,24 @@ a { color: inherit; }
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  /* Larger horizontal padding than the old 20px (which felt cramped at
+   * 360-414px viewport widths), plus safe-area for iPhone home indicator. */
+  padding: 24px 16px max(20px, calc(env(safe-area-inset-bottom, 0px) + 16px));
   position: relative;
   z-index: 1;
 }
 .container {
   width: 100%;
-  max-width: 440px;
+  /* Mobile-first 460px is the column width for our card stack; on tablet+
+   * we widen to give the home page hero and post grid more room. */
+  max-width: 460px;
+}
+@media (min-width: 720px) {
+  .container { max-width: 560px; }
+  .page-center { padding-top: 36px; }
+}
+@media (min-width: 1100px) {
+  .container { max-width: 640px; }
 }
 
 /* ═══ Home hero ═══ */
@@ -5940,4 +5984,123 @@ a { color: inherit; }
 @media (max-width: 540px) {
   .puzzle-card-primary { padding: 14px 14px 12px; margin-bottom: 12px; }
   .puzzle-display { padding: 18px 12px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Mobile polish pass — site-wide refinements layered last so they
+   override earlier component rules where they conflict.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Tap-target floor on the buttons that matter most. Apple HIG says 44px;
+ * 40px is a sensible balance with our compact UI. Only applied to the
+ * specific button classes that already pretend to be "primary" actions —
+ * we don't blanket-apply it to every <button> to avoid breaking small
+ * chips, dot pagers, and inline pickers. */
+.btn-primary,
+.btn-ghost,
+.tour-card-here-btn,
+.tour-stop-here-btn,
+.puzzle-submit,
+.places-guide-card-link,
+.sign-in-btn {
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+/* Site-wide subtle press feedback. Each of these already has a unique
+ * hover style; this just adds a consistent "tap acknowledged" beat on
+ * touch and mouse alike. */
+.btn-primary:active,
+.btn-ghost:active,
+.tour-card-here-btn:active,
+.tour-stop-here-btn:active,
+.puzzle-submit:active,
+.places-guide-card-link:active,
+.sign-in-btn:active,
+.country-card:active,
+.city-card:active,
+.hunt-card:active {
+  transform: scale(0.985);
+  transition: transform 0.06s ease-out;
+}
+
+/* Country / city / hunt cards — give them a slightly tighter spacing
+ * stack on phones and lift the corner radius for a softer feel. */
+@media (max-width: 540px) {
+  .country-card,
+  .city-card,
+  .hunt-card {
+    border-radius: 18px;
+  }
+  .country-body,
+  .city-card-body,
+  .hunt-card-body {
+    padding: 14px 14px 16px;
+  }
+  .country-name,
+  .city-card-name,
+  .hunt-card-title {
+    font-size: 18px;
+    line-height: 1.2;
+  }
+  .country-desc,
+  .city-card-desc,
+  .hunt-card-desc {
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+}
+
+/* Bottom-sheet handle — bigger tap zone on phones, more obvious affordance.
+ * Touches both the in-game ClueScreen sheet and the tour/places-guide sheet. */
+@media (max-width: 540px) {
+  .sheet-handle-btn { padding: 10px 16px 8px; }
+  .sheet-handle { width: 48px; height: 4px; }
+  .tour-sheet-handle { min-height: 48px; }
+  .tour-sheet-grip { width: 48px; height: 4px; }
+}
+
+/* Blog list page — the cards were quite cramped on phones; loosen the
+ * grid and standardize image aspect ratio. */
+@media (max-width: 540px) {
+  .blog-grid { grid-template-columns: 1fr !important; gap: 14px !important; }
+  .blog-card-image { aspect-ratio: 16/9; }
+  .blog-card-title { font-size: 16.5px; line-height: 1.25; }
+  .blog-card-excerpt { font-size: 13.5px; line-height: 1.5; }
+}
+
+/* Places-guide & tour — full-screen layouts get tighter on phones.
+ * The topbar collapses to give the map more vertical breathing room. */
+@media (max-width: 540px) {
+  .tour-topbar { padding: calc(env(safe-area-inset-top, 0px) + 10px) 12px 12px; gap: 8px; }
+  .tour-topbar-title { font-size: 14px; }
+  .tour-topbar-eyebrow { font-size: 9px; }
+  .places-guide-meta { padding: 4px 8px; }
+  .places-guide-meta-count { font-size: 16px; }
+  /* Category filter strip — sits just above the sheet; needs to clear
+   * the iPhone home indicator and the sheet handle itself. */
+  .places-guide-cats { bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* Place card on mobile — slightly tighter image height. */
+@media (max-width: 540px) {
+  .places-guide-card-image { height: 150px; }
+  .places-guide-card-name { font-size: 19px; }
+  .places-guide-card-desc { font-size: 14px; }
+}
+
+/* Inputs — make them feel less Web 2.0 on phones. Slightly bigger touch
+ * area, modern focus ring (focus-visible only — typing doesn't show it). */
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+input[type="password"],
+textarea,
+select {
+  font: inherit;
+  font-size: 16px;  /* Prevents iOS zoom-on-focus */
+  min-height: 44px;
+  touch-action: manipulation;
 }
