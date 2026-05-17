@@ -5,6 +5,7 @@ import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
 import { City, Hunt, isHuntFree, isTour, localizeCity, localizeHunt, TourCategory } from '@/types'
 import { ResumeRaceBanner } from '@/components/ResumeRaceBanner'
+import { CheckoutSheet, type CheckoutOption } from '@/components/CheckoutSheet'
 
 const DIFFICULTY_META: Record<string, { key: string; color: string; bg: string }> = {
   easy:   { key: 'diffEasy',   color: '#22c97a', bg: 'rgba(34,201,122,.12)' },
@@ -35,6 +36,9 @@ export default function CityPage() {
   const [starting, setStarting] = useState<string | null>(null)
   const [unlocking, setUnlocking] = useState(false)
   const [flash, setFlash] = useState<string | null>(null)
+  /** When true, the CheckoutSheet is shown over the page — user has clicked
+   *  unlock but hasn't yet been redirected to PayPal. */
+  const [checkoutOpen, setCheckoutOpen] = useState(false)
 
   // Load city + hunts
   useEffect(() => {
@@ -101,10 +105,23 @@ export default function CityPage() {
     general:   { icon: '🧭', color: '#6366f1' },
   }
 
-  const unlockCity = async () => {
+  const openCityCheckout = () => {
     if (!user) { signIn(); return }
     if (!city) return
+    setCheckoutOpen(true)
+  }
+
+  const confirmCityCheckout = async (optionId: string) => {
+    if (!user || !city) return
     setUnlocking(true)
+    // The first option id is the city itself; any future "country-pass"
+    // bundle id would dispatch to a different endpoint. For now only the
+    // single-city case is wired to a real backend.
+    if (optionId !== city.id) {
+      setUnlocking(false)
+      setFlash('That option will be available soon')
+      return
+    }
     const res = await fetch('/api/city-unlocks/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -115,6 +132,7 @@ export default function CityPage() {
       window.location.href = data.url
     } else {
       setUnlocking(false)
+      setCheckoutOpen(false)
       setFlash(data?.error === 'sign_in_required' ? t('signInToUnlock') : 'Payment unavailable')
     }
   }
@@ -155,7 +173,7 @@ export default function CityPage() {
               <span>{t('cityUnlockedNote')}</span>
             </div>
           ) : (
-            <button onClick={unlockCity} disabled={unlocking} className="city-hero-cta">
+            <button onClick={openCityCheckout} disabled={unlocking} className="city-hero-cta">
               <span className="city-hero-cta-label">
                 {unlocking ? t('unlockingCity') : unlockCta}
               </span>
@@ -206,7 +224,7 @@ export default function CityPage() {
               <button
                 key={hunt.id}
                 className={`hunt-card ${stateClass} ${tourMode ? 'is-tour' : ''}`}
-                onClick={() => locked ? unlockCity() : startHunt(hunt.id, free)}
+                onClick={() => locked ? openCityCheckout() : startHunt(hunt.id, free)}
                 disabled={starting === hunt.id || unlocking}
                 style={locked ? { opacity: 0.78 } : undefined}
               >
@@ -303,6 +321,56 @@ export default function CityPage() {
           <p className="footer-note">{t('signInHint')}</p>
         )}
       </div>
+
+      {checkoutOpen && city && (() => {
+        const cityPriceCents = Math.round((city.priceEuros ?? 5) * 100)
+        // For now only the single city option dispatches to the real backend.
+        // The "country pass" is offered as a coming-soon teaser so users
+        // see that bundles are on the way; reaching out about interest
+        // signals demand before we build the bundle capture flow.
+        const options: CheckoutOption[] = [
+          {
+            id: city.id,
+            title: `Unlock all of ${localCity.name}`,
+            subtitle: `${hunts.length} hunt${hunts.length === 1 ? '' : 's'} · lifetime access · play offline`,
+            items: [
+              'Every hunt in this city, paid once',
+              'Replay as many times as you like',
+              'Works offline once you start',
+              'Two-player races included',
+            ],
+            priceCents: cityPriceCents,
+            icon: localCity.coverEmoji ?? '📍',
+            accent: 'var(--primary)',
+          },
+          {
+            id: 'country-pass',
+            title: `${localCity.country} country pass`,
+            subtitle: `Every city we ever release in ${localCity.country} — currently shipping`,
+            items: [
+              'All current cities in this country',
+              'Every future city we add — no extra charge',
+            ],
+            priceCents: Math.round(cityPriceCents * 4.2),  // illustrative pricing
+            comparePriceCents: Math.round(cityPriceCents * 7),
+            badge: 'Best value',
+            icon: '🌍',
+            disabled: true,
+            disabledReason: 'Coming soon — message us if you\'d use this',
+            accent: '#0d9488',
+          },
+        ]
+        return (
+          <CheckoutSheet
+            title={`Unlock ${localCity.name}`}
+            subtitle="One payment. Lifetime access. No subscriptions or recurring charges."
+            options={options}
+            defaultSelectedId={city.id}
+            onConfirm={confirmCityCheckout}
+            onClose={() => setCheckoutOpen(false)}
+          />
+        )
+      })()}
     </main>
   )
 }

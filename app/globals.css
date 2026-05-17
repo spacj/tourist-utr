@@ -6378,6 +6378,330 @@ a { color: inherit; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   Checkout sheet — shared confirmation modal used before any
+   PayPal redirect. Replaces the old jarring "click → straight to
+   PayPal login" with a card-stack of options, trust signals, and
+   a clear "Pay with PayPal" CTA.
+   ═══════════════════════════════════════════════════════════════ */
+
+.checkout-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 20, 30, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: checkoutFadeIn 0.2s ease-out;
+}
+@keyframes checkoutFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@media (min-width: 720px) {
+  .checkout-backdrop { align-items: center; }
+}
+.checkout-sheet {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  max-height: 92dvh;
+  background: var(--surface);
+  border-radius: 22px 22px 0 0;
+  padding: 12px 22px max(28px, calc(20px + env(safe-area-inset-bottom, 0px)));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  box-shadow: 0 -16px 40px rgba(20, 20, 30, 0.30);
+  animation: checkoutSlideUp 0.24s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+@keyframes checkoutSlideUp { from { transform: translateY(18%); opacity: 0.6; } to { transform: translateY(0); opacity: 1; } }
+@media (min-width: 720px) {
+  .checkout-sheet {
+    border-radius: 22px;
+    max-height: 88vh;
+    padding: 24px 28px 28px;
+  }
+}
+.checkout-handle {
+  width: 44px; height: 4px;
+  margin: 0 auto 14px;
+  background: rgba(20, 20, 30, 0.18);
+  border-radius: 999px;
+}
+@media (min-width: 720px) { .checkout-handle { display: none; } }
+.checkout-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s, color 0.15s;
+}
+.checkout-close:hover { background: rgba(255, 106, 19, 0.12); color: var(--primary); }
+
+.checkout-head { margin-bottom: 14px; }
+.checkout-title {
+  font-family: var(--font-serif, serif);
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1.2;
+  letter-spacing: -0.3px;
+  color: var(--text);
+}
+.checkout-subtitle {
+  margin-top: 6px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.checkout-options {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.checkout-option {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text);
+  text-align: left;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+}
+.checkout-option:not(.is-disabled):active { transform: scale(0.985); }
+.checkout-option:not(.is-disabled):hover { border-color: var(--border-2); }
+.checkout-option.is-selected {
+  box-shadow: 0 4px 16px rgba(255, 106, 19, 0.16);
+}
+.checkout-option.is-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.checkout-option-badge {
+  position: absolute;
+  top: -8px;
+  left: 14px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--primary);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+.checkout-option-main {
+  flex: 1;
+  min-width: 0;
+}
+.checkout-option-headline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.checkout-option-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+.checkout-option-title {
+  font-weight: 700;
+  font-size: 15.5px;
+  line-height: 1.25;
+  color: var(--text);
+}
+.checkout-option-subtitle {
+  margin-top: 3px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.checkout-option-items {
+  margin-top: 8px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+.checkout-option-items li {
+  position: relative;
+  padding-left: 14px;
+}
+.checkout-option-items li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--green);
+  font-weight: 700;
+  font-size: 11px;
+}
+.checkout-option-disabled-reason {
+  margin-top: 6px;
+  font-size: 11.5px;
+  font-style: italic;
+  color: var(--text-dim);
+}
+.checkout-option-price-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  gap: 2px;
+}
+.checkout-option-compare {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-decoration: line-through;
+}
+.checkout-option-price {
+  font-family: var(--font-serif, serif);
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text);
+  transition: color 0.15s ease;
+}
+.checkout-option-radio {
+  width: 20px; height: 20px;
+  flex-shrink: 0;
+  border: 2px solid var(--border-2);
+  border-radius: 50%;
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+/* Trust badges row */
+.checkout-trust {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  padding: 12px 4px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.checkout-trust li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.checkout-trust li svg { color: var(--green); flex-shrink: 0; }
+
+/* Final CTA row */
+.checkout-cta-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.checkout-total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex-shrink: 0;
+}
+.checkout-total-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.checkout-total-value {
+  font-family: var(--font-serif, serif);
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1.1;
+  color: var(--text);
+}
+.checkout-cta {
+  flex: 1;
+  /* PayPal brand-ish blue → light-yellow gradient so the button reads as a
+   * PayPal action without claiming to be the official PayPal button. */
+  background: linear-gradient(135deg, #003087 0%, #0070ba 50%, #009cde 100%);
+  color: #fff;
+  border: none;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+  padding: 14px 18px;
+  border-radius: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  box-shadow: 0 6px 18px rgba(0, 112, 186, 0.35);
+  transition: filter 0.15s ease, transform 0.1s ease;
+  min-height: 50px;
+}
+.checkout-cta:hover { filter: brightness(1.06); }
+.checkout-cta:active { transform: scale(0.98); }
+.checkout-cta:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(0.4); }
+.checkout-cta-paypal {
+  display: inline-block;
+  font-family: 'Trebuchet MS', system-ui, sans-serif;
+  font-style: italic;
+  font-weight: 800;
+}
+.checkout-cta-paypal-p1 { color: #003087; }
+.checkout-cta-paypal-p2 { color: #009cde; }
+.checkout-cta-paypal { background: #fff; padding: 3px 8px; border-radius: 6px; }
+.checkout-cta-loading {
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.spinner-mini {
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.checkout-footnote {
+  font-size: 11.5px;
+  color: var(--text-dim);
+  text-align: center;
+  line-height: 1.4;
+}
+
+@media (max-width: 540px) {
+  .checkout-sheet { padding: 10px 18px max(24px, calc(20px + env(safe-area-inset-bottom, 0px))); }
+  .checkout-title { font-size: 19px; }
+  .checkout-option { padding: 12px 14px; }
+  .checkout-option-title { font-size: 14.5px; }
+  .checkout-option-price { font-size: 18px; }
+  .checkout-cta { font-size: 14px; min-height: 48px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
    Mobile polish pass — site-wide refinements layered last so they
    override earlier component rules where they conflict.
    ═══════════════════════════════════════════════════════════════ */
