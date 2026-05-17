@@ -4827,72 +4827,136 @@ a { color: inherit; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Places-guide article — map-first blog layout (uses tour-fullscreen
-   shell from the walking-tour styles for the map / sheet shell).
+   Places-guide article — map-first blog layout
+   Two top-level views:
+     view-map   — full-screen map + three-state bottom sheet (peek/card/full)
+     view-list  — full-screen scrollable list of place cards (no map)
+   Toggled via the .places-guide-view-toggle pill in the top bar.
    ═══════════════════════════════════════════════════════════════ */
 
-.places-guide-topbar { gap: 10px; }
-.places-guide-meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(20, 20, 30, 0.08);
-  border-radius: 12px;
-  padding: 6px 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-.places-guide-meta-count {
-  font-family: var(--font-serif, serif);
-  font-weight: 700;
-  font-size: 18px;
-  line-height: 1;
-  color: var(--gold, #ff6a13);
-}
-.places-guide-meta-label {
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  font-weight: 700;
-  color: var(--text-muted);
+.places-guide {
+  position: fixed;
+  inset: 0;
+  background: #f3f4f6;
+  overflow: hidden;
 }
 
-/* Category filter chip strip — sits between the top bar and the sheet. */
+/* ── Top bar ────────────────────────────────────────────────────── */
+.places-guide-topbar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: calc(env(safe-area-inset-top, 0px) + 12px) 14px 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.82) 70%, rgba(255,255,255,0) 100%);
+  pointer-events: none;
+}
+.places-guide-topbar > * { pointer-events: auto; }
+.places-guide .tour-topbar-back {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(20, 20, 30, 0.10);
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none;
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+  flex-shrink: 0;
+}
+.places-guide .tour-topbar-info { flex: 1; min-width: 0; }
+.places-guide .tour-topbar-eyebrow {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+  text-transform: uppercase; color: var(--text-muted);
+}
+.places-guide .tour-topbar-title {
+  font-family: var(--font-serif, serif);
+  font-weight: 700; font-size: 16px; line-height: 1.15;
+  letter-spacing: -0.2px; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* View toggle (Map / List) — segmented pill */
+.places-guide-view-toggle {
+  display: inline-flex;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(20, 20, 30, 0.10);
+  border-radius: 12px;
+  padding: 3px;
+  gap: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+}
+.places-guide-view-btn {
+  width: 36px; height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 9px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+.places-guide-view-btn:active { transform: scale(0.94); }
+.places-guide-view-btn.is-active {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(255, 106, 19, 0.35);
+}
+
+/* ── Map view ───────────────────────────────────────────────────── */
+.places-guide-map-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.places-guide-map-wrap .tour-map {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+}
+
+/* Category filter chip strip — floats just above the sheet handle */
 .places-guide-cats {
   position: absolute;
   left: 0; right: 0;
-  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   z-index: 4;
   display: flex;
   flex-wrap: nowrap;
   gap: 6px;
-  padding: 0 12px 8px;
+  padding: 0 12px 10px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   pointer-events: none;
+  /* Default (card state) position; map view overrides via .sheet-* below */
+  bottom: calc(360px + env(safe-area-inset-bottom, 0px));
+  transition: bottom 0.32s cubic-bezier(.22,.61,.36,1);
 }
 .places-guide-cats::-webkit-scrollbar { display: none; }
-.tour-fullscreen.sheet-list .places-guide-cats { display: none; }
+.places-guide.sheet-peek  .places-guide-cats { bottom: calc(72px  + env(safe-area-inset-bottom, 0px)); }
+.places-guide.sheet-card  .places-guide-cats { bottom: calc(360px + env(safe-area-inset-bottom, 0px)); }
+.places-guide.sheet-full  .places-guide-cats { display: none; }
+
 .places-guide-cat {
   flex: none;
   pointer-events: auto;
-  padding: 6px 12px;
+  padding: 7px 13px;
   border-radius: 999px;
   border: 1px solid rgba(20, 20, 30, 0.10);
   background: rgba(255, 255, 255, 0.96);
   font-family: inherit;
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--text);
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
   transition: background 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
 }
 .places-guide-cat:active { transform: scale(0.96); }
-.places-guide-cat.is-active { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16); }
+.places-guide-cat.is-active { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18); }
 
 /* Place marker — same DOM pattern as tour markers, but the badge contains
  * the category icon (emoji) instead of a number. */
@@ -4945,31 +5009,146 @@ a { color: inherit; }
   animation: tour-marker-halo 1.8s ease-out infinite;
 }
 
-/* Place card (bottom-sheet 'card' mode) */
-.places-guide-card {
+/* ── Three-state bottom sheet ──────────────────────────────────────
+ * .places-sheet wraps a handle (always visible) + scrollable content.
+ * The sheet's height is controlled by the .sheet-peek / .sheet-card /
+ * .sheet-full class on the parent .places-guide. Inner content scrolls
+ * within .places-sheet-scroll using overflow-y: auto + overscroll
+ * containment, so the user can read long descriptions / the full
+ * article without the sheet needing to be bigger than the viewport. */
+.places-sheet {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  z-index: 5;
+  background: #fff;
+  border-top-left-radius: 22px;
+  border-top-right-radius: 22px;
+  box-shadow: 0 -10px 32px rgba(0, 0, 0, 0.16);
+  display: flex;
+  flex-direction: column;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  /* Smooth height changes — the actual height is set by the .sheet-*
+   * classes on .places-guide. */
+  transition: height 0.32s cubic-bezier(.22,.61,.36,1);
+  /* Height variants — assigned via parent class */
+  height: 320px;
+  overflow: hidden;
+}
+.places-guide.sheet-peek .places-sheet { height: 72px; }
+.places-guide.sheet-card .places-sheet { height: 360px; }
+.places-guide.sheet-full .places-sheet { height: 88dvh; }
+
+/* Handle — always visible at the top of the sheet, captures swipe gestures */
+.places-sheet-handle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 16px 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  width: 100%;
+  flex-shrink: 0;
+  /* Tells the browser this strip is for vertical swipes; the scroll area
+   * below gets the page-y. Lets the user actually drag the handle without
+   * triggering scroll-pull. */
+  touch-action: pan-y;
+}
+.places-sheet-handle:hover { color: var(--text); }
+.places-sheet-grip {
+  width: 48px; height: 4px;
+  background: rgba(20, 20, 30, 0.22);
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+.places-sheet-handle:hover .places-sheet-grip { background: rgba(255, 106, 19, 0.5); }
+.places-sheet-handle-label { margin-top: 2px; }
+
+/* Inner scroll container — fills the rest of the sheet height. */
+.places-sheet-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 18px 16px;
+}
+.places-guide.sheet-peek .places-sheet-scroll { padding-bottom: 0; }
+
+/* Peek mode — a compact strip with the selected place's name + arrow */
+.places-sheet-peek {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 4px 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text);
+}
+.places-sheet-peek-icon {
+  flex-shrink: 0;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+.places-sheet-peek-name {
+  flex: 1;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.places-sheet-peek-arrow {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ── Focused place card (sheet 'card' state) ───────────────────── */
+.places-card {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 4px 4px 12px;
+  padding: 4px 0 8px;
 }
-.places-guide-card-image {
-  margin: 0 -16px;
+.places-card-image {
+  margin: 0 -18px;
   height: 180px;
   overflow: hidden;
   background: var(--surface-2, #f3f4f6);
+  border-radius: 0;
 }
-.places-guide-card-image img {
+.places-card-image img {
   width: 100%; height: 100%;
   object-fit: cover;
   display: block;
 }
-.places-guide-card-cat {
+.places-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.places-card-cat {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-.places-guide-card-name {
+.places-card-name {
   font-family: var(--font-serif, serif);
   font-weight: 700;
   font-size: 22px;
@@ -4978,23 +5157,38 @@ a { color: inherit; }
   margin: 0;
   color: var(--text);
 }
-.places-guide-card-addr {
+.places-card-addr {
   font-size: 13px;
   color: var(--text-muted);
 }
-.places-guide-card-desc {
+.places-card-desc {
   font-size: 14.5px;
   line-height: 1.55;
   color: var(--text);
   margin: 0;
 }
-.places-guide-card-actions {
+.places-card-actions {
   display: flex;
   gap: 10px;
   align-items: center;
   margin-top: 4px;
 }
-.places-guide-card-link {
+.places-card-expand-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-2);
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+}
+.places-card-expand-btn:active { transform: scale(0.97); }
+.places-card-expand-btn:hover { border-color: var(--primary); background: var(--surface-2); }
+.places-card-link {
   flex: 1;
   text-align: center;
   padding: 10px 14px;
@@ -5006,14 +5200,44 @@ a { color: inherit; }
   background: var(--primary);
   transition: filter 0.15s ease, transform 0.1s ease;
 }
-.places-guide-card-link:active { transform: scale(0.97); }
-.places-guide-card-link:hover { filter: brightness(1.06); }
+.places-card-link:active { transform: scale(0.97); }
+.places-card-link:hover { filter: brightness(1.06); }
+.places-card-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+.places-card-pager-btn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 16px;
+  display: grid;
+  place-items: center;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+}
+.places-card-pager-btn:disabled { opacity: 0.32; cursor: not-allowed; }
+.places-card-pager-btn:not(:disabled):hover { border-color: var(--primary); }
+.places-card-pager-btn:not(:disabled):active { transform: scale(0.92); }
+.places-card-pager-pos {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  min-width: 48px;
+  text-align: center;
+}
 
-/* List mode — article body sits above the place list */
-.places-guide-list-mode {
+/* ── Full mode (article + list) ────────────────────────────────── */
+.places-full-body {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  padding-top: 4px;
 }
 .places-guide-article {
   border-bottom: 1px solid var(--border);
@@ -5026,26 +5250,182 @@ a { color: inherit; }
   font-style: italic;
   margin: 8px 0 14px;
 }
-.places-guide-article .blog-post-body {
-  font-size: 14.5px;
-  line-height: 1.6;
-}
-.places-guide-article .blog-h2 {
-  font-size: 18px;
-  margin-top: 18px;
-}
-.places-guide-article .blog-h3 {
-  font-size: 16px;
-  margin-top: 14px;
-}
-.places-guide-list-heading {
+.places-guide-article .blog-post-body { font-size: 14.5px; line-height: 1.6; }
+.places-guide-article .blog-h2 { font-size: 18px; margin-top: 18px; }
+.places-guide-article .blog-h3 { font-size: 16px; margin-top: 14px; }
+.places-full-list-heading {
   font-family: var(--font-serif, serif);
   font-weight: 700;
-  font-size: 16px;
+  font-size: 13px;
   margin: 4px 0 8px;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
+}
+.places-full-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.places-full-list-item {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.places-full-list-item:hover { border-color: var(--border-2); }
+.places-full-list-item.is-open {
+  border-color: rgba(255, 106, 19, 0.5);
+  background: rgba(255, 106, 19, 0.04);
+}
+.places-full-list-summary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  color: var(--text);
+}
+.places-full-list-icon {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  font-size: 14px;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+.places-full-list-text { flex: 1; min-width: 0; }
+.places-full-list-name {
+  font-weight: 600;
+  font-size: 14.5px;
+  line-height: 1.3;
+}
+.places-full-list-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.places-full-list-chevron { color: var(--text-muted); font-size: 12px; flex-shrink: 0; }
+
+/* ── List view (no map) ────────────────────────────────────────── */
+.places-list-view {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--bg-2, #fff7f0);
+  /* Clear the absolute top bar */
+  padding-top: calc(env(safe-area-inset-top, 0px) + 86px);
+  padding-bottom: max(40px, calc(env(safe-area-inset-bottom, 0px) + 32px));
+}
+.places-list-view-inner {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.places-list-view-cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.places-list-grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+@media (min-width: 720px) {
+  .places-list-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.places-list-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text);
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  padding: 0;
+}
+@media (hover: hover) {
+  .places-list-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(20, 20, 30, 0.10);
+  }
+}
+.places-list-card:active { transform: scale(0.99); }
+.places-list-card-image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.places-list-card-image img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.places-list-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px 16px;
+}
+.places-list-card-cat {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.places-list-card-name {
+  font-family: var(--font-serif, serif);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+}
+.places-list-card-addr {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+.places-list-card-desc {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  margin: 4px 0 0;
+}
+.places-list-card-cta {
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--primary);
 }
 
 @media (max-width: 540px) {
@@ -6072,21 +6452,24 @@ a { color: inherit; }
 /* Places-guide & tour — full-screen layouts get tighter on phones.
  * The topbar collapses to give the map more vertical breathing room. */
 @media (max-width: 540px) {
-  .tour-topbar { padding: calc(env(safe-area-inset-top, 0px) + 10px) 12px 12px; gap: 8px; }
-  .tour-topbar-title { font-size: 14px; }
-  .tour-topbar-eyebrow { font-size: 9px; }
-  .places-guide-meta { padding: 4px 8px; }
-  .places-guide-meta-count { font-size: 16px; }
-  /* Category filter strip — sits just above the sheet; needs to clear
-   * the iPhone home indicator and the sheet handle itself. */
-  .places-guide-cats { bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+  .tour-topbar,
+  .places-guide-topbar { padding: calc(env(safe-area-inset-top, 0px) + 10px) 12px 12px; gap: 8px; }
+  .tour-topbar-title,
+  .places-guide .tour-topbar-title { font-size: 14px; }
+  .tour-topbar-eyebrow,
+  .places-guide .tour-topbar-eyebrow { font-size: 9px; }
+  .places-guide-view-btn { width: 32px; height: 30px; }
+  /* Sheet heights — tighter at phone size */
+  .places-guide.sheet-card .places-sheet { height: 320px; }
+  .places-guide.sheet-card .places-guide-cats { bottom: calc(320px + env(safe-area-inset-bottom, 0px)); }
 }
 
 /* Place card on mobile — slightly tighter image height. */
 @media (max-width: 540px) {
-  .places-guide-card-image { height: 150px; }
-  .places-guide-card-name { font-size: 19px; }
-  .places-guide-card-desc { font-size: 14px; }
+  .places-card-image { height: 150px; }
+  .places-card-name { font-size: 19px; }
+  .places-card-desc { font-size: 14px; }
+  .places-list-card-name { font-size: 16.5px; }
 }
 
 /* Inputs — make them feel less Web 2.0 on phones. Slightly bigger touch
