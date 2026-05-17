@@ -98,14 +98,26 @@ export function PlacesGuide({
   }
 
   // ── Swipe gestures on the sheet handle ─────────────────────────────
-  // Threshold-based: any drag of more than 36px snaps the sheet to the
+  // Threshold-based: any drag of more than 24px snaps the sheet to the
   // next state in the direction of the drag. Tap (small movement) cycles
   // states upward, like the old click behaviour.
+  //
+  // We stopPropagation on the touch events so they never reach the document
+  // — that, combined with `overscroll-behavior: none` on html/body when a
+  // places-guide is mounted, ensures the iOS pull-to-refresh gesture can
+  // never fire from a downward swipe on the handle.
   const touchStartY = useRef<number | null>(null)
   const onHandleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY
+    e.stopPropagation()
+  }
+  const onHandleTouchMove = (e: React.TouchEvent) => {
+    // Without this, the browser can still kick off a scroll on the document
+    // (and on iOS, a pull-to-refresh) before our touchend fires.
+    e.stopPropagation()
   }
   const onHandleTouchEnd = (e: React.TouchEvent) => {
+    e.stopPropagation()
     if (touchStartY.current === null) return
     const dy = e.changedTouches[0].clientY - touchStartY.current
     touchStartY.current = null
@@ -230,6 +242,7 @@ export function PlacesGuide({
               className="places-sheet-handle"
               onClick={cycleSheet}
               onTouchStart={onHandleTouchStart}
+              onTouchMove={onHandleTouchMove}
               onTouchEnd={onHandleTouchEnd}
               aria-label={sheetState === 'full' ? 'Collapse sheet' : 'Expand sheet'}
             >

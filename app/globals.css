@@ -82,12 +82,23 @@ body {
   .hunt-card:hover { transform: none; }
 }
 
-/* When a hunt is on the screen, freeze the outer document so the URL bar,
- * stray pinch/drag, or any inner scroll can never push the layout — and
- * with it the fixed top HUD — past the viewport. Without this, on iOS Safari
- * the user can pull the entire page down and the HUD scrolls away with it. */
+/* When a hunt / tour / places-guide is on the screen, freeze the outer
+ * document. Without this, on iOS Safari the user can:
+ *   - Pull the page down and trigger pull-to-refresh (so swiping the
+ *     places-guide sheet handle down reloads the page instead of
+ *     collapsing the sheet).
+ *   - Drag the URL bar in/out, which changes 100dvh and clips fixed UI.
+ *   - Pinch / over-scroll, which moves the layout and breaks the fixed
+ *     HUD bar pinning.
+ *
+ * `overscroll-behavior: none` kills pull-to-refresh; `position: fixed`
+ * on body locks it to the viewport so no inner element can push it. */
 html:has(.game-layout),
-body:has(.game-layout) {
+html:has(.places-guide),
+html:has(.tour-fullscreen),
+body:has(.game-layout),
+body:has(.places-guide),
+body:has(.tour-fullscreen) {
   overflow: hidden;
   overscroll-behavior: none;
   position: fixed;
