@@ -596,6 +596,8 @@ export const T: Dict = {
   roomCode:          { en: 'Room code', nl: 'Kamercode', de: 'Raumcode', fr: 'Code de salle', it: 'Codice stanza', es: 'Código de sala' },
   enterRoomCode:     { en: 'Enter room code', nl: 'Voer kamercode in', de: 'Raumcode eingeben', fr: 'Entrez le code', it: 'Inserisci codice', es: 'Ingresa el código' },
   shareRoomCode:     { en: 'Share this code with friends', nl: 'Deel deze code met vrienden', de: 'Teile den Code mit Freunden', fr: 'Partagez ce code', it: 'Condividi questo codice', es: 'Comparte este código' },
+  benchesCtaTitle:   { en: 'Find a good bench', nl: 'Vind een goede bank', de: 'Finde eine gute Bank', fr: 'Trouvez un bon banc', it: 'Trova una buona panchina', es: 'Encuentra un buen banco' },
+  benchesCtaDesc:    { en: 'A map of great spots to sit — views, sun, quiet corners', nl: 'Een kaart met fijne zitplekken — uitzicht, zon, rustige hoekjes', de: 'Eine Karte schöner Sitzplätze — Aussicht, Sonne, ruhige Ecken', fr: 'Une carte des bons endroits où s’asseoir — vues, soleil, coins tranquilles', it: 'Una mappa dei posti migliori dove sedersi — viste, sole, angoli tranquilli', es: 'Un mapa de buenos lugares para sentarse — vistas, sol, rincones tranquilos' },
   copyCode:          { en: 'Copy code', nl: 'Code kopiëren', de: 'Code kopieren', fr: 'Copier le code', it: 'Copia codice', es: 'Copiar código' },
   copied:            { en: 'Copied!', nl: 'Gekopieerd!', de: 'Kopiert!', fr: 'Copié !', it: 'Copiato!', es: '¡Copiado!' },
   lobby:             { en: 'Lobby', nl: 'Lobby', de: 'Lobby', fr: 'Salon', it: 'Lobby', es: 'Sala de espera' },

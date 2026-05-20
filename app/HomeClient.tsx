@@ -433,6 +433,16 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
           <p className="footer-note">{t('signInHint')}</p>
         )}
 
+        {/* ── Benches map CTA ── */}
+        <a href="/benches" className="mp-home-cta benches-home-cta">
+          <div className="mp-home-cta-icon">🪑</div>
+          <div className="mp-home-cta-body">
+            <div className="mp-home-cta-title">{t('benchesCtaTitle')}</div>
+            <div className="mp-home-cta-desc">{t('benchesCtaDesc')}</div>
+          </div>
+          <div className="mp-home-cta-arrow">→</div>
+        </a>
+
         {/* ── Footer ── */}
         <footer className="site-footer">
           <div className="footer-top">

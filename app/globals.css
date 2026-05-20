@@ -2955,6 +2955,17 @@ a { color: inherit; }
 .mp-home-cta-desc { font-size: 13px; color: var(--text-muted); }
 .mp-home-cta-arrow { font-size: 20px; color: var(--primary); flex-shrink: 0; }
 
+.benches-home-cta {
+  background: linear-gradient(135deg, rgba(13, 148, 136, 0.10), rgba(13, 148, 136, 0.03));
+  border-color: rgba(13, 148, 136, 0.35);
+}
+.benches-home-cta:hover {
+  border-color: rgba(13, 148, 136, 0.6);
+  box-shadow: 0 6px 18px rgba(13, 148, 136, 0.18);
+}
+.benches-home-cta .mp-home-cta-icon { background: linear-gradient(135deg, #0d9488, #14b8a6); }
+.benches-home-cta .mp-home-cta-arrow { color: #0d9488; }
+
 .mp-title {
   font-family: var(--font-serif, serif);
   font-size: 32px;
