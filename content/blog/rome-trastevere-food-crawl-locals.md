@@ -5,7 +5,7 @@ publishedAt: "2026-05-04"
 author: "TourHunts Editorial"
 category: "food"
 tags: [Rome, Italy, food tour, Trastevere, self-guided]
-heroImage: "images/blog/romatrastevereblog.jpg"
+heroImage: "/images/blog/romatrastevereblog.jpg"
 heroAlt: "Cobbled streets of Trastevere at dusk"
 readMinutes: 7
 relatedCities: [city_rome]
