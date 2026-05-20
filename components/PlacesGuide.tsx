@@ -56,6 +56,19 @@ export function PlacesGuide({
     return () => navigator.geolocation.clearWatch(id)
   }, [])
 
+  // Desktop layout (≥1024px) uses a fixed left sidebar — there's no peek/card
+  // collapse since the sidebar is always full-height. Snap the sheetState
+  // to 'full' so the article + place list render. Mobile keeps the swipeable
+  // bottom-sheet behaviour.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return
+    const mq = window.matchMedia('(min-width: 1024px)')
+    const apply = () => { if (mq.matches) setSheetState('full') }
+    apply()
+    mq.addEventListener('change', apply)
+    return () => mq.removeEventListener('change', apply)
+  }, [])
+
   // Catch clicks on in-article anchors (`<a href="#place-<id>">`) and use
   // them to open the matching place card. Bound once on the article container.
   const articleRef = useRef<HTMLDivElement>(null)
@@ -72,9 +85,12 @@ export function PlacesGuide({
       if (places.some(p => p.id === placeId)) {
         ev.preventDefault()
         selectPlace(placeId)
-        // From the article (full sheet) → drop back to card so they can see
-        // the map fly to the marker.
-        setSheetState('card')
+        // On mobile, drop the sheet from 'full' back to 'card' so the user
+        // sees the map fly to the marker. On desktop the sidebar is always
+        // full-height — keep it open.
+        const isDesktop = typeof window !== 'undefined'
+          && window.matchMedia?.('(min-width: 1024px)').matches
+        if (!isDesktop) setSheetState('card')
       }
     }
     root.addEventListener('click', handler)

@@ -138,24 +138,31 @@ a { color: inherit; }
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Larger horizontal padding than the old 20px (which felt cramped at
-   * 360-414px viewport widths), plus safe-area for iPhone home indicator. */
-  padding: 24px 16px max(20px, calc(env(safe-area-inset-bottom, 0px) + 16px));
+  /* Mobile: tight 10px horizontal so the cards reach close to the edges;
+   * the cards have their own internal padding for breathing room. Vertical
+   * padding pulls in too so the home page hero starts higher on phones. */
+  padding: 14px 10px max(20px, calc(env(safe-area-inset-bottom, 0px) + 14px));
   position: relative;
   z-index: 1;
 }
+@media (min-width: 540px) {
+  .page-center { padding: 24px 18px max(20px, calc(env(safe-area-inset-bottom, 0px) + 16px)); }
+}
 .container {
   width: 100%;
-  /* Mobile-first 460px is the column width for our card stack; on tablet+
-   * we widen to give the home page hero and post grid more room. */
-  max-width: 460px;
+  /* Mobile uses the full viewport width up to a small overflow guard.
+   * Tablet/desktop widen for the home page hero and post grid. */
+  max-width: 100%;
+}
+@media (min-width: 540px) {
+  .container { max-width: 480px; }
 }
 @media (min-width: 720px) {
-  .container { max-width: 560px; }
+  .container { max-width: 580px; }
   .page-center { padding-top: 36px; }
 }
 @media (min-width: 1100px) {
-  .container { max-width: 640px; }
+  .container { max-width: 680px; }
 }
 
 /* ═══ Home hero ═══ */
@@ -6699,6 +6706,83 @@ a { color: inherit; }
   .checkout-option-title { font-size: 14.5px; }
   .checkout-option-price { font-size: 18px; }
   .checkout-cta { font-size: 14px; min-height: 48px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Places-guide DESKTOP layout (≥ 1024px)
+   On wide screens the bottom-sheet becomes a fixed LEFT SIDEBAR
+   that's always at "full" height — much better use of horizontal
+   real estate than a tiny bottom card. The map fills the right
+   side. The 3-state sheet collapses to the sidebar (no peek/card
+   switching — the article and place list are always visible).
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (min-width: 1024px) {
+  /* Top bar: solid background, full-width, with a divider below. */
+  .places-guide-topbar {
+    background: rgba(255, 255, 255, 0.98);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+  }
+
+  /* Map occupies the right-hand area, the sidebar takes the left. */
+  .places-guide-map-wrap {
+    top: 72px;
+    right: 0;
+    bottom: 0;
+    left: 440px;
+  }
+
+  /* Convert the bottom sheet into a fixed left sidebar. Override every
+   * sheet-* height variant — at this width the sidebar is always full
+   * height, no peek/card/full distinction. PlacesGuide snaps sheetState
+   * to 'full' on a desktop media query so the article + list render. */
+  .places-sheet,
+  .places-guide.sheet-peek .places-sheet,
+  .places-guide.sheet-card .places-sheet,
+  .places-guide.sheet-full .places-sheet {
+    top: 72px;
+    bottom: 0;
+    left: 0;
+    right: auto;
+    width: 440px;
+    height: auto;
+    border-radius: 0;
+    border-right: 1px solid var(--border);
+    box-shadow: 4px 0 24px rgba(20, 20, 30, 0.06);
+    padding-bottom: 0;
+    transition: none;
+  }
+  /* Handle is irrelevant on desktop — nothing to resize. */
+  .places-sheet-handle { display: none; }
+  .places-sheet-scroll { padding: 22px 24px 32px; }
+
+  /* Filter chips: tucked inside the sidebar instead of floating above
+   * the bottom sheet. Override all the bottom-of-page positioning. */
+  .places-guide .places-guide-cats,
+  .places-guide.sheet-peek .places-guide-cats,
+  .places-guide.sheet-card .places-guide-cats,
+  .places-guide.sheet-full .places-guide-cats {
+    display: flex;
+    position: static;
+    bottom: auto;
+    flex-wrap: wrap;
+    padding: 0 0 12px 0;
+  }
+
+  /* List view (alternate full-screen scrollable grid). Bump to 3 columns. */
+  .places-list-view-inner { max-width: 1100px; padding: 0 28px; }
+  .places-list-grid { grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .places-list-card-image { aspect-ratio: 4 / 3; }
+}
+
+@media (min-width: 1280px) {
+  /* Wider sidebar at full desktop. */
+  .places-guide-map-wrap { left: 480px; }
+  .places-sheet,
+  .places-guide.sheet-peek .places-sheet,
+  .places-guide.sheet-card .places-sheet,
+  .places-guide.sheet-full .places-sheet { width: 480px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
