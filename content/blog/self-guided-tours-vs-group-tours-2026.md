@@ -5,7 +5,7 @@ publishedAt: "2026-04-29"
 author: "TourHunts Editorial"
 category: "inspiration"
 tags: [self-guided, walking tour, travel tips, GPS, solo travel]
-heroImage: "images/blog/selftourblog.jpg"
+heroImage: "/images/blog/selftourblog.jpg"
 heroAlt: "Travelers walking through a European city at golden hour"
 readMinutes: 5
 relatedCities: [city_utrecht, city_amsterdam, city_milan, city_rome]

@@ -21,10 +21,14 @@ interface Props {
   cluesArrived: number
   hintsUsed: number
   creditsSpent: number
+  freeCapReached: boolean
+  cityId: string | null
+  fullHuntStops: number
 }
 
 export function CompleteClient({
   huntTitle, huntI18n, huntCity, score, clues, totalClues, cluesArrived, hintsUsed, creditsSpent,
+  freeCapReached, cityId, fullHuntStops,
 }: Props) {
   const { t, lang } = useI18n()
   const localizedHuntTitle = (lang !== 'en' && huntI18n?.[lang]?.title) || huntTitle
@@ -73,6 +77,26 @@ export function CompleteClient({
           </div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{t('points')}</div>
         </div>
+
+        {/* Free-teaser cap reached — invite the player to unlock the city */}
+        {freeCapReached && (
+          <a
+            href={cityId ? `/city/${cityId}` : '/'}
+            className="free-cap-cta"
+          >
+            <div className="free-cap-cta-icon" aria-hidden>🔓</div>
+            <div className="free-cap-cta-body">
+              <div className="free-cap-cta-title">{t('freeCapTitle')}</div>
+              <div className="free-cap-cta-desc">
+                {t('freeCapDesc')
+                  .replace('{done}', String(cluesArrived))
+                  .replace('{total}', String(fullHuntStops))
+                  .replace('{city}', huntCity)}
+              </div>
+            </div>
+            <div className="free-cap-cta-arrow" aria-hidden>→</div>
+          </a>
+        )}
 
         {/* Achievements earned */}
         {achievements.length > 0 && (

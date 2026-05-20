@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { db } from '@/lib/firebase'
 import { doc, getDoc, getDocs, collection } from 'firebase/firestore'
+import { FREE_HUNT_STOP_LIMIT } from '@/types'
 import { CompleteClient } from './CompleteClient'
 
 export const dynamic = 'force-dynamic'
@@ -46,6 +47,14 @@ export default async function CompletePage({
   const hintsUsed = hintsSnap.size
   const creditsSpent = hintsSnap.docs.reduce((s, d) => s + (d.data().creditCost || 0), 0)
 
+  // The hunt ended on the free teaser cap if it's a free session, the player
+  // reached the free limit, and the full hunt actually has more stops.
+  const fullHuntStops = (hunt.clueCount as number) ?? totalClues
+  const freeCapReached =
+    session.isFree === true &&
+    cluesArrived >= FREE_HUNT_STOP_LIMIT &&
+    fullHuntStops > FREE_HUNT_STOP_LIMIT
+
   return (
     <CompleteClient
       huntTitle={hunt.title}
@@ -57,6 +66,9 @@ export default async function CompletePage({
       cluesArrived={cluesArrived}
       hintsUsed={hintsUsed}
       creditsSpent={creditsSpent}
+      freeCapReached={freeCapReached}
+      cityId={(hunt.cityId as string) ?? null}
+      fullHuntStops={fullHuntStops}
     />
   )
 }
