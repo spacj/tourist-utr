@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/firebase'
-import { SCORE } from '@/types'
+import { SCORE, FREE_HUNT_STOP_LIMIT, playableStopCount } from '@/types'
 import {
   doc, getDoc, getDocs, collection, query, where, orderBy,
   writeBatch, serverTimestamp, increment, runTransaction,
@@ -134,8 +134,15 @@ export async function POST(req: NextRequest) {
   const allCluesSnap = await getDocs(
     query(collection(db, 'hunts', session.huntId, 'clues'), orderBy('order'))
   )
-  const totalClues = allCluesSnap.size
-  const nextClueDoc = allCluesSnap.docs.find(d => d.data().order === clue.order + 1)
+  // Free hunts are a teaser: only the first FREE_HUNT_STOP_LIMIT stops are
+  // playable. Once the player completes that stop, the hunt ends with an
+  // unlock prompt instead of serving the next clue.
+  const isFree = session.isFree === true
+  const totalClues = playableStopCount(allCluesSnap.size, isFree)
+  const freeCapReached = isFree && clue.order >= FREE_HUNT_STOP_LIMIT
+  const nextClueDoc = freeCapReached
+    ? undefined
+    : allCluesSnap.docs.find(d => d.data().order === clue.order + 1)
 
   const batch = writeBatch(db)
 
@@ -217,6 +224,7 @@ export async function POST(req: NextRequest) {
     streak,
     funFact: clue.funFact ?? null,
     huntComplete: !nextClueDoc,
+    freeCapReached,
     nextClue,
   })
 }

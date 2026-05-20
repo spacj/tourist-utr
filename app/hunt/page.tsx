@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { db } from '@/lib/firebase'
 import { HuntClient } from './HuntClient'
-import { Clue } from '@/types'
+import { Clue, playableStopCount } from '@/types'
 import { doc, getDoc, getDocs, collection, query, where, limit, orderBy } from 'firebase/firestore'
 
 export const dynamic = 'force-dynamic'
@@ -39,14 +39,22 @@ export default async function HuntPage({
     query(collection(db, 'hunts', session.huntId, 'clues'), orderBy('order'))
   )
 
-  const allClues = totalCluesSnap.docs.map((d) => ({
-    ...d.data(),
-    id: d.id,
-  })) as Array<Record<string, unknown>>
+  // Free hunts only expose the first few stops. Cap both the progress
+  // denominator and the clue set we cache offline so the teaser can't be
+  // walked past locally.
+  const isFree = session.isFree === true
+  const playableTotal = playableStopCount(totalCluesSnap.size, isFree)
+
+  const allClues = totalCluesSnap.docs
+    .filter((d) => (d.data().order as number) <= playableTotal)
+    .map((d) => ({
+      ...d.data(),
+      id: d.id,
+    })) as Array<Record<string, unknown>>
 
   return (
     <HuntClient
-      initialClue={{ ...clue, id: clueId, totalClues: totalCluesSnap.size } as Clue}
+      initialClue={{ ...clue, id: clueId, totalClues: playableTotal } as Clue}
       huntCity={session.huntCity}
       sessionId={sessionId}
       roomId={session.roomId ?? null}

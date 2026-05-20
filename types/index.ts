@@ -105,6 +105,18 @@ export function isHuntFree(h: Pick<Hunt, 'order' | 'tourType'>): boolean {
   return h.order === 0 && h.tourType !== 'tour'
 }
 
+/**
+ * Free hunts are a teaser: players get the first N stops for free, then the
+ * hunt "ends" with a prompt to unlock the whole city for the rest. Paid
+ * (city-unlocked) play is uncapped. Enforced server-side in verify-location.
+ */
+export const FREE_HUNT_STOP_LIMIT = 4
+
+/** Stops actually playable in a session: capped for free hunts, full otherwise. */
+export function playableStopCount(totalStops: number, isFree: boolean): number {
+  return isFree ? Math.min(totalStops, FREE_HUNT_STOP_LIMIT) : totalStops
+}
+
 export function localizeCity(c: City, lang: Lang): City {
   const tr = lang !== 'en' ? c.i18n?.[lang] : undefined
   if (!tr) return c

@@ -5,7 +5,7 @@ publishedAt: "2026-04-29"
 author: "TourHunts Editorial"
 category: "inspiration"
 tags: [self-guided, walking tour, travel tips, GPS, solo travel]
-heroImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Amsterdam_-_Damrak.jpg/1600px-Amsterdam_-_Damrak.jpg"
+heroImage: "images/blog/selftourblog.jpg"
 heroAlt: "Travelers walking through a European city at golden hour"
 readMinutes: 5
 relatedCities: [city_utrecht, city_amsterdam, city_milan, city_rome]

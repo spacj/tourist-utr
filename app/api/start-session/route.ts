@@ -60,6 +60,10 @@ export async function POST(req: NextRequest) {
     huntCity: hunt.city || null,
     userId: userId || null,
     tourType,
+    // Persist the free-tier flag so verify-location can cap free hunts to
+    // FREE_HUNT_STOP_LIMIT stops without re-deriving the rule.
+    isFree,
+    cityId: hunt.cityId ?? null,
     // Tours don't use credits or scoring — initialize to zero anyway so the
     // type stays consistent in Firestore reads.
     score: 0,
