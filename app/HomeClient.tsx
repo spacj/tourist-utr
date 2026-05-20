@@ -238,6 +238,30 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
           </div>
         </div>
 
+        {/* ── Pricing clarity ── */}
+        <section className="pricing-section" aria-labelledby="pricing-title">
+          <h2 id="pricing-title" className="section-label">{t('pricingTitle')}</h2>
+          <div className="pricing-cards">
+            <div className="pricing-card pricing-card-free">
+              <div className="pricing-card-head">
+                <span className="pricing-card-tag">{t('pricingFreeTag')}</span>
+                <span className="pricing-card-price">€0</span>
+              </div>
+              <h3 className="pricing-card-title">{t('pricingFreeTitle')}</h3>
+              <p className="pricing-card-desc">{t('pricingFreeDesc')}</p>
+            </div>
+            <div className="pricing-card pricing-card-paid">
+              <div className="pricing-card-head">
+                <span className="pricing-card-tag pricing-card-tag-gold">★</span>
+                <span className="pricing-card-price">€5</span>
+              </div>
+              <h3 className="pricing-card-title">{t('pricingCityTitle')}</h3>
+              <p className="pricing-card-desc">{t('pricingCityDesc')}</p>
+            </div>
+          </div>
+          <p className="pricing-note">{t('pricingNote')}</p>
+        </section>
+
         {/* ── Mid-page CTA banner ── */}
         <div className="mid-cta">
           <div className="mid-cta-body">

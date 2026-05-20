@@ -95,8 +95,14 @@ export function isTour(h: Pick<Hunt, 'tourType'>): boolean {
   return h.tourType === 'tour'
 }
 
-export function isHuntFree(h: Pick<Hunt, 'order'>): boolean {
-  return h.order === 0
+/**
+ * Free-access rule: exactly one freebie per city — the first *hunt*
+ * (order 0). Walking tours are always behind the city paywall, even if
+ * they happen to carry order 0 (several do, e.g. the Milan / Rome
+ * aperitivo & Trastevere crawls), so we explicitly exclude tours here.
+ */
+export function isHuntFree(h: Pick<Hunt, 'order' | 'tourType'>): boolean {
+  return h.order === 0 && h.tourType !== 'tour'
 }
 
 export function localizeCity(c: City, lang: Lang): City {
@@ -355,6 +361,13 @@ export const T: Dict = {
   subtitle:          { en: 'Walk · Solve · Discover', nl: 'Wandel · Los op · Ontdek', de: 'Gehen · Lösen · Entdecken', fr: 'Marchez · Résolvez · Découvrez', it: 'Cammina · Risolvi · Scopri', es: 'Camina · Resuelve · Descubre' },
   tagline:           { en: 'GPS-guided scavenger hunts around the world.', nl: 'GPS-geleide speurtochten over de hele wereld.', de: 'GPS-geführte Schnitzeljagden rund um die Welt.', fr: 'Chasses au trésor par GPS partout dans le monde.', it: 'Cacce al tesoro guidate da GPS in tutto il mondo.', es: 'Búsquedas del tesoro guiadas por GPS en todo el mundo.' },
   priceTag:          { en: '€5 · lifetime access', nl: '€5 · onbeperkt spelen', de: '€5 · lebenslanger Zugang', fr: '€5 · accès à vie', it: '€5 · accesso a vita', es: '€5 · acceso de por vida' },
+  pricingTitle:      { en: 'Simple, honest pricing', nl: 'Eerlijke, simpele prijzen', de: 'Einfache, faire Preise', fr: 'Tarifs simples et honnêtes', it: 'Prezzi semplici e onesti', es: 'Precios simples y honestos' },
+  pricingFreeTag:    { en: 'Free', nl: 'Gratis', de: 'Gratis', fr: 'Gratuit', it: 'Gratis', es: 'Gratis' },
+  pricingFreeTitle:  { en: 'Your first hunt, free', nl: 'Je eerste tocht, gratis', de: 'Deine erste Tour, gratis', fr: 'Votre première chasse, gratuite', it: 'La tua prima caccia, gratis', es: 'Tu primera búsqueda, gratis' },
+  pricingFreeDesc:   { en: 'Every city opens with a hunt on us. No card, no paywall — just start playing.', nl: 'Elke stad begint met een gratis tocht. Geen kaart, geen betaalmuur — gewoon spelen.', de: 'Jede Stadt startet mit einer Tour aufs Haus. Keine Karte, keine Bezahlschranke — einfach loslegen.', fr: 'Chaque ville s\'ouvre avec une chasse offerte. Sans carte, sans péage — jouez tout de suite.', it: 'Ogni città parte con una caccia offerta da noi. Niente carta, niente paywall — gioca subito.', es: 'Cada ciudad abre con una búsqueda gratis. Sin tarjeta, sin muro de pago — empieza a jugar.' },
+  pricingCityTitle:  { en: 'Unlock a whole city — €5', nl: 'Ontgrendel een hele stad — €5', de: 'Eine ganze Stadt freischalten — €5', fr: 'Débloquez toute une ville — 5 €', it: 'Sblocca un\'intera città — 5 €', es: 'Desbloquea una ciudad entera — 5 €' },
+  pricingCityDesc:   { en: 'One payment unlocks every hunt AND every walking tour in that city. Lifetime access, play offline, race friends.', nl: 'Eén betaling ontgrendelt elke tocht én elke wandelroute in die stad. Levenslang, offline speelbaar, race met vrienden.', de: 'Eine Zahlung schaltet jede Tour UND jeden Spaziergang dieser Stadt frei. Lebenslang, offline spielbar, mit Freunden messen.', fr: 'Un seul paiement débloque toutes les chasses ET toutes les balades de cette ville. Accès à vie, hors-ligne, en duel avec des amis.', it: 'Un pagamento sblocca ogni caccia E ogni passeggiata di quella città. Accesso a vita, offline, sfide tra amici.', es: 'Un pago desbloquea cada búsqueda Y cada paseo de esa ciudad. Acceso de por vida, sin conexión, retos con amigos.' },
+  pricingNote:       { en: 'No subscription. Pay once per city, keep it forever.', nl: 'Geen abonnement. Betaal één keer per stad, voor altijd van jou.', de: 'Kein Abo. Einmal pro Stadt zahlen, für immer behalten.', fr: 'Sans abonnement. Payez une fois par ville, gardez-la pour toujours.', it: 'Nessun abbonamento. Paghi una volta per città, è tua per sempre.', es: 'Sin suscripción. Paga una vez por ciudad y consérvala para siempre.' },
   ctaStart:          { en: 'Start the adventure', nl: 'Start het avontuur', de: 'Abenteuer beginnen', fr: 'Commencer l\'aventure', it: 'Inizia l\'avventura', es: 'Comenzar la aventura' },
   ctaResume:         { en: 'Resume', nl: 'Hervatten', de: 'Fortsetzen', fr: 'Reprendre', it: 'Riprendi', es: 'Reanudar' },
   featStops:         { en: 'Handpicked stops in every hunt', nl: 'Zorgvuldig gekozen locaties in elke tocht', de: 'Handverlesene Stopps in jeder Tour', fr: 'Étapes soigneusement choisies', it: 'Tappe selezionate con cura', es: 'Paradas seleccionadas con cuidado' },

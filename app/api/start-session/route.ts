@@ -13,11 +13,13 @@ export async function POST(req: NextRequest) {
   if (!huntSnap.exists()) return NextResponse.json({ error: 'Hunt not found' }, { status: 404 })
 
   // ── City-unlock gate ──
-  // First hunt in any city (order === 0) is free for everyone.
-  // Other hunts require the user to have unlocked the city (€5).
+  // Exactly one freebie per city: the first *hunt* (order === 0). Walking
+  // tours are always behind the city paywall, even when they carry order 0
+  // (the Milan / Rome aperitivo & Trastevere crawls do). Mirror the
+  // client-side isHuntFree() rule here so the API can't be bypassed.
   const hunt = huntSnap.data() as { cityId?: string; city?: string; order?: number; tourType?: 'hunt' | 'tour' }
   const tourType: 'hunt' | 'tour' = hunt.tourType === 'tour' ? 'tour' : 'hunt'
-  const isFree = (hunt.order ?? 0) === 0
+  const isFree = (hunt.order ?? 0) === 0 && tourType !== 'tour'
   if (!isFree) {
     if (!userId) {
       return NextResponse.json({ error: 'sign_in_required', cityId: hunt.cityId ?? null }, { status: 401 })
