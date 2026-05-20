@@ -280,6 +280,68 @@ export interface CreditPackage {
   badge?: string
 }
 
+// ════════════════════════════════════════════════════════════════
+// Benches — a community map of good spots to sit. Admins drop a pin
+// at their current GPS position, tag it (panorama / dogs / kids / …)
+// and write a short note. Each bench gets its own SEO page.
+// ════════════════════════════════════════════════════════════════
+
+export interface BenchCategory {
+  id: string
+  /** Human label, shown on chips + the bench card. */
+  label: string
+  /** Emoji rendered inside the map marker badge. */
+  icon: string
+  /** Marker + chip accent colour. */
+  color: string
+  /** Search-friendly phrase woven into page titles ("a bench with a panorama"). */
+  seoPhrase: string
+}
+
+export const BENCH_CATEGORIES: BenchCategory[] = [
+  { id: 'panorama', label: 'Panorama',        icon: '🌄', color: '#0d9488', seoPhrase: 'a bench with a panoramic view' },
+  { id: 'sunset',   label: 'Sunset view',     icon: '🌅', color: '#dc2626', seoPhrase: 'a bench to watch the sunset' },
+  { id: 'water',    label: 'By the water',    icon: '🌊', color: '#0891b2', seoPhrase: 'a bench by the water' },
+  { id: 'kids',     label: 'Good with kids',  icon: '🧒', color: '#f59e0b', seoPhrase: 'a kid-friendly bench' },
+  { id: 'dogs',     label: 'Dog-friendly',    icon: '🐕', color: '#a855f7', seoPhrase: 'a dog-friendly bench' },
+  { id: 'smoke',    label: 'Good for a smoke', icon: '🚬', color: '#6b7280', seoPhrase: 'a quiet bench for a smoke' },
+  { id: 'quiet',    label: 'Quiet & calm',    icon: '🤫', color: '#6366f1', seoPhrase: 'a quiet, calm bench' },
+  { id: 'shade',    label: 'Shaded',          icon: '🌳', color: '#16a34a', seoPhrase: 'a shaded bench' },
+]
+
+export interface Bench {
+  id: string
+  /** URL slug used at /benches/{slug}. */
+  slug: string
+  title: string
+  description: string
+  /** BenchCategory.id */
+  category: string
+  lat: number
+  lng: number
+  /** Optional free-text place/city for SEO + grouping (e.g. "Utrecht"). */
+  city?: string
+  /** ms epoch — when the bench was added. */
+  createdAt: number
+  /** uid of the admin who added it. */
+  createdBy?: string
+}
+
+/** Build a stable, readable slug from a title plus a short id suffix to
+ *  guarantee uniqueness ("sunset-bench-on-the-dom-a1b2c3"). */
+export function benchSlug(title: string, id: string): string {
+  const base = title
+    .toLowerCase()
+    .normalize('NFKD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .slice(0, 48)
+  const suffix = id.slice(0, 6)
+  return base ? `${base}-${suffix}` : suffix
+}
+
 export const CREDIT_PACKAGES: CreditPackage[] = [
   { id: 'small',  credits: 5,  priceCents: 99,  label: '5 extra hints' },
   { id: 'medium', credits: 15, priceCents: 249, label: '15 extra hints', badge: 'Popular' },

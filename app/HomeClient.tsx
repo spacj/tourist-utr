@@ -450,6 +450,7 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
               <div className="footer-nav-col">
                 <div className="footer-nav-title">{t('footerAbout')}</div>
                 <a href="/blog" className="footer-nav-link">Blog</a>
+                <a href="/benches" className="footer-nav-link">Benches map</a>
                 <a href="#" className="footer-nav-link">{t('footerContact')}</a>
                 <a href="#" className="footer-nav-link">{t('footerPrivacy')}</a>
                 <a href="#" className="footer-nav-link">{t('footerTerms')}</a>

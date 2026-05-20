@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next'
 import { db } from '@/lib/firebase'
 import { collection, getDocs } from 'firebase/firestore'
 import { getAllPostsMeta } from '@/lib/blog'
+import { getAllBenches } from '@/lib/benches'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tourhunts.com'
 
@@ -29,7 +30,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly',
       priority: 0.6,
     },
+    {
+      url: `${SITE_URL}/benches`,
+      lastModified: now,
+      changeFrequency: 'daily',
+      priority: 0.8,
+    },
   ]
+
+  // Benches — every bench is its own indexable page with a geo + description.
+  // This is where the "as many results as possible" volume comes from.
+  try {
+    for (const bench of await getAllBenches()) {
+      entries.push({
+        url: `${SITE_URL}/benches/${bench.slug}`,
+        lastModified: new Date(bench.createdAt),
+        changeFrequency: 'monthly',
+        priority: 0.6,
+      })
+    }
+  } catch {}
 
   // Blog posts — each gets its own URL with dateModified for crawl freshness.
   for (const post of getAllPostsMeta()) {
