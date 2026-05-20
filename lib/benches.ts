@@ -1,21 +1,23 @@
 import { db } from '@/lib/firebase'
 import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore'
-import type { Bench } from '@/types'
+import { type Bench, benchCategoryIds } from '@/types'
 
 /**
  * Server-side bench reads. Used by the /benches index, the per-bench SEO
  * pages, and the sitemap. The client gets benches via /api/benches instead.
  */
 
-function coerce(id: string, raw: Record<string, any>): Bench {
+export function coerceBench(id: string, raw: Record<string, any>): Bench {
   return {
     id,
     slug: String(raw.slug ?? id),
     title: String(raw.title ?? 'Bench'),
     description: String(raw.description ?? ''),
-    category: String(raw.category ?? 'quiet'),
+    categories: benchCategoryIds(raw),
     lat: Number(raw.lat ?? 0),
     lng: Number(raw.lng ?? 0),
+    address: raw.address ? String(raw.address) : undefined,
+    postalCode: raw.postalCode ? String(raw.postalCode) : undefined,
     city: raw.city ? String(raw.city) : undefined,
     createdAt: typeof raw.createdAt === 'number'
       ? raw.createdAt
@@ -29,7 +31,7 @@ export async function getAllBenches(): Promise<Bench[]> {
   try {
     const snap = await getDocs(collection(db, 'benches'))
     return snap.docs
-      .map(d => coerce(d.id, d.data()))
+      .map(d => coerceBench(d.id, d.data()))
       .sort((a, b) => b.createdAt - a.createdAt)
   } catch {
     return []
@@ -44,7 +46,7 @@ export async function getBenchBySlug(slug: string): Promise<Bench | null> {
     )
     if (snap.empty) return null
     const d = snap.docs[0]
-    return coerce(d.id, d.data())
+    return coerceBench(d.id, d.data())
   } catch {
     return null
   }

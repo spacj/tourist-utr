@@ -18,20 +18,23 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const bench = await getBenchBySlug(params.slug)
   if (!bench) return { title: 'Bench not found' }
-  const cat = BENCH_CATEGORIES.find(c => c.id === bench.category)
+  const cats = bench.categories.map(id => BENCH_CATEGORIES.find(c => c.id === id)).filter(Boolean) as typeof BENCH_CATEGORIES
+  const primary = cats[0]
   const where = bench.city ? ` in ${bench.city}` : ''
-  const title = `${bench.title}${where} — ${cat?.label ?? 'a good bench'}`
+  const labels = cats.map(c => c.label).join(', ')
+  const title = `${bench.title}${where} — ${labels || 'a good bench'}`
+  const located = [bench.address, bench.city].filter(Boolean).join(', ')
   const description = bench.description
-    ? `${bench.description}${where ? ` Located in ${bench.city}.` : ''}`
-    : `${cat?.seoPhrase ?? 'A good bench to sit on'}${where}. See it on the map and get directions.`
+    ? `${bench.description}${located ? ` Located at ${located}.` : ''}`
+    : `${primary?.seoPhrase ?? 'A good bench to sit on'}${where}. See it on the map and get directions.`
   const url = `${SITE_URL}/benches/${bench.slug}`
   return {
     title,
     description,
     alternates: { canonical: url },
     keywords: [
-      bench.title, cat?.label ?? 'bench', `bench${where}`,
-      cat?.seoPhrase ?? 'bench', bench.city ? `${bench.city} bench` : 'bench',
+      bench.title, ...cats.map(c => c.label), `bench${where}`,
+      ...cats.map(c => c.seoPhrase), bench.city ? `${bench.city} bench` : 'bench',
     ].filter(Boolean) as string[],
     openGraph: { type: 'website', title, description, url },
     twitter: { card: 'summary', title, description },
@@ -41,21 +44,33 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 export default async function BenchPage({ params }: { params: { slug: string } }) {
   const bench = await getBenchBySlug(params.slug)
   if (!bench) notFound()
-  const cat = BENCH_CATEGORIES.find(c => c.id === bench.category)
+  const cats = bench.categories.map(id => BENCH_CATEGORIES.find(c => c.id === id)).filter(Boolean) as typeof BENCH_CATEGORIES
+  const primary = cats[0]
   const url = `${SITE_URL}/benches/${bench.slug}`
+
+  const postalAddress = (bench.address || bench.postalCode || bench.city)
+    ? {
+        '@type': 'PostalAddress',
+        ...(bench.address ? { streetAddress: bench.address } : {}),
+        ...(bench.postalCode ? { postalCode: bench.postalCode } : {}),
+        ...(bench.city ? { addressLocality: bench.city } : {}),
+      }
+    : undefined
 
   const placeJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Place',
     '@id': url,
     name: bench.title,
-    description: bench.description || (cat?.seoPhrase ?? 'A good bench to sit on.'),
+    description: bench.description || (primary?.seoPhrase ?? 'A good bench to sit on.'),
     url,
     geo: { '@type': 'GeoCoordinates', latitude: bench.lat, longitude: bench.lng },
-    ...(bench.city ? { address: { '@type': 'PostalAddress', addressLocality: bench.city } } : {}),
+    ...(postalAddress ? { address: postalAddress } : {}),
     hasMap: `https://www.google.com/maps/search/?api=1&query=${bench.lat},${bench.lng}`,
     additionalType: 'https://schema.org/TouristAttraction',
-    amenityFeature: cat ? [{ '@type': 'LocationFeatureSpecification', name: cat.label, value: true }] : undefined,
+    amenityFeature: cats.length
+      ? cats.map(c => ({ '@type': 'LocationFeatureSpecification', name: c.label, value: true }))
+      : undefined,
   }
 
   const breadcrumbJsonLd = {
@@ -77,14 +92,20 @@ export default async function BenchPage({ params }: { params: { slug: string } }
         <a href="/benches" className="back-link" style={{ display: 'inline-block', marginTop: 16 }}>← All benches</a>
 
         <header className="bench-article-head">
-          {cat && (
-            <div className="bench-article-cat" style={{ color: cat.color }}>
-              <span className="bench-article-cat-icon" style={{ background: cat.color }} aria-hidden>{cat.icon}</span>
-              {cat.label}
+          {cats.length > 0 && (
+            <div className="bench-article-cats">
+              {cats.map(c => (
+                <span key={c.id} className="bench-article-cat" style={{ color: c.color }}>
+                  <span className="bench-article-cat-icon" style={{ background: c.color }} aria-hidden>{c.icon}</span>
+                  {c.label}
+                </span>
+              ))}
             </div>
           )}
           <h1 className="bench-article-title">{bench.title}</h1>
-          {bench.city && <div className="bench-article-city">📍 {bench.city}</div>}
+          {(bench.address || bench.city) && (
+            <div className="bench-article-city">📍 {[bench.address, bench.postalCode, bench.city].filter(Boolean).join(', ')}</div>
+          )}
         </header>
 
         <div className="bench-article-map">

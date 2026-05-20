@@ -20,9 +20,39 @@ export default function AddBenchPage() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [city, setCity] = useState('')
-  const [category, setCategory] = useState(BENCH_CATEGORIES[0].id)
+  const [address, setAddress] = useState('')
+  const [postalCode, setPostalCode] = useState('')
+  const [addrState, setAddrState] = useState<'idle' | 'looking' | 'ok' | 'error'>('idle')
+  const [categories, setCategories] = useState<string[]>([BENCH_CATEGORIES[0].id])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const toggleCategory = (id: string) =>
+    setCategories(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id])
+
+  // Reverse-geocode the captured point into a street line via OpenStreetMap's
+  // Nominatim. Best-effort: the admin can still edit/clear the fields by hand.
+  const reverseGeocode = async (lat: number, lng: number) => {
+    setAddrState('looking')
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+        { headers: { 'Accept-Language': 'en' } }
+      )
+      const data = await res.json()
+      const a = data?.address ?? {}
+      const road = a.road || a.pedestrian || a.footway || a.path || a.cycleway || ''
+      const houseNumber = a.house_number || ''
+      const line = [road, houseNumber].filter(Boolean).join(' ').trim()
+      setAddress(line)
+      setPostalCode(a.postcode || '')
+      const locality = a.city || a.town || a.village || a.municipality || a.suburb || ''
+      if (locality) setCity(prev => prev || locality)
+      setAddrState('ok')
+    } catch {
+      setAddrState('error')
+    }
+  }
 
   const locate = () => {
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
@@ -34,6 +64,7 @@ export default function AddBenchPage() {
       (p) => {
         setCoords({ lat: p.coords.latitude, lng: p.coords.longitude, accuracy: p.coords.accuracy })
         setGeoState('ok')
+        reverseGeocode(p.coords.latitude, p.coords.longitude)
       },
       (err) => {
         setGeoState('error')
@@ -52,7 +83,7 @@ export default function AddBenchPage() {
   }, [isAdmin])
 
   const submit = async () => {
-    if (!user || !coords || !title.trim() || submitting) return
+    if (!user || !coords || !title.trim() || categories.length === 0 || submitting) return
     setSubmitting(true); setError(null)
     try {
       const res = await fetch('/api/benches', {
@@ -64,7 +95,9 @@ export default function AddBenchPage() {
           title: title.trim(),
           description: description.trim(),
           city: city.trim(),
-          category,
+          address: address.trim(),
+          postalCode: postalCode.trim(),
+          categories,
           lat: coords.lat,
           lng: coords.lng,
         }),
@@ -134,20 +167,24 @@ export default function AddBenchPage() {
           {geoState === 'idle' && <button type="button" className="bench-add-relocate" onClick={locate}>Use my location</button>}
         </div>
 
-        {/* Category picker */}
-        <label className="bench-add-label">Type of spot</label>
+        {/* Category picker — pick as many as fit the spot */}
+        <label className="bench-add-label">Type of spot <span className="bench-add-multi">pick all that apply</span></label>
         <div className="bench-add-cats">
-          {BENCH_CATEGORIES.map(cat => (
-            <button
-              key={cat.id}
-              type="button"
-              className={`bench-add-cat ${category === cat.id ? 'is-active' : ''}`}
-              onClick={() => setCategory(cat.id)}
-              style={category === cat.id ? { background: cat.color, color: '#fff', borderColor: cat.color } : undefined}
-            >
-              <span aria-hidden>{cat.icon}</span> {cat.label}
-            </button>
-          ))}
+          {BENCH_CATEGORIES.map(cat => {
+            const on = categories.includes(cat.id)
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                aria-pressed={on}
+                className={`bench-add-cat ${on ? 'is-active' : ''}`}
+                onClick={() => toggleCategory(cat.id)}
+                style={on ? { background: cat.color, color: '#fff', borderColor: cat.color } : undefined}
+              >
+                <span aria-hidden>{cat.icon}</span> {cat.label}
+              </button>
+            )
+          })}
         </div>
 
         <label className="bench-add-label" htmlFor="bench-title">Title</label>
@@ -160,15 +197,44 @@ export default function AddBenchPage() {
           maxLength={80}
         />
 
-        <label className="bench-add-label" htmlFor="bench-city">City / area (optional)</label>
+        <label className="bench-add-label" htmlFor="bench-address">
+          Street &amp; number
+          {addrState === 'looking' && <span className="bench-add-multi"> looking up…</span>}
+          {addrState === 'ok' && <span className="bench-add-multi"> auto-filled — edit if needed</span>}
+        </label>
         <input
-          id="bench-city"
+          id="bench-address"
           className="bench-add-input"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          placeholder="e.g. Utrecht"
-          maxLength={60}
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          placeholder="e.g. Domplein 9"
+          maxLength={120}
         />
+
+        <div className="bench-add-row">
+          <div className="bench-add-row-col">
+            <label className="bench-add-label" htmlFor="bench-postal">Postal code</label>
+            <input
+              id="bench-postal"
+              className="bench-add-input"
+              value={postalCode}
+              onChange={(e) => setPostalCode(e.target.value)}
+              placeholder="e.g. 3512 JE"
+              maxLength={16}
+            />
+          </div>
+          <div className="bench-add-row-col">
+            <label className="bench-add-label" htmlFor="bench-city">City / area</label>
+            <input
+              id="bench-city"
+              className="bench-add-input"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="e.g. Utrecht"
+              maxLength={60}
+            />
+          </div>
+        </div>
 
         <label className="bench-add-label" htmlFor="bench-desc">Description</label>
         <textarea
@@ -187,7 +253,7 @@ export default function AddBenchPage() {
           type="button"
           className="btn-primary bench-add-submit"
           onClick={submit}
-          disabled={submitting || !coords || !title.trim()}
+          disabled={submitting || !coords || !title.trim() || categories.length === 0}
         >
           {submitting ? 'Saving…' : 'Publish bench'}
         </button>

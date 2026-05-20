@@ -44,7 +44,15 @@ export default async function BenchesPage() {
     name: 'Best benches to sit',
     numberOfItems: benches.length,
     itemListElement: benches.map((b, i) => {
-      const cat = BENCH_CATEGORIES.find(c => c.id === b.category)
+      const primary = BENCH_CATEGORIES.find(c => c.id === b.categories[0])
+      const postalAddress = (b.address || b.postalCode || b.city)
+        ? {
+            '@type': 'PostalAddress',
+            ...(b.address ? { streetAddress: b.address } : {}),
+            ...(b.postalCode ? { postalCode: b.postalCode } : {}),
+            ...(b.city ? { addressLocality: b.city } : {}),
+          }
+        : undefined
       return {
         '@type': 'ListItem',
         position: i + 1,
@@ -52,10 +60,10 @@ export default async function BenchesPage() {
           '@type': 'Place',
           '@id': `${SITE_URL}/benches/${b.slug}`,
           name: b.title,
-          description: b.description || (cat?.seoPhrase ?? 'A good bench to sit on.'),
+          description: b.description || (primary?.seoPhrase ?? 'A good bench to sit on.'),
           url: `${SITE_URL}/benches/${b.slug}`,
           geo: { '@type': 'GeoCoordinates', latitude: b.lat, longitude: b.lng },
-          ...(b.city ? { address: { '@type': 'PostalAddress', addressLocality: b.city } } : {}),
+          ...(postalAddress ? { address: postalAddress } : {}),
         },
       }
     }),
@@ -82,11 +90,14 @@ export default async function BenchesPage() {
         <p>A community-curated map of good places to sit — benches with a panoramic view, dog-friendly and kid-friendly spots, quiet corners, sunset seats and shaded benches.</p>
         <ul>
           {benches.map(b => {
-            const cat = BENCH_CATEGORIES.find(c => c.id === b.category)
+            const labels = b.categories
+              .map(id => BENCH_CATEGORIES.find(c => c.id === id)?.label)
+              .filter(Boolean).join(', ')
+            const where = [b.address, b.city].filter(Boolean).join(', ')
             return (
               <li key={b.id}>
                 <a href={`/benches/${b.slug}`}>
-                  {b.title}{b.city ? ` — ${b.city}` : ''} ({cat?.label ?? 'bench'})
+                  {b.title}{where ? ` — ${where}` : ''} ({labels || 'bench'})
                 </a>
                 {b.description ? `: ${b.description}` : ''}
               </li>

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/firebase'
 import { collection, getDocs, doc, setDoc, serverTimestamp } from 'firebase/firestore'
-import { BENCH_CATEGORIES, benchSlug } from '@/types'
+import { benchSlug, benchCategoryIds } from '@/types'
+import { coerceBench } from '@/lib/benches'
 
 /** Admin allowlist — server reads ADMIN_EMAILS first (private), falls back to
  *  the public NEXT_PUBLIC_ADMIN_EMAILS that the client useIsAdmin() hook uses,
@@ -16,12 +17,8 @@ export async function GET() {
   try {
     const snap = await getDocs(collection(db, 'benches'))
     const benches = snap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
-      .sort((a: any, b: any) => {
-        const am = typeof a.createdAt === 'number' ? a.createdAt : (a.createdAt?.toMillis?.() ?? 0)
-        const bm = typeof b.createdAt === 'number' ? b.createdAt : (b.createdAt?.toMillis?.() ?? 0)
-        return bm - am
-      })
+      .map(d => coerceBench(d.id, d.data()))
+      .sort((a, b) => b.createdAt - a.createdAt)
     return NextResponse.json(benches)
   } catch {
     return NextResponse.json([], { status: 200 })
@@ -33,9 +30,10 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null)
   if (!body) return NextResponse.json({ error: 'bad_request' }, { status: 400 })
 
-  const { email, uid, title, description, category, lat, lng, city } = body as {
+  const { email, uid, title, description, category, categories, lat, lng, city, address, postalCode } = body as {
     email?: string; uid?: string; title?: string; description?: string
-    category?: string; lat?: number; lng?: number; city?: string
+    category?: string; categories?: string[]; lat?: number; lng?: number
+    city?: string; address?: string; postalCode?: string
   }
 
   // ── Admin gate ──
@@ -49,7 +47,8 @@ export async function POST(req: NextRequest) {
   if (typeof lat !== 'number' || typeof lng !== 'number' || Number.isNaN(lat) || Number.isNaN(lng)) {
     return NextResponse.json({ error: 'location_required' }, { status: 400 })
   }
-  const catId = BENCH_CATEGORIES.some(c => c.id === category) ? category! : 'quiet'
+  // Normalize to a deduped list of valid ids (defaults to ['quiet']).
+  const catIds = benchCategoryIds({ categories, category })
 
   const ref = doc(collection(db, 'benches'))
   const slug = benchSlug(title.trim(), ref.id)
@@ -58,9 +57,11 @@ export async function POST(req: NextRequest) {
     slug,
     title: title.trim().slice(0, 80),
     description: (description ?? '').trim().slice(0, 600),
-    category: catId,
+    categories: catIds,
     lat,
     lng,
+    address: address?.trim()?.slice(0, 120) || null,
+    postalCode: postalCode?.trim()?.slice(0, 16) || null,
     city: city?.trim()?.slice(0, 60) || null,
     createdBy: uid ?? null,
     createdByEmail: String(email).toLowerCase(),

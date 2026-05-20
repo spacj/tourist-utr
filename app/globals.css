@@ -7046,6 +7046,13 @@ select {
 }
 .benches-sheet-body { display: flex; flex-direction: column; gap: 8px; }
 .benches-card-cat { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.benches-card-cats { display: flex; flex-wrap: wrap; gap: 6px; }
+.benches-card-cat-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 999px; border: 1px solid currentColor;
+  background: var(--surface, #fff);
+}
 .benches-card-title { font-family: var(--font-serif, serif); font-weight: 700; font-size: 21px; line-height: 1.15; color: var(--text); margin: 0; }
 .benches-card-city { font-size: 13px; color: var(--text-muted); }
 .benches-card-desc { font-size: 14px; line-height: 1.5; color: var(--text); margin: 2px 0 0; max-height: 4.5em; overflow: hidden; }
@@ -7098,6 +7105,7 @@ select {
 .benches-grid-card:active { transform: scale(0.99); }
 .benches-grid-icon { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; color: #fff; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
 .benches-grid-body { flex: 1; min-width: 0; }
+.benches-grid-cats { display: flex; flex-wrap: wrap; gap: 4px 8px; margin-bottom: 2px; }
 .benches-grid-cat { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 .benches-grid-name { font-weight: 700; font-size: 15px; line-height: 1.2; }
 .benches-grid-city { font-size: 12px; color: var(--text-muted); }
@@ -7119,7 +7127,8 @@ select {
 /* Per-bench SEO page */
 .bench-article { padding-bottom: 40px; }
 .bench-article-head { margin: 18px 0 14px; }
-.bench-article-cat { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 8px; }
+.bench-article-cats { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-bottom: 8px; }
+.bench-article-cat { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
 .bench-article-cat-icon { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; color: #fff; }
 .bench-article-title { font-family: var(--font-serif, serif); font-weight: 700; font-size: clamp(26px, 5vw + 8px, 38px); line-height: 1.1; letter-spacing: -0.5px; color: var(--text); }
 .bench-article-city { margin-top: 8px; font-size: 14px; color: var(--text-muted); }
@@ -7146,6 +7155,9 @@ select {
 .bench-add-geo-error { background: rgba(240,82,82,0.08); border-color: rgba(240,82,82,0.30); }
 .bench-add-relocate { margin-left: auto; background: none; border: none; color: var(--primary); font-weight: 700; font-size: 13px; cursor: pointer; font-family: inherit; }
 .bench-add-label { display: block; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); margin: 16px 0 8px; }
+.bench-add-multi { font-weight: 600; text-transform: none; letter-spacing: 0; color: var(--text-dim); font-size: 11px; }
+.bench-add-row { display: flex; gap: 12px; }
+.bench-add-row-col { flex: 1; min-width: 0; }
 .bench-add-cats { display: flex; flex-wrap: wrap; gap: 6px; }
 .bench-add-cat {
   display: inline-flex; align-items: center; gap: 4px;

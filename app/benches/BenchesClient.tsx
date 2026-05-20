@@ -37,22 +37,26 @@ export function BenchesClient({ initialBenches }: Props) {
   }))
 
   const filtered = useMemo(
-    () => activeCat ? benches.filter(b => b.category === activeCat) : benches,
+    () => activeCat ? benches.filter(b => b.categories.includes(activeCat)) : benches,
     [benches, activeCat]
   )
 
-  // Map benches → the Place shape PlacesGuideMap expects.
+  // Map benches → the Place shape PlacesGuideMap expects. The first category is
+  // the marker's primary icon; a spot can carry several tags.
   const placesForMap: Place[] = filtered.map(b => ({
     id: b.id,
     name: b.title,
-    category: b.category,
+    category: b.categories[0] ?? 'quiet',
     lat: b.lat,
     lng: b.lng,
     description: b.description,
+    address: b.address,
   }))
 
   const selected = benches.find(b => b.id === selectedId) ?? benches[0] ?? null
   const catOf = (id: string) => BENCH_CATEGORIES.find(c => c.id === id)
+  const catsOf = (b: Bench) => b.categories.map(catOf).filter(Boolean) as typeof BENCH_CATEGORIES
+  const countWith = (id: string) => benches.filter(b => b.categories.includes(id)).length
 
   return (
     <div className={`benches-page view-${view}`}>
@@ -105,7 +109,7 @@ export function BenchesClient({ initialBenches }: Props) {
               All · {benches.length}
             </button>
             {BENCH_CATEGORIES.map(cat => {
-              const count = benches.filter(b => b.category === cat.id).length
+              const count = countWith(cat.id)
               if (count === 0) return null
               return (
                 <button
@@ -123,17 +127,22 @@ export function BenchesClient({ initialBenches }: Props) {
           </div>
 
           {selected && (() => {
-            const cat = catOf(selected.category)
+            const cats = catsOf(selected)
+            const where = [selected.address, selected.city].filter(Boolean).join(', ')
             return (
               <aside className="benches-sheet">
                 <div className="benches-sheet-body">
-                  {cat && (
-                    <div className="benches-card-cat" style={{ color: cat.color }}>
-                      <span aria-hidden>{cat.icon}</span> {cat.label}
+                  {cats.length > 0 && (
+                    <div className="benches-card-cats">
+                      {cats.map(cat => (
+                        <span key={cat.id} className="benches-card-cat-chip" style={{ color: cat.color, borderColor: cat.color }}>
+                          <span aria-hidden>{cat.icon}</span> {cat.label}
+                        </span>
+                      ))}
                     </div>
                   )}
                   <h3 className="benches-card-title">{selected.title}</h3>
-                  {selected.city && <div className="benches-card-city">{selected.city}</div>}
+                  {where && <div className="benches-card-city">📍 {where}</div>}
                   {selected.description && <p className="benches-card-desc">{selected.description}</p>}
                   <div className="benches-card-actions">
                     <a className="benches-card-link" href={`/benches/${selected.slug}`}>Open page →</a>
@@ -159,7 +168,7 @@ export function BenchesClient({ initialBenches }: Props) {
                 All · {benches.length}
               </button>
               {BENCH_CATEGORIES.map(cat => {
-                const count = benches.filter(b => b.category === cat.id).length
+                const count = countWith(cat.id)
                 if (count === 0) return null
                 return (
                   <button
@@ -177,17 +186,25 @@ export function BenchesClient({ initialBenches }: Props) {
             </div>
             <ul className="benches-grid">
               {filtered.map(b => {
-                const cat = catOf(b.category)
+                const cats = catsOf(b)
+                const primary = cats[0]
+                const where = [b.address, b.city].filter(Boolean).join(', ')
                 return (
                   <li key={b.id}>
                     <a className="benches-grid-card" href={`/benches/${b.slug}`}>
-                      <span className="benches-grid-icon" style={{ background: cat?.color ?? '#6366f1' }} aria-hidden>
-                        {cat?.icon ?? '🪑'}
+                      <span className="benches-grid-icon" style={{ background: primary?.color ?? '#6366f1' }} aria-hidden>
+                        {primary?.icon ?? '🪑'}
                       </span>
                       <div className="benches-grid-body">
-                        {cat && <div className="benches-grid-cat" style={{ color: cat.color }}>{cat.label}</div>}
+                        {cats.length > 0 && (
+                          <div className="benches-grid-cats">
+                            {cats.map(c => (
+                              <span key={c.id} className="benches-grid-cat" style={{ color: c.color }}>{c.icon} {c.label}</span>
+                            ))}
+                          </div>
+                        )}
                         <div className="benches-grid-name">{b.title}</div>
-                        {b.city && <div className="benches-grid-city">{b.city}</div>}
+                        {where && <div className="benches-grid-city">{where}</div>}
                         {b.description && <p className="benches-grid-desc">{b.description}</p>}
                       </div>
                       <span className="benches-grid-arrow" aria-hidden>→</span>

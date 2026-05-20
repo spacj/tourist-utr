@@ -315,16 +315,35 @@ export interface Bench {
   slug: string
   title: string
   description: string
-  /** BenchCategory.id */
-  category: string
+  /** One or more BenchCategory.id — a spot can be several things at once
+   *  (e.g. a quiet bench by the water that's also dog-friendly). The first
+   *  entry is treated as the primary one for the map marker icon. */
+  categories: string[]
   lat: number
   lng: number
+  /** Reverse-geocoded street line ("Domplein 9"), shown on the page and
+   *  emitted as schema.org streetAddress for richer local SEO. */
+  address?: string
+  /** Postal code from reverse geocoding. */
+  postalCode?: string
   /** Optional free-text place/city for SEO + grouping (e.g. "Utrecht"). */
   city?: string
   /** ms epoch — when the bench was added. */
   createdAt: number
   /** uid of the admin who added it. */
   createdBy?: string
+}
+
+/** Read a bench's categories regardless of whether it was stored as the new
+ *  `categories` array or the legacy single `category` string. */
+export function benchCategoryIds(raw: { categories?: unknown; category?: unknown }): string[] {
+  const list = Array.isArray(raw.categories)
+    ? raw.categories
+    : (raw.category != null ? [raw.category] : [])
+  const ids = list
+    .map(c => String(c))
+    .filter(id => BENCH_CATEGORIES.some(c => c.id === id))
+  return ids.length ? Array.from(new Set(ids)) : ['quiet']
 }
 
 /** Build a stable, readable slug from a title plus a short id suffix to
