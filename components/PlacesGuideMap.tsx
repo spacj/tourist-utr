@@ -117,6 +117,9 @@ export function PlacesGuideMap({
           .addTo(map)
         entry = { marker, inner }
         placeMarkersRef.current.set(place.id, entry)
+      } else {
+        // Keep the marker in sync if the place was repositioned.
+        entry.marker.setLngLat([place.lng, place.lat])
       }
 
       applyMarkerState(entry.inner, { color: cat.color, selected: isSelected })

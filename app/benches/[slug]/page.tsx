@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getAllBenches, getBenchBySlug } from '@/lib/benches'
 import { BENCH_CATEGORIES } from '@/types'
+import { BenchEditButton } from '@/components/BenchEditButton'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tourhunts.com'
 
@@ -122,6 +123,8 @@ export default async function BenchPage({ params }: { params: { slug: string } }
         <a href={directions} target="_blank" rel="noopener noreferrer" className="bench-article-directions">
           Get directions →
         </a>
+
+        <BenchEditButton benchId={bench.id} />
       </article>
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(placeJsonLd) }} />

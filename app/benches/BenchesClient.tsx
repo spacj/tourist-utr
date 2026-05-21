@@ -155,6 +155,9 @@ export function BenchesClient({ initialBenches }: Props) {
                       Directions
                     </a>
                   </div>
+                  {isAdmin && (
+                    <a className="benches-card-edit" href={`/benches/edit/${selected.id}`}>✎ Edit bench</a>
+                  )}
                 </div>
               </aside>
             )

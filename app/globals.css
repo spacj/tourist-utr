@@ -7188,6 +7188,19 @@ select {
 .bench-add-relocate { margin-left: auto; background: none; border: none; color: var(--primary); font-weight: 700; font-size: 13px; cursor: pointer; font-family: inherit; }
 .bench-add-label { display: block; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); margin: 16px 0 8px; }
 .bench-add-multi { font-weight: 600; text-transform: none; letter-spacing: 0; color: var(--text-dim); font-size: 11px; }
+.bench-edit-map { height: 240px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 14px; position: relative; }
+.bench-edit-map .tour-map, .bench-edit-map .tour-map-canvas { position: absolute; inset: 0; height: 100%; }
+.bench-edit-link {
+  display: inline-flex; align-items: center; gap: 7px; margin-top: 16px;
+  font-size: 13px; font-weight: 600; color: var(--text-muted); text-decoration: none;
+  padding: 9px 14px; border: 1px dashed var(--border); border-radius: 10px;
+}
+.bench-edit-link:hover { color: var(--text); border-color: var(--text-dim); }
+.benches-card-edit {
+  display: inline-block; margin-top: 8px; font-size: 13px; font-weight: 600;
+  color: var(--text-muted); text-decoration: none;
+}
+.benches-card-edit:hover { color: var(--text); }
 .bench-add-row { display: flex; gap: 12px; }
 .bench-add-row-col { flex: 1; min-width: 0; }
 .bench-add-cats { display: flex; flex-wrap: wrap; gap: 6px; }
