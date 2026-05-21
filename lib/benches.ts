@@ -22,6 +22,9 @@ export function coerceBench(id: string, raw: Record<string, any>): Bench {
     createdAt: typeof raw.createdAt === 'number'
       ? raw.createdAt
       : (raw.createdAt?.toMillis?.() ?? Date.now()),
+    updatedAt: typeof raw.updatedAt === 'number'
+      ? raw.updatedAt
+      : (raw.updatedAt?.toMillis?.() ?? undefined),
     createdBy: raw.createdBy ? String(raw.createdBy) : undefined,
   }
 }

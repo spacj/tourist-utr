@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { db } from '@/lib/firebase'
 import { collection, getDocs, doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { benchSlug, benchCategoryIds } from '@/types'
 import { coerceBench } from '@/lib/benches'
+
+/** Refresh the cached pages that list or render a bench so a new/edited bench
+ *  (and the sitemap) goes live immediately instead of waiting for hourly ISR. */
+function revalidateBench(slug?: string) {
+  try {
+    revalidatePath('/benches')
+    revalidatePath('/sitemap.xml')
+    if (slug) revalidatePath(`/benches/${slug}`)
+  } catch {}
+}
 
 /** Admin allowlist — server reads ADMIN_EMAILS first (private), falls back to
  *  the public NEXT_PUBLIC_ADMIN_EMAILS that the client useIsAdmin() hook uses,
@@ -68,6 +79,7 @@ export async function POST(req: NextRequest) {
     createdAt: serverTimestamp(),
   })
 
+  revalidateBench(slug)
   return NextResponse.json({ ok: true, id: ref.id, slug })
 }
 
@@ -111,5 +123,6 @@ export async function PATCH(req: NextRequest) {
     updatedAt: serverTimestamp(),
   })
 
+  revalidateBench(snap.data().slug)
   return NextResponse.json({ ok: true, id, slug: snap.data().slug })
 }

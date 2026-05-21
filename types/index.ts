@@ -342,6 +342,8 @@ export interface Bench {
   city?: string
   /** ms epoch — when the bench was added. */
   createdAt: number
+  /** ms epoch — when the bench was last edited (for sitemap freshness). */
+  updatedAt?: number
   /** uid of the admin who added it. */
   createdBy?: string
 }
