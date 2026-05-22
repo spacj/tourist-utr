@@ -1,10 +1,16 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, Fraunces } from 'next/font/google'
+import Script from 'next/script'
 import { AuthProvider } from '@/components/AuthProvider'
 import { I18nProvider } from '@/hooks/useI18n'
 import { PwaInstallBanner } from '@/components/PwaInstallBanner'
 import { OfflineIndicator } from '@/components/OfflineIndicator'
 import './globals.css'
+
+// Google Analytics 4. Override per environment with NEXT_PUBLIC_GA_ID; only
+// loaded in production so local dev traffic doesn't pollute the metrics.
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-KQ3MX9KC6G'
+const GA_ENABLED = process.env.NODE_ENV === 'production' && !!GA_ID
 
 const inter = Inter({
   subsets: ['latin'],
@@ -156,6 +162,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             })
           }
         ` }} />
+
+        {GA_ENABLED && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga-init" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${GA_ID}');
+            ` }} />
+          </>
+        )}
       </body>
     </html>
   )
