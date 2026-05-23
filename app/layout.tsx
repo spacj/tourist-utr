@@ -12,6 +12,11 @@ import './globals.css'
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-KQ3MX9KC6G'
 const GA_ENABLED = process.env.NODE_ENV === 'production' && !!GA_ID
 
+// Google AdSense. Override with NEXT_PUBLIC_ADSENSE_CLIENT; production-only so
+// the script (and crawler) only see it on the live site.
+const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT || 'ca-pub-7503389769071622'
+const ADSENSE_ENABLED = process.env.NODE_ENV === 'production' && !!ADSENSE_CLIENT
+
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
@@ -176,6 +181,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               gtag('config', '${GA_ID}');
             ` }} />
           </>
+        )}
+
+        {ADSENSE_ENABLED && (
+          <Script
+            id="adsbygoogle-init"
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+            strategy="afterInteractive"
+            crossOrigin="anonymous"
+          />
         )}
       </body>
     </html>
