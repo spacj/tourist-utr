@@ -319,6 +319,7 @@ export const BENCH_CATEGORIES: BenchCategory[] = [
   { id: 'smoke',    label: 'Good for a smoke', icon: '🚬', color: '#6b7280', seoPhrase: 'a quiet bench for a smoke' },
   { id: 'quiet',    label: 'Quiet & calm',    icon: '🤫', color: '#6366f1', seoPhrase: 'a quiet, calm bench' },
   { id: 'shade',    label: 'Shaded',          icon: '🌳', color: '#16a34a', seoPhrase: 'a shaded bench' },
+  { id: 'fountain', label: 'Fountain',        icon: '⛲', color: '#2563eb', seoPhrase: 'a public fountain to refill water' },
 ]
 
 export interface Bench {
