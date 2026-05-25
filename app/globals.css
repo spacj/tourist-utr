@@ -282,10 +282,10 @@ a { color: inherit; }
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   color: #fff;
   font-size: 12px;
   font-weight: 600;
@@ -1007,7 +1007,7 @@ a { color: inherit; }
 .game-hud > * { pointer-events: auto; }
 .hud-back {
   flex: none;
-  width: 38px; height: 38px;
+  width: 44px; height: 44px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(12px);
@@ -1022,7 +1022,7 @@ a { color: inherit; }
 .hud-back:active { transform: scale(0.92); }
 .hud-pill {
   border-radius: 18px;
-  padding: 7px 13px;
+  padding: 8px 13px;
   font-size: 11px;
   font-weight: 600;
   backdrop-filter: blur(10px);
@@ -1032,6 +1032,8 @@ a { color: inherit; }
   font-family: inherit;
   cursor: default;
 }
+/* Interactive HUD pills get a comfortable tap height for outdoor one-handed use */
+.hud-credits, .hud-history { min-height: 40px; }
 .hud-stop {
   background: rgba(255, 106, 19,.18);
   color: var(--gold);
@@ -1061,6 +1063,98 @@ a { color: inherit; }
 }
 .hud-history:hover { background: rgba(34, 201, 122, 0.26); }
 .hud-history:active { transform: scale(0.94); }
+
+/* Offline banner during gameplay — reassures the player their arrivals/puzzles
+   are queued and will sync. Sits just below the pinned HUD. */
+.game-offline-banner {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  top: calc(env(safe-area-inset-top, 0px) + 60px);
+  z-index: 40;
+  max-width: calc(100% - 24px);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #fff;
+  background: rgba(20, 20, 30, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.25s ease;
+}
+
+.hud-help {
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--text-muted);
+  border-color: rgba(20, 20, 30, 0.12);
+  cursor: pointer;
+  font-weight: 800;
+  min-width: 40px;
+  text-align: center;
+  transition: background 0.15s, transform 0.15s;
+}
+.hud-help:hover { background: rgba(255, 255, 255, 1); color: var(--text); }
+.hud-help:active { transform: scale(0.94); }
+
+/* First-run tutorial overlay */
+.tutorial-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(12, 13, 26, 0.62);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.2s ease;
+}
+.tutorial-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px 22px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  animation: cardIn 0.32s cubic-bezier(.2,.7,.3,1) both;
+}
+.tutorial-title {
+  font-family: var(--font-serif, Georgia), serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+  text-align: center;
+}
+.tutorial-steps {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.tutorial-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text);
+}
+.tutorial-steps li > span:first-child {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.tutorial-card .btn-primary { width: 100%; }
 
 /* ═══ Past stops / history sheet ═══ */
 .history-backdrop {
@@ -1434,6 +1528,9 @@ a { color: inherit; }
   align-items: center;
   gap: 10px;
 }
+/* Stays 160px on normal phones, shrinks only on very narrow screens so the
+   ring + its overflowing ticks never get clipped or crushed. */
+.compass-ring-svg { width: min(160px, 72vw); height: auto; }
 .compass-halo { animation: compass-pulse-soft 3s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
 .compass-burning .compass-halo { animation: compass-pulse-fast 0.85s ease-in-out infinite; }
 @keyframes compass-pulse-soft {
@@ -6314,14 +6411,16 @@ a { color: inherit; }
   border-radius: 10px;
   background: var(--bg);
   color: var(--text);
-  font-size: 14px;
+  /* 16px avoids iOS Safari's zoom-on-focus now that pinch-zoom is re-enabled */
+  font-size: 16px;
   font-family: inherit;
   outline: none;
-  transition: border-color 0.15s ease;
+  min-height: 44px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
   min-width: 0;
 }
-.puzzle-input:focus { border-color: #6366f1; }
-.puzzle-input:disabled { opacity: 0.6; }
+.puzzle-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25); }
+.puzzle-input:disabled { opacity: 0.45; color: var(--text-dim); }
 
 .puzzle-submit {
   padding: 10px 18px;
@@ -6330,7 +6429,8 @@ a { color: inherit; }
   background: #6366f1;
   color: white;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 14px;
+  min-height: 44px;
   cursor: pointer;
   font-family: inherit;
   transition: background 0.15s ease, transform 0.1s ease;
@@ -6338,7 +6438,7 @@ a { color: inherit; }
 }
 .puzzle-submit:hover:not(:disabled) { background: #4f46e5; }
 .puzzle-submit:active:not(:disabled) { transform: scale(0.97); }
-.puzzle-submit:disabled { opacity: 0.45; cursor: not-allowed; }
+.puzzle-submit:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
 .puzzle-hint-toggle {
   display: inline-block;

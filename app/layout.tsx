@@ -111,8 +111,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  // Allow pinch-zoom for accessibility (WCAG 2.5.5 / 1.4.4). Inputs use 16px
+  // font so iOS Safari won't auto-zoom on focus.
+  maximumScale: 5,
+  userScalable: true,
   viewportFit: 'cover',
   themeColor: '#0b0d1a',
 }

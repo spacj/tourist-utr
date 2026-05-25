@@ -46,6 +46,31 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
   const [puzzleBonus,   setPuzzleBonus]   = useState(0)
   type SheetState = 'minimized' | 'default' | 'expanded'
   const [sheetState,    setSheetState]    = useState<SheetState>('default')
+  const [isOffline,     setIsOffline]     = useState(false)
+  const [showTutorial,  setShowTutorial]  = useState(false)
+
+  // First-run tutorial: shown once, re-openable from the HUD "?" button.
+  useEffect(() => {
+    try {
+      if (localStorage.getItem('hasSeenTutorial') !== 'yes') setShowTutorial(true)
+    } catch {}
+  }, [])
+  const dismissTutorial = () => {
+    setShowTutorial(false)
+    try { localStorage.setItem('hasSeenTutorial', 'yes') } catch {}
+  }
+
+  // Track connectivity so we can reassure the player their progress is queued.
+  useEffect(() => {
+    const update = () => setIsOffline(typeof navigator !== 'undefined' && !navigator.onLine)
+    update()
+    window.addEventListener('online', update)
+    window.addEventListener('offline', update)
+    return () => {
+      window.removeEventListener('online', update)
+      window.removeEventListener('offline', update)
+    }
+  }, [])
 
   // Swipe gesture on the handle to change sheet state
   const touchStartY = useRef<number | null>(null)
@@ -320,6 +345,21 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
         </div>
       )}
 
+      {/* ── First-run tutorial ── */}
+      {showTutorial && (
+        <div className="tutorial-backdrop" onClick={dismissTutorial}>
+          <div className="tutorial-card" onClick={(e) => e.stopPropagation()}>
+            <div className="tutorial-title">{t('tutorialTitle')}</div>
+            <ul className="tutorial-steps">
+              <li><span aria-hidden>🧩</span><span>{t('tutorialStep1')}</span></li>
+              <li><span aria-hidden>🧭</span><span>{t('tutorialStep2')}</span></li>
+              <li><span aria-hidden>💡</span><span>{t('tutorialStep3')}</span></li>
+            </ul>
+            <button className="btn-primary" onClick={dismissTutorial}>{t('tutorialGotIt')}</button>
+          </div>
+        </div>
+      )}
+
       {/* Pinned top HUD — sits above map AND bottom sheet, never scrolls */}
       <div className="game-hud">
         <button onClick={goHome} className="hud-back" aria-label={t('home')}>
@@ -346,7 +386,21 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
             📜 {completedClues.length}
           </button>
         )}
+        <button
+          onClick={() => setShowTutorial(true)}
+          className="hud-pill hud-help"
+          aria-label={t('helpLabel')}
+          title={t('helpLabel')}
+        >
+          ?
+        </button>
       </div>
+
+      {isOffline && (
+        <div className="game-offline-banner" role="status">
+          <span aria-hidden>📡</span> {t('offlineBanner')}
+        </div>
+      )}
 
       {historyOpen && (
         <ClueHistory completedClues={completedClues} onClose={() => setHistoryOpen(false)} />

@@ -97,7 +97,7 @@ export function ProximityRing({ distanceM, bearing, arrived, accuracy, heading }
 
   return (
     <div className={`compass ${burning ? 'compass-burning' : ''} ${arrived ? 'compass-arrived' : ''}`}>
-      <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} style={{ overflow: 'visible' }}>
+      <svg className="compass-ring-svg" width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} style={{ overflow: 'visible' }}>
         <defs>
           <linearGradient id="ring-grad" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%"  stopColor={ringColor} stopOpacity="0.55" />

@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
@@ -31,6 +31,8 @@ export default function CityPage() {
 
   const [city, setCity] = useState<City | null>(null)
   const [hunts, setHunts] = useState<Hunt[]>([])
+  const [cityState, setCityState] = useState<'loading' | 'ready' | 'notfound' | 'error'>('loading')
+  const [huntsError, setHuntsError] = useState(false)
   const [unlocked, setUnlocked] = useState(false)
   const [progress, setProgress] = useState<ProgressMap>({})
   const [starting, setStarting] = useState<string | null>(null)
@@ -40,19 +42,32 @@ export default function CityPage() {
    *  unlock but hasn't yet been redirected to PayPal. */
   const [checkoutOpen, setCheckoutOpen] = useState(false)
 
-  // Load city + hunts
-  useEffect(() => {
+  // Load city + hunts (with explicit loading / not-found / error states so the
+  // page never shows a misleading "no hunts" card while a fetch is in flight).
+  const loadCityAndHunts = useCallback(() => {
     if (!cityId) return
-    fetch('/api/cities').then(r => r.json()).then((cs: City[]) => {
-      setCity(cs.find(c => c.id === cityId) ?? null)
-    }).catch(() => {})
-    fetch('/api/hunts').then(r => r.json()).then((hs: Hunt[]) => {
-      setHunts(
-        hs.filter(h => h.cityId === cityId)
-          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-      )
-    }).catch(() => {})
+    setCityState('loading')
+    setHuntsError(false)
+    fetch('/api/cities')
+      .then(r => { if (!r.ok) throw new Error('cities'); return r.json() })
+      .then((cs: City[]) => {
+        const found = cs.find(c => c.id === cityId) ?? null
+        setCity(found)
+        setCityState(found ? 'ready' : 'notfound')
+      })
+      .catch(() => setCityState('error'))
+    fetch('/api/hunts')
+      .then(r => { if (!r.ok) throw new Error('hunts'); return r.json() })
+      .then((hs: Hunt[]) => {
+        setHunts(
+          hs.filter(h => h.cityId === cityId)
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+        )
+      })
+      .catch(() => setHuntsError(true))
   }, [cityId])
+
+  useEffect(() => { loadCityAndHunts() }, [loadCityAndHunts])
 
   // Load unlock + progress
   useEffect(() => {
@@ -135,6 +150,24 @@ export default function CityPage() {
       setCheckoutOpen(false)
       setFlash(data?.error === 'sign_in_required' ? t('signInToUnlock') : 'Payment unavailable')
     }
+  }
+
+  if (cityState === 'loading') {
+    return <main className="page-center"><div className="spinner" /></main>
+  }
+
+  if (cityState === 'error') {
+    return (
+      <main className="page-center">
+        <div className="container">
+          <a href="/" className="meta-item" style={{ display: 'inline-block', marginBottom: 12 }}>{t('backToHunts')}</a>
+          <div className="empty-card">
+            <p>{t('loadError')}</p>
+            <button onClick={loadCityAndHunts} className="btn-primary" style={{ marginTop: 12 }}>{t('retry')}</button>
+          </div>
+        </div>
+      </main>
+    )
   }
 
   if (!city) {
@@ -300,7 +333,12 @@ export default function CityPage() {
               {/* Hunts */}
               <h2 id="hunts" className="section-label" style={{ scrollMarginTop: '20px' }}>{t('availableHunts')}</h2>
 
-              {huntsOnly.length === 0 && toursOnly.length === 0 && (
+              {huntsError ? (
+                <div className="empty-card">
+                  <p>{t('loadError')}</p>
+                  <button onClick={loadCityAndHunts} className="btn-primary" style={{ marginTop: 12 }}>{t('retry')}</button>
+                </div>
+              ) : huntsOnly.length === 0 && toursOnly.length === 0 && (
                 <div className="empty-card"><p>{t('noHuntsYet')}</p></div>
               )}
 
