@@ -188,10 +188,20 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
                 </div>
                 <h1 className="hero-overlay-title">{t('title')}</h1>
                 <p className="hero-overlay-tagline">{t('tagline')}</p>
-                <a href="#countries" className="hero-cta-btn">
-                  {t('ctaButton')}
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </a>
+                <div className="hero-trust" aria-hidden>
+                  <span className="hero-trust-chip hero-trust-rating">★ 4.9</span>
+                  <span className="hero-trust-chip">📡 {t('whyOffline')}</span>
+                  <span className="hero-trust-chip">🎟️ {t('pricingFreeTag')}</span>
+                </div>
+                <div className="hero-cta-row">
+                  <a href="#countries" className="hero-cta-btn">
+                    {t('ctaButton')}
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                  </a>
+                  <a href="/multiplayer" className="hero-cta-ghost">
+                    👥 {t('playWithFriends')}
+                  </a>
+                </div>
               </div>
             </div>
           </div>

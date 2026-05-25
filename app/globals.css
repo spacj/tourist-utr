@@ -205,12 +205,14 @@ a { color: inherit; }
 .hero-img-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg,
-    rgba(0, 0, 0, 0.15) 0%,
-    rgba(0, 0, 0, 0.05) 40%,
-    rgba(0, 0, 0, 0.15) 70%,
-    rgba(0, 0, 0, 0.65) 100%
-  );
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0) 45%),
+    linear-gradient(180deg,
+      rgba(0, 0, 0, 0.10) 0%,
+      rgba(0, 0, 0, 0.04) 38%,
+      rgba(0, 0, 0, 0.32) 68%,
+      rgba(0, 0, 0, 0.78) 100%
+    );
 }
 .hero-overlay-content {
   position: absolute;
@@ -268,6 +270,58 @@ a { color: inherit; }
   text-shadow: 0 1px 12px rgba(0, 0, 0, 0.25);
   max-width: 42ch;
 }
+
+/* Trust strip — small glass chips that add credibility under the tagline */
+.hero-trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.hero-trust-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 11px;
+  border-radius: 999px;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.3);
+}
+.hero-trust-rating { color: #ffd24a; }
+
+/* Dual CTA row */
+.hero-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+.hero-cta-row .hero-cta-btn { margin-top: 0; }
+.hero-cta-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 13px 18px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+.hero-cta-ghost:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-1px); }
+.hero-cta-ghost:active { transform: scale(0.97); }
 
 /* Hero content below image */
 .hero-content {
