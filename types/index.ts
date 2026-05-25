@@ -293,24 +293,32 @@ export interface CreditPackage {
 }
 
 // ════════════════════════════════════════════════════════════════
-// Benches — a community map of good spots to sit. Admins drop a pin
-// at their current GPS position, tag it (panorama / dogs / kids / …)
-// and write a short note. Each bench gets its own SEO page.
+// Spots — community maps of useful street places. Two kinds share one
+// data shape, one Firestore collection, and one UI engine, but each has
+// its own category tags and its own section:
+//   • bench    → good places to sit          (/benches)
+//   • fountain → public water fountains       (/fountains)
+// Admins drop a pin at their GPS position, tag it, and write a note;
+// each spot gets its own SEO page.
 // ════════════════════════════════════════════════════════════════
 
-export interface BenchCategory {
+export type SpotKind = 'bench' | 'fountain'
+
+export interface SpotCategory {
   id: string
-  /** Human label, shown on chips + the bench card. */
+  /** Human label, shown on chips + the spot card. */
   label: string
   /** Emoji rendered inside the map marker badge. */
   icon: string
   /** Marker + chip accent colour. */
   color: string
-  /** Search-friendly phrase woven into page titles ("a bench with a panorama"). */
+  /** Search-friendly phrase woven into page titles. */
   seoPhrase: string
 }
+/** @deprecated kept for back-compat; use SpotCategory. */
+export type BenchCategory = SpotCategory
 
-export const BENCH_CATEGORIES: BenchCategory[] = [
+export const BENCH_CATEGORIES: SpotCategory[] = [
   { id: 'panorama', label: 'Panorama',        icon: '🌄', color: '#0d9488', seoPhrase: 'a bench with a panoramic view' },
   { id: 'sunset',   label: 'Sunset view',     icon: '🌅', color: '#dc2626', seoPhrase: 'a bench to watch the sunset' },
   { id: 'water',    label: 'By the water',    icon: '🌊', color: '#0891b2', seoPhrase: 'a bench by the water' },
@@ -319,46 +327,127 @@ export const BENCH_CATEGORIES: BenchCategory[] = [
   { id: 'smoke',    label: 'Good for a smoke', icon: '🚬', color: '#6b7280', seoPhrase: 'a quiet bench for a smoke' },
   { id: 'quiet',    label: 'Quiet & calm',    icon: '🤫', color: '#6366f1', seoPhrase: 'a quiet, calm bench' },
   { id: 'shade',    label: 'Shaded',          icon: '🌳', color: '#16a34a', seoPhrase: 'a shaded bench' },
-  { id: 'fountain', label: 'Fountain',        icon: '⛲', color: '#2563eb', seoPhrase: 'a public fountain to refill water' },
 ]
 
+export const FOUNTAIN_CATEGORIES: SpotCategory[] = [
+  { id: 'drinking',   label: 'Drinking water', icon: '🚰', color: '#0891b2', seoPhrase: 'a public drinking fountain' },
+  { id: 'refill',     label: 'Bottle refill',  icon: '🧴', color: '#0d9488', seoPhrase: 'a bottle-refill fountain' },
+  { id: 'decorative', label: 'Decorative',     icon: '⛲', color: '#6366f1', seoPhrase: 'a decorative fountain' },
+  { id: 'dogbowl',    label: 'Dog bowl',       icon: '🐕', color: '#a855f7', seoPhrase: 'a fountain with a dog bowl' },
+  { id: 'kids',       label: 'Kids & play',    icon: '💦', color: '#f59e0b', seoPhrase: 'a fountain kids can play in' },
+]
+
+export interface SpotKindConfig {
+  kind: SpotKind
+  /** Route base + slug used in URLs: 'benches' | 'fountains'. */
+  urlBase: string
+  categories: SpotCategory[]
+  defaultCategory: string
+  /** Marker/section icon + accent. */
+  icon: string
+  accent: string
+  copy: {
+    eyebrow: string        // "Benches"
+    sectionTitle: string   // "Good places to sit"
+    addCta: string         // "Add a bench"
+    addTitle: string       // "Add a bench"
+    addSub: string
+    typeLabel: string      // "Type of spot" / "Type of fountain"
+    emptyTitle: string     // "No benches yet"
+    emptyBody: string
+    nounSingular: string   // "bench"
+    nounPlural: string     // "benches"
+    listTitle: string      // SEO h1 + index title
+  }
+}
+
+export const SPOT_KINDS: Record<SpotKind, SpotKindConfig> = {
+  bench: {
+    kind: 'bench', urlBase: 'benches', categories: BENCH_CATEGORIES, defaultCategory: 'quiet',
+    icon: '🪑', accent: '#0d9488',
+    copy: {
+      eyebrow: 'Benches', sectionTitle: 'Good places to sit',
+      addCta: 'Add a bench', addTitle: 'Add a bench',
+      addSub: 'Drops a pin at your current location. Stand on the spot for the most accurate position.',
+      typeLabel: 'Type of spot', emptyTitle: 'No benches yet',
+      emptyBody: "This map is just getting started. Check back soon — or if you're an editor, drop the first pin.",
+      nounSingular: 'bench', nounPlural: 'benches', listTitle: 'Best benches to sit',
+    },
+  },
+  fountain: {
+    kind: 'fountain', urlBase: 'fountains', categories: FOUNTAIN_CATEGORIES, defaultCategory: 'drinking',
+    icon: '⛲', accent: '#0891b2',
+    copy: {
+      eyebrow: 'Fountains', sectionTitle: 'Public fountains',
+      addCta: 'Add a fountain', addTitle: 'Add a fountain',
+      addSub: 'Drops a pin at your current location. Stand by the fountain for the most accurate position.',
+      typeLabel: 'Type of fountain', emptyTitle: 'No fountains yet',
+      emptyBody: "This map is just getting started. Check back soon — or if you're an editor, drop the first pin.",
+      nounSingular: 'fountain', nounPlural: 'fountains', listTitle: 'Public drinking fountains',
+    },
+  },
+}
+
+export function spotKindFromUrlBase(urlBase: string): SpotKind {
+  return urlBase === 'fountains' ? 'fountain' : 'bench'
+}
+
+export function categoriesForKind(kind: SpotKind): SpotCategory[] {
+  return SPOT_KINDS[kind].categories
+}
+
+/** Spot record — one shape for both kinds. Stored in the `benches` collection. */
 export interface Bench {
   id: string
-  /** URL slug used at /benches/{slug}. */
+  /** URL slug used at /{urlBase}/{slug}. */
   slug: string
+  /** Which section this belongs to. Legacy docs without it default to 'bench'. */
+  kind: SpotKind
   title: string
   description: string
-  /** One or more BenchCategory.id — a spot can be several things at once
-   *  (e.g. a quiet bench by the water that's also dog-friendly). The first
-   *  entry is treated as the primary one for the map marker icon. */
+  /** One or more category ids (from this spot's kind). First entry drives the
+   *  map marker icon. A spot can carry several tags at once. */
   categories: string[]
   lat: number
   lng: number
-  /** Reverse-geocoded street line ("Domplein 9"), shown on the page and
-   *  emitted as schema.org streetAddress for richer local SEO. */
+  /** Reverse-geocoded street line ("Domplein 9"), emitted as schema.org streetAddress. */
   address?: string
   /** Postal code from reverse geocoding. */
   postalCode?: string
   /** Optional free-text place/city for SEO + grouping (e.g. "Utrecht"). */
   city?: string
-  /** ms epoch — when the bench was added. */
+  /** ms epoch — when the spot was added. */
   createdAt: number
-  /** ms epoch — when the bench was last edited (for sitemap freshness). */
+  /** ms epoch — when the spot was last edited (for sitemap freshness). */
   updatedAt?: number
   /** uid of the admin who added it. */
   createdBy?: string
 }
+/** Alias — both kinds use this shape. */
+export type Spot = Bench
 
-/** Read a bench's categories regardless of whether it was stored as the new
- *  `categories` array or the legacy single `category` string. */
-export function benchCategoryIds(raw: { categories?: unknown; category?: unknown }): string[] {
+/** Resolve a stored doc's kind: explicit `kind`, else a legacy 'fountain'
+ *  tag, else 'bench'. Lets old bench-only data migrate transparently. */
+export function deriveSpotKind(raw: { kind?: unknown; categories?: unknown; category?: unknown }): SpotKind {
+  if (raw.kind === 'fountain' || raw.kind === 'bench') return raw.kind
+  const list = Array.isArray(raw.categories) ? raw.categories : (raw.category != null ? [raw.category] : [])
+  return list.map(c => String(c)).includes('fountain') ? 'fountain' : 'bench'
+}
+
+/** Validate/dedupe a doc's category ids against its kind's category set,
+ *  falling back to that kind's default. Handles the legacy single `category`. */
+export function spotCategoryIds(raw: { categories?: unknown; category?: unknown }, kind: SpotKind): string[] {
+  const cats = categoriesForKind(kind)
   const list = Array.isArray(raw.categories)
     ? raw.categories
     : (raw.category != null ? [raw.category] : [])
-  const ids = list
-    .map(c => String(c))
-    .filter(id => BENCH_CATEGORIES.some(c => c.id === id))
-  return ids.length ? Array.from(new Set(ids)) : ['quiet']
+  const ids = list.map(c => String(c)).filter(id => cats.some(c => c.id === id))
+  return ids.length ? Array.from(new Set(ids)) : [SPOT_KINDS[kind].defaultCategory]
+}
+
+/** @deprecated bench-only shim; use spotCategoryIds(raw, kind). */
+export function benchCategoryIds(raw: { categories?: unknown; category?: unknown }): string[] {
+  return spotCategoryIds(raw, 'bench')
 }
 
 /** Build a stable, readable slug from a title plus a short id suffix to
@@ -613,6 +702,8 @@ export const T: Dict = {
   shareRoomCode:     { en: 'Share this code with friends', nl: 'Deel deze code met vrienden', de: 'Teile den Code mit Freunden', fr: 'Partagez ce code', it: 'Condividi questo codice', es: 'Comparte este código' },
   benchesCtaTitle:   { en: 'Find a good bench', nl: 'Vind een goede bank', de: 'Finde eine gute Bank', fr: 'Trouvez un bon banc', it: 'Trova una buona panchina', es: 'Encuentra un buen banco' },
   benchesCtaDesc:    { en: 'A map of great spots to sit — views, sun, quiet corners', nl: 'Een kaart met fijne zitplekken — uitzicht, zon, rustige hoekjes', de: 'Eine Karte schöner Sitzplätze — Aussicht, Sonne, ruhige Ecken', fr: 'Une carte des bons endroits où s’asseoir — vues, soleil, coins tranquilles', it: 'Una mappa dei posti migliori dove sedersi — viste, sole, angoli tranquilli', es: 'Un mapa de buenos lugares para sentarse — vistas, sol, rincones tranquilos' },
+  fountainsCtaTitle: { en: 'Find a fountain', nl: 'Vind een fontein', de: 'Finde einen Brunnen', fr: 'Trouve une fontaine', it: 'Trova una fontana', es: 'Encuentra una fuente' },
+  fountainsCtaDesc:  { en: 'Public drinking & bottle-refill fountains near you', nl: 'Openbare drink- en bijvulfonteinen bij jou in de buurt', de: 'Öffentliche Trink- und Nachfüllbrunnen in deiner Nähe', fr: 'Fontaines publiques à boire et à remplir près de toi', it: 'Fontane pubbliche per bere e riempire la borraccia vicino a te', es: 'Fuentes públicas para beber y rellenar la botella cerca de ti' },
   tutorialTitle:     { en: 'How to play', nl: 'Zo speel je', de: 'So wird gespielt', fr: 'Comment jouer', it: 'Come si gioca', es: 'Cómo se juega' },
   tutorialStep1:     { en: 'Solve the puzzle — its answer reveals where to walk next.', nl: 'Los de puzzel op — het antwoord verklapt waar je heen loopt.', de: 'Löse das Rätsel — die Antwort verrät, wohin du gehst.', fr: 'Résous l’énigme — sa réponse indique où marcher.', it: 'Risolvi l’enigma — la risposta rivela dove andare.', es: 'Resuelve el acertijo — su respuesta revela adónde ir.' },
   tutorialStep2:     { en: 'Follow the compass — it heats up as you get closer. Arrive to score.', nl: 'Volg het kompas — het wordt warmer als je dichterbij komt. Kom aan om te scoren.', de: 'Folge dem Kompass — er wird wärmer, je näher du kommst. Ankommen zum Punkten.', fr: 'Suis la boussole — elle chauffe quand tu approches. Arrive pour marquer.', it: 'Segui la bussola — si scalda mentre ti avvicini. Arriva per fare punti.', es: 'Sigue la brújula — se calienta al acercarte. Llega para puntuar.' },

@@ -3117,6 +3117,17 @@ a { color: inherit; }
 .benches-home-cta .mp-home-cta-icon { background: linear-gradient(135deg, #0d9488, #14b8a6); }
 .benches-home-cta .mp-home-cta-arrow { color: #0d9488; }
 
+.fountains-home-cta {
+  background: linear-gradient(135deg, rgba(8, 145, 178, 0.10), rgba(8, 145, 178, 0.03));
+  border-color: rgba(8, 145, 178, 0.35);
+}
+.fountains-home-cta:hover {
+  border-color: rgba(8, 145, 178, 0.6);
+  box-shadow: 0 6px 18px rgba(8, 145, 178, 0.18);
+}
+.fountains-home-cta .mp-home-cta-icon { background: linear-gradient(135deg, #0891b2, #22b8cf); }
+.fountains-home-cta .mp-home-cta-arrow { color: #0891b2; }
+
 /* Hunt-complete free-teaser unlock CTA */
 .free-cap-cta {
   display: flex; align-items: center; gap: 14px; text-align: left;

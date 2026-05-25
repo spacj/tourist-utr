@@ -2,7 +2,8 @@ import type { MetadataRoute } from 'next'
 import { db } from '@/lib/firebase'
 import { collection, getDocs } from 'firebase/firestore'
 import { getAllPostsMeta } from '@/lib/blog'
-import { getAllBenches } from '@/lib/benches'
+import { getAllSpots } from '@/lib/benches'
+import { SPOT_KINDS, type SpotKind } from '@/types'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tourhunts.com'
 
@@ -27,23 +28,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date()
   const epoch = new Date(0)
 
-  // ── Benches ──────────────────────────────────────────────────────
-  // Each bench is its own indexable page; lastmod tracks the edit time so a
-  // repositioned/retitled bench tells crawlers it actually changed.
-  const benchEntries: MetadataRoute.Sitemap = []
-  let benchesLastMod = epoch
-  try {
-    for (const bench of await getAllBenches()) {
-      const mod = new Date(bench.updatedAt ?? bench.createdAt)
-      if (mod > benchesLastMod) benchesLastMod = mod
-      benchEntries.push({
-        url: `${SITE_URL}/benches/${bench.slug}`,
-        lastModified: mod,
-        changeFrequency: 'monthly',
-        priority: 0.6,
-      })
-    }
-  } catch {}
+  // ── Spots (benches + fountains) ──────────────────────────────────
+  // Each spot is its own indexable page; lastmod tracks the edit time so a
+  // repositioned/retitled spot tells crawlers it actually changed.
+  const spotEntries: MetadataRoute.Sitemap = []
+  const spotLastMod: Record<SpotKind, Date> = { bench: epoch, fountain: epoch }
+  for (const kind of ['bench', 'fountain'] as SpotKind[]) {
+    const base = SPOT_KINDS[kind].urlBase
+    try {
+      for (const spot of await getAllSpots(kind)) {
+        const mod = new Date(spot.updatedAt ?? spot.createdAt)
+        if (mod > spotLastMod[kind]) spotLastMod[kind] = mod
+        spotEntries.push({
+          url: `${SITE_URL}/${base}/${spot.slug}`,
+          lastModified: mod,
+          changeFrequency: 'monthly',
+          priority: 0.6,
+        })
+      }
+    } catch {}
+  }
 
   // ── Blog posts ───────────────────────────────────────────────────
   const posts = getAllPostsMeta()
@@ -94,7 +98,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // only when real content changes — not on every revalidation tick.
   const allContentLastMod = newest(
     [
-      benchesLastMod,
+      spotLastMod.bench,
+      spotLastMod.fountain,
       blogLastMod,
       ...countryEntries.map(e => e.lastModified as Date),
       ...cityEntries.map(e => e.lastModified as Date),
@@ -106,11 +111,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: SITE_URL, lastModified: allContentLastMod, changeFrequency: 'weekly', priority: 1 },
     { url: `${SITE_URL}/blog`, lastModified: newest([blogLastMod], now), changeFrequency: 'weekly', priority: 0.85 },
     { url: `${SITE_URL}/multiplayer`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${SITE_URL}/benches`, lastModified: newest([benchesLastMod], now), changeFrequency: 'daily', priority: 0.8 },
+    { url: `${SITE_URL}/benches`, lastModified: newest([spotLastMod.bench], now), changeFrequency: 'daily', priority: 0.8 },
+    { url: `${SITE_URL}/fountains`, lastModified: newest([spotLastMod.fountain], now), changeFrequency: 'daily', priority: 0.8 },
   ]
 
   // Note: /hunt and /tour are NOT included — they require a session and would
   // expose clue/tour content. They're disallowed in robots.txt.
 
-  return [...staticEntries, ...benchEntries, ...blogEntries, ...countryEntries, ...cityEntries]
+  return [...staticEntries, ...spotEntries, ...blogEntries, ...countryEntries, ...cityEntries]
 }

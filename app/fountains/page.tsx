@@ -4,9 +4,9 @@ import { buildSpotIndexMetadata, SpotIndex } from '@/components/SpotIndex'
 export const revalidate = 3600
 
 export function generateMetadata(): Promise<Metadata> {
-  return buildSpotIndexMetadata('bench')
+  return buildSpotIndexMetadata('fountain')
 }
 
-export default function BenchesPage() {
-  return <SpotIndex kind="bench" />
+export default function FountainsPage() {
+  return <SpotIndex kind="fountain" />
 }

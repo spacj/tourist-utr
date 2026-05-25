@@ -443,12 +443,20 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
           <p className="footer-note">{t('signInHint')}</p>
         )}
 
-        {/* ── Benches map CTA ── */}
+        {/* ── Benches + Fountains map CTAs ── */}
         <a href="/benches" className="mp-home-cta benches-home-cta">
           <div className="mp-home-cta-icon">🪑</div>
           <div className="mp-home-cta-body">
             <div className="mp-home-cta-title">{t('benchesCtaTitle')}</div>
             <div className="mp-home-cta-desc">{t('benchesCtaDesc')}</div>
+          </div>
+          <div className="mp-home-cta-arrow">→</div>
+        </a>
+        <a href="/fountains" className="mp-home-cta fountains-home-cta">
+          <div className="mp-home-cta-icon">⛲</div>
+          <div className="mp-home-cta-body">
+            <div className="mp-home-cta-title">{t('fountainsCtaTitle')}</div>
+            <div className="mp-home-cta-desc">{t('fountainsCtaDesc')}</div>
           </div>
           <div className="mp-home-cta-arrow">→</div>
         </a>
@@ -471,6 +479,7 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
                 <div className="footer-nav-title">{t('footerAbout')}</div>
                 <a href="/blog" className="footer-nav-link">Blog</a>
                 <a href="/benches" className="footer-nav-link">Benches map</a>
+                <a href="/fountains" className="footer-nav-link">Fountains map</a>
                 <a href="#" className="footer-nav-link">{t('footerContact')}</a>
                 <a href="#" className="footer-nav-link">{t('footerPrivacy')}</a>
                 <a href="#" className="footer-nav-link">{t('footerTerms')}</a>

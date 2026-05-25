@@ -2,17 +2,22 @@ import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { db } from '@/lib/firebase'
 import { collection, getDocs, doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
-import { benchSlug, benchCategoryIds } from '@/types'
+import { benchSlug, spotCategoryIds, deriveSpotKind, SPOT_KINDS, type SpotKind } from '@/types'
 import { coerceBench } from '@/lib/benches'
 
-/** Refresh the cached pages that list or render a bench so a new/edited bench
- *  (and the sitemap) goes live immediately instead of waiting for hourly ISR. */
-function revalidateBench(slug?: string) {
+/** Refresh the cached pages that list or render a spot (and the sitemap) so a
+ *  new/edited spot goes live immediately instead of waiting for hourly ISR. */
+function revalidateSpot(kind: SpotKind, slug?: string) {
   try {
-    revalidatePath('/benches')
+    const base = SPOT_KINDS[kind].urlBase
+    revalidatePath(`/${base}`)
     revalidatePath('/sitemap.xml')
-    if (slug) revalidatePath(`/benches/${slug}`)
+    if (slug) revalidatePath(`/${base}/${slug}`)
   } catch {}
+}
+
+function normalizeKind(v: unknown): SpotKind {
+  return v === 'fountain' ? 'fountain' : 'bench'
 }
 
 /** Admin allowlist — server reads ADMIN_EMAILS first (private), falls back to
@@ -23,20 +28,25 @@ function adminEmails(): string[] {
   return raw.split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
 }
 
-// GET /api/benches — list all benches (newest first)
-export async function GET() {
+// GET /api/benches?kind=bench|fountain — list spots of one kind (newest first).
+// Omitting kind returns every spot.
+export async function GET(req: NextRequest) {
   try {
+    const kindParam = req.nextUrl.searchParams.get('kind')
     const snap = await getDocs(collection(db, 'benches'))
-    const benches = snap.docs
+    let spots = snap.docs
       .map(d => coerceBench(d.id, d.data()))
       .sort((a, b) => b.createdAt - a.createdAt)
-    return NextResponse.json(benches)
+    if (kindParam === 'bench' || kindParam === 'fountain') {
+      spots = spots.filter(s => s.kind === kindParam)
+    }
+    return NextResponse.json(spots)
   } catch {
     return NextResponse.json([], { status: 200 })
   }
 }
 
-// POST /api/benches — create a bench. Admin-only (verified by email allowlist).
+// POST /api/benches — create a spot (bench or fountain). Admin-only.
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null)
   if (!body) return NextResponse.json({ error: 'bad_request' }, { status: 400 })
@@ -46,6 +56,7 @@ export async function POST(req: NextRequest) {
     category?: string; categories?: string[]; lat?: number; lng?: number
     city?: string; address?: string; postalCode?: string
   }
+  const kind = normalizeKind((body as { kind?: unknown }).kind)
 
   // ── Admin gate ──
   const allow = adminEmails()
@@ -58,14 +69,14 @@ export async function POST(req: NextRequest) {
   if (typeof lat !== 'number' || typeof lng !== 'number' || Number.isNaN(lat) || Number.isNaN(lng)) {
     return NextResponse.json({ error: 'location_required' }, { status: 400 })
   }
-  // Normalize to a deduped list of valid ids (defaults to ['quiet']).
-  const catIds = benchCategoryIds({ categories, category })
+  const catIds = spotCategoryIds({ categories, category }, kind)
 
   const ref = doc(collection(db, 'benches'))
   const slug = benchSlug(title.trim(), ref.id)
 
   await setDoc(ref, {
     slug,
+    kind,
     title: title.trim().slice(0, 80),
     description: (description ?? '').trim().slice(0, 600),
     categories: catIds,
@@ -79,12 +90,12 @@ export async function POST(req: NextRequest) {
     createdAt: serverTimestamp(),
   })
 
-  revalidateBench(slug)
+  revalidateSpot(kind, slug)
   return NextResponse.json({ ok: true, id: ref.id, slug })
 }
 
-// PATCH /api/benches — update an existing bench. Admin-only. The slug stays
-// fixed so existing links and SEO pages don't break, even if the title changes.
+// PATCH /api/benches — update an existing spot. Admin-only. The slug + kind
+// stay fixed so existing links/SEO and the section it lives in don't change.
 export async function PATCH(req: NextRequest) {
   const body = await req.json().catch(() => null)
   if (!body) return NextResponse.json({ error: 'bad_request' }, { status: 400 })
@@ -109,7 +120,8 @@ export async function PATCH(req: NextRequest) {
   if (typeof lat !== 'number' || typeof lng !== 'number' || Number.isNaN(lat) || Number.isNaN(lng)) {
     return NextResponse.json({ error: 'location_required' }, { status: 400 })
   }
-  const catIds = benchCategoryIds({ categories, category })
+  const kind = deriveSpotKind(snap.data())
+  const catIds = spotCategoryIds({ categories, category }, kind)
 
   await updateDoc(ref, {
     title: title.trim().slice(0, 80),
@@ -123,6 +135,6 @@ export async function PATCH(req: NextRequest) {
     updatedAt: serverTimestamp(),
   })
 
-  revalidateBench(snap.data().slug)
+  revalidateSpot(kind, snap.data().slug)
   return NextResponse.json({ ok: true, id, slug: snap.data().slug })
 }

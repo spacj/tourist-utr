@@ -1,62 +1,86 @@
 'use client'
 import { useMemo, useState, useEffect } from 'react'
-import { Bench, BENCH_CATEGORIES } from '@/types'
+import { Bench, SpotKind, SPOT_KINDS } from '@/types'
 import { useIsAdmin } from '@/hooks/useIsAdmin'
 import { PlacesGuideMap } from '@/components/PlacesGuideMap'
 import type { Place, PlaceCategory } from '@/lib/md'
 
 interface Props {
-  initialBenches: Bench[]
+  kind: SpotKind
+  initialSpots: Bench[]
 }
 
 /**
- * Public benches directory. Map-first (reuses PlacesGuideMap) with a
- * category filter and a scrollable card list. Admins get an "Add a bench
- * here" button that links to the GPS capture form.
- *
- * The server component already rendered every bench as crawlable HTML +
- * JSON-LD; this client layer just adds the interactive map and filtering.
+ * Public spot directory shared by /benches and /fountains. Map-first (reuses
+ * PlacesGuideMap) with a category filter and a scrollable card list. Admins
+ * get an "Add" button to the GPS capture form. The server page already
+ * rendered every spot as crawlable HTML + JSON-LD; this is the interactive
+ * layer. All copy + categories come from SPOT_KINDS[kind].
  */
-export function BenchesClient({ initialBenches }: Props) {
+export function SpotsClient({ kind, initialSpots }: Props) {
+  const cfg = SPOT_KINDS[kind]
+  const base = cfg.urlBase
   const isAdmin = useIsAdmin()
-  const [benches, setBenches] = useState<Bench[]>(initialBenches)
+  const [spots, setSpots] = useState<Bench[]>(initialSpots)
   const [activeCat, setActiveCat] = useState<string | null>(null)
-  const [selectedId, setSelectedId] = useState<string | null>(initialBenches[0]?.id ?? null)
+  const [selectedId, setSelectedId] = useState<string | null>(initialSpots[0]?.id ?? null)
   const [view, setView] = useState<'map' | 'list'>('map')
 
-  // Refresh from the API on mount so a freshly-added bench appears without a
+  // Refresh from the API on mount so a freshly-added spot appears without a
   // full rebuild (the server page is ISR-cached for an hour).
   useEffect(() => {
-    fetch('/api/benches').then(r => r.json()).then((rows: Bench[]) => {
-      if (Array.isArray(rows) && rows.length) setBenches(rows)
+    fetch(`/api/benches?kind=${kind}`).then(r => r.json()).then((rows: Bench[]) => {
+      if (Array.isArray(rows)) setSpots(rows)
     }).catch(() => {})
-  }, [])
+  }, [kind])
 
-  const categories: PlaceCategory[] = BENCH_CATEGORIES.map(c => ({
+  const categories: PlaceCategory[] = cfg.categories.map(c => ({
     id: c.id, label: c.label, icon: c.icon, color: c.color,
   }))
 
   const filtered = useMemo(
-    () => activeCat ? benches.filter(b => b.categories.includes(activeCat)) : benches,
-    [benches, activeCat]
+    () => activeCat ? spots.filter(b => b.categories.includes(activeCat)) : spots,
+    [spots, activeCat]
   )
 
-  // Map benches → the Place shape PlacesGuideMap expects. The first category is
-  // the marker's primary icon; a spot can carry several tags.
   const placesForMap: Place[] = filtered.map(b => ({
     id: b.id,
     name: b.title,
-    category: b.categories[0] ?? 'quiet',
+    category: b.categories[0] ?? cfg.defaultCategory,
     lat: b.lat,
     lng: b.lng,
     description: b.description,
     address: b.address,
   }))
 
-  const selected = benches.find(b => b.id === selectedId) ?? benches[0] ?? null
-  const catOf = (id: string) => BENCH_CATEGORIES.find(c => c.id === id)
-  const catsOf = (b: Bench) => b.categories.map(catOf).filter(Boolean) as typeof BENCH_CATEGORIES
-  const countWith = (id: string) => benches.filter(b => b.categories.includes(id)).length
+  const selected = spots.find(b => b.id === selectedId) ?? spots[0] ?? null
+  const catOf = (id: string) => cfg.categories.find(c => c.id === id)
+  const catsOf = (b: Bench) => b.categories.map(catOf).filter(Boolean) as typeof cfg.categories
+  const countWith = (id: string) => spots.filter(b => b.categories.includes(id)).length
+
+  const renderCatChips = (extraClass: string) => (
+    <div className={extraClass} role="tablist" aria-label={`${cfg.copy.nounSingular} types`}>
+      <button type="button" className={`places-guide-cat ${activeCat === null ? 'is-active' : ''}`} onClick={() => setActiveCat(null)}>
+        All · {spots.length}
+      </button>
+      {cfg.categories.map(cat => {
+        const count = countWith(cat.id)
+        if (count === 0) return null
+        return (
+          <button
+            key={cat.id}
+            type="button"
+            className={`places-guide-cat ${activeCat === cat.id ? 'is-active' : ''}`}
+            onClick={() => setActiveCat(activeCat === cat.id ? null : cat.id)}
+            style={activeCat === cat.id ? { background: cat.color, color: '#fff', borderColor: cat.color } : undefined}
+          >
+            <span aria-hidden style={{ marginRight: 4 }}>{cat.icon}</span>
+            {cat.label} · {count}
+          </button>
+        )
+      })}
+    </div>
+  )
 
   return (
     <div className={`benches-page view-${view}`}>
@@ -65,8 +89,8 @@ export function BenchesClient({ initialBenches }: Props) {
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         </a>
         <div className="tour-topbar-info">
-          <div className="tour-topbar-eyebrow">🪑 Benches · {benches.length} spots</div>
-          <div className="tour-topbar-title">Good places to sit</div>
+          <div className="tour-topbar-eyebrow">{cfg.icon} {cfg.copy.eyebrow} · {spots.length} {cfg.copy.nounPlural}</div>
+          <div className="tour-topbar-title">{cfg.copy.sectionTitle}</div>
         </div>
         <div className="places-guide-view-toggle" role="tablist" aria-label="Layout">
           <button type="button" role="tab" aria-selected={view === 'map'} className={`places-guide-view-btn ${view === 'map' ? 'is-active' : ''}`} onClick={() => setView('map')} aria-label="Map view">
@@ -79,17 +103,17 @@ export function BenchesClient({ initialBenches }: Props) {
       </header>
 
       {isAdmin && (
-        <a href="/benches/add" className="benches-add-fab" aria-label="Add a bench at my location">
+        <a href={`/${base}/add`} className="benches-add-fab" aria-label={cfg.copy.addCta}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          <span>Add a bench</span>
+          <span>{cfg.copy.addCta}</span>
         </a>
       )}
 
-      {benches.length === 0 ? (
+      {spots.length === 0 ? (
         <div className="benches-empty">
-          <div className="benches-empty-icon" aria-hidden>🪑</div>
-          <h2>No benches yet</h2>
-          <p>This map is just getting started. Check back soon — or if you're an editor, drop the first pin.</p>
+          <div className="benches-empty-icon" aria-hidden>{cfg.icon}</div>
+          <h2>{cfg.copy.emptyTitle}</h2>
+          <p>{cfg.copy.emptyBody}</p>
         </div>
       ) : view === 'map' ? (
         <>
@@ -104,27 +128,7 @@ export function BenchesClient({ initialBenches }: Props) {
             />
           </div>
 
-          <div className="places-guide-cats benches-cats" role="tablist" aria-label="Bench types">
-            <button type="button" className={`places-guide-cat ${activeCat === null ? 'is-active' : ''}`} onClick={() => setActiveCat(null)}>
-              All · {benches.length}
-            </button>
-            {BENCH_CATEGORIES.map(cat => {
-              const count = countWith(cat.id)
-              if (count === 0) return null
-              return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  className={`places-guide-cat ${activeCat === cat.id ? 'is-active' : ''}`}
-                  onClick={() => setActiveCat(activeCat === cat.id ? null : cat.id)}
-                  style={activeCat === cat.id ? { background: cat.color, color: '#fff', borderColor: cat.color } : undefined}
-                >
-                  <span aria-hidden style={{ marginRight: 4 }}>{cat.icon}</span>
-                  {cat.label} · {count}
-                </button>
-              )
-            })}
-          </div>
+          {renderCatChips('places-guide-cats benches-cats')}
 
           {selected && (() => {
             const cats = catsOf(selected)
@@ -145,7 +149,7 @@ export function BenchesClient({ initialBenches }: Props) {
                   {where && <div className="benches-card-city">📍 {where}</div>}
                   {selected.description && <p className="benches-card-desc">{selected.description}</p>}
                   <div className="benches-card-actions">
-                    <a className="benches-card-link" href={`/benches/${selected.slug}`}>Open page →</a>
+                    <a className="benches-card-link" href={`/${base}/${selected.slug}`}>Open page →</a>
                     <a
                       className="benches-card-directions"
                       href={`https://www.google.com/maps/dir/?api=1&destination=${selected.lat},${selected.lng}`}
@@ -156,7 +160,7 @@ export function BenchesClient({ initialBenches }: Props) {
                     </a>
                   </div>
                   {isAdmin && (
-                    <a className="benches-card-edit" href={`/benches/edit/${selected.id}`}>✎ Edit bench</a>
+                    <a className="benches-card-edit" href={`/${base}/edit/${selected.id}`}>✎ Edit {cfg.copy.nounSingular}</a>
                   )}
                 </div>
               </aside>
@@ -166,27 +170,7 @@ export function BenchesClient({ initialBenches }: Props) {
       ) : (
         <main className="benches-list-view">
           <div className="benches-list-inner">
-            <div className="places-list-view-cats" role="tablist" aria-label="Bench types">
-              <button type="button" className={`places-guide-cat ${activeCat === null ? 'is-active' : ''}`} onClick={() => setActiveCat(null)}>
-                All · {benches.length}
-              </button>
-              {BENCH_CATEGORIES.map(cat => {
-                const count = countWith(cat.id)
-                if (count === 0) return null
-                return (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    className={`places-guide-cat ${activeCat === cat.id ? 'is-active' : ''}`}
-                    onClick={() => setActiveCat(activeCat === cat.id ? null : cat.id)}
-                    style={activeCat === cat.id ? { background: cat.color, color: '#fff', borderColor: cat.color } : undefined}
-                  >
-                    <span aria-hidden style={{ marginRight: 4 }}>{cat.icon}</span>
-                    {cat.label} · {count}
-                  </button>
-                )
-              })}
-            </div>
+            {renderCatChips('places-list-view-cats')}
             <ul className="benches-grid">
               {filtered.map(b => {
                 const cats = catsOf(b)
@@ -194,9 +178,9 @@ export function BenchesClient({ initialBenches }: Props) {
                 const where = [b.address, b.city].filter(Boolean).join(', ')
                 return (
                   <li key={b.id}>
-                    <a className="benches-grid-card" href={`/benches/${b.slug}`}>
-                      <span className="benches-grid-icon" style={{ background: primary?.color ?? '#6366f1' }} aria-hidden>
-                        {primary?.icon ?? '🪑'}
+                    <a className="benches-grid-card" href={`/${base}/${b.slug}`}>
+                      <span className="benches-grid-icon" style={{ background: primary?.color ?? cfg.accent }} aria-hidden>
+                        {primary?.icon ?? cfg.icon}
                       </span>
                       <div className="benches-grid-body">
                         {cats.length > 0 && (
