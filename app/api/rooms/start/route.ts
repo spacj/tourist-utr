@@ -106,7 +106,20 @@ export async function POST(req: NextRequest) {
     }, { merge: true })
   }
 
-  await batch.commit()
+  try {
+    await batch.commit()
+  } catch {
+    // The batch is atomic, so on failure no sessions were created — but the
+    // room is already 'racing'. Roll it back to 'lobby' so the host can retry
+    // instead of being stuck in a race with no sessions.
+    await runTransaction(db, async (tx) => {
+      const s = await tx.get(roomRef)
+      if (s.exists() && s.data().state === 'racing') {
+        tx.update(roomRef, { state: 'lobby', startedAt: null })
+      }
+    }).catch(() => {})
+    return NextResponse.json({ error: 'start_failed' }, { status: 500 })
+  }
 
   return NextResponse.json({ ok: true, hostSessionId })
 }

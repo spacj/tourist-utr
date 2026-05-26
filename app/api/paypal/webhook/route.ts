@@ -3,7 +3,7 @@ import { db } from '@/lib/firebase'
 import { verifyWebhook } from '@/lib/paypal'
 import { CITY_UNLOCK_PRICE_EUROS, CREDIT_PACKAGES } from '@/types'
 import { cityUnlockId } from '@/lib/cityUnlock'
-import { doc, getDoc, setDoc, updateDoc, increment, deleteDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, getDoc, setDoc, updateDoc, increment, runTransaction, serverTimestamp } from 'firebase/firestore'
 
 /**
  * PayPal webhook handler.
@@ -114,30 +114,38 @@ async function handleCaptureCompleted(resource: any) {
 }
 
 async function handleCaptureRefunded(resource: any) {
-  // resource.id is the refund id; resource.links contains a "up" link to the
-  // original capture. PayPal also sends the captured order's metadata via
-  // custom_id on most refund payloads.
+  // resource.id is the refund id. PayPal can deliver the same refund event
+  // more than once, so every rollback is guarded by a paypalRefunds/{refundId}
+  // marker written in the SAME transaction as the mutation — making the whole
+  // handler idempotent (a duplicate webhook is a no-op, no double-decrement).
   const meta = parseCustomId(resource)
   if (!meta) return
+  const refundId = resource?.id
+  if (!refundId) return
+  const refundRef = doc(db, 'paypalRefunds', String(refundId))
 
   if (meta.kind === 'city_unlock' && meta.cityId && meta.userId) {
     const unlockRef = doc(db, 'cityUnlocks', cityUnlockId(meta.userId, meta.cityId))
-    const existing = await getDoc(unlockRef)
-    if (existing.exists()) {
-      await deleteDoc(unlockRef)
-    }
+    await runTransaction(db, async (tx) => {
+      const processed = await tx.get(refundRef)
+      if (processed.exists()) return
+      const unlock = await tx.get(unlockRef)
+      tx.set(refundRef, { refundId: String(refundId), kind: 'city_unlock', processedAt: serverTimestamp() })
+      if (unlock.exists()) tx.delete(unlockRef)
+    }).catch(() => {})
     return
   }
 
   if (meta.kind === 'credit_pack' && meta.sessionId && meta.packageId) {
     const pkg = CREDIT_PACKAGES.find(p => p.id === meta.packageId)
     if (!pkg) return
-    // Credits were spent or partially spent — we just decrement back what we
-    // gave and let the balance go negative if necessary. If you want a
-    // smarter rollback (e.g. revoke unused only), do it here.
     const sessionRef = doc(db, 'sessions', meta.sessionId)
-    await updateDoc(sessionRef, {
-      credits: increment(-pkg.credits),
+    await runTransaction(db, async (tx) => {
+      const processed = await tx.get(refundRef)
+      if (processed.exists()) return
+      tx.set(refundRef, { refundId: String(refundId), kind: 'credit_pack', processedAt: serverTimestamp() })
+      // Roll back the credits we granted; balance may go negative if spent.
+      tx.update(sessionRef, { credits: increment(-pkg.credits) })
     }).catch(() => {})
   }
 }
