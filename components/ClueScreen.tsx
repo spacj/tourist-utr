@@ -1,6 +1,6 @@
 'use client'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Clue, VerifyResponse, localizeClue, SCORE } from '@/types'
+import { Clue, VerifyResponse, localizeClue, localizeEvidenceText, MysterySpec, SCORE } from '@/types'
 import { enqueue } from '@/lib/offlineQueue'
 import { useGPS } from '@/hooks/useGPS'
 import { useDeviceOrientation } from '@/hooks/useDeviceOrientation'
@@ -14,6 +14,7 @@ import { ArrivalBanner } from './ArrivalBanner'
 import { CreditShop } from './CreditShop'
 import { PuzzleCard } from './PuzzleCard'
 import { ClueHistory } from './ClueHistory'
+import { CaseFile } from './CaseFile'
 import { HINT_COSTS } from '@/types'
 
 interface Props {
@@ -28,11 +29,14 @@ interface Props {
   allClues?: Clue[]
   /** Clues the player has already finished — viewable from the History sheet. */
   completedClues?: Clue[]
+  /** Mystery case spec (solution stripped) — enables the deduction board. */
+  mystery?: MysterySpec | null
 }
 
-export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits, totalScore, onComplete, allClues, completedClues = [] }: Props) {
+export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits, totalScore, onComplete, allClues, completedClues = [], mystery = null }: Props) {
   const { t, lang } = useI18n()
   const clue = localizeClue(rawClue, lang)
+  const evidenceText = localizeEvidenceText(rawClue.evidence, lang)
   const [arrived,       setArrived]       = useState(false)
   const [arrivalData,   setArrivalData]   = useState<VerifyResponse | null>(null)
   const [userPos,       setUserPos]       = useState<{ lat: number; lng: number } | null>(null)
@@ -40,6 +44,7 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
   const [openHint,      setOpenHint]      = useState<number | null>(null)
   const [shopOpen,      setShopOpen]      = useState(false)
   const [historyOpen,   setHistoryOpen]   = useState(false)
+  const [caseOpen,      setCaseOpen]      = useState(false)
   const [showIntro,     setShowIntro]     = useState(true)
   const [reading,       setReading]       = useState(false)
   const [score,         setScore]         = useState(totalScore)
@@ -386,6 +391,16 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
             📜 {completedClues.length}
           </button>
         )}
+        {mystery && (
+          <button
+            onClick={() => setCaseOpen(true)}
+            className="hud-pill hud-case"
+            aria-label={t('caseFile')}
+            title={t('caseFile')}
+          >
+            🔍 {t('caseFile')}
+          </button>
+        )}
         <button
           onClick={() => setShowTutorial(true)}
           className="hud-pill hud-help"
@@ -404,6 +419,14 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
 
       {historyOpen && (
         <ClueHistory completedClues={completedClues} onClose={() => setHistoryOpen(false)} />
+      )}
+
+      {caseOpen && mystery && (
+        <CaseFile
+          mystery={mystery}
+          knownClues={[...completedClues, ...(arrived ? [rawClue] : [])]}
+          onClose={() => setCaseOpen(false)}
+        />
       )}
 
       {/* Map */}
@@ -438,6 +461,7 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
             puzzleBonus={puzzleBonus}
             funFact={clue.funFact}
             trivia={clue.trivia ?? null}
+            evidence={evidenceText ?? null}
             huntComplete={arrivalData.huntComplete ?? false}
             onNext={() => onComplete({ nextClue: arrivalData.nextClue ?? null, huntComplete: arrivalData.huntComplete ?? false })}
             onTriviaCorrect={() => setScore(s => s + 25)}

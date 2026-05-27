@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Clue } from '@/types'
+import { Clue, MysterySpec } from '@/types'
 import { ClueScreen } from '@/components/ClueScreen'
 import { RoomScoreboard } from '@/components/RoomScoreboard'
 import { useServiceWorker } from '@/hooks/useServiceWorker'
@@ -16,9 +16,10 @@ interface Props {
   initialScore: number
   creditsJustAdded: boolean
   allClues: Array<Record<string, unknown>>
+  mystery?: MysterySpec | null
 }
 
-export function HuntClient({ initialClue, huntCity, sessionId, roomId, huntId, initialCredits, initialScore, creditsJustAdded, allClues }: Props) {
+export function HuntClient({ initialClue, huntCity, sessionId, roomId, huntId, initialCredits, initialScore, creditsJustAdded, allClues, mystery }: Props) {
   const [clue, setClue] = useState(initialClue)
   const [score, setScore] = useState(initialScore)
   const [credits, setCredits] = useState(initialCredits)
@@ -78,6 +79,7 @@ export function HuntClient({ initialClue, huntCity, sessionId, roomId, huntId, i
           onComplete={handleComplete}
           allClues={allClues as unknown as Clue[]}
           completedClues={completedClues}
+          mystery={mystery ?? null}
         />
       </div>
       {roomId && huntId && <RoomScoreboard roomId={roomId} totalClues={clue.totalClues} huntId={huntId} />}

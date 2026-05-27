@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { db } from '@/lib/firebase'
 import { HuntClient } from './HuntClient'
-import { Clue, playableStopCount } from '@/types'
+import { Clue, MysterySpec, playableStopCount } from '@/types'
 import { doc, getDoc, getDocs, collection, query, where, limit, orderBy } from 'firebase/firestore'
 
 export const dynamic = 'force-dynamic'
@@ -35,6 +35,12 @@ export default async function HuntPage({
   if (!clueSnap.exists()) notFound()
   const clue = clueSnap.data()
 
+  // For mystery hunts, pass the case spec to the game — but never the solution
+  // (that's validated server-side in /api/accuse).
+  const huntSnap = await getDoc(doc(db, 'hunts', session.huntId))
+  const rawMystery = huntSnap.exists() ? (huntSnap.data() as { mystery?: MysterySpec }).mystery : undefined
+  const mystery: MysterySpec | null = rawMystery ? { ...rawMystery, solution: undefined } : null
+
   const totalCluesSnap = await getDocs(
     query(collection(db, 'hunts', session.huntId, 'clues'), orderBy('order'))
   )
@@ -63,6 +69,7 @@ export default async function HuntPage({
       initialScore={session.score}
       creditsJustAdded={searchParams.credits === 'added'}
       allClues={allClues}
+      mystery={mystery}
     />
   )
 }

@@ -1,5 +1,8 @@
 'use client'
+import { useState } from 'react'
 import { useI18n } from '@/hooks/useI18n'
+import { MysterySpec } from '@/types'
+import { MysteryAccusation } from '@/components/MysteryAccusation'
 
 interface ClueRow {
   id: string
@@ -24,13 +27,17 @@ interface Props {
   freeCapReached: boolean
   cityId: string | null
   fullHuntStops: number
+  sessionId: string
+  mystery: MysterySpec | null
 }
 
 export function CompleteClient({
   huntTitle, huntI18n, huntCity, score, clues, totalClues, cluesArrived, hintsUsed, creditsSpent,
-  freeCapReached, cityId, fullHuntStops,
+  freeCapReached, cityId, fullHuntStops, sessionId, mystery,
 }: Props) {
   const { t, lang } = useI18n()
+  const [accuseBonus, setAccuseBonus] = useState(0)
+  const displayScore = score + accuseBonus
   const localizedHuntTitle = (lang !== 'en' && huntI18n?.[lang]?.title) || huntTitle
   const localizedLocation = (c: ClueRow) =>
     (lang !== 'en' && c.i18n?.[lang]?.locationName) || c.locationName
@@ -73,10 +80,15 @@ export function CompleteClient({
             {t('finalScore')}
           </div>
           <div style={{ fontFamily: 'var(--font-serif, Georgia), serif', fontSize: 58, fontWeight: 700, color: 'var(--gold)', lineHeight: 1 }}>
-            {score}
+            {displayScore}
           </div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{t('points')}</div>
         </div>
+
+        {/* Mystery finale — accuse a suspect, weapon and place */}
+        {mystery && (
+          <MysteryAccusation sessionId={sessionId} mystery={mystery} onSolved={(b) => setAccuseBonus(b)} />
+        )}
 
         {/* Free-teaser cap reached — invite the player to unlock the city */}
         {freeCapReached && (

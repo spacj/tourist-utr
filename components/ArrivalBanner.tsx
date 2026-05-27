@@ -13,6 +13,8 @@ interface Props {
   perfectBonus?: number
   funFact?: string | null
   trivia?: Trivia | null
+  /** Mystery hunts: the evidence this stop reveals. */
+  evidence?: string | null
   /** Bonus from a puzzle solved during the clue phase (shown in score breakdown). */
   puzzleBonus?: number
   huntComplete: boolean
@@ -22,7 +24,7 @@ interface Props {
 
 export function ArrivalBanner({
   locationName, huntCity, pointsEarned, timeBonus, hintPenalty,
-  streakBonus = 0, perfectBonus = 0, funFact, trivia,
+  streakBonus = 0, perfectBonus = 0, funFact, trivia, evidence,
   puzzleBonus = 0,
   huntComplete, onNext, onTriviaCorrect,
 }: Props) {
@@ -108,6 +110,14 @@ export function ArrivalBanner({
             <span style={{ color: 'var(--gold)' }}>{pointsEarned + (bonusClaimed ? 25 : 0) + puzzleBonus}</span>
           </div>
         </div>
+
+        {/* ── Mystery evidence ── */}
+        {evidence && (
+          <div className="evidence-card">
+            <div className="evidence-label">🔍 {t('newEvidence')}</div>
+            <p className="evidence-text">{evidence}</p>
+          </div>
+        )}
 
         {/* ── Fun fact story card ── */}
         {funFact && (

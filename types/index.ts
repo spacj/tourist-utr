@@ -89,6 +89,11 @@ export interface Hunt {
   // with no riddles/hints/scoring. Defaults to 'hunt' if absent.
   tourType?: TourType
   tourCategory?: TourCategory
+  /** When present, this hunt is a Cluedo-style deduction case: each stop
+   *  reveals evidence that eliminates suspects/weapons/places, and the finale
+   *  asks the player to accuse. The `solution` is stripped before reaching
+   *  the client (see /api/hunts). */
+  mystery?: MysterySpec
 }
 
 export function isTour(h: Pick<Hunt, 'tourType'>): boolean {
@@ -204,7 +209,97 @@ export interface Clue {
   trivia?: Trivia
   /** Optional logic / cipher / wordplay puzzle awarded a separate bonus. */
   puzzle?: Puzzle
+  /** Mystery hunts only: evidence revealed on arrival, eliminating candidates. */
+  evidence?: ClueEvidence
   i18n?: Partial<Record<Lang, ClueI18n>>
+}
+
+// ── Cluedo-style mystery hunts ──────────────────────────────────────
+// A mystery hunt is a normal hunt (clues + GPS) with a deduction layer:
+// each stop's `evidence` rules out suspects / weapons / places; once every
+// stop is found, the player accuses (who + what + where) on the finale.
+
+export type MysteryAxis = 'suspects' | 'weapons' | 'places'
+
+export interface MysteryCandidate {
+  id: string
+  name: string
+  icon: string
+  i18n?: Partial<Record<Lang, { name?: string }>>
+}
+
+export interface MysteryEliminations {
+  suspects?: string[]
+  weapons?: string[]
+  places?: string[]
+}
+
+export interface ClueEvidence {
+  /** Narrative evidence shown on arrival ("The scarf was soaked through…"). */
+  text: string
+  /** Candidate ids this evidence rules out. */
+  eliminates?: MysteryEliminations
+  i18n?: Partial<Record<Lang, { text?: string }>>
+}
+
+export interface MysterySpec {
+  victim: string
+  /** Case briefing, shown at the start. */
+  intro: string
+  /** Finale copy. */
+  accuseTitle: string
+  solvedText: string
+  failedText: string
+  suspects: MysteryCandidate[]
+  weapons: MysteryCandidate[]
+  places: MysteryCandidate[]
+  /** Authoritative answer. STRIPPED from client payloads (validated in /api/accuse). */
+  solution?: { suspect: string; weapon: string; place: string }
+  i18n?: Partial<Record<Lang, {
+    victim?: string; intro?: string; accuseTitle?: string; solvedText?: string; failedText?: string
+  }>>
+}
+
+export function isMystery(h: Pick<Hunt, 'mystery'>): boolean {
+  return !!h.mystery
+}
+
+export function localizeCandidate(c: MysteryCandidate, lang: Lang): MysteryCandidate {
+  const name = (lang !== 'en' && c.i18n?.[lang]?.name) || c.name
+  return { ...c, name }
+}
+
+export function localizeEvidenceText(e: ClueEvidence | undefined, lang: Lang): string | undefined {
+  if (!e) return undefined
+  return (lang !== 'en' && e.i18n?.[lang]?.text) || e.text
+}
+
+export function localizeMystery(m: MysterySpec, lang: Lang): MysterySpec {
+  const tr = lang !== 'en' ? m.i18n?.[lang] : undefined
+  return {
+    ...m,
+    victim:      tr?.victim      ?? m.victim,
+    intro:       tr?.intro       ?? m.intro,
+    accuseTitle: tr?.accuseTitle ?? m.accuseTitle,
+    solvedText:  tr?.solvedText  ?? m.solvedText,
+    failedText:  tr?.failedText  ?? m.failedText,
+    suspects: m.suspects.map(c => localizeCandidate(c, lang)),
+    weapons:  m.weapons.map(c => localizeCandidate(c, lang)),
+    places:   m.places.map(c => localizeCandidate(c, lang)),
+  }
+}
+
+/** Union of everything ruled out by the evidence of the given (arrived) clues. */
+export function accumulateEliminations(clues: { evidence?: ClueEvidence }[]): MysteryEliminations {
+  const out: Required<MysteryEliminations> = { suspects: [], weapons: [], places: [] }
+  for (const c of clues) {
+    const e = c.evidence?.eliminates
+    if (!e) continue
+    for (const axis of ['suspects', 'weapons', 'places'] as MysteryAxis[]) {
+      for (const id of e[axis] ?? []) if (!out[axis].includes(id)) out[axis].push(id)
+    }
+  }
+  return out
 }
 
 export function localizeHunt(h: Hunt, lang: Lang): Hunt {
@@ -713,6 +808,17 @@ export const T: Dict = {
   offlineBanner:     { en: 'Offline — your progress will sync when you reconnect.', nl: 'Offline — je voortgang wordt gesynchroniseerd zodra je weer verbinding hebt.', de: 'Offline — dein Fortschritt wird synchronisiert, sobald du wieder online bist.', fr: 'Hors ligne — ta progression se synchronisera à la reconnexion.', it: 'Offline — i tuoi progressi si sincronizzeranno al ritorno della connessione.', es: 'Sin conexión — tu progreso se sincronizará al reconectarte.' },
   loadError:         { en: "Couldn't load this — check your connection.", nl: 'Kon dit niet laden — controleer je verbinding.', de: 'Konnte nicht geladen werden — prüfe deine Verbindung.', fr: 'Chargement impossible — vérifie ta connexion.', it: 'Impossibile caricare — controlla la connessione.', es: 'No se pudo cargar — revisa tu conexión.' },
   retry:             { en: 'Try again', nl: 'Opnieuw', de: 'Erneut versuchen', fr: 'Réessayer', it: 'Riprova', es: 'Reintentar' },
+  close:             { en: 'Close', nl: 'Sluiten', de: 'Schließen', fr: 'Fermer', it: 'Chiudi', es: 'Cerrar' },
+  caseFile:          { en: 'Case file', nl: 'Dossier', de: 'Akte', fr: 'Dossier', it: 'Dossier', es: 'Expediente' },
+  caseSuspects:      { en: 'Suspects', nl: 'Verdachten', de: 'Verdächtige', fr: 'Suspects', it: 'Sospetti', es: 'Sospechosos' },
+  caseWeapons:       { en: 'Weapons', nl: 'Wapens', de: 'Waffen', fr: 'Armes', it: 'Armi', es: 'Armas' },
+  casePlaces:        { en: 'Places', nl: 'Plekken', de: 'Orte', fr: 'Lieux', it: 'Luoghi', es: 'Lugares' },
+  caseEvidence:      { en: 'Evidence', nl: 'Bewijs', de: 'Beweise', fr: 'Indices', it: 'Indizi', es: 'Pistas' },
+  caseNoEvidence:    { en: 'No evidence yet — reach a stop to uncover a clue.', nl: 'Nog geen bewijs — bereik een stop om een aanwijzing te vinden.', de: 'Noch keine Beweise — erreiche eine Station, um einen Hinweis zu finden.', fr: 'Aucun indice — atteins une étape pour en découvrir un.', it: 'Nessun indizio — raggiungi una tappa per scoprirne uno.', es: 'Sin pistas aún — llega a una parada para descubrir una.' },
+  newEvidence:       { en: 'New evidence', nl: 'Nieuw bewijs', de: 'Neuer Beweis', fr: 'Nouvel indice', it: 'Nuovo indizio', es: 'Nueva pista' },
+  accuseSubmit:      { en: 'Make the accusation', nl: 'Beschuldig', de: 'Anklage erheben', fr: 'Lancer l’accusation', it: 'Lancia l’accusa', es: 'Lanza la acusación' },
+  caseSolvedBadge:   { en: 'Case solved!', nl: 'Zaak opgelost!', de: 'Fall gelöst!', fr: 'Affaire résolue !', it: 'Caso risolto!', es: '¡Caso resuelto!' },
+  caseClosedBadge:   { en: 'Case closed', nl: 'Zaak gesloten', de: 'Fall abgeschlossen', fr: 'Affaire classée', it: 'Caso chiuso', es: 'Caso cerrado' },
   freeCapTitle:      { en: 'That was the free taster', nl: 'Dit was de gratis proef', de: 'Das war die kostenlose Kostprobe', fr: 'C’était l’aperçu gratuit', it: 'Questo era l’assaggio gratuito', es: 'Eso fue la muestra gratis' },
   freeCapDesc:       { en: 'You found {done} of {total} stops. Unlock all of {city} to finish this hunt — and play every other hunt in the city.', nl: 'Je vond {done} van {total} stops. Ontgrendel heel {city} om deze tocht af te maken — en speel alle andere hunts in de stad.', de: 'Du hast {done} von {total} Stationen gefunden. Schalte ganz {city} frei, um diese Jagd zu beenden — und spiele alle anderen Jagden der Stadt.', fr: 'Tu as trouvé {done} étapes sur {total}. Débloque tout {city} pour terminer cette chasse — et jouer à toutes les autres de la ville.', it: 'Hai trovato {done} tappe su {total}. Sblocca tutta {city} per finire questa caccia — e gioca a tutte le altre della città.', es: 'Encontraste {done} de {total} paradas. Desbloquea toda {city} para terminar esta búsqueda — y jugar todas las demás de la ciudad.' },
   copyCode:          { en: 'Copy code', nl: 'Code kopiëren', de: 'Code kopieren', fr: 'Copier le code', it: 'Copia codice', es: 'Copiar código' },

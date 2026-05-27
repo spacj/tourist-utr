@@ -4565,10 +4565,242 @@ const utrechtDecoded = {
 }
 
 // ══════════════════════════════════════════════════════════════════
+// MURDER AT THE DOM — a Cluedo-style deduction hunt. Each stop reveals
+// evidence ruling out suspects/weapons/places; the finale asks the
+// player to accuse. Solution stays server-side (stripped in /api/hunts).
+// Solution: Organist + bell rope + cloister garden (pandhof).
+// ══════════════════════════════════════════════════════════════════
+const utrechtMystery = {
+  id: 'hunt_utrecht_mystery',
+  meta: {
+    title: 'Murder at the Dom',
+    description: 'A Cluedo-style whodunnit through old Utrecht. Gather evidence at six stops, rule out suspects, weapons and places — then name the killer.',
+    city: 'Utrecht',
+    cityId: 'city_utrecht',
+    order: 2,
+    difficulty: 'hard',
+    durationMin: 110,
+    distanceKm: 2.4,
+    rating: 4.9,
+    badge: 'Mystery',
+    i18n: {
+      nl: { title: 'Moord bij de Dom', description: 'Een whodunnit in cluedo-stijl door oud Utrecht. Verzamel bewijs bij zes stops, sluit verdachten, wapens en plekken uit — en noem de moordenaar.', badge: 'Mysterie' },
+      de: { title: 'Mord am Dom', description: 'Ein Cluedo-artiger Krimi durch das alte Utrecht. Sammle an sechs Stationen Beweise, schließe Verdächtige, Waffen und Orte aus — und nenne den Mörder.', badge: 'Krimi' },
+      fr: { title: 'Meurtre au Dôme', description: "Une énigme façon Cluedo dans le vieux Utrecht. Récolte des indices à six étapes, élimine suspects, armes et lieux — puis désigne le meurtrier.", badge: 'Mystère' },
+      it: { title: 'Delitto al Duomo', description: "Un giallo in stile Cluedo nella vecchia Utrecht. Raccogli indizi in sei tappe, escludi sospetti, armi e luoghi — poi accusa l'assassino.", badge: 'Giallo' },
+      es: { title: 'Asesinato en el Dom', description: 'Un misterio estilo Cluedo por la vieja Utrecht. Reúne pistas en seis paradas, descarta sospechosos, armas y lugares — y nombra al asesino.', badge: 'Misterio' },
+    },
+    mystery: {
+      victim: 'Murder at the Dom: the night bell-ringer is dead.',
+      intro: "At dawn the Dom Tower's night bell-ringer was found dead. Four suspects, four weapons, four places. Visit every stop, read the evidence, cross off what it rules out — then accuse: who, with what, and where.",
+      accuseTitle: 'Who killed the bell-ringer?',
+      solvedText: 'Correct. The Organist strangled him with the bell rope in the cloister garden — silencing the one witness to his forged carillon scores.',
+      failedText: 'Not quite — the evidence pointed elsewhere. Here is what really happened.',
+      solution: { suspect: 'organist', weapon: 'bellrope', place: 'pandhof' },
+      suspects: [
+        { id: 'organist',   icon: '🎹', name: 'The Organist',  i18n: { nl: { name: 'De Organist' }, de: { name: 'Der Organist' }, fr: { name: "L'Organiste" }, it: { name: "L'Organista" }, es: { name: 'El Organista' } } },
+        { id: 'clockmaker', icon: '⚙️', name: 'The Clockmaker', i18n: { nl: { name: 'De Klokkenmaker' }, de: { name: 'Der Uhrmacher' }, fr: { name: "L'Horloger" }, it: { name: "L'Orologiaio" }, es: { name: 'El Relojero' } } },
+        { id: 'bargee',     icon: '🚤', name: 'The Bargee',     i18n: { nl: { name: 'De Schipper' }, de: { name: 'Der Schiffer' }, fr: { name: 'Le Batelier' }, it: { name: 'Il Barcaiolo' }, es: { name: 'El Barquero' } } },
+        { id: 'baker',      icon: '🥖', name: 'The Baker',      i18n: { nl: { name: 'De Bakker' }, de: { name: 'Der Bäcker' }, fr: { name: 'Le Boulanger' }, it: { name: 'Il Fornaio' }, es: { name: 'El Panadero' } } },
+      ],
+      weapons: [
+        { id: 'bellrope',    icon: '🪢', name: 'The bell rope',   i18n: { nl: { name: 'Het klokkentouw' }, de: { name: 'Das Glockenseil' }, fr: { name: 'La corde de cloche' }, it: { name: 'La fune della campana' }, es: { name: 'La cuerda de la campana' } } },
+        { id: 'chisel',      icon: '⛏️', name: 'The stone chisel', i18n: { nl: { name: 'De steenbeitel' }, de: { name: 'Der Steinmeißel' }, fr: { name: 'Le ciseau à pierre' }, it: { name: 'Lo scalpello' }, es: { name: 'El cincel' } } },
+        { id: 'poison',      icon: '☠️', name: 'Poison',          i18n: { nl: { name: 'Gif' }, de: { name: 'Gift' }, fr: { name: 'Le poison' }, it: { name: 'Il veleno' }, es: { name: 'El veneno' } } },
+        { id: 'candlestick', icon: '🕯️', name: 'The candlestick', i18n: { nl: { name: 'De kandelaar' }, de: { name: 'Der Kerzenständer' }, fr: { name: 'Le chandelier' }, it: { name: 'Il candeliere' }, es: { name: 'El candelabro' } } },
+      ],
+      places: [
+        { id: 'tower',     icon: '🗼', name: 'The Dom Tower',      i18n: { nl: { name: 'De Domtoren' }, de: { name: 'Der Domturm' }, fr: { name: 'La Tour du Dôme' }, it: { name: 'La Torre del Duomo' }, es: { name: 'La Torre del Dom' } } },
+        { id: 'pandhof',   icon: '🌿', name: 'The cloister garden', i18n: { nl: { name: 'De Pandhof' }, de: { name: 'Der Kreuzgang' }, fr: { name: 'Le cloître' }, it: { name: 'Il chiostro' }, es: { name: 'El claustro' } } },
+        { id: 'wharf',     icon: '⚓', name: 'The canal wharf',    i18n: { nl: { name: 'De werf' }, de: { name: 'Die Werft' }, fr: { name: 'Le quai' }, it: { name: 'La banchina' }, es: { name: 'El muelle' } } },
+        { id: 'speelklok', icon: '🎶', name: 'Museum Speelklok',   i18n: { nl: { name: 'Museum Speelklok' }, de: { name: 'Museum Speelklok' }, fr: { name: 'Museum Speelklok' }, it: { name: 'Museum Speelklok' }, es: { name: 'Museum Speelklok' } } },
+      ],
+      i18n: {
+        nl: { victim: 'Moord bij de Dom: de nachtklokkenluider is dood.', intro: 'Bij het ochtendgloren werd de nachtklokkenluider van de Domtoren dood gevonden. Vier verdachten, vier wapens, vier plekken. Bezoek elke stop, lees het bewijs, streep weg wat het uitsluit — en beschuldig dan: wie, waarmee en waar.', accuseTitle: 'Wie doodde de klokkenluider?', solvedText: 'Correct. De Organist wurgde hem met het klokkentouw in de Pandhof — de enige getuige van zijn vervalste beiaardpartituren tot zwijgen gebracht.', failedText: 'Net niet — het bewijs wees elders heen. Dit is wat er echt gebeurde.' },
+        de: { victim: 'Mord am Dom: der Nacht-Glöckner ist tot.', intro: 'Im Morgengrauen wurde der Nacht-Glöckner des Domturms tot aufgefunden. Vier Verdächtige, vier Waffen, vier Orte. Besuche jede Station, lies die Beweise, streiche aus, was sie ausschließen — und klage dann an: wer, womit und wo.', accuseTitle: 'Wer tötete den Glöckner?', solvedText: 'Richtig. Der Organist erwürgte ihn mit dem Glockenseil im Kreuzgang — den einzigen Zeugen seiner gefälschten Glockenspiel-Partituren zum Schweigen gebracht.', failedText: 'Knapp daneben — die Beweise wiesen woanders hin. So geschah es wirklich.' },
+        fr: { victim: 'Meurtre au Dôme : le sonneur de nuit est mort.', intro: "À l'aube, le sonneur de nuit de la Tour du Dôme fut trouvé mort. Quatre suspects, quatre armes, quatre lieux. Visite chaque étape, lis les indices, raye ce qu'ils éliminent — puis accuse : qui, avec quoi et où.", accuseTitle: 'Qui a tué le sonneur ?', solvedText: "Exact. L'Organiste l'a étranglé avec la corde de cloche dans le cloître — réduisant au silence le seul témoin de ses partitions de carillon falsifiées.", failedText: "Presque — les indices menaient ailleurs. Voici ce qui s'est vraiment passé." },
+        it: { victim: 'Delitto al Duomo: il campanaro notturno è morto.', intro: "All'alba il campanaro notturno della Torre del Duomo fu trovato morto. Quattro sospetti, quattro armi, quattro luoghi. Visita ogni tappa, leggi gli indizi, cancella ciò che escludono — poi accusa: chi, con cosa e dove.", accuseTitle: 'Chi ha ucciso il campanaro?', solvedText: "Esatto. L'Organista lo ha strangolato con la fune della campana nel chiostro — zittendo l'unico testimone delle sue partiture di carillon falsificate.", failedText: 'Quasi — gli indizi puntavano altrove. Ecco cosa è successo davvero.' },
+        es: { victim: 'Asesinato en el Dom: el campanero nocturno ha muerto.', intro: 'Al amanecer, el campanero nocturno de la Torre del Dom apareció muerto. Cuatro sospechosos, cuatro armas, cuatro lugares. Visita cada parada, lee las pistas, tacha lo que descarten — y luego acusa: quién, con qué y dónde.', accuseTitle: '¿Quién mató al campanero?', solvedText: 'Correcto. El Organista lo estranguló con la cuerda de la campana en el claustro — silenciando al único testigo de sus partituras de carillón falsificadas.', failedText: 'Casi — las pistas apuntaban a otro sitio. Esto es lo que pasó de verdad.' },
+      },
+    },
+  },
+  clues: [
+    {
+      id: 'clue_1', order: 1, icon: '🗼', theme: 'The body at the tower',
+      riddle: "Begin where the body was found — at the foot of the Netherlands' tallest tower. The night watch swears the great door was bolted from the inside.",
+      locationName: 'Dom Tower', lat: 52.09079, lng: 5.12133, radiusM: 45,
+      hint1: "Utrecht's free-standing cathedral tower on Domplein.",
+      hint2: 'Stand at the base of the Dom Tower on Domplein.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'The Dom Tower has 465 steps and a 13th-century carillon that still rings every quarter hour — a bell-ringer once climbed it nightly.',
+      puzzle: { type: 'logic', prompt: "112 metres tall, 465 steps, the symbol of the city. Name the tower (its Dutch name).", answer: 'DOMTOREN|DOM TOWER|DOM', hint: "Utrecht's cathedral tower.", explain: 'DOMTOREN — where the body was found.' },
+      evidence: {
+        text: 'The tower door was bolted from within — only a keyholder could enter, and the Baker has no key. The body was also carried here: the killing happened elsewhere.',
+        eliminates: { suspects: ['baker'], places: ['tower'] },
+        i18n: {
+          nl: { text: 'De torendeur was van binnenuit vergrendeld — alleen een sleutelhouder kon erin, en de Bakker heeft geen sleutel. Het lichaam is hierheen gedragen: de moord gebeurde elders.' },
+          de: { text: 'Die Turmtür war von innen verriegelt — nur ein Schlüsselträger kam hinein, und der Bäcker hat keinen Schlüssel. Die Leiche wurde hierher getragen: der Mord geschah anderswo.' },
+          fr: { text: "La porte de la tour était verrouillée de l'intérieur — seul un détenteur de clé pouvait entrer, et le Boulanger n'en a pas. Le corps a été transporté ici : le meurtre a eu lieu ailleurs." },
+          it: { text: 'La porta della torre era sprangata dall\'interno — solo chi aveva la chiave poteva entrare, e il Fornaio non ce l\'ha. Il corpo è stato portato qui: il delitto è avvenuto altrove.' },
+          es: { text: 'La puerta de la torre estaba cerrada por dentro — solo alguien con llave podía entrar, y el Panadero no la tiene. El cuerpo fue traído aquí: el crimen ocurrió en otro lugar.' },
+        },
+      },
+      i18n: {
+        nl: { theme: 'Het lichaam bij de toren', riddle: 'Begin waar het lichaam werd gevonden — aan de voet van de hoogste toren van Nederland. De nachtwacht zweert dat de grote deur van binnenuit was vergrendeld.', locationName: 'Domtoren', hint1: 'De vrijstaande Domtoren op het Domplein.', hint2: 'Ga naar de voet van de Domtoren op het Domplein.', hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.', funFact: 'De Domtoren telt 465 treden en een 13e-eeuws carillon dat nog elk kwartier luidt — een klokkenluider beklom hem ooit elke nacht.', puzzle: { prompt: '112 meter hoog, 465 treden, het symbool van de stad. Noem de toren.', hint: 'De Utrechtse kerktoren.', explain: 'DOMTOREN — waar het lichaam werd gevonden.' } },
+        de: { theme: 'Die Leiche am Turm', riddle: 'Beginne dort, wo die Leiche gefunden wurde — am Fuß des höchsten Turms der Niederlande. Die Nachtwache schwört, das große Tor sei von innen verriegelt gewesen.', locationName: 'Domturm', hint1: 'Der frei stehende Domturm am Domplein.', hint2: 'Stell dich an den Fuß des Domturms am Domplein.', hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.', funFact: 'Der Domturm hat 465 Stufen und ein Glockenspiel aus dem 13. Jh., das noch alle 15 Minuten läutet — ein Glöckner bestieg ihn einst jede Nacht.', puzzle: { prompt: '112 Meter hoch, 465 Stufen, das Wahrzeichen der Stadt. Nenne den Turm.', hint: 'Der Utrechter Kirchturm.', explain: 'DOMTOREN — wo die Leiche gefunden wurde.' } },
+        fr: { theme: 'Le corps au pied de la tour', riddle: "Commence là où le corps fut trouvé — au pied de la plus haute tour des Pays-Bas. Le veilleur jure que la grande porte était verrouillée de l'intérieur.", locationName: 'Tour du Dôme', hint1: 'La Tour du Dôme isolée, sur le Domplein.', hint2: 'Place-toi au pied de la Tour du Dôme, sur le Domplein.', hint3: 'Texte statique — indice GPS en direct calculé côté serveur.', funFact: "La Tour du Dôme compte 465 marches et un carillon du XIIIᵉ siècle qui sonne encore tous les quarts d'heure — un sonneur la gravissait chaque nuit.", puzzle: { prompt: '112 mètres de haut, 465 marches, le symbole de la ville. Nomme la tour.', hint: "Le clocher d'Utrecht.", explain: 'DOMTOREN — où le corps fut trouvé.' } },
+        it: { theme: 'Il corpo ai piedi della torre', riddle: "Comincia dove fu trovato il corpo — ai piedi della torre più alta dei Paesi Bassi. La guardia notturna giura che il grande portone era sbarrato dall'interno.", locationName: 'Torre del Duomo', hint1: 'La Torre del Duomo isolata, sul Domplein.', hint2: 'Mettiti ai piedi della Torre del Duomo, sul Domplein.', hint3: 'Testo statico — suggerimento GPS dal vivo calcolato dal server.', funFact: "La Torre del Duomo ha 465 gradini e un carillon del XIII secolo che suona ancora ogni quarto d'ora — un campanaro la saliva ogni notte.", puzzle: { prompt: '112 metri, 465 gradini, il simbolo della città. Nomina la torre.', hint: 'Il campanile di Utrecht.', explain: 'DOMTOREN — dove fu trovato il corpo.' } },
+        es: { theme: 'El cuerpo al pie de la torre', riddle: 'Empieza donde se halló el cuerpo — al pie de la torre más alta de los Países Bajos. El sereno jura que la gran puerta estaba cerrada por dentro.', locationName: 'Torre del Dom', hint1: 'La Torre del Dom exenta, en el Domplein.', hint2: 'Ponte al pie de la Torre del Dom, en el Domplein.', hint3: 'Texto estático — pista GPS en vivo calculada por el servidor.', funFact: 'La Torre del Dom tiene 465 escalones y un carillón del siglo XIII que aún suena cada cuarto de hora — un campanero la subía cada noche.', puzzle: { prompt: '112 metros, 465 escalones, el símbolo de la ciudad. Nombra la torre.', hint: 'El campanario de Utrecht.', explain: 'DOMTOREN — donde se halló el cuerpo.' } },
+      },
+    },
+    {
+      id: 'clue_2', order: 2, icon: '🌿', theme: 'The silent garden',
+      riddle: "Slip into the walled garden behind the cathedral, where monks once paced in silence between the arches.",
+      locationName: 'Pandhof', lat: 52.09027, lng: 5.12186, radiusM: 35,
+      hint1: 'The cloister garden (Pandhof) beside the Dom, through the gate off Domplein.',
+      hint2: 'Enter the Pandhof — the green cloister courtyard beside the cathedral.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'The Pandhof is a hidden medieval cloister garden, planted with herbs the cathedral canons once used as medicine.',
+      puzzle: { type: 'anagram', prompt: 'F A N D P H O', answer: 'PANDHOF', hint: '7 letters — the cloister garden by the Dom.', explain: 'PANDHOF — the silent cloister garden.' },
+      evidence: {
+        text: "An apothecary's vial was found here in the herb beds — full, sealed, untouched. Whoever struck did not use poison.",
+        eliminates: { weapons: ['poison'] },
+        i18n: {
+          nl: { text: 'Tussen de kruidenbedden lag een apothekersflesje — vol, verzegeld, ongebruikt. De dader gebruikte geen gif.' },
+          de: { text: 'In den Kräuterbeeten fand sich ein Apothekerfläschchen — voll, versiegelt, unberührt. Der Täter benutzte kein Gift.' },
+          fr: { text: "Dans les carrés d'herbes, on a trouvé une fiole d'apothicaire — pleine, scellée, intacte. Le meurtrier n'a pas employé de poison." },
+          it: { text: "Tra le aiuole di erbe c'era una fiala da speziale — piena, sigillata, intatta. L'assassino non ha usato veleno." },
+          es: { text: 'Entre los canteros de hierbas apareció un frasco de botica — lleno, sellado, intacto. El asesino no usó veneno.' },
+        },
+      },
+      i18n: {
+        nl: { theme: 'De stille tuin', riddle: 'Glip de ommuurde tuin achter de kathedraal binnen, waar monniken ooit zwijgend tussen de bogen liepen.', locationName: 'Pandhof', hint1: 'De Pandhof naast de Dom, via het poortje aan het Domplein.', hint2: 'Ga de Pandhof in — de groene kloostertuin naast de kathedraal.', hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.', funFact: 'De Pandhof is een verborgen middeleeuwse kloostertuin, beplant met kruiden die de kanunniken ooit als medicijn gebruikten.', puzzle: { prompt: 'Anagram: F A N D P H O. 7 letters — de kloostertuin bij de Dom.', hint: '7 letters — de kloostertuin.', explain: 'PANDHOF — de stille kloostertuin.' } },
+        de: { theme: 'Der stille Garten', riddle: 'Schlüpfe in den ummauerten Garten hinter der Kathedrale, wo Mönche einst schweigend zwischen den Bögen gingen.', locationName: 'Pandhof', hint1: 'Der Kreuzganggarten (Pandhof) neben dem Dom, durch das Törchen am Domplein.', hint2: 'Geh in den Pandhof — den grünen Kreuzganghof neben der Kathedrale.', hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.', funFact: 'Der Pandhof ist ein versteckter mittelalterlicher Kreuzganggarten, bepflanzt mit Kräutern, die die Domherren einst als Medizin nutzten.', puzzle: { prompt: 'Anagramm: F A N D P H O. 7 Buchstaben — der Kreuzganggarten am Dom.', hint: '7 Buchstaben — der Kreuzganggarten.', explain: 'PANDHOF — der stille Kreuzganggarten.' } },
+        fr: { theme: 'Le jardin silencieux', riddle: 'Glisse-toi dans le jardin clos derrière la cathédrale, où des moines arpentaient jadis les arcades en silence.', locationName: 'Pandhof', hint1: 'Le cloître (Pandhof) à côté du Dôme, par la porte du Domplein.', hint2: 'Entre dans le Pandhof — le cloître vert à côté de la cathédrale.', hint3: 'Texte statique — indice GPS en direct calculé côté serveur.', funFact: 'Le Pandhof est un cloître médiéval caché, planté des herbes que les chanoines utilisaient autrefois comme remèdes.', puzzle: { prompt: 'Anagramme : F A N D P H O. 7 lettres — le cloître près du Dôme.', hint: '7 lettres — le cloître.', explain: 'PANDHOF — le cloître silencieux.' } },
+        it: { theme: 'Il giardino silenzioso', riddle: 'Intrufolati nel giardino cinto dietro la cattedrale, dove i monaci passeggiavano in silenzio tra le arcate.', locationName: 'Pandhof', hint1: 'Il chiostro (Pandhof) accanto al Duomo, dal cancelletto sul Domplein.', hint2: 'Entra nel Pandhof — il verde cortile del chiostro accanto alla cattedrale.', hint3: 'Testo statico — suggerimento GPS dal vivo calcolato dal server.', funFact: 'Il Pandhof è un chiostro medievale nascosto, piantumato con le erbe che i canonici usavano come medicina.', puzzle: { prompt: 'Anagramma: F A N D P H O. 7 lettere — il chiostro accanto al Duomo.', hint: '7 lettere — il chiostro.', explain: 'PANDHOF — il giardino silenzioso del chiostro.' } },
+        es: { theme: 'El jardín silencioso', riddle: 'Cuélate en el jardín amurallado tras la catedral, donde los monjes paseaban en silencio entre los arcos.', locationName: 'Pandhof', hint1: 'El claustro (Pandhof) junto al Dom, por la puertecita del Domplein.', hint2: 'Entra en el Pandhof — el verde patio del claustro junto a la catedral.', hint3: 'Texto estático — pista GPS en vivo calculada por el servidor.', funFact: 'El Pandhof es un claustro medieval escondido, plantado con las hierbas que los canónigos usaban como medicina.', puzzle: { prompt: 'Anagrama: F A N D P H O. 7 letras — el claustro junto al Dom.', hint: '7 letras — el claustro.', explain: 'PANDHOF — el silencioso jardín del claustro.' } },
+      },
+    },
+    {
+      id: 'clue_3', order: 3, icon: '⚓', theme: 'The two-level wharf',
+      riddle: "Down to the old canal's two-level wharf, where the barges tie up below the street and cellars open onto the water.",
+      locationName: 'Oudegracht wharf', lat: 52.09141, lng: 5.11861, radiusM: 50,
+      hint1: 'The Oudegracht canal wharf — the lower quay along the old canal.',
+      hint2: 'Go down the steps to the Oudegracht wharf below street level.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'The Oudegracht is the only canal in the country with two-level wharves — merchants once unloaded boats straight into cellar warehouses.',
+      puzzle: { type: 'wordplay', prompt: "The Dutch words for 'old' and 'canal', joined — the spine of the city.", answer: 'OUDEGRACHT', hint: "'Oude' + 'gracht'. One word.", explain: 'OUDEGRACHT — the old canal and its wharves.' },
+      evidence: {
+        text: 'The Bargee was unloading crates at the lock all night — a dozen dockworkers vouch for him. He is innocent, and nothing happened on the wharf.',
+        eliminates: { suspects: ['bargee'], places: ['wharf'] },
+        i18n: {
+          nl: { text: 'De Schipper loste de hele nacht kratten bij de sluis — een tiental sjouwers staat voor hem in. Hij is onschuldig, en op de werf gebeurde niets.' },
+          de: { text: 'Der Schiffer entlud die ganze Nacht Kisten an der Schleuse — ein Dutzend Hafenarbeiter bürgt für ihn. Er ist unschuldig, und auf der Werft geschah nichts.' },
+          fr: { text: "Le Batelier a déchargé des caisses à l'écluse toute la nuit — une douzaine de dockers le confirment. Il est innocent, et rien ne s'est passé sur le quai." },
+          it: { text: 'Il Barcaiolo ha scaricato casse alla chiusa tutta la notte — una dozzina di portuali lo conferma. È innocente, e sulla banchina non è successo nulla.' },
+          es: { text: 'El Barquero estuvo descargando cajas en la esclusa toda la noche — una docena de estibadores lo confirman. Es inocente, y en el muelle no pasó nada.' },
+        },
+      },
+      i18n: {
+        nl: { theme: 'De werf met dubbele verdieping', riddle: 'Daal af naar de dubbele werf van de oude gracht, waar de schuiten onder straatniveau aanleggen en kelders op het water uitkomen.', locationName: 'Oudegracht-werf', hint1: 'De werf aan de Oudegracht — de lage kade langs de oude gracht.', hint2: 'Loop de trap af naar de Oudegracht-werf onder straatniveau.', hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.', funFact: 'De Oudegracht is de enige gracht van het land met werven op twee niveaus — handelaren losten hun boten direct in de kelderpakhuizen.', puzzle: { prompt: "De Nederlandse woorden voor 'oud' en 'gracht', samengevoegd — de ruggengraat van de stad.", hint: "'Oude' + 'gracht'. Eén woord.", explain: 'OUDEGRACHT — de oude gracht en haar werven.' } },
+        de: { theme: 'Die zweistöckige Werft', riddle: 'Steig hinab zur zweistöckigen Werft der alten Gracht, wo die Kähne unter Straßenniveau anlegen und Keller sich zum Wasser öffnen.', locationName: 'Oudegracht-Werft', hint1: 'Die Werft an der Oudegracht — der untere Kai entlang der alten Gracht.', hint2: 'Geh die Treppe zur Oudegracht-Werft unter Straßenniveau hinab.', hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.', funFact: 'Die Oudegracht ist die einzige Gracht des Landes mit zweistöckigen Werften — Händler entluden Boote direkt in die Kellerlager.', puzzle: { prompt: 'Die niederländischen Wörter für „alt" und „Gracht", verbunden — das Rückgrat der Stadt.', hint: '„Oude" + „gracht". Ein Wort.', explain: 'OUDEGRACHT — die alte Gracht und ihre Werften.' } },
+        fr: { theme: 'Le quai à deux niveaux', riddle: "Descends vers le quai à deux niveaux du vieux canal, où les péniches accostent sous la rue et les caves s'ouvrent sur l'eau.", locationName: "Quai de l'Oudegracht", hint1: "Le quai de l'Oudegracht — la berge basse le long du vieux canal.", hint2: "Descends les marches jusqu'au quai de l'Oudegracht, sous le niveau de la rue.", hint3: 'Texte statique — indice GPS en direct calculé côté serveur.', funFact: "L'Oudegracht est le seul canal du pays à quais sur deux niveaux — les marchands déchargeaient leurs bateaux directement dans les caves-entrepôts.", puzzle: { prompt: "Les mots néerlandais pour « vieux » et « canal », réunis — la colonne vertébrale de la ville.", hint: "« Oude » + « gracht ». Un mot.", explain: "OUDEGRACHT — le vieux canal et ses quais." } },
+        it: { theme: 'La banchina a due livelli', riddle: "Scendi alla banchina a due livelli del vecchio canale, dove le chiatte attraccano sotto la strada e le cantine si aprono sull'acqua.", locationName: 'Banchina Oudegracht', hint1: "La banchina dell'Oudegracht — il molo basso lungo il vecchio canale.", hint2: "Scendi le scale fino alla banchina dell'Oudegracht, sotto il livello della strada.", hint3: 'Testo statico — suggerimento GPS dal vivo calcolato dal server.', funFact: "L'Oudegracht è l'unico canale del paese con banchine a due livelli — i mercanti scaricavano le barche direttamente nelle cantine-magazzino.", puzzle: { prompt: "Le parole olandesi per « vecchio » e « canale », unite — la spina dorsale della città.", hint: "« Oude » + « gracht ». Una parola.", explain: 'OUDEGRACHT — il vecchio canale e le sue banchine.' } },
+        es: { theme: 'El muelle de dos niveles', riddle: 'Baja al muelle de dos niveles del viejo canal, donde las barcazas atracan bajo la calle y los sótanos se abren al agua.', locationName: 'Muelle del Oudegracht', hint1: 'El muelle del Oudegracht — el malecón bajo a lo largo del viejo canal.', hint2: 'Baja las escaleras hasta el muelle del Oudegracht, bajo el nivel de la calle.', hint3: 'Texto estático — pista GPS en vivo calculada por el servidor.', funFact: 'El Oudegracht es el único canal del país con muelles de dos niveles — los mercaderes descargaban los barcos directo a los sótanos-almacén.', puzzle: { prompt: 'Las palabras neerlandesas para « viejo » y « canal », unidas — la columna vertebral de la ciudad.', hint: '« Oude » + « gracht ». Una palabra.', explain: 'OUDEGRACHT — el viejo canal y sus muelles.' } },
+      },
+    },
+    {
+      id: 'clue_4', order: 4, icon: '🎶', theme: 'The music that plays itself',
+      riddle: "To the church of self-playing music, where mechanical organs and carillons sing without a single hand.",
+      locationName: 'Museum Speelklok', lat: 52.09248, lng: 5.12201, radiusM: 40,
+      hint1: 'Museum Speelklok — the self-playing music museum in the Buurkerk.',
+      hint2: 'Find Museum Speelklok, in the old Buurkerk on Steenweg.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'Museum Speelklok keeps the carillon and automatic instruments alive — the murdered ringer tuned its bells.',
+      puzzle: { type: 'cipher', prompt: 'VSHHONORN', answer: 'SPEELKLOK', hint: 'Caesar cipher: shift each letter back by 3.', explain: 'Caesar -3 → SPEELKLOK, the self-playing music museum.' },
+      evidence: {
+        text: "The mason's stone chisel hangs clean in its case — never the weapon. And the curator locked the museum at six; the killing came later, elsewhere.",
+        eliminates: { weapons: ['chisel'], places: ['speelklok'] },
+        i18n: {
+          nl: { text: 'De steenbeitel van de metselaar hangt schoon in zijn kist — nooit het wapen. En de conservator sloot het museum om zes uur; de moord kwam later, elders.' },
+          de: { text: 'Der Steinmeißel des Maurers hängt sauber im Kasten — nie die Waffe. Und der Kurator schloss das Museum um sechs; der Mord kam später, anderswo.' },
+          fr: { text: "Le ciseau à pierre du maçon est propre dans son coffret — jamais l'arme. Et le conservateur a fermé le musée à six heures ; le meurtre est venu plus tard, ailleurs." },
+          it: { text: "Lo scalpello del muratore è pulito nella sua cassetta — mai l'arma. E il curatore ha chiuso il museo alle sei; il delitto è venuto dopo, altrove." },
+          es: { text: 'El cincel del cantero está limpio en su caja — nunca fue el arma. Y el conservador cerró el museo a las seis; el crimen vino después, en otro lugar.' },
+        },
+      },
+      i18n: {
+        nl: { theme: 'De muziek die zichzelf speelt', riddle: 'Naar de kerk van zelfspelende muziek, waar mechanische orgels en carillons zingen zonder ook maar één hand.', locationName: 'Museum Speelklok', hint1: 'Museum Speelklok — het museum van zelfspelende muziek in de Buurkerk.', hint2: 'Zoek Museum Speelklok, in de oude Buurkerk aan de Steenweg.', hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.', funFact: 'Museum Speelklok houdt het carillon en de automatische instrumenten levend — de vermoorde luider stemde de klokken.', puzzle: { prompt: 'Caesar-cijfer: VSHHONORN. Schuif elke letter drie posities terug.', hint: 'Caesar -3.', explain: 'Caesar -3 → SPEELKLOK, het museum van zelfspelende muziek.' } },
+        de: { theme: 'Die Musik, die sich selbst spielt', riddle: 'Zur Kirche der selbstspielenden Musik, wo mechanische Orgeln und Glockenspiele ohne eine einzige Hand erklingen.', locationName: 'Museum Speelklok', hint1: 'Museum Speelklok — das Museum selbstspielender Musik in der Buurkerk.', hint2: 'Suche Museum Speelklok in der alten Buurkerk an der Steenweg.', hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.', funFact: 'Museum Speelklok hält Glockenspiel und automatische Instrumente am Leben — der ermordete Glöckner stimmte seine Glocken.', puzzle: { prompt: 'Caesar-Chiffre: VSHHONORN. Verschiebe jeden Buchstaben drei Stellen rückwärts.', hint: 'Caesar -3.', explain: 'Caesar -3 → SPEELKLOK, das Museum selbstspielender Musik.' } },
+        fr: { theme: 'La musique qui se joue seule', riddle: "Vers l'église de la musique automatique, où orgues mécaniques et carillons chantent sans une seule main.", locationName: 'Museum Speelklok', hint1: 'Museum Speelklok — le musée de la musique automatique, dans la Buurkerk.', hint2: 'Trouve Museum Speelklok, dans la vieille Buurkerk sur Steenweg.', hint3: 'Texte statique — indice GPS en direct calculé côté serveur.', funFact: "Museum Speelklok fait vivre le carillon et les instruments automatiques — le sonneur assassiné en accordait les cloches.", puzzle: { prompt: 'Chiffre de César : VSHHONORN. Décale chaque lettre de trois positions en arrière.', hint: 'César -3.', explain: 'César -3 → SPEELKLOK, le musée de la musique automatique.' } },
+        it: { theme: 'La musica che si suona da sola', riddle: "Verso la chiesa della musica automatica, dove organi meccanici e carillon suonano senza una sola mano.", locationName: 'Museum Speelklok', hint1: 'Museum Speelklok — il museo della musica automatica, nella Buurkerk.', hint2: 'Trova il Museum Speelklok, nella vecchia Buurkerk su Steenweg.', hint3: 'Testo statico — suggerimento GPS dal vivo calcolato dal server.', funFact: 'Il Museum Speelklok tiene vivi il carillon e gli strumenti automatici — il campanaro ucciso ne accordava le campane.', puzzle: { prompt: 'Cifrario di Cesare: VSHHONORN. Sposta ogni lettera di tre posizioni indietro.', hint: 'Cesare -3.', explain: 'Cesare -3 → SPEELKLOK, il museo della musica automatica.' } },
+        es: { theme: 'La música que se toca sola', riddle: 'Hacia la iglesia de la música automática, donde órganos mecánicos y carillones suenan sin una sola mano.', locationName: 'Museum Speelklok', hint1: 'Museum Speelklok — el museo de la música automática, en la Buurkerk.', hint2: 'Encuentra el Museum Speelklok, en la vieja Buurkerk en Steenweg.', hint3: 'Texto estático — pista GPS en vivo calculada por el servidor.', funFact: 'El Museum Speelklok mantiene vivos el carillón y los instrumentos automáticos — el campanero asesinado afinaba sus campanas.', puzzle: { prompt: 'Cifrado César: VSHHONORN. Desplaza cada letra tres posiciones hacia atrás.', hint: 'César -3.', explain: 'César -3 → SPEELKLOK, el museo de la música automática.' } },
+      },
+    },
+    {
+      id: 'clue_5', order: 5, icon: '💐', theme: 'The churchyard of flowers',
+      riddle: "To the old churchyard square — graves long gone, now a Saturday flower market over the bones.",
+      locationName: 'Janskerkhof', lat: 52.09269, lng: 5.12484, radiusM: 40,
+      hint1: 'Janskerkhof — the leafy square with the flower market, by the Janskerk.',
+      hint2: 'Stand on Janskerkhof, the square beside the Janskerk church.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: "Janskerkhof was a burial ground for 500 years; the bones were cleared in the 19th century when the flower market moved in.",
+      puzzle: { type: 'observe', prompt: "Read the name of this square — whose churchyard is it? Give the saint's first name.", answer: 'JAN|SINT JAN|JANSKERKHOF', hint: 'Sint-Jan — the square is the …kerkhof.', explain: 'JAN — Janskerkhof, the churchyard of St John.' },
+      evidence: {
+        text: 'A pawned pocket-watch turned up at a market stall — the Clockmaker was here all night selling his wares, three sellers confirm it. He was nowhere near the Dom.',
+        eliminates: { suspects: ['clockmaker'] },
+        i18n: {
+          nl: { text: 'Bij een marktkraam dook een verpand zakhorloge op — de Klokkenmaker stond hier de hele nacht zijn waar te verkopen, drie kooplui bevestigen het. Hij was nergens bij de Dom.' },
+          de: { text: 'An einem Marktstand tauchte eine verpfändete Taschenuhr auf — der Uhrmacher verkaufte hier die ganze Nacht seine Ware, drei Händler bestätigen es. Er war nie in Domnähe.' },
+          fr: { text: "À un étal, une montre de gousset mise en gage refit surface — l'Horloger y vendait sa marchandise toute la nuit, trois marchands le confirment. Il n'était pas près du Dôme." },
+          it: { text: "A una bancarella spuntò un orologio da tasca impegnato — l'Orologiaio vendeva qui la sua merce tutta la notte, tre venditori lo confermano. Non era vicino al Duomo." },
+          es: { text: 'En un puesto apareció un reloj de bolsillo empeñado — el Relojero estuvo aquí toda la noche vendiendo su mercancía, tres vendedores lo confirman. No estuvo cerca del Dom.' },
+        },
+      },
+      i18n: {
+        nl: { theme: 'Het bloemenkerkhof', riddle: 'Naar het oude kerkhofplein — de graven allang weg, nu een zaterdagse bloemenmarkt boven de botten.', locationName: 'Janskerkhof', hint1: 'Janskerkhof — het lommerrijke plein met de bloemenmarkt, bij de Janskerk.', hint2: 'Ga op het Janskerkhof staan, het plein naast de Janskerk.', hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.', funFact: 'Janskerkhof was 500 jaar een begraafplaats; de botten werden in de 19e eeuw geruimd toen de bloemenmarkt kwam.', puzzle: { prompt: 'Lees de naam van dit plein — wiens kerkhof is het? Geef de voornaam van de heilige.', hint: 'Sint-Jan — het plein is het …kerkhof.', explain: 'JAN — Janskerkhof, het kerkhof van Sint-Jan.' } },
+        de: { theme: 'Der Blumen-Kirchhof', riddle: 'Zum alten Kirchhofplatz — die Gräber längst fort, heute ein samstäglicher Blumenmarkt über den Gebeinen.', locationName: 'Janskerkhof', hint1: 'Janskerkhof — der baumbestandene Platz mit dem Blumenmarkt, bei der Janskerk.', hint2: 'Stell dich auf den Janskerkhof, den Platz neben der Janskerk.', hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.', funFact: 'Der Janskerkhof war 500 Jahre lang Friedhof; die Gebeine wurden im 19. Jh. entfernt, als der Blumenmarkt einzog.', puzzle: { prompt: 'Lies den Namen dieses Platzes — wessen Kirchhof ist es? Nenne den Vornamen des Heiligen.', hint: 'Sankt Jan — der Platz ist der …kerkhof.', explain: 'JAN — Janskerkhof, der Kirchhof des heiligen Johannes.' } },
+        fr: { theme: 'Le cimetière aux fleurs', riddle: "Vers la vieille place du cimetière — les tombes disparues depuis longtemps, aujourd'hui un marché aux fleurs du samedi sur les ossements.", locationName: 'Janskerkhof', hint1: 'Janskerkhof — la place arborée au marché aux fleurs, près de la Janskerk.', hint2: 'Place-toi sur le Janskerkhof, la place à côté de la Janskerk.', hint3: 'Texte statique — indice GPS en direct calculé côté serveur.', funFact: "Le Janskerkhof fut un cimetière pendant 500 ans ; les ossements furent enlevés au XIXᵉ siècle quand le marché aux fleurs s'y installa.", puzzle: { prompt: "Lis le nom de cette place — de quel saint est-ce le cimetière ? Donne son prénom.", hint: 'Saint Jean — la place est le …kerkhof.', explain: "JAN — Janskerkhof, le cimetière de saint Jean." } },
+        it: { theme: 'Il cimitero dei fiori', riddle: "Verso la vecchia piazza del cimitero — le tombe sparite da tempo, ora un mercato di fiori del sabato sopra le ossa.", locationName: 'Janskerkhof', hint1: 'Janskerkhof — la piazza alberata col mercato dei fiori, presso la Janskerk.', hint2: 'Mettiti sul Janskerkhof, la piazza accanto alla Janskerk.', hint3: 'Testo statico — suggerimento GPS dal vivo calcolato dal server.', funFact: 'Il Janskerkhof fu cimitero per 500 anni; le ossa furono rimosse nel XIX secolo quando arrivò il mercato dei fiori.', puzzle: { prompt: 'Leggi il nome di questa piazza — di quale santo è il cimitero? Dai il nome del santo.', hint: 'San Giovanni — la piazza è il …kerkhof.', explain: 'JAN — Janskerkhof, il cimitero di San Giovanni.' } },
+        es: { theme: 'El cementerio de las flores', riddle: 'Hacia la vieja plaza del cementerio — las tumbas hace tiempo desaparecidas, hoy un mercado de flores los sábados sobre los huesos.', locationName: 'Janskerkhof', hint1: 'Janskerkhof — la plaza arbolada con el mercado de flores, junto a la Janskerk.', hint2: 'Ponte en el Janskerkhof, la plaza junto a la Janskerk.', hint3: 'Texto estático — pista GPS en vivo calculada por el servidor.', funFact: 'El Janskerkhof fue cementerio durante 500 años; los huesos se retiraron en el siglo XIX cuando llegó el mercado de flores.', puzzle: { prompt: 'Lee el nombre de esta plaza — ¿de qué santo es el cementerio? Da el nombre del santo.', hint: 'San Juan — la plaza es el …kerkhof.', explain: 'JAN — Janskerkhof, el cementerio de San Juan.' } },
+      },
+    },
+    {
+      id: 'clue_6', order: 6, icon: '🐟', theme: 'The fish-market bridge',
+      riddle: "End at the broad fish-market bridge by the city hall, where the canal bends and the old scales once weighed the catch.",
+      locationName: 'Vismarkt', lat: 52.09120, lng: 5.11990, radiusM: 40,
+      hint1: 'The Vismarkt / Stadhuisbrug — the wide bridge by the city hall on the Oudegracht.',
+      hint2: 'Stand on the Stadhuisbrug at the Vismarkt, beside the city hall.',
+      hint3: 'Static fallback — live GPS nudge computed from server.',
+      funFact: 'The Stadhuisbrug is the widest bridge over the Oudegracht — for centuries it was the fish market, hence Vismarkt.',
+      puzzle: { type: 'reverse', prompt: 'TKRAMSIV', answer: 'VISMARKT', hint: 'Read it backwards.', explain: 'VISMARKT — the fish-market bridge.' },
+      evidence: {
+        text: "The victim's ledger floated up here — its pages name forged carillon scores. The vestry candlestick was found polished and unused; the killing weapon left only a rope-burn.",
+        eliminates: { weapons: ['candlestick'] },
+        i18n: {
+          nl: { text: 'Het kasboek van het slachtoffer dreef hier op — de bladzijden noemen vervalste beiaardpartituren. De kandelaar uit de sacristie was gepoetst en ongebruikt; het moordwapen liet alleen een touwstriem na.' },
+          de: { text: 'Das Kassenbuch des Opfers trieb hier auf — die Seiten nennen gefälschte Glockenspiel-Partituren. Der Kerzenständer aus der Sakristei war poliert und unbenutzt; die Mordwaffe hinterließ nur eine Seilstrieme.' },
+          fr: { text: "Le registre de la victime a refait surface ici — ses pages citent des partitions de carillon falsifiées. Le chandelier de la sacristie était astiqué et inutilisé ; l'arme n'a laissé qu'une marque de corde." },
+          it: { text: "Il registro della vittima è riemerso qui — le pagine citano partiture di carillon falsificate. Il candeliere della sacrestia era lucidato e inutilizzato; l'arma del delitto ha lasciato solo un segno di fune." },
+          es: { text: 'El libro de cuentas de la víctima salió a flote aquí — sus páginas citan partituras de carillón falsificadas. El candelabro de la sacristía estaba pulido y sin usar; el arma solo dejó una marca de cuerda.' },
+        },
+      },
+      i18n: {
+        nl: { theme: 'De vismarktbrug', riddle: 'Eindig bij de brede vismarktbrug bij het stadhuis, waar de gracht buigt en de oude waag ooit de vangst woog.', locationName: 'Vismarkt', hint1: 'De Vismarkt / Stadhuisbrug — de brede brug bij het stadhuis aan de Oudegracht.', hint2: 'Ga op de Stadhuisbrug aan de Vismarkt staan, naast het stadhuis.', hint3: 'Statische tekst — live GPS-aanwijzing wordt door de server berekend.', funFact: 'De Stadhuisbrug is de breedste brug over de Oudegracht — eeuwenlang was het de vismarkt, vandaar Vismarkt.', puzzle: { prompt: 'Lees achterstevoren: TKRAMSIV.', hint: 'Lees het achterstevoren.', explain: 'VISMARKT — de vismarktbrug.' } },
+        de: { theme: 'Die Fischmarktbrücke', riddle: 'Beende bei der breiten Fischmarktbrücke am Rathaus, wo die Gracht sich biegt und die alte Waage einst den Fang wog.', locationName: 'Vismarkt', hint1: 'Der Vismarkt / die Stadhuisbrug — die breite Brücke am Rathaus an der Oudegracht.', hint2: 'Stell dich auf die Stadhuisbrug am Vismarkt, neben dem Rathaus.', hint3: 'Statischer Fallback — Live-GPS-Hinweis kommt vom Server.', funFact: 'Die Stadhuisbrug ist die breiteste Brücke über die Oudegracht — jahrhundertelang der Fischmarkt, daher Vismarkt.', puzzle: { prompt: 'Lies rückwärts: TKRAMSIV.', hint: 'Rückwärts lesen.', explain: 'VISMARKT — die Fischmarktbrücke.' } },
+        fr: { theme: 'Le pont du marché aux poissons', riddle: "Termine au large pont du marché aux poissons, près de l'hôtel de ville, où le canal s'incurve et où l'ancienne balance pesait la pêche.", locationName: 'Vismarkt', hint1: "Le Vismarkt / Stadhuisbrug — le large pont près de l'hôtel de ville, sur l'Oudegracht.", hint2: "Place-toi sur la Stadhuisbrug au Vismarkt, à côté de l'hôtel de ville.", hint3: 'Texte statique — indice GPS en direct calculé côté serveur.', funFact: "La Stadhuisbrug est le plus large pont sur l'Oudegracht — pendant des siècles le marché aux poissons, d'où Vismarkt.", puzzle: { prompt: "Lis à l'envers : TKRAMSIV.", hint: "Lis-le à l'envers.", explain: 'VISMARKT — le pont du marché aux poissons.' } },
+        it: { theme: 'Il ponte del mercato del pesce', riddle: "Concludi al largo ponte del mercato del pesce, presso il municipio, dove il canale curva e l'antica bilancia pesava il pescato.", locationName: 'Vismarkt', hint1: "Il Vismarkt / Stadhuisbrug — il largo ponte presso il municipio, sull'Oudegracht.", hint2: 'Mettiti sulla Stadhuisbrug al Vismarkt, accanto al municipio.', hint3: 'Testo statico — suggerimento GPS dal vivo calcolato dal server.', funFact: "La Stadhuisbrug è il ponte più largo sull'Oudegracht — per secoli il mercato del pesce, da cui Vismarkt.", puzzle: { prompt: 'Leggi al contrario: TKRAMSIV.', hint: 'Leggilo al contrario.', explain: 'VISMARKT — il ponte del mercato del pesce.' } },
+        es: { theme: 'El puente del mercado de pescado', riddle: 'Termina en el ancho puente del mercado de pescado, junto al ayuntamiento, donde el canal se curva y la vieja balanza pesaba la pesca.', locationName: 'Vismarkt', hint1: 'El Vismarkt / Stadhuisbrug — el ancho puente junto al ayuntamiento, en el Oudegracht.', hint2: 'Ponte en la Stadhuisbrug en el Vismarkt, junto al ayuntamiento.', hint3: 'Texto estático — pista GPS en vivo calculada por el servidor.', funFact: 'La Stadhuisbrug es el puente más ancho sobre el Oudegracht — durante siglos fue el mercado de pescado, de ahí Vismarkt.', puzzle: { prompt: 'Léelo al revés: TKRAMSIV.', hint: 'Léelo al revés.', explain: 'VISMARKT — el puente del mercado de pescado.' } },
+      },
+    },
+  ],
+}
+
+// ══════════════════════════════════════════════════════════════════
 // Write everything
 // ══════════════════════════════════════════════════════════════════
 const HUNTS = [
-  utrechtClassic, hiddenUtrecht, canalsCafes, utrechtDecoded, amsterdamClassic, hiddenAmsterdam,
+  utrechtClassic, hiddenUtrecht, canalsCafes, utrechtDecoded, utrechtMystery, amsterdamClassic, hiddenAmsterdam,
   theHagueRoyal, rotterdamModern, delftVermeer,
   haarlemClassic, leidenClassic,
   milanClassic, romeClassic,

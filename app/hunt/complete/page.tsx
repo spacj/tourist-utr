@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { db } from '@/lib/firebase'
 import { doc, getDoc, getDocs, collection } from 'firebase/firestore'
-import { FREE_HUNT_STOP_LIMIT } from '@/types'
+import { FREE_HUNT_STOP_LIMIT, type MysterySpec } from '@/types'
 import { CompleteClient } from './CompleteClient'
 
 export const dynamic = 'force-dynamic'
@@ -55,8 +55,16 @@ export default async function CompletePage({
     cluesArrived >= FREE_HUNT_STOP_LIMIT &&
     fullHuntStops > FREE_HUNT_STOP_LIMIT
 
+  // Mystery accusation: only once the whole case has been gathered. Strip the
+  // solution — the accusation is graded server-side in /api/accuse.
+  const rawMystery = (hunt.mystery as MysterySpec | undefined) ?? null
+  const mystery = rawMystery ? { ...rawMystery, solution: undefined } : null
+  const mysteryReady = !!mystery && cluesArrived >= fullHuntStops
+
   return (
     <CompleteClient
+      sessionId={sessionId}
+      mystery={mysteryReady ? mystery : null}
       huntTitle={hunt.title}
       huntI18n={(hunt.i18n ?? null) as Record<string, { title?: string }> | null}
       huntCity={hunt.city}
