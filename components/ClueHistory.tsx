@@ -16,6 +16,7 @@ export function ClueHistory({ completedClues, onClose }: Props) {
     return (
       <div className="history-backdrop" onClick={onClose}>
         <div className="history-sheet" onClick={(e) => e.stopPropagation()}>
+          <div className="sheet-grab" aria-hidden />
           <div className="history-header">
             <h2 className="history-title">{t('historyTitle')}</h2>
             <button className="history-close" onClick={onClose} aria-label="Close">✕</button>

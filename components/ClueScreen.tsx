@@ -372,15 +372,15 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
         </button>
-        <div className="hud-pill hud-stop">
+        <button onClick={() => setShowIntro(true)} className="hud-pill hud-stop" aria-label={t('yourClue')} title={t('yourClue')}>
           {clue.icon ?? '📍'} {clue.order}/{clue.totalClues}
-        </div>
+        </button>
         <button onClick={() => setShopOpen(true)} className="hud-pill hud-credits" aria-label="Credits">
           💎 {credits}
         </button>
-        <div className="hud-pill hud-score">
+        <button onClick={() => setHistoryOpen(true)} className="hud-pill hud-score" aria-label={t('history')} title={t('history')}>
           ⭐ {score}
-        </div>
+        </button>
         {completedClues.length > 0 && (
           <button
             onClick={() => setHistoryOpen(true)}

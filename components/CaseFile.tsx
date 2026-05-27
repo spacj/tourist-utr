@@ -36,6 +36,7 @@ export function CaseFile({ mystery, knownClues, onClose }: Props) {
   return (
     <div className="history-backdrop" onClick={onClose}>
       <div className="history-sheet case-file" onClick={(e) => e.stopPropagation()}>
+        <div className="sheet-grab" aria-hidden />
         <div className="case-file-head">
           <div>
             <div className="case-file-eyebrow">🔍 {t('caseFile')}</div>
