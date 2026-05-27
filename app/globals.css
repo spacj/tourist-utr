@@ -1252,6 +1252,53 @@ a { color: inherit; }
   padding-top: 12px; border-top: 1px solid var(--border);
 }
 
+/* ═══ Player progression: XP card, level, badge gallery ═══ */
+.xp-card {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.10), rgba(124, 58, 237, 0.03));
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  border-radius: 16px; padding: 14px 16px; margin-bottom: 16px;
+}
+.xp-card-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.xp-gained { font-size: 20px; font-weight: 800; color: #7c3aed; font-family: var(--font-serif, Georgia), serif; }
+.xp-level { font-size: 13px; font-weight: 700; color: var(--text-muted); }
+.xp-levelup { margin-top: 8px; font-size: 14px; font-weight: 800; color: var(--gold); text-align: center; }
+.xp-badges { margin-top: 12px; }
+.xp-badges-label { font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+.xp-badges-row { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.xp-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 700;
+  background: var(--surface); border: 1px solid rgba(124, 58, 237, 0.35); color: var(--text);
+}
+
+.level-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 14px 16px; margin-top: 14px;
+}
+.level-card-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.level-badge {
+  flex: none; width: 42px; height: 42px; border-radius: 50%;
+  display: grid; place-items: center; font-weight: 800; font-size: 17px; color: #fff;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+}
+.level-meta { min-width: 0; }
+.level-title { font-weight: 700; font-size: 15px; color: var(--text); }
+.level-xp { font-size: 12px; color: var(--text-muted); }
+.level-bar { height: 8px; border-radius: 999px; background: var(--surface-2, rgba(0,0,0,0.06)); overflow: hidden; }
+.level-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #7c3aed, #a855f7); transition: width 0.6s ease; }
+
+.badge-gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.badge-cell {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 12px 6px; border-radius: 12px; text-align: center;
+  background: var(--surface-2, rgba(0,0,0,0.03)); border: 1px solid var(--border);
+}
+.badge-cell.is-locked { opacity: 0.5; }
+.badge-cell.is-earned { border-color: rgba(124, 58, 237, 0.4); background: rgba(124, 58, 237, 0.07); }
+.badge-cell-icon { font-size: 24px; line-height: 1; }
+.badge-cell-label { font-size: 10px; font-weight: 600; line-height: 1.2; color: var(--text-muted); }
+.badge-cell.is-earned .badge-cell-label { color: var(--text); }
+
 /* ═══ Past stops / history sheet ═══ */
 .history-backdrop {
   position: fixed;

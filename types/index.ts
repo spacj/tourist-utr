@@ -624,6 +624,45 @@ export const ACHIEVEMENTS_DEF = [
   { id: 'social',       title: 'Ambassador',      description: 'Share your hunt results',              icon: '📣' },
 ] as const
 
+// ── Player progression (persisted per user in users/{uid}) ──────────
+export type AchievementId = typeof ACHIEVEMENTS_DEF[number]['id']
+export type SessionVariant = 'normal' | 'speedrun' | 'nohints'
+
+export interface PlayerProfile {
+  displayName?: string
+  photoURL?: string
+  xp: number
+  level: number
+  huntsCompleted: number
+  totalScore: number
+  /** achievement id → earned timestamp (ms). */
+  achievements: Record<string, number>
+  /** Daily-play streak; lastDate is an ISO YYYY-MM-DD (UTC) string. */
+  streak: { count: number; lastDate: string }
+}
+
+/** Explorer ranks, one per 500 XP, capped at the last title. */
+export const LEVEL_TITLES = [
+  'Wanderer', 'Rambler', 'Pathfinder', 'Trailblazer',
+  'Explorer', 'Navigator', 'Detective', 'Grand Tourist',
+]
+export const XP_PER_LEVEL = 500
+
+export function levelFromXp(xp: number): { level: number; title: string; intoLevel: number; toNext: number } {
+  const idx = Math.min(Math.floor(Math.max(0, xp) / XP_PER_LEVEL), LEVEL_TITLES.length - 1)
+  const intoLevel = Math.max(0, xp) - idx * XP_PER_LEVEL
+  const atMax = idx >= LEVEL_TITLES.length - 1
+  return { level: idx + 1, title: LEVEL_TITLES[idx], intoLevel, toNext: atMax ? 0 : XP_PER_LEVEL - intoLevel }
+}
+
+/** XP earned for finishing a hunt session. */
+export function xpForHunt(opts: { score: number; cluesArrived: number; firstCompletion: boolean; variant?: SessionVariant }): number {
+  let xp = Math.round((opts.score || 0) / 5) + opts.cluesArrived * 10
+  if (opts.firstCompletion) xp += 100
+  if (opts.variant === 'speedrun' || opts.variant === 'nohints') xp += 50
+  return xp
+}
+
 // ── i18n ──────────────────────────────────────────────────────────────
 export type Lang = 'en' | 'nl' | 'de' | 'fr' | 'it' | 'es'
 export const LANGUAGES: { code: Lang; label: string; flag: string }[] = [
@@ -819,6 +858,12 @@ export const T: Dict = {
   accuseSubmit:      { en: 'Make the accusation', nl: 'Beschuldig', de: 'Anklage erheben', fr: 'Lancer l’accusation', it: 'Lancia l’accusa', es: 'Lanza la acusación' },
   caseSolvedBadge:   { en: 'Case solved!', nl: 'Zaak opgelost!', de: 'Fall gelöst!', fr: 'Affaire résolue !', it: 'Caso risolto!', es: '¡Caso resuelto!' },
   caseClosedBadge:   { en: 'Case closed', nl: 'Zaak gesloten', de: 'Fall abgeschlossen', fr: 'Affaire classée', it: 'Caso chiuso', es: 'Caso cerrado' },
+  levelLabel:        { en: 'Level', nl: 'Niveau', de: 'Level', fr: 'Niveau', it: 'Livello', es: 'Nivel' },
+  levelUp:           { en: 'Level up!', nl: 'Level omhoog!', de: 'Level-Aufstieg!', fr: 'Niveau supérieur !', it: 'Salito di livello!', es: '¡Subiste de nivel!' },
+  newBadges:         { en: 'New badges', nl: 'Nieuwe badges', de: 'Neue Abzeichen', fr: 'Nouveaux badges', it: 'Nuovi distintivi', es: 'Nuevas insignias' },
+  achievementsTitle: { en: 'Achievements', nl: 'Prestaties', de: 'Erfolge', fr: 'Succès', it: 'Obiettivi', es: 'Logros' },
+  toNextLevel:       { en: 'to next level', nl: 'tot volgend niveau', de: 'bis zum nächsten Level', fr: 'au niveau suivant', it: 'al prossimo livello', es: 'al siguiente nivel' },
+  maxLevel:          { en: 'max level', nl: 'maximaal niveau', de: 'Maximallevel', fr: 'niveau max', it: 'livello massimo', es: 'nivel máximo' },
   freeCapTitle:      { en: 'That was the free taster', nl: 'Dit was de gratis proef', de: 'Das war die kostenlose Kostprobe', fr: 'C’était l’aperçu gratuit', it: 'Questo era l’assaggio gratuito', es: 'Eso fue la muestra gratis' },
   freeCapDesc:       { en: 'You found {done} of {total} stops. Unlock all of {city} to finish this hunt — and play every other hunt in the city.', nl: 'Je vond {done} van {total} stops. Ontgrendel heel {city} om deze tocht af te maken — en speel alle andere hunts in de stad.', de: 'Du hast {done} von {total} Stationen gefunden. Schalte ganz {city} frei, um diese Jagd zu beenden — und spiele alle anderen Jagden der Stadt.', fr: 'Tu as trouvé {done} étapes sur {total}. Débloque tout {city} pour terminer cette chasse — et jouer à toutes les autres de la ville.', it: 'Hai trovato {done} tappe su {total}. Sblocca tutta {city} per finire questa caccia — e gioca a tutte le altre della città.', es: 'Encontraste {done} de {total} paradas. Desbloquea toda {city} para terminar esta búsqueda — y jugar todas las demás de la ciudad.' },
   copyCode:          { en: 'Copy code', nl: 'Code kopiëren', de: 'Code kopieren', fr: 'Copier le code', it: 'Copia codice', es: 'Copiar código' },

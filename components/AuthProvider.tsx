@@ -2,6 +2,8 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { auth, onAuthStateChanged, signInWithPopup, signOut, googleProvider, type User } from '@/lib/auth'
 import { setupAutoDrain } from '@/lib/offlineQueue'
+import { db } from '@/lib/firebase'
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
 
 interface AuthCtx {
   user: User | null
@@ -25,6 +27,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return onAuthStateChanged(auth, (u) => {
       setUser(u)
       setLoading(false)
+      // Upsert the public profile doc so leaderboards/progression have a name
+      // and avatar to show (progression fields are written server-side).
+      if (u) {
+        setDoc(
+          doc(db, 'users', u.uid),
+          { displayName: u.displayName ?? 'Explorer', photoURL: u.photoURL ?? null, updatedAt: serverTimestamp() },
+          { merge: true },
+        ).catch(() => {})
+      }
     })
   }, [])
 

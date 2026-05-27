@@ -3,6 +3,9 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
 import { ResumeRaceBanner } from '@/components/ResumeRaceBanner'
+import { db } from '@/lib/firebase'
+import { doc, getDoc } from 'firebase/firestore'
+import { ACHIEVEMENTS_DEF, levelFromXp, type PlayerProfile } from '@/types'
 
 interface Session {
   id: string
@@ -25,6 +28,7 @@ export default function ProfilePage() {
   const { t, lang } = useI18n()
   const [sessions, setSessions] = useState<Session[]>([])
   const [fetching, setFetching] = useState(true)
+  const [profile, setProfile] = useState<Partial<PlayerProfile> | null>(null)
 
   useEffect(() => {
     if (!user) { setFetching(false); return }
@@ -33,6 +37,9 @@ export default function ProfilePage() {
       .then(setSessions)
       .catch(() => {})
       .finally(() => setFetching(false))
+    getDoc(doc(db, 'users', user.uid))
+      .then(s => { if (s.exists()) setProfile(s.data() as Partial<PlayerProfile>) })
+      .catch(() => {})
   }, [user])
 
   if (loading) {
@@ -86,6 +93,39 @@ export default function ProfilePage() {
             <div className="profile-name">{user.displayName}</div>
             <div className="profile-email">{user.email}</div>
           </div>
+        </div>
+
+        {/* Level + XP progress */}
+        {(() => {
+          const xp = profile?.xp ?? 0
+          const { level, title, intoLevel, toNext } = levelFromXp(xp)
+          const pct = toNext === 0 ? 100 : Math.round((intoLevel / (intoLevel + toNext)) * 100)
+          return (
+            <div className="level-card fade-in-up">
+              <div className="level-card-row">
+                <span className="level-badge">{level}</span>
+                <div className="level-meta">
+                  <div className="level-title">{title}</div>
+                  <div className="level-xp">{xp} XP{toNext > 0 ? ` · ${toNext} ${t('toNextLevel')}` : ` · ${t('maxLevel')}`}</div>
+                </div>
+              </div>
+              <div className="level-bar"><div className="level-bar-fill" style={{ width: `${pct}%` }} /></div>
+            </div>
+          )
+        })()}
+
+        {/* Achievements gallery */}
+        <div className="section-label" style={{ marginTop: 18 }}>{t('achievementsTitle')}</div>
+        <div className="badge-gallery">
+          {ACHIEVEMENTS_DEF.map(a => {
+            const earned = !!profile?.achievements?.[a.id]
+            return (
+              <div key={a.id} className={`badge-cell ${earned ? 'is-earned' : 'is-locked'}`} title={a.description}>
+                <span className="badge-cell-icon" aria-hidden>{earned ? a.icon : '🔒'}</span>
+                <span className="badge-cell-label">{a.title}</span>
+              </div>
+            )
+          })}
         </div>
 
         <ResumeRaceBanner />

@@ -1,8 +1,16 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useI18n } from '@/hooks/useI18n'
-import { MysterySpec } from '@/types'
+import { MysterySpec, ACHIEVEMENTS_DEF } from '@/types'
 import { MysteryAccusation } from '@/components/MysteryAccusation'
+
+interface FinishResult {
+  xpGained: number
+  level: number
+  title: string
+  leveledUp: boolean
+  newlyUnlocked: string[]
+}
 
 interface ClueRow {
   id: string
@@ -37,7 +45,24 @@ export function CompleteClient({
 }: Props) {
   const { t, lang } = useI18n()
   const [accuseBonus, setAccuseBonus] = useState(0)
+  const [finish, setFinish] = useState<FinishResult | null>(null)
   const displayScore = score + accuseBonus
+
+  // Roll the result into the player's progression once (server is idempotent).
+  useEffect(() => {
+    fetch('/api/finish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId }),
+    })
+      .then(r => r.json())
+      .then((d) => { if (d && typeof d.level === 'number') setFinish(d) })
+      .catch(() => {})
+  }, [sessionId])
+
+  const newBadges = (finish?.newlyUnlocked ?? [])
+    .map(id => ACHIEVEMENTS_DEF.find(a => a.id === id))
+    .filter(Boolean) as typeof ACHIEVEMENTS_DEF[number][]
   const localizedHuntTitle = (lang !== 'en' && huntI18n?.[lang]?.title) || huntTitle
   const localizedLocation = (c: ClueRow) =>
     (lang !== 'en' && c.i18n?.[lang]?.locationName) || c.locationName
@@ -84,6 +109,29 @@ export function CompleteClient({
           </div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{t('points')}</div>
         </div>
+
+        {/* Progression: XP earned, level, and any newly unlocked badges */}
+        {finish && finish.xpGained > 0 && (
+          <div className="xp-card">
+            <div className="xp-card-row">
+              <span className="xp-gained">+{finish.xpGained} XP</span>
+              <span className="xp-level">{t('levelLabel')} {finish.level} · {finish.title}</span>
+            </div>
+            {finish.leveledUp && <div className="xp-levelup">⬆️ {t('levelUp')}</div>}
+            {newBadges.length > 0 && (
+              <div className="xp-badges">
+                <div className="xp-badges-label">{t('newBadges')}</div>
+                <div className="xp-badges-row">
+                  {newBadges.map(b => (
+                    <span key={b.id} className="xp-badge" title={b.description}>
+                      <span aria-hidden>{b.icon}</span> {b.title}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Mystery finale — accuse a suspect, weapon and place */}
         {mystery && (
