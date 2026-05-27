@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { db } from '@/lib/firebase'
-import { doc, getDoc, getDocs, collection } from 'firebase/firestore'
-import { FREE_HUNT_STOP_LIMIT, type MysterySpec } from '@/types'
+import { doc, getDoc, getDocs, collection, query, where } from 'firebase/firestore'
+import { FREE_HUNT_STOP_LIMIT, isTour, type MysterySpec } from '@/types'
 import { CompleteClient } from './CompleteClient'
 
 export const dynamic = 'force-dynamic'
@@ -61,10 +61,45 @@ export default async function CompletePage({
   const mystery = rawMystery ? { ...rawMystery, solution: undefined } : null
   const mysteryReady = !!mystery && cluesArrived >= fullHuntStops
 
+  // ── "What's next" — city progress + the next unplayed hunt in this city ──
+  // This turns the complete screen into a launchpad for the next hunt.
+  let cityTotal = 0
+  let cityDone = 0
+  let nextHuntTitle: string | null = null
+  let nextHuntI18n: Record<string, { title?: string }> | null = null
+  const cityId = (hunt.cityId as string) ?? null
+  if (cityId) {
+    try {
+      const cityHuntsSnap = await getDocs(query(collection(db, 'hunts'), where('cityId', '==', cityId), where('active', '==', true)))
+      const cityHunts = cityHuntsSnap.docs
+        .map(d => ({ id: d.id, ...(d.data() as any) }))
+        .filter(h => !isTour(h))
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+
+      const completed = new Set<string>([session.huntId])
+      if (session.userId) {
+        const mineSnap = await getDocs(query(collection(db, 'sessions'), where('userId', '==', session.userId)))
+        mineSnap.docs.forEach(d => { const s = d.data(); if (s.completedAt) completed.add(s.huntId) })
+      }
+      cityTotal = cityHunts.length
+      cityDone = cityHunts.filter(h => completed.has(h.id)).length
+      const next = cityHunts.find(h => !completed.has(h.id))
+      if (next) {
+        nextHuntTitle = next.title ?? null
+        nextHuntI18n = (next.i18n ?? null) as Record<string, { title?: string }> | null
+      }
+    } catch {}
+  }
+
   return (
     <CompleteClient
       sessionId={sessionId}
       mystery={mysteryReady ? mystery : null}
+      cityName={(hunt.city as string) ?? ''}
+      cityTotal={cityTotal}
+      cityDone={cityDone}
+      nextHuntTitle={nextHuntTitle}
+      nextHuntI18n={nextHuntI18n}
       huntTitle={hunt.title}
       huntI18n={(hunt.i18n ?? null) as Record<string, { title?: string }> | null}
       huntCity={hunt.city}

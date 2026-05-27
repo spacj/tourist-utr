@@ -1252,6 +1252,43 @@ a { color: inherit; }
   padding-top: 12px; border-top: 1px solid var(--border);
 }
 
+/* ═══ Hunt-complete "what's next" launchpad ═══ */
+.next-card {
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.next-progress-head {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;
+}
+.next-progress-bar { height: 8px; border-radius: 999px; background: var(--surface-2, rgba(0,0,0,0.06)); overflow: hidden; margin-bottom: 14px; }
+.next-progress-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--primary), var(--primary-2, #a855f7)); transition: width 0.6s ease; }
+.next-cta {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px; border-radius: 14px; text-decoration: none;
+  background: linear-gradient(135deg, rgba(255,106,19,0.12), rgba(255,106,19,0.04));
+  border: 1px solid rgba(255,106,19,0.35); color: var(--text);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.next-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(255,106,19,0.18); }
+.next-cta:active { transform: scale(0.99); }
+.next-cta-done { background: linear-gradient(135deg, rgba(34,201,122,0.12), rgba(34,201,122,0.04)); border-color: rgba(34,201,122,0.35); }
+.next-cta-body { flex: 1; min-width: 0; }
+.next-cta-label { font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+.next-cta-title { font-size: 16px; font-weight: 700; line-height: 1.2; margin-top: 2px; }
+.next-cta-arrow { font-size: 22px; color: var(--primary); flex-shrink: 0; }
+.next-cta-done .next-cta-arrow { color: #16a34a; }
+.next-secondary {
+  display: block; text-align: center; margin-top: 10px;
+  font-size: 13px; font-weight: 700; color: var(--text-muted); text-decoration: none;
+  padding: 10px; border-radius: 12px; border: 1px solid var(--border);
+}
+.next-secondary:hover { color: var(--text); }
+
 /* ═══ Player progression: XP card, level, badge gallery ═══ */
 .xp-card {
   background: linear-gradient(135deg, rgba(124, 58, 237, 0.10), rgba(124, 58, 237, 0.03));

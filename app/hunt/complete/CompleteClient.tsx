@@ -37,11 +37,17 @@ interface Props {
   fullHuntStops: number
   sessionId: string
   mystery: MysterySpec | null
+  cityName: string
+  cityTotal: number
+  cityDone: number
+  nextHuntTitle: string | null
+  nextHuntI18n: Record<string, { title?: string }> | null
 }
 
 export function CompleteClient({
   huntTitle, huntI18n, huntCity, score, clues, totalClues, cluesArrived, hintsUsed, creditsSpent,
   freeCapReached, cityId, fullHuntStops, sessionId, mystery,
+  cityName, cityTotal, cityDone, nextHuntTitle, nextHuntI18n,
 }: Props) {
   const { t, lang } = useI18n()
   const [accuseBonus, setAccuseBonus] = useState(0)
@@ -223,6 +229,37 @@ export function CompleteClient({
             </div>
           ))}
         </div>
+
+        {/* What's next — turn the finish into the start of the next hunt */}
+        {cityTotal > 0 && (
+          <div className="next-card">
+            <div className="next-progress-head">
+              <span>{cityName}</span>
+              <span>{cityDone}/{cityTotal} {t('huntsSolvedSuffix')}</span>
+            </div>
+            <div className="next-progress-bar">
+              <div className="next-progress-fill" style={{ width: `${Math.round((cityDone / cityTotal) * 100)}%` }} />
+            </div>
+            {nextHuntTitle ? (
+              <a href={cityId ? `/city/${cityId}` : '/'} className="next-cta">
+                <div className="next-cta-body">
+                  <div className="next-cta-label">{t('playNext')}</div>
+                  <div className="next-cta-title">{(lang !== 'en' && nextHuntI18n?.[lang]?.title) || nextHuntTitle}</div>
+                </div>
+                <span className="next-cta-arrow" aria-hidden>→</span>
+              </a>
+            ) : (
+              <a href={cityId ? `/city/${cityId}` : '/'} className="next-cta next-cta-done">
+                <div className="next-cta-body">
+                  <div className="next-cta-label">🎉 {t('cityCleared')}</div>
+                  <div className="next-cta-title">{t('exploreMore')}</div>
+                </div>
+                <span className="next-cta-arrow" aria-hidden>→</span>
+              </a>
+            )}
+            <a href="/multiplayer" className="next-secondary">👥 {t('raceAFriend')}</a>
+          </div>
+        )}
 
         <button onClick={share} className="btn-primary" style={{ marginBottom: 8 }}>
           📣 {t('share')}
