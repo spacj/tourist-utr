@@ -1252,6 +1252,74 @@ a { color: inherit; }
   padding-top: 12px; border-top: 1px solid var(--border);
 }
 
+/* ═══ Leaderboard list ═══ */
+.lb-list { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.lb-row, .lb-yours {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; border-radius: 12px;
+  background: var(--surface-2, rgba(0,0,0,0.03)); border: 1px solid var(--border);
+}
+.lb-row.is-you, .lb-yours { background: rgba(255,106,19,0.10); border-color: rgba(255,106,19,0.35); }
+.lb-yours { margin-top: 8px; }
+.lb-rank { flex: none; width: 28px; text-align: center; font-weight: 800; font-size: 14px; color: var(--text-muted); }
+.lb-medal { font-size: 18px; }
+.lb-name { flex: 1; min-width: 0; font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-score { font-weight: 800; font-size: 14px; color: var(--gold); font-family: var(--font-serif, Georgia), serif; }
+
+/* ═══ Auth modal (Google + email/password) ═══ */
+.auth-backdrop {
+  position: fixed; inset: 0; z-index: 70;
+  background: rgba(12, 13, 26, 0.62);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; animation: fadeIn 0.2s ease;
+}
+.auth-modal {
+  position: relative; width: 100%; max-width: 380px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 22px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  animation: cardIn 0.3s cubic-bezier(.2,.7,.3,1) both;
+}
+.auth-close {
+  position: absolute; top: 12px; right: 12px;
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid var(--border); background: var(--surface-2, rgba(0,0,0,0.03));
+  color: var(--text-muted); cursor: pointer; font-size: 14px;
+}
+.auth-tabs { display: flex; gap: 6px; background: var(--surface-2, rgba(0,0,0,0.04)); border-radius: 12px; padding: 4px; margin: 6px 0 18px; }
+.auth-tab {
+  flex: 1; padding: 9px; border: 0; border-radius: 9px; background: transparent;
+  font-family: inherit; font-size: 14px; font-weight: 700; color: var(--text-muted); cursor: pointer;
+}
+.auth-tab.is-active { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.auth-google {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 48px; padding: 12px; border-radius: 12px;
+  border: 1px solid var(--border); background: var(--surface);
+  font-family: inherit; font-size: 15px; font-weight: 600; color: var(--text); cursor: pointer;
+}
+.auth-google:active { transform: scale(0.99); }
+.auth-or { display: flex; align-items: center; gap: 10px; color: var(--text-dim); font-size: 12px; margin: 14px 0; }
+.auth-or::before, .auth-or::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.auth-input {
+  width: 100%; padding: 12px 14px; margin-bottom: 10px;
+  border: 1.5px solid var(--border-2, var(--border)); border-radius: 10px;
+  background: var(--bg); color: var(--text);
+  font-size: 16px; font-family: inherit; outline: none; min-height: 48px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.auth-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255,106,19,0.18); }
+.auth-error { color: var(--red); font-size: 13px; margin: 2px 0 10px; }
+.auth-notice { color: var(--green, #16a34a); font-size: 13px; margin: 2px 0 10px; }
+.auth-submit { width: 100%; margin-top: 4px; }
+.auth-link {
+  display: block; width: 100%; margin-top: 12px; padding: 6px;
+  background: none; border: 0; color: var(--text-muted);
+  font-family: inherit; font-size: 13px; cursor: pointer; text-align: center;
+}
+.auth-link:hover { color: var(--text); }
+
 /* ═══ Hunt-complete "what's next" launchpad ═══ */
 .next-card {
   text-align: left;

@@ -94,6 +94,7 @@ export default async function CompletePage({
   return (
     <CompleteClient
       sessionId={sessionId}
+      huntId={session.huntId}
       mystery={mysteryReady ? mystery : null}
       cityName={(hunt.city as string) ?? ''}
       cityTotal={cityTotal}

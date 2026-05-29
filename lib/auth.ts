@@ -1,5 +1,9 @@
 'use client'
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, type User } from 'firebase/auth'
+import {
+  getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged,
+  createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  updateProfile, sendPasswordResetEmail, type User,
+} from 'firebase/auth'
 import { initializeApp, getApps } from 'firebase/app'
 
 const firebaseConfig = {
@@ -15,5 +19,9 @@ const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig)
 const auth = getAuth(app)
 const googleProvider = new GoogleAuthProvider()
 
-export { auth, googleProvider, signInWithPopup, signOut, onAuthStateChanged }
+export {
+  auth, googleProvider, signInWithPopup, signOut, onAuthStateChanged,
+  createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  updateProfile, sendPasswordResetEmail,
+}
 export type { User }

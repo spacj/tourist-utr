@@ -1,8 +1,10 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useI18n } from '@/hooks/useI18n'
+import { useAuth } from '@/components/AuthProvider'
 import { MysterySpec, ACHIEVEMENTS_DEF } from '@/types'
 import { MysteryAccusation } from '@/components/MysteryAccusation'
+import { Leaderboard } from '@/components/Leaderboard'
 
 interface FinishResult {
   xpGained: number
@@ -36,6 +38,7 @@ interface Props {
   cityId: string | null
   fullHuntStops: number
   sessionId: string
+  huntId: string
   mystery: MysterySpec | null
   cityName: string
   cityTotal: number
@@ -46,13 +49,25 @@ interface Props {
 
 export function CompleteClient({
   huntTitle, huntI18n, huntCity, score, clues, totalClues, cluesArrived, hintsUsed, creditsSpent,
-  freeCapReached, cityId, fullHuntStops, sessionId, mystery,
+  freeCapReached, cityId, fullHuntStops, sessionId, huntId, mystery,
   cityName, cityTotal, cityDone, nextHuntTitle, nextHuntI18n,
 }: Props) {
   const { t, lang } = useI18n()
+  const { user } = useAuth()
   const [accuseBonus, setAccuseBonus] = useState(0)
   const [finish, setFinish] = useState<FinishResult | null>(null)
+  const [lbOpen, setLbOpen] = useState(false)
+  const [lbRank, setLbRank] = useState<{ rank: number; total: number } | null>(null)
   const displayScore = score + accuseBonus
+
+  // Teaser rank for the complete screen (full board in the sheet).
+  useEffect(() => {
+    const qs = new URLSearchParams({ huntId, ...(user ? { userId: user.uid } : {}) })
+    fetch(`/api/leaderboard?${qs}`)
+      .then(r => r.json())
+      .then((d) => { if (d?.yourRank) setLbRank({ rank: d.yourRank.rank, total: d.yourRank.total }) })
+      .catch(() => {})
+  }, [huntId, user])
 
   // Roll the result into the player's progression once (server is idempotent).
   useEffect(() => {
@@ -261,6 +276,10 @@ export function CompleteClient({
           </div>
         )}
 
+        <button className="next-secondary" style={{ width: '100%', marginBottom: 8, cursor: 'pointer' }} onClick={() => setLbOpen(true)}>
+          🏆 {lbRank ? t('lbYourRank').replace('{rank}', String(lbRank.rank)).replace('{total}', String(lbRank.total)) : t('leaderboardTitle')}
+        </button>
+
         <button onClick={share} className="btn-primary" style={{ marginBottom: 8 }}>
           📣 {t('share')}
         </button>
@@ -271,6 +290,8 @@ export function CompleteClient({
           {t('viewProfile')}
         </a>
       </div>
+
+      {lbOpen && <Leaderboard huntId={huntId} userId={user?.uid ?? null} onClose={() => setLbOpen(false)} />}
     </main>
   )
 }
