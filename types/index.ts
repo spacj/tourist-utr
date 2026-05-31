@@ -869,6 +869,7 @@ export const T: Dict = {
   cityCleared:       { en: 'City cleared!', nl: 'Stad voltooid!', de: 'Stadt geschafft!', fr: 'Ville terminée !', it: 'Città completata!', es: '¡Ciudad completada!' },
   exploreMore:       { en: 'Explore another city', nl: 'Verken een andere stad', de: 'Erkunde eine andere Stadt', fr: 'Explore une autre ville', it: "Esplora un'altra città", es: 'Explora otra ciudad' },
   raceAFriend:       { en: 'Race a friend', nl: 'Race tegen een vriend', de: 'Tritt gegen einen Freund an', fr: 'Défie un ami', it: 'Sfida un amico', es: 'Reta a un amigo' },
+  heroMicrocopy:     { en: 'No app to install · plays in any browser', nl: 'Geen app nodig · speelt in elke browser', de: 'Keine App nötig · läuft im Browser', fr: 'Aucune appli · joue dans le navigateur', it: 'Nessuna app · gioca nel browser', es: 'Sin app · juega en el navegador' },
   authSignInTab:     { en: 'Sign in', nl: 'Inloggen', de: 'Anmelden', fr: 'Connexion', it: 'Accedi', es: 'Entrar' },
   authRegisterTab:   { en: 'Register', nl: 'Registreren', de: 'Registrieren', fr: "S'inscrire", it: 'Registrati', es: 'Registrarse' },
   authContinueGoogle:{ en: 'Continue with Google', nl: 'Doorgaan met Google', de: 'Mit Google fortfahren', fr: 'Continuer avec Google', it: 'Continua con Google', es: 'Continuar con Google' },

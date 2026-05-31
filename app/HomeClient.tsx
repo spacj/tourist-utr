@@ -166,17 +166,36 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
             <div className="hero-img-overlay" />
             <div className="hero-overlay-content">
               <div className="hero-overlay-top">
-                {user ? (
-                  <a href="/profile" className="avatar-btn avatar-btn-light">
-                    {user.photoURL ? (
-                      <img src={user.photoURL} alt="" className="avatar-img" referrerPolicy="no-referrer" />
-                    ) : (
-                      <span className="avatar-letter">{user.displayName?.[0] || '?'}</span>
-                    )}
-                  </a>
-                ) : (
-                  <button onClick={signIn} className="sign-in-btn sign-in-btn-light">{t('signIn')}</button>
-                )}
+                <a href="/" className="hero-brand" aria-label="TourHunts home">
+                  <span className="hero-brand-mark" aria-hidden>🧭</span>
+                  <span className="hero-brand-name">TourHunts</span>
+                </a>
+                <div className="hero-top-right">
+                  <div className="lang-switch hero-langs" role="group" aria-label={t('selectLanguage') || 'Language'}>
+                    {LANGUAGES.map(l => (
+                      <button
+                        key={l.code}
+                        onClick={() => setLang(l.code)}
+                        className={`lang-btn ${lang === l.code ? 'active' : ''}`}
+                        title={l.label}
+                        aria-label={l.label}
+                      >
+                        {l.flag}
+                      </button>
+                    ))}
+                  </div>
+                  {user ? (
+                    <a href="/profile" className="avatar-btn avatar-btn-light" aria-label={t('viewProfile')}>
+                      {user.photoURL ? (
+                        <img src={user.photoURL} alt="" className="avatar-img" referrerPolicy="no-referrer" />
+                      ) : (
+                        <span className="avatar-letter">{user.displayName?.[0] || '?'}</span>
+                      )}
+                    </a>
+                  ) : (
+                    <button onClick={signIn} className="sign-in-btn sign-in-btn-light">{t('signIn')}</button>
+                  )}
+                </div>
               </div>
               <div className="hero-overlay-bottom">
                 <div className="hero-badge">
@@ -190,8 +209,9 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
                 <p className="hero-overlay-tagline">{t('tagline')}</p>
                 <div className="hero-trust" aria-hidden>
                   <span className="hero-trust-chip hero-trust-rating">★ 4.9</span>
-                  <span className="hero-trust-chip">📡 {t('whyOffline')}</span>
                   <span className="hero-trust-chip">🎟️ {t('pricingFreeTag')}</span>
+                  <span className="hero-trust-chip">📡 {t('whyOffline')}</span>
+                  <span className="hero-trust-chip">🌐 EN · NL · DE · FR · IT · ES</span>
                 </div>
                 <div className="hero-cta-row">
                   <a href="#countries" className="hero-cta-btn">
@@ -202,25 +222,7 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
                     👥 {t('playWithFriends')}
                   </a>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="hero-content">
-            <div className="hero-content-row">
-              <span className="price-tag">{t('priceTag')}</span>
-              <div className="lang-switch">
-                {LANGUAGES.map(l => (
-                  <button
-                    key={l.code}
-                    onClick={() => setLang(l.code)}
-                    className={`lang-btn ${lang === l.code ? 'active' : ''}`}
-                    title={l.label}
-                    aria-label={l.label}
-                  >
-                    {l.flag}
-                  </button>
-                ))}
+                <p className="hero-microcopy">🎮 {t('heroMicrocopy')}</p>
               </div>
             </div>
           </div>
