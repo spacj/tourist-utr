@@ -239,6 +239,7 @@ a { color: inherit; }
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 10px;
   animation: heroIn 0.6s 0.1s ease both;
 }
@@ -261,13 +262,22 @@ a { color: inherit; }
   font-weight: 800; font-size: 13px; letter-spacing: 0.03em;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
 }
-.hero-top-right { display: inline-flex; align-items: center; gap: 8px; }
+.hero-top-right {
+  display: inline-flex; align-items: center; gap: 8px;
+  flex-wrap: wrap; justify-content: flex-end;
+  min-width: 0;
+}
 .hero-langs {
   background: rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   border-color: rgba(255, 255, 255, 0.18);
+  padding: 2px; gap: 2px;
 }
-.hero-langs .lang-btn { color: #fff; }
+.hero-langs .lang-btn {
+  color: #fff;
+  width: 26px; height: 26px;
+  font-size: 15px;
+}
 .hero-langs .lang-btn:hover { background: rgba(255, 255, 255, 0.12); }
 .hero-langs .lang-btn.active { background: rgba(255, 255, 255, 0.22); }
 .hero-microcopy {
@@ -286,12 +296,17 @@ a { color: inherit; }
   .hero-img.loaded { animation: none; transform: none; }
 }
 
+/* Phones: keep the lang strip from crowding the right edge. */
+@media (max-width: 480px) {
+  .hero-brand-name { display: none; }
+  .hero-langs .lang-btn { width: 24px; height: 24px; font-size: 14px; }
+}
+
 /* Narrow phones: stack the CTA pair and let it span full width. */
 @media (max-width: 380px) {
   .hero-cta-row { flex-direction: column; align-items: stretch; }
   .hero-cta-row .hero-cta-btn,
   .hero-cta-row .hero-cta-ghost { width: 100%; justify-content: center; }
-  .hero-brand-name { display: none; }
 }
 .hero-overlay-bottom {
   animation: heroIn 0.6s 0.2s ease both;
