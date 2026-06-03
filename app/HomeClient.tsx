@@ -224,6 +224,29 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
                 </div>
                 <p className="hero-microcopy">🎮 {t('heroMicrocopy')}</p>
               </div>
+
+              {/* Desktop-only product preview — gives visitors an immediate
+                  sense of the gameplay (a clue with a puzzle to solve). */}
+              <aside className="hero-preview-card" aria-hidden>
+                <div className="hero-preview-head">
+                  <span className="hero-preview-chip">📍 Stop 3 of 8 · Utrecht</span>
+                  <span className="hero-preview-pts">+150 pts</span>
+                </div>
+                <h3 className="hero-preview-title">Two-level canal</h3>
+                <p className="hero-preview-text">For seven centuries I have been the main artery of Utrecht — a canal lined with two-level wharves. Find my stone steps down to the water.</p>
+                <div className="hero-preview-puzzle">
+                  <div className="hero-preview-puzzle-label">🔤 Anagram</div>
+                  <div className="hero-preview-tiles">
+                    {['H','D','T','R','E','A','C','O','G','U'].map((c, i) => (
+                      <span key={i} className="hero-preview-tile">{c}</span>
+                    ))}
+                  </div>
+                </div>
+                <div className="hero-preview-actions">
+                  <span className="hero-preview-solve">Solve →</span>
+                  <span className="hero-preview-streak">🔥 streak ×3</span>
+                </div>
+              </aside>
             </div>
           </div>
         </div>

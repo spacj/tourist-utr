@@ -302,6 +302,137 @@ a { color: inherit; }
   .hero-langs .lang-btn { width: 24px; height: 24px; font-size: 14px; }
 }
 
+/* Hide the desktop product-preview card on phones + tablets. */
+.hero-preview-card { display: none; }
+
+/* ═══ Desktop hero: two-column composition with a product preview ═══ */
+@media (min-width: 1024px) {
+  /* Generous canvas on big screens — no longer a stretched mobile banner. */
+  .hero-img-wrap { height: min(720px, 84svh); min-height: 560px; max-height: 720px; }
+
+  /* The dark gradient now also tints the right side so the glass preview
+     card has contrast to sit on. */
+  .hero-img-overlay {
+    background:
+      radial-gradient(80% 60% at 90% 50%, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0) 60%),
+      radial-gradient(120% 60% at 50% 0%, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0) 50%),
+      linear-gradient(180deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.10) 32%, rgba(0,0,0,0.42) 62%, rgba(0,0,0,0.82) 100%);
+  }
+
+  .hero-overlay-content {
+    display: grid;
+    grid-template-columns: minmax(0, 620px) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    column-gap: 56px;
+    row-gap: 24px;
+    padding: 28px 44px 44px;
+    align-items: end;
+  }
+  /* Top bar spans both columns. */
+  .hero-overlay-top { grid-column: 1 / -1; grid-row: 1; }
+  /* Left: existing content block sits in column 1, bottom-anchored. */
+  .hero-overlay-bottom { grid-column: 1; grid-row: 2; align-self: end; max-width: 620px; }
+  /* Right: product preview card. */
+  .hero-preview-card {
+    display: block;
+    grid-column: 2; grid-row: 2;
+    align-self: center; justify-self: end;
+    width: min(420px, 100%);
+    padding: 22px 22px 18px;
+    border-radius: 22px;
+    background: rgba(20, 20, 30, 0.62);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    color: #fff;
+    transform: translateY(-8px) rotate(-1.2deg);
+    animation: heroPreviewIn 0.7s 0.25s cubic-bezier(.2,.7,.3,1) both;
+  }
+
+  /* Bigger, more confident title on desktop. */
+  .hero-overlay-title { font-size: clamp(48px, 4.6vw + 8px, 76px); max-width: 14ch; }
+  .hero-overlay-tagline { font-size: clamp(17px, 0.7vw + 12px, 22px); max-width: 38ch; }
+  .hero-microcopy { font-size: 13px; }
+}
+
+/* Extra-wide screens — let the title breathe further. */
+@media (min-width: 1440px) {
+  .hero-overlay-title { font-size: clamp(58px, 3.8vw + 6px, 84px); }
+  .hero-preview-card { width: 460px; }
+  .hero-overlay-content { padding-left: 64px; padding-right: 64px; }
+}
+
+@keyframes heroPreviewIn {
+  from { opacity: 0; transform: translateY(20px) rotate(-1.2deg); }
+  to   { opacity: 1; transform: translateY(-8px) rotate(-1.2deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-preview-card { animation: none; transform: none; }
+}
+
+/* Preview card inner pieces. */
+.hero-preview-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; margin-bottom: 10px;
+}
+.hero-preview-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+  padding: 5px 10px; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  color: rgba(255, 255, 255, 0.92);
+}
+.hero-preview-pts {
+  font-family: var(--font-serif, Georgia), serif;
+  font-size: 15px; font-weight: 700; color: var(--gold, #d4af37);
+}
+.hero-preview-title {
+  font-family: var(--font-serif, Georgia), serif;
+  font-size: 22px; font-weight: 700; line-height: 1.15;
+  margin: 0 0 6px;
+}
+.hero-preview-text {
+  font-size: 13.5px; line-height: 1.5;
+  color: rgba(255, 255, 255, 0.82);
+  margin: 0 0 14px;
+}
+.hero-preview-puzzle {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 12px 12px 14px;
+  margin-bottom: 12px;
+}
+.hero-preview-puzzle-label {
+  font-size: 11px; font-weight: 800; letter-spacing: 0.06em;
+  color: #c4b5fd; margin-bottom: 8px;
+}
+.hero-preview-tiles {
+  display: flex; flex-wrap: wrap; gap: 5px;
+}
+.hero-preview-tile {
+  width: 28px; height: 32px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 7px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 14px; font-weight: 700;
+  color: #fff;
+}
+.hero-preview-actions {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px;
+  font-size: 12.5px; color: rgba(255, 255, 255, 0.84);
+}
+.hero-preview-solve {
+  font-weight: 800; color: var(--primary, #ff6a13);
+  letter-spacing: 0.02em;
+}
+.hero-preview-streak { font-weight: 600; }
+
 /* Narrow phones: stack the CTA pair and let it span full width. */
 @media (max-width: 380px) {
   .hero-cta-row { flex-direction: column; align-items: stretch; }
