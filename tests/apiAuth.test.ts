@@ -124,5 +124,7 @@ describe('parseServiceAccount (hosting paste formats)', () => {
     expect(parseServiceAccount(b64).source).toBe('env-base64')
   })
   it('turns literal \n into newlines', () => expect(parseServiceAccount(json).account.private_key).toContain('\n'))
+  it('pasted twice', () => expect(parseServiceAccount(json + '\n' + json).account.project_id).toBe('p'))
+  it('pasted after an old partial value', () => expect(parseServiceAccount('-----BEGIN PRIVATE KEY-----abc\n' + json).account.project_id).toBe('p'))
   it('rejects non service-account JSON', () => expect(() => parseServiceAccount('{"a":1}')).toThrow())
 })

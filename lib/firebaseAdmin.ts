@@ -26,11 +26,20 @@ export function parseServiceAccount(raw: string): { account: Record<string, any>
   // Strip one layer of surrounding quotes added by some dashboards / .env files.
   if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) v = v.slice(1, -1).trim()
   let source: CredentialSource = 'env-json'
-  if (!v.startsWith('{')) {
+  if (!v.includes('{')) {
     v = Buffer.from(v.replace(/\s+/g, ''), 'base64').toString('utf8').trim()
     source = 'env-base64'
   }
-  let account: any = JSON.parse(v)
+  let account: any
+  try {
+    account = JSON.parse(v)
+  } catch (e) {
+    // Pasted twice / pasted on top of an old value: use the first complete
+    // {...} object in the text (string-aware brace matching).
+    const first = firstJsonObject(v)
+    if (!first) throw e
+    account = JSON.parse(first)
+  }
   // Double-encoded JSON ("{\"type\":...}") parses to a string the first time.
   if (typeof account === 'string') account = JSON.parse(account)
   if (typeof account.private_key === 'string') {
@@ -40,6 +49,26 @@ export function parseServiceAccount(raw: string): { account: Record<string, any>
     throw new Error('FIREBASE_SERVICE_ACCOUNT is not a service-account JSON')
   }
   return { account, source }
+}
+
+/** The first balanced top-level JSON object in `s`, ignoring braces inside strings. */
+function firstJsonObject(s: string): string | null {
+  const start = s.indexOf('{')
+  if (start < 0) return null
+  let depth = 0, inStr = false, esc = false
+  for (let i = start; i < s.length; i++) {
+    const c = s[i]
+    if (inStr) {
+      if (esc) esc = false
+      else if (c === '\\') esc = true
+      else if (c === '"') inStr = false
+      continue
+    }
+    if (c === '"') inStr = true
+    else if (c === '{') depth++
+    else if (c === '}' && --depth === 0) return s.slice(start, i + 1)
+  }
+  return null
 }
 
 let credentialSource: CredentialSource = 'default'
