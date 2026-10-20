@@ -2,8 +2,6 @@ import 'server-only'
 import { randomInt } from 'node:crypto'
 import type { DocumentData } from 'firebase-admin/firestore'
 import { adminDb, FieldValue } from '@/lib/firebaseAdmin'
-import { isHuntFree } from '@/types'
-import { isCityUnlocked } from '@/lib/cityUnlock'
 import { CODE_ALPHABET, ROOM_CODE_LEN, normalizeCode, isRoomExpired } from '@/lib/rooms'
 
 /**
@@ -111,19 +109,6 @@ export async function getPlayerSessionId(roomId: string, uid: string): Promise<s
   const q = await adminDb().collection('sessions')
     .where('roomId', '==', roomId).where('userId', '==', uid).limit(1).get()
   return q.empty ? null : q.docs[0].id
-}
-
-/** Same paywall rule as start-session: free first hunt (not tours), else city unlock. */
-export function huntIsFree(hunt: DocumentData): boolean {
-  return isHuntFree({
-    order: typeof hunt.order === 'number' ? hunt.order : 0,
-    tourType: hunt.tourType === 'tour' ? 'tour' : 'hunt',
-  })
-}
-
-export async function userCanPlayHunt(uid: string, hunt: DocumentData): Promise<boolean> {
-  if (huntIsFree(hunt)) return true
-  return isCityUnlocked(uid, typeof hunt.cityId === 'string' ? hunt.cityId : null)
 }
 
 /** Display name from the body (sanitised) → token → 'Player'. */

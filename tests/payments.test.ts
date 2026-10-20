@@ -5,21 +5,25 @@ import { cityPriceEuros, cityUnlockId } from '@/lib/cityUnlock'
 import { CREDIT_PACKAGES, CITY_UNLOCK_PRICE_EUROS } from '@/types'
 
 const city: PaymentMeta = { kind: 'city_unlock', uid: 'uidABC123', cityId: 'utrecht' }
+const hunt: PaymentMeta = { kind: 'hunt_unlock', uid: 'uidABC123', huntId: 'utrecht_classic' }
 const pack: PaymentMeta = { kind: 'credit_pack', uid: 'uidABC123', sessionId: 'sess_42', packageId: 'medium' }
 const guestPack: PaymentMeta = { kind: 'credit_pack', uid: null, sessionId: 'sess_42', packageId: 'small' }
 
 describe('custom_id encode / parse', () => {
   it('round-trips every kind', () => {
-    for (const m of [city, pack, guestPack]) expect(parseCustomId(encodeCustomId(m))).toEqual(m)
+    for (const m of [hunt, city, pack, guestPack]) expect(parseCustomId(encodeCustomId(m))).toEqual(m)
   })
 
   it('fits PayPal\'s 127-char limit for max-length Firebase uids', () => {
     const m: PaymentMeta = { kind: 'credit_pack', uid: 'u'.repeat(28), sessionId: 's'.repeat(20), packageId: 'medium' }
     expect(encodeCustomId(m).length).toBeLessThanOrEqual(127)
+    const h: PaymentMeta = { kind: 'hunt_unlock', uid: 'u'.repeat(28), huntId: 'h'.repeat(60) }
+    expect(encodeCustomId(h).length).toBeLessThanOrEqual(127)
   })
 
   it('refuses to encode oversize ids', () => {
     expect(() => encodeCustomId({ kind: 'city_unlock', uid: 'u'.repeat(120), cityId: 'utrecht' })).toThrow()
+    expect(() => encodeCustomId({ kind: 'hunt_unlock', uid: 'u'.repeat(120), huntId: 'h1' })).toThrow()
   })
 
   it('rejects tampered / malformed values without throwing', () => {
@@ -29,6 +33,9 @@ describe('custom_id encode / parse', () => {
       JSON.stringify({ k: 'c', u: 'a/b', c: 'utrecht' }),                // path in uid
       JSON.stringify({ k: 'c', u: 'uid', c: '../cities/x' }),            // path in cityId
       JSON.stringify({ k: 'c', u: 'uid' }),                              // missing city
+      JSON.stringify({ k: 'h', u: 'uid' }),                              // missing hunt
+      JSON.stringify({ k: 'h', u: 'uid', h: '../hunts/x' }),             // path in huntId
+      JSON.stringify({ k: 'h', u: 'a b', h: 'h1' }),                     // bad uid
       JSON.stringify({ k: 'p', u: 'uid', s: 'sess', p: 7 }),             // non-string package
       JSON.stringify({ k: 'p', u: 'uid', s: 'a b', p: 'small' }),        // space in session
       JSON.stringify({ k: 'c', u: 'uid', c: 'x'.repeat(129) }),          // too long
@@ -68,7 +75,19 @@ describe('verifyCaptureMoney (expected amount)', () => {
     orderId: 'ORDER1', amountValue, currency: 'EUR', payeeMerchantId: null, ...over,
   })
 
-  it('city unlock: must pay exactly the city price', () => {
+  it('hunt unlock: must pay exactly the hunt price', () => {
+    expect(verifyCaptureMoney(info('5.00'), hunt, 500, undefined)).toEqual({ problem: null, expectedCents: 500, credits: 0 })
+    expect(verifyCaptureMoney(info('4.99'), hunt, 500, undefined).problem).toBe('wrong_amount')
+    expect(verifyCaptureMoney(info('0.00'), hunt, 500, undefined).problem).toBe('wrong_amount')
+    expect(verifyCaptureMoney(info('7.50'), hunt, 750, undefined).problem).toBeNull()
+    expect(verifyCaptureMoney(info('5.00', { currency: 'USD' }), hunt, 500, undefined).problem).toBe('wrong_currency')
+  })
+
+  it('hunt unlock for an unknown hunt is rejected', () => {
+    expect(verifyCaptureMoney(info('5.00'), hunt, null, undefined).problem).toBe('unknown_hunt')
+  })
+
+  it('legacy city unlock: must pay exactly the city price', () => {
     expect(verifyCaptureMoney(info('5.00'), city, 500, undefined)).toEqual({ problem: null, expectedCents: 500, credits: 0 })
     expect(verifyCaptureMoney(info('4.99'), city, 500, undefined).problem).toBe('wrong_amount')
     expect(verifyCaptureMoney(info('50.00'), city, 500, undefined).problem).toBe('wrong_amount')
@@ -108,7 +127,7 @@ describe('verifyCaptureMoney (expected amount)', () => {
   })
 })
 
-describe('cityPriceEuros', () => {
+describe('cityPriceEuros (legacy city passes)', () => {
   it('trusts sane prices from the city doc', () => {
     expect(cityPriceEuros({ priceEuros: 7.5 })).toBe(7.5)
     expect(cityPriceEuros({ priceEuros: 1 })).toBe(1)

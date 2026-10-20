@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminDb, FieldValue } from '@/lib/firebaseAdmin'
 import { handle, requireUser, readJson, str, rateLimit, clientIp, HttpError } from '@/lib/apiAuth'
 import { MAX_PLAYERS, ROOM_CODE_LEN, normalizeCode, isRoomExpired } from '@/lib/rooms'
+import { getHuntAccess, huntLockedError, txClaimHuntAccess } from '@/lib/huntAccess'
 import {
-  findRoomByCode, userCanPlayHunt, cleanDisplayName, cleanPhotoURL, playerRef, roomRef, getPlayerSessionId,
+  findRoomByCode, cleanDisplayName, cleanPhotoURL, playerRef, roomRef, getPlayerSessionId,
 } from '@/lib/roomsServer'
 import { txSetUserActiveRoom, isUserInOtherRoom, setUserActiveRoom } from '@/lib/userActiveRoom'
 
@@ -50,12 +51,17 @@ export const POST = handle(async (req: NextRequest) => {
     }
   }
 
-  // Paywall — same rule as start-session.
+  // Paywall — same rule as start-session: own the hunt or spend the free
+  // hunt on it. Pre-checked here, claimed inside the join transaction.
   const huntSnap = await adminDb().collection('hunts').doc(String(room.huntId)).get()
   if (!huntSnap.exists) throw new HttpError(404, 'hunt_not_found')
-  if (!(await userCanPlayHunt(user.uid, huntSnap.data()!))) {
-    return NextResponse.json({ error: 'city_locked', cityId: room.cityId ?? null }, { status: 402 })
+  const hunt = huntSnap.data() ?? {}
+  const huntRef = {
+    id: huntSnap.id,
+    cityId: typeof hunt.cityId === 'string' ? hunt.cityId : (room.cityId ?? null),
+    priceEuros: hunt.priceEuros,
   }
+  if ((await getHuntAccess(user.uid, huntRef)) === 'locked') throw huntLockedError(huntRef)
 
   const displayName = cleanDisplayName(body.displayName, user.displayName)
   const photoURL = cleanPhotoURL(user.photoURL)
@@ -71,6 +77,10 @@ export const POST = handle(async (req: NextRequest) => {
     if (fresh.state !== 'lobby') throw new HttpError(409, 'race_started')
     const max = typeof fresh.maxPlayers === 'number' ? Math.min(fresh.maxPlayers, MAX_PLAYERS) : MAX_PLAYERS
     if ((fresh.playerCount ?? 0) >= max) throw new HttpError(409, 'room_full')
+    // Last read: re-check access (throws hunt_locked) — nothing is written,
+    // and the free hunt isn't spent, unless the join goes through.
+    const claim = await txClaimHuntAccess(tx, user.uid, huntRef)
+    claim.apply()
 
     tx.create(pRef, {
       userId: user.uid,

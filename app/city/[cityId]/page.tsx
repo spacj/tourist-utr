@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getActiveCities, getCityWithHunts, isValidId, type PublicCity, type PublicHunt } from '@/lib/catalog'
 import { SITE_URL } from '@/lib/site'
-import { CITY_UNLOCK_PRICE_EUROS, isHuntFree, isTour } from '@/types'
+import { huntPriceEuros, isTour } from '@/types'
 import { CityClient } from './CityClient'
 
 // ISR: the catalogue only changes through the seed script.
@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: { params: { cityId: string } 
   const description = [
     base,
     count
-      ? `${count} self-guided puzzle walks in ${name}. Your first hunt is free; €${data?.city?.priceEuros ?? CITY_UNLOCK_PRICE_EUROS} unlocks the rest of the city.`
+      ? `${count} self-guided puzzle walks in ${name}. Your first hunt is free (any hunt, any city); after that it's €${huntPriceEuros(null)} per hunt.`
       : `Self-guided puzzle walks in ${name}. Your first hunt is free.`,
   ].filter(Boolean).join(' ')
   return {
@@ -69,7 +69,7 @@ function safeJson(obj: unknown) {
 
 function buildJsonLd(city: PublicCity, hunts: PublicHunt[]) {
   const url = `${SITE_URL}/city/${city.id}`
-  const price = city.priceEuros ?? CITY_UNLOCK_PRICE_EUROS
+  const prices = hunts.map(h => huntPriceEuros(h))
   const list = {
     '@type': 'ItemList',
     name: `Scavenger hunts and walking tours in ${city.name}`,
@@ -100,23 +100,32 @@ function buildJsonLd(city: PublicCity, hunts: PublicHunt[]) {
     })),
     subjectOf: list,
   }
-  const freeCount = hunts.filter(h => isHuntFree(h)).length
-  const pass = {
+  // Each hunt is sold on its own (the first hunt per account is free).
+  const offers = prices.length ? {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    name: `${city.name} city pass`,
-    description: `Unlocks every TourHunts hunt and tour in ${city.name}, with no time limit.${freeCount ? ' The first hunt is free without a pass.' : ''}`,
+    name: `Scavenger hunts and walking tours in ${city.name}`,
+    description: `Each TourHunts hunt or walking tour in ${city.name} is bought on its own and stays playable with no time limit. Every account gets its first hunt free, any hunt in any city.`,
     brand: { '@type': 'Brand', name: 'TourHunts' },
     category: 'Self-guided city game',
     url,
     offers: {
-      '@type': 'Offer',
-      price: price.toFixed(2),
+      '@type': 'AggregateOffer',
       priceCurrency: 'EUR',
+      lowPrice: Math.min(...prices).toFixed(2),
+      highPrice: Math.max(...prices).toFixed(2),
+      offerCount: hunts.length,
       availability: 'https://schema.org/InStock',
-      url,
+      offers: hunts.map((h, i) => ({
+        '@type': 'Offer',
+        name: h.title,
+        price: prices[i].toFixed(2),
+        priceCurrency: 'EUR',
+        availability: 'https://schema.org/InStock',
+        url: `${SITE_URL}/city/${city.id}/${h.id}`,
+      })),
     },
-  }
+  } : null
   const breadcrumb = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -128,5 +137,5 @@ function buildJsonLd(city: PublicCity, hunts: PublicHunt[]) {
       { '@type': 'ListItem', position: city.countryId && city.country ? 3 : 2, name: city.name, item: url },
     ],
   }
-  return [destination, pass, breadcrumb]
+  return offers ? [destination, offers, breadcrumb] : [destination, breadcrumb]
 }

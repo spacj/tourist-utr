@@ -3,16 +3,18 @@ import { adminDb, FieldValue } from '@/lib/firebaseAdmin'
 import { handle, requireUser, readJson, id, rateLimit, HttpError } from '@/lib/apiAuth'
 import { ROOM_TTL_HOURS, MAX_PLAYERS } from '@/lib/rooms'
 import {
-  allocateRoomCode, huntIsFree, userCanPlayHunt, cleanDisplayName, cleanPhotoURL, playerRef,
+  allocateRoomCode, cleanDisplayName, cleanPhotoURL, playerRef,
 } from '@/lib/roomsServer'
 import { userActiveRoomRef, isUserInOtherRoom } from '@/lib/userActiveRoom'
+import { getHuntAccess, huntLockedError, txClaimHuntAccess } from '@/lib/huntAccess'
 
 export const dynamic = 'force-dynamic'
 
 /**
  * POST /api/rooms/create  { huntId, displayName?, force? }
- * Auth: registered (non-anonymous) user. Host must have access to the hunt
- * (free first hunt, or the city unlocked).
+ * Auth: registered (non-anonymous) user. The host must own the hunt, or
+ * spend their one free hunt on it — claimed in the same transaction that
+ * creates the room. 402 hunt_locked { huntId, cityId, priceEuros } otherwise.
  */
 export const POST = handle(async (req: NextRequest) => {
   const user = await requireUser(req, { registered: true })
@@ -35,48 +37,51 @@ export const POST = handle(async (req: NextRequest) => {
   const hunt = huntSnap.data()!
   const cityId = typeof hunt.cityId === 'string' ? hunt.cityId : null
 
-  if (!(await userCanPlayHunt(user.uid, hunt))) {
-    return NextResponse.json({ error: 'city_locked', cityId }, { status: 402 })
-  }
+  if (hunt.active === false) throw new HttpError(404, 'hunt_not_found')
+  const huntRef = { id: huntId, cityId, priceEuros: hunt.priceEuros }
+  // Cheap pre-check so a locked hunt doesn't burn a room code.
+  if ((await getHuntAccess(user.uid, huntRef)) === 'locked') throw huntLockedError(huntRef)
 
   const huntTitle = typeof hunt.title === 'string' && hunt.title ? hunt.title : 'Hunt'
   const expiresAt = Date.now() + ROOM_TTL_HOURS * 60 * 60 * 1000
   const roomDoc = db.collection('rooms').doc()
   const code = await allocateRoomCode(roomDoc.id, expiresAt)
 
-  const batch = db.batch()
-  batch.create(roomDoc, {
-    code,
-    hostUserId: user.uid,
-    huntId,
-    huntTitle,
-    cityId,
-    tourType: hunt.tourType === 'tour' ? 'tour' : 'hunt',
-    huntIsFree: huntIsFree(hunt),
-    state: 'lobby',
-    createdAt: FieldValue.serverTimestamp(),
-    startedAt: null,
-    finishedAt: null,
-    expiresAt,
-    playerCount: 1,
-    maxPlayers: MAX_PLAYERS,
+  await db.runTransaction(async (tx) => {
+    // Reads first: re-check access and, if needed, spend the free hunt on it.
+    const claim = await txClaimHuntAccess(tx, user.uid, huntRef)
+    claim.apply()
+    tx.create(roomDoc, {
+      code,
+      hostUserId: user.uid,
+      huntId,
+      huntTitle,
+      cityId,
+      tourType: hunt.tourType === 'tour' ? 'tour' : 'hunt',
+      state: 'lobby',
+      createdAt: FieldValue.serverTimestamp(),
+      startedAt: null,
+      finishedAt: null,
+      expiresAt,
+      playerCount: 1,
+      maxPlayers: MAX_PLAYERS,
+    })
+    tx.create(playerRef(roomDoc.id, user.uid), {
+      userId: user.uid,
+      displayName: cleanDisplayName(body.displayName, user.displayName),
+      photoURL: cleanPhotoURL(user.photoURL),
+      joinedAt: FieldValue.serverTimestamp(),
+      isHost: true,
+      score: 0,
+      cluesDone: 0,
+      finishedAt: null,
+    })
+    tx.set(userActiveRoomRef(user.uid), {
+      roomId: roomDoc.id, code, huntId, huntTitle, state: 'lobby', sessionId: null,
+      joinedAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    })
   })
-  batch.create(playerRef(roomDoc.id, user.uid), {
-    userId: user.uid,
-    displayName: cleanDisplayName(body.displayName, user.displayName),
-    photoURL: cleanPhotoURL(user.photoURL),
-    joinedAt: FieldValue.serverTimestamp(),
-    isHost: true,
-    score: 0,
-    cluesDone: 0,
-    finishedAt: null,
-  })
-  batch.set(userActiveRoomRef(user.uid), {
-    roomId: roomDoc.id, code, huntId, huntTitle, state: 'lobby', sessionId: null,
-    joinedAt: FieldValue.serverTimestamp(),
-    updatedAt: FieldValue.serverTimestamp(),
-  })
-  await batch.commit()
 
   return NextResponse.json({ roomId: roomDoc.id, code })
 })

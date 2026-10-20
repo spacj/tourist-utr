@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { getActiveHunts, getCityWithHunts, huntLanguages, isValidId } from '@/lib/catalog'
 import { cityCenter } from '@/lib/cityGeo'
 import { SITE_URL } from '@/lib/site'
-import { CITY_UNLOCK_PRICE_EUROS, isHuntFree, isTour } from '@/types'
+import { huntPriceEuros, isTour } from '@/types'
 import { HuntLanding } from './HuntLanding'
 
 /**
@@ -27,6 +27,10 @@ async function load(cityId: string, huntId: string) {
   return { city: data.city, hunt, hunts: data.hunts }
 }
 
+function priceText(euros: number) {
+  return Number.isInteger(euros) ? String(euros) : euros.toFixed(2)
+}
+
 function minutes(n: number) {
   if (n >= 90) {
     const h = Math.floor(n / 60), m = n % 60
@@ -43,9 +47,7 @@ export async function generateMetadata({ params }: { params: { cityId: string; h
   const { city, hunt } = res
   const kind = isTour(hunt) ? 'self-guided walking tour' : 'scavenger hunt'
   const title = `${hunt.title}: ${city.name} ${kind}`
-  const price = isHuntFree(hunt)
-    ? 'Free to play.'
-    : `Included in the €${city.priceEuros ?? CITY_UNLOCK_PRICE_EUROS} ${city.name} city pass.`
+  const price = `Your first hunt is free (any hunt you like); after that €${priceText(huntPriceEuros(hunt))} per hunt.`
   const facts = [
     hunt.clueCount ? `${hunt.clueCount} stops` : '',
     hunt.distanceKm ? `${hunt.distanceKm} km` : '',
@@ -72,8 +74,7 @@ export default async function HuntLandingPage({ params }: { params: { cityId: st
   }
   const { city, hunt, hunts } = res
   const url = `${SITE_URL}/city/${city.id}/${hunt.id}`
-  const price = city.priceEuros ?? CITY_UNLOCK_PRICE_EUROS
-  const free = isHuntFree(hunt)
+  const price = huntPriceEuros(hunt)
   const langs = huntLanguages(hunt)
 
   const tripJsonLd = {
@@ -94,11 +95,11 @@ export default async function HuntLandingPage({ params }: { params: { cityId: st
     },
     offers: {
       '@type': 'Offer',
-      price: free ? '0' : price.toFixed(2),
+      price: price.toFixed(2),
       priceCurrency: 'EUR',
       availability: 'https://schema.org/InStock',
       url,
-      ...(free ? {} : { description: `Included in the ${city.name} city pass` }),
+      description: 'One-off purchase of this hunt. Every account gets its first hunt free, any hunt it likes.',
     },
   }
   const breadcrumb = {

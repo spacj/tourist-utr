@@ -56,6 +56,6 @@ For everything else — first-time visits, return trips, families, off-season ex
 {
   "kind": "multiplayer",
   "title": "Or race friends through a hunt",
-  "description": "Real-time multiplayer races. Your friend takes Amsterdam, you take Utrecht — first to all 8 stops wins. Free first hunt in every city."
+  "description": "Real-time multiplayer races. Your friend takes Amsterdam, you take Utrecht — first to all 8 stops wins. Your first hunt is free, any city."
 }
 ```

@@ -43,7 +43,7 @@ const typewriter = Courier_Prime({
 })
 
 const DEFAULT_TITLE = 'TourHunts — puzzle walks through Dutch cities'
-const DEFAULT_DESC = 'Walk Utrecht, Amsterdam, Delft and more with a phone full of riddles. Crack each clue, find the place, hear its story. Your first hunt in every city is free; €5 unlocks the rest of that city.'
+const DEFAULT_DESC = 'Walk Utrecht, Amsterdam, Delft and more with a phone full of riddles. Crack each clue, find the place, hear its story. Your first hunt is free — any hunt, any city. After that, €5 per hunt.'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

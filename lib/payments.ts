@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { adminDb, FieldValue } from '@/lib/firebaseAdmin'
 import { CREDIT_PACKAGES } from '@/types'
 import { cityUnlockRef, grantCityUnlock, loadCityPriceCents } from '@/lib/cityUnlock'
+import { freeHuntIdOf, grantHuntUnlock, huntUnlockRef, loadHuntForPayment, userRef } from '@/lib/huntAccess'
 import { refundCapture, getCapture, type CaptureInfo } from '@/lib/paypal'
 
 /**
@@ -40,6 +41,9 @@ export function redirectTo(path: string): NextResponse {
 // ── custom_id (PayPal limit: 127 chars) ─────────────────────────────────
 
 export type PaymentMeta =
+  /** One hunt (the current pricing model). */
+  | { kind: 'hunt_unlock'; uid: string; huntId: string }
+  /** Legacy city pass: no longer sold, still captured/refunded for old orders. */
   | { kind: 'city_unlock'; uid: string; cityId: string }
   | { kind: 'credit_pack'; uid: string | null; sessionId: string; packageId: string }
 
@@ -47,9 +51,11 @@ const ID_RE = /^[A-Za-z0-9_-]{1,128}$/
 const okId = (v: unknown): v is string => typeof v === 'string' && ID_RE.test(v)
 
 export function encodeCustomId(meta: PaymentMeta): string {
-  const compact = meta.kind === 'city_unlock'
-    ? { k: 'c', u: meta.uid, c: meta.cityId }
-    : { k: 'p', u: meta.uid, s: meta.sessionId, p: meta.packageId }
+  const compact = meta.kind === 'hunt_unlock'
+    ? { k: 'h', u: meta.uid, h: meta.huntId }
+    : meta.kind === 'city_unlock'
+      ? { k: 'c', u: meta.uid, c: meta.cityId }
+      : { k: 'p', u: meta.uid, s: meta.sessionId, p: meta.packageId }
   const s = JSON.stringify(compact)
   if (s.length > 127) throw new Error('custom_id too long')
   return s
@@ -62,6 +68,7 @@ export function parseCustomId(raw: unknown): PaymentMeta | null {
   try { o = JSON.parse(raw) } catch { return null }
   if (!o || typeof o !== 'object') return null
 
+  if (o.k === 'h' && okId(o.u) && okId(o.h)) return { kind: 'hunt_unlock', uid: o.u, huntId: o.h }
   if (o.k === 'c' && okId(o.u) && okId(o.c)) return { kind: 'city_unlock', uid: o.u, cityId: o.c }
   if (o.k === 'p' && okId(o.s) && okId(o.p)) {
     return { kind: 'credit_pack', uid: okId(o.u) ? o.u : null, sessionId: o.s, packageId: o.p }
@@ -83,13 +90,14 @@ export function toCents(value: string): number | null {
 
 /**
  * Pure check that a capture pays exactly for what its custom_id says was
- * bought. `cityPriceCents` is the authoritative city price (null = unknown
- * city); `merchantId` is PAYPAL_MERCHANT_ID (payee check skipped if unset).
+ * bought. `unlockPriceCents` is the authoritative price of the hunt (or, for
+ * legacy orders, the city) — null = unknown hunt/city; `merchantId` is
+ * PAYPAL_MERCHANT_ID (payee check skipped if unset).
  */
 export function verifyCaptureMoney(
   info: Pick<CaptureInfo, 'orderId' | 'amountValue' | 'currency' | 'payeeMerchantId'>,
   meta: PaymentMeta | null,
-  cityPriceCents: number | null,
+  unlockPriceCents: number | null,
   merchantId: string | undefined,
 ): { problem: string | null; expectedCents: number | null; credits: number } {
   let problem: string | null = null
@@ -97,8 +105,11 @@ export function verifyCaptureMoney(
   let credits = 0
   if (!meta) {
     problem = 'bad_custom_id'
+  } else if (meta.kind === 'hunt_unlock') {
+    expectedCents = unlockPriceCents
+    if (expectedCents === null) problem = 'unknown_hunt'
   } else if (meta.kind === 'city_unlock') {
-    expectedCents = cityPriceCents
+    expectedCents = unlockPriceCents
     if (expectedCents === null) problem = 'unknown_city'
   } else {
     const pkg = CREDIT_PACKAGES.find(p => p.id === meta.packageId)
@@ -133,10 +144,14 @@ export async function processCapture(info: CaptureInfo, via: 'redirect' | 'webho
   if (info.status !== 'COMPLETED') return { status: 'failed', meta }
 
   // ── Verify the money matches what the custom_id says was bought ──
-  const cityPriceCents = meta?.kind === 'city_unlock' ? await loadCityPriceCents(meta.cityId) : null
+  const hunt = meta?.kind === 'hunt_unlock' ? await loadHuntForPayment(meta.huntId) : null
+  const unlockPriceCents = meta?.kind === 'hunt_unlock'
+    ? (hunt?.priceCents ?? null)
+    : meta?.kind === 'city_unlock' ? await loadCityPriceCents(meta.cityId) : null
   const { problem, expectedCents, credits } = verifyCaptureMoney(
-    info, meta, cityPriceCents, process.env.PAYPAL_MERCHANT_ID,
+    info, meta, unlockPriceCents, process.env.PAYPAL_MERCHANT_ID,
   )
+  const huntCityId = hunt?.cityId ?? null
 
   const db = adminDb()
   const paymentRef = db.collection('payments').doc(info.orderId)
@@ -159,6 +174,16 @@ export async function processCapture(info: CaptureInfo, via: 'redirect' | 'webho
       // Paid twice (two tabs) — keep the first unlock, refund this one.
       if (unlock.exists && unlock.data()?.paypalOrderId !== info.orderId) reject = 'already_unlocked'
     }
+    if (!reject && meta?.kind === 'hunt_unlock') {
+      const reads = [userRef(meta.uid), huntUnlockRef(meta.uid, meta.huntId),
+        ...(huntCityId ? [cityUnlockRef(meta.uid, huntCityId)] : [])]
+      const [u, unlock, pass] = await tx.getAll(...reads)
+      // Paid twice (two tabs), or already owned via the free slot / a legacy
+      // city pass — keep what they have, refund this one.
+      if (unlock.exists && unlock.data()?.paypalOrderId !== info.orderId) reject = 'already_unlocked'
+      else if (freeHuntIdOf(u.data()) === meta.huntId) reject = 'already_unlocked'
+      else if (pass?.exists) reject = 'already_unlocked'
+    }
     if (!reject && meta?.kind === 'credit_pack') {
       const s = await tx.get(db.collection('sessions').doc(meta.sessionId))
       if (!s.exists) reject = 'session_not_found'
@@ -170,7 +195,8 @@ export async function processCapture(info: CaptureInfo, via: 'redirect' | 'webho
       captureId: info.captureId,
       kind: meta?.kind ?? 'unknown',
       uid: meta?.uid ?? null,
-      cityId: meta?.kind === 'city_unlock' ? meta.cityId : null,
+      cityId: meta?.kind === 'city_unlock' ? meta.cityId : meta?.kind === 'hunt_unlock' ? huntCityId : null,
+      huntId: meta?.kind === 'hunt_unlock' ? meta.huntId : null,
       sessionId: meta?.kind === 'credit_pack' ? meta.sessionId : null,
       packageId: meta?.kind === 'credit_pack' ? meta.packageId : null,
       credits: meta?.kind === 'credit_pack' ? credits : null,
@@ -186,7 +212,17 @@ export async function processCapture(info: CaptureInfo, via: 'redirect' | 'webho
     tx.create(captureRef, { orderId: info.orderId, createdAt: FieldValue.serverTimestamp() })
 
     if (!reject && meta) {
-      if (meta.kind === 'city_unlock') {
+      if (meta.kind === 'hunt_unlock') {
+        grantHuntUnlock(tx, {
+          uid: meta.uid,
+          huntId: meta.huntId,
+          cityId: huntCityId,
+          orderId: info.orderId,
+          captureId: info.captureId,
+          amountCents: expectedCents ?? 0,
+          via,
+        })
+      } else if (meta.kind === 'city_unlock') {
         grantCityUnlock(tx, {
           userId: meta.uid,
           cityId: meta.cityId,
@@ -252,6 +288,7 @@ export async function processCapture(info: CaptureInfo, via: 'redirect' | 'webho
 export async function priorPayment(orderId: string): Promise<{
   status: 'granted' | 'refunded' | 'failed'
   cityId: string | null
+  huntId: string | null
   sessionId: string | null
 } | null> {
   const snap = await adminDb().collection('payments').doc(orderId).get()
@@ -260,6 +297,7 @@ export async function priorPayment(orderId: string): Promise<{
   return {
     status: p.status === 'rejected' ? (p.refundError ? 'failed' : 'refunded') : 'granted',
     cityId: typeof p.cityId === 'string' ? p.cityId : null,
+    huntId: typeof p.huntId === 'string' ? p.huntId : null,
     sessionId: typeof p.sessionId === 'string' ? p.sessionId : null,
   }
 }
@@ -325,7 +363,11 @@ export async function processRefund(resource: any, eventType: string): Promise<v
       return
     }
 
-    if (p.kind === 'city_unlock' && p.uid && p.cityId) {
+    if (p.kind === 'hunt_unlock' && p.uid && p.huntId) {
+      const unlockRef = huntUnlockRef(p.uid, p.huntId)
+      const unlock = await tx.get(unlockRef)
+      if (unlock.exists && unlock.data()?.paypalOrderId === orderId) tx.delete(unlockRef)
+    } else if (p.kind === 'city_unlock' && p.uid && p.cityId) {
       const unlockRef = cityUnlockRef(p.uid, p.cityId)
       const unlock = await tx.get(unlockRef)
       if (unlock.exists && unlock.data()?.paypalOrderId === orderId) tx.delete(unlockRef)

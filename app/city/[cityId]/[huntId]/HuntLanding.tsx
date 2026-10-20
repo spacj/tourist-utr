@@ -2,7 +2,7 @@
 import { useI18n } from '@/hooks/useI18n'
 import { fmt } from '@/lib/i18n/fmt'
 import {
-  CITY_UNLOCK_PRICE_EUROS, LANGUAGES, isHuntFree, isTour, localizeCity, localizeHunt,
+  LANGUAGES, huntPriceEuros, isTour, localizeCity, localizeHunt,
   type City, type Hunt, type Lang,
 } from '@/types'
 import { AreaMap } from '@/components/AreaMap'
@@ -28,8 +28,8 @@ export function HuntLanding({ city: rawCity, hunt: rawHunt, isMystery, languages
   const city = localizeCity(rawCity, lang)
   const hunt = localizeHunt(rawHunt, lang)
   const tour = isTour(rawHunt)
-  const free = isHuntFree(rawHunt)
-  const price = rawCity.priceEuros ?? CITY_UNLOCK_PRICE_EUROS
+  const priceEuros = huntPriceEuros(rawHunt)
+  const price = Number.isInteger(priceEuros) ? String(priceEuros) : priceEuros.toFixed(2)
   const difficulty = DIFFICULTY_KEY[hunt.difficulty] ? hunt.difficulty : 'medium'
   const cityHref = `/city/${encodeURIComponent(rawCity.id)}`
   const startHref = `${cityHref}?start=${encodeURIComponent(rawHunt.id)}`
@@ -88,13 +88,9 @@ export function HuntLanding({ city: rawCity, hunt: rawHunt, isMystery, languages
           </div>
         </dl>
 
-        <section className={`landing-price ${free ? 'is-free' : ''}`}>
-          <p className="landing-price-main">
-            {free ? t('landingFree') : fmt(t('landingInPass'), { price, city: city.name })}
-          </p>
-          <p className="landing-price-note">
-            {free ? t('landingFreeNote') : fmt(t('landingPassNote'), { city: city.name })}
-          </p>
+        <section className="landing-price">
+          <p className="landing-price-main">{fmt(t('landingPriceMain'), { price })}</p>
+          <p className="landing-price-note">{t('landingPriceNote')}</p>
           <a href={startHref} className="btn-primary landing-cta">
             {tour ? t('landingStartTour') : t('landingStartHunt')} <span aria-hidden>→</span>
           </a>
@@ -126,7 +122,7 @@ export function HuntLanding({ city: rawCity, hunt: rawHunt, isMystery, languages
                     <a href={`${cityHref}/${encodeURIComponent(h.id)}`}>
                       <span className="landing-sibling-title">{h.title}</span>
                       <span className="landing-sibling-meta">
-                        {isHuntFree(raw) ? t('freeHunt') : (isTour(raw) ? t('landingKindTour') : t('landingKindHunt'))}
+                        {isTour(raw) ? t('landingKindTour') : t('landingKindHunt')}
                         {h.durationMin > 0 ? ` · ~${h.durationMin} ${t('min')}` : ''}
                       </span>
                     </a>

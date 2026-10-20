@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminDb, FieldValue } from '@/lib/firebaseAdmin'
 import { handle, requireUser, readJson, id, HttpError } from '@/lib/apiAuth'
 import { STARTING_CREDITS } from '@/types'
-import { roomRef, privateRef, huntIsFree } from '@/lib/roomsServer'
+import { roomRef, privateRef } from '@/lib/roomsServer'
 import { userActiveRoomRef } from '@/lib/userActiveRoom'
 import type { RoomStop } from '@/lib/rooms'
 
@@ -41,7 +41,6 @@ export const POST = handle(async (req: NextRequest) => {
   if (cluesSnap.empty) throw new HttpError(404, 'no_clues')
   const hunt = huntSnap.data()!
   const tourType: 'hunt' | 'tour' = hunt.tourType === 'tour' ? 'tour' : 'hunt'
-  const freeHunt = huntIsFree(hunt)
   const cityId = typeof hunt.cityId === 'string' ? hunt.cityId : null
   const firstClue = cluesSnap.docs[0]
 
@@ -80,8 +79,7 @@ export const POST = handle(async (req: NextRequest) => {
         userId: uid,
         roomId,
         tourType,
-        // Same flags as solo start-session (see docs/GAME_DESIGN.md).
-        isFree: freeHunt,
+        // Access was checked (and any free hunt claimed) at create/join.
         difficulty: ['easy', 'medium', 'hard'].includes(hunt.difficulty) ? hunt.difficulty : 'medium',
         cityId,
         score: 0,

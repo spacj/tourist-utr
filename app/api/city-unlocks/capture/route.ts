@@ -9,6 +9,10 @@ const ID_RE = /^[A-Za-z0-9_-]{1,128}$/
 /**
  * GET /api/city-unlocks/capture?cityId=…&token=<PayPal order id>
  *
+ * LEGACY: city passes are no longer sold (checkout answers 410). This route
+ * stays so PayPal orders created before the switch to per-hunt pricing can
+ * still be captured. New purchases use /api/hunt-unlocks/capture.
+ *
  * Browser redirect back from PayPal — no Bearer token. Authorization comes
  * from the PayPal-verified order (custom_id → uid + cityId), never from the
  * query string; `cityId` in the URL is only used to pick a redirect target
@@ -37,6 +41,12 @@ export async function GET(req: NextRequest) {
     const info = await captureOrder(token)
     const outcome = await processCapture(info, 'redirect')
     const cityId = outcome.meta?.kind === 'city_unlock' ? outcome.meta.cityId : fallbackCity
+    if (outcome.meta?.kind === 'hunt_unlock') {
+      // A hunt order sent to the legacy city route — processed correctly
+      // anyway; land on the hunt's city page like /api/hunt-unlocks/capture.
+      const flag = outcome.status === 'granted' ? 'success' : outcome.status
+      return redirectTo(`/?paypal=${flag === 'failed' ? 'error' : flag}&hunt=${encodeURIComponent(outcome.meta.huntId)}`)
+    }
     if (outcome.meta && outcome.meta.kind !== 'city_unlock') {
       // A credit-pack order sent to the city route — it was still processed
       // correctly by processCapture; just land somewhere sensible.

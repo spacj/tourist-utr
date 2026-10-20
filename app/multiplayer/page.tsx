@@ -6,12 +6,13 @@ import { useToast } from '@/components/Toast'
 import { useI18n } from '@/hooks/useI18n'
 import { apiGet } from '@/lib/apiFetch'
 import { roomPost, roomErrorKey } from '@/lib/roomsClient'
-import { Hunt, City, isHuntFree, localizeHunt, localizeCity } from '@/types'
+import { Hunt, City, HuntAccessSummary, huntAccessFor, localizeHunt, localizeCity } from '@/types'
 import { ROOM_CODE_LEN, normalizeCode } from '@/lib/rooms'
 import { ResumeRaceBanner } from '@/components/ResumeRaceBanner'
 import { RoomConflictDialog, existingRoomFrom, type ExistingRoom } from '@/components/RoomConflictDialog'
 
-type RoomError = { key: string; cityId?: string | null }
+/** `cityId` + `huntId`: a hunt_locked error — link to the hunt's city page to buy it. */
+type RoomError = { key: string; cityId?: string | null; huntId?: string | null }
 
 export default function MultiplayerEntryPage() {
   const router = useRouter()
@@ -22,7 +23,7 @@ export default function MultiplayerEntryPage() {
   const [cities, setCities] = useState<City[]>([])
   const [hunts, setHunts] = useState<Hunt[]>([])
   const [catalogState, setCatalogState] = useState<'loading' | 'ready' | 'error'>('loading')
-  const [unlockedCities, setUnlockedCities] = useState<Set<string>>(new Set())
+  const [access, setAccess] = useState<HuntAccessSummary | null>(null)
   const [selectedHuntId, setSelectedHuntId] = useState<string | null>(null)
 
   const [creating, setCreating] = useState(false)
@@ -41,13 +42,16 @@ export default function MultiplayerEntryPage() {
   useEffect(() => { loadCatalog() }, [loadCatalog])
 
   useEffect(() => {
-    if (!user) { setUnlockedCities(new Set()); return }
-    apiGet<string[]>('/api/city-unlocks')
-      .then(ids => setUnlockedCities(new Set(Array.isArray(ids) ? ids : [])))
+    if (!user) { setAccess(null); return }
+    apiGet<HuntAccessSummary>('/api/hunt-access')
+      .then(a => setAccess(a && Array.isArray(a.owned) && Array.isArray(a.cityPasses) ? a : null))
       .catch(() => {})
   }, [user])
 
-  const playableHunts = hunts.filter(h => h.active !== false && (isHuntFree(h) || (h.cityId && unlockedCities.has(h.cityId))))
+  // Hosting needs the hunt owned, or the free hunt (spent when the room is created).
+  // Unknown access (fetch failed): list everything and let the server decide.
+  const accessOf = (h: Hunt) => (access ? huntAccessFor(access, h) : 'unknown')
+  const playableHunts = hunts.filter(h => h.active !== false && accessOf(h) !== 'locked')
 
   /** Shared failure handling for create + join. Returns the inline error to show, if any. */
   const handleRoomFailure = (
@@ -63,7 +67,11 @@ export default function MultiplayerEntryPage() {
       signIn()
       return null
     }
-    return { key: roomErrorKey(r.error, r.status), cityId: r.error === 'city_locked' ? (r.data?.cityId ?? null) : undefined }
+    if (r.error === 'hunt_locked') {
+      setAccess(a => a ? { ...a, freeAvailable: false } : a)
+      return { key: roomErrorKey(r.error, r.status), cityId: r.data?.cityId ?? null, huntId: r.data?.huntId ?? null }
+    }
+    return { key: roomErrorKey(r.error, r.status) }
   }
 
   const onCreate = async (force = false): Promise<void> => {
@@ -102,7 +110,15 @@ export default function MultiplayerEntryPage() {
     <div className="mp-error" id={id} role="alert">
       {t(err.key)}
       {err.cityId && (
-        <> <a href={`/city/${err.cityId}`} className="flow-inline-link">{t('unlockToPlay')} →</a></>
+        <>
+          {' '}
+          <a
+            href={`/city/${encodeURIComponent(err.cityId)}${err.huntId ? `?start=${encodeURIComponent(err.huntId)}` : ''}`}
+            className="flow-inline-link"
+          >
+            {t('buyThisHunt')} →
+          </a>
+        </>
       )}
     </div>
   )
@@ -196,6 +212,7 @@ export default function MultiplayerEntryPage() {
                   const city = cities.find(c => c.id === hunt.cityId)
                   const cityName = city ? localizeCity(city, lang).name : hunt.city
                   const selected = selectedHuntId === hunt.id
+                  const usesFree = accessOf(rawHunt) === 'free'
                   return (
                     <button
                       key={hunt.id}
@@ -210,6 +227,9 @@ export default function MultiplayerEntryPage() {
                         <span className="mp-hunt-meta">
                           {cityName} · {hunt.clueCount} {t('places')} · {hunt.durationMin} {t('min')}
                         </span>
+                        {access && (
+                          <span className="mp-hunt-meta">{usesFree ? t('mpUsesFreeHunt') : t('ownedBadge')}</span>
+                        )}
                       </span>
                       <span className={`mp-hunt-radio ${selected ? 'is-on' : ''}`} aria-hidden />
                     </button>

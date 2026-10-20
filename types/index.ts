@@ -8,6 +8,14 @@
 export type HintTier = 1 | 2 | 3 | 'puzzle'
 export type Difficulty = 'easy' | 'medium' | 'hard'
 
+/** Default price of one hunt or walking tour (see huntPriceEuros). */
+export const HUNT_PRICE_EUROS = 5
+
+/**
+ * @deprecated City passes are no longer sold (one free hunt per account,
+ * then a price per hunt). Kept for legacy `city_unlock` orders still being
+ * captured or refunded.
+ */
 export const CITY_UNLOCK_PRICE_EUROS = 5
 
 export interface CountryI18n {
@@ -93,6 +101,8 @@ export interface Hunt {
    *  asks the player to accuse. The solution lives in huntSecrets/{huntId}
    *  (server-only, see /api/accuse). */
   mystery?: MysterySpec
+  /** Per-hunt price override in euros (trusted only between 1 and 50). */
+  priceEuros?: number
 }
 
 export function isTour(h: Pick<Hunt, 'tourType'>): boolean {
@@ -100,13 +110,42 @@ export function isTour(h: Pick<Hunt, 'tourType'>): boolean {
 }
 
 /**
- * Free-access rule: exactly one freebie per city — the first *hunt*
- * (order 0). Walking tours are always behind the city paywall, even if
- * they happen to carry order 0 (several do, e.g. the Milan / Rome
- * aperitivo & Trastevere crawls), so we explicitly exclude tours here.
+ * The authoritative price of one hunt, in euros: `hunt.priceEuros` when it is
+ * a sane number (1–50 €), else HUNT_PRICE_EUROS. Pricing model: every
+ * account gets ONE free hunt of its choice (any city, hunts and tours
+ * alike); every other hunt costs this much (see lib/huntAccess.ts).
  */
-export function isHuntFree(h: Pick<Hunt, 'order' | 'tourType'>): boolean {
-  return h.order === 0 && h.tourType !== 'tour'
+export function huntPriceEuros(hunt: { priceEuros?: unknown } | null | undefined): number {
+  const p = hunt?.priceEuros
+  if (typeof p === 'number' && Number.isFinite(p) && p >= 1 && p <= 50) {
+    return Math.round(p * 100) / 100
+  }
+  return HUNT_PRICE_EUROS
+}
+
+/** GET /api/hunt-access — what the current player may play. */
+export interface HuntAccessSummary {
+  /** The hunt that used the account's one free hunt, if any. */
+  freeHuntId: string | null
+  /** The free hunt hasn't been used yet. */
+  freeAvailable: boolean
+  /** Hunt ids bought one by one. */
+  owned: string[]
+  /** Legacy city passes: every hunt in these cities is open. */
+  cityPasses: string[]
+}
+
+/**
+ * Client-side mirror of lib/huntAccess resolveAccess(): 'owned' (bought, the
+ * free hunt was spent on it, or a legacy city pass), 'free' (the free hunt
+ * is still unused — starting this one spends it), or 'locked' (buy it).
+ */
+export function huntAccessFor(
+  s: HuntAccessSummary,
+  h: Pick<Hunt, 'id' | 'cityId'>,
+): 'owned' | 'free' | 'locked' {
+  if (s.freeHuntId === h.id || s.owned.includes(h.id) || (!!h.cityId && s.cityPasses.includes(h.cityId))) return 'owned'
+  return s.freeAvailable ? 'free' : 'locked'
 }
 
 export function localizeCity(c: City, lang: Lang): City {

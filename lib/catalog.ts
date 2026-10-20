@@ -99,6 +99,7 @@ function toHunt(id: string, d: Record<string, unknown>): PublicHunt {
   if (d.tourType === 'tour' || d.tourType === 'hunt') hunt.tourType = d.tourType
   if (typeof d.tourCategory === 'string') hunt.tourCategory = d.tourCategory as Hunt['tourCategory']
   if (d.mystery && typeof d.mystery === 'object') hunt.isMystery = true
+  if (typeof d.priceEuros === 'number' && Number.isFinite(d.priceEuros)) hunt.priceEuros = d.priceEuros
   const updated = toMs(d.updatedAt ?? d.createdAt)
   if (updated) hunt.updatedAt = updated
   return hunt

@@ -1,6 +1,6 @@
 import { renderOg, ogSize } from '@/lib/og'
 import { ogCityData, prettyCityId } from '@/lib/ogCatalog'
-import { CITY_UNLOCK_PRICE_EUROS, isTour } from '@/types'
+import { HUNT_PRICE_EUROS, isTour } from '@/types'
 
 export const runtime = 'edge'
 export const alt = 'TourHunts city scavenger hunts'
@@ -20,6 +20,6 @@ export default async function Image({ params }: { params: { cityId: string } }) 
     eyebrow: city?.country || 'Puzzle walks',
     title: `${name}: crack the clues, find the places`,
     note: counts || 'Self-guided puzzle walks through the old town',
-    footer: `First hunt free · €${city?.priceEuros ?? CITY_UNLOCK_PRICE_EUROS} unlocks all of ${name}`,
+    footer: `Your first hunt is free, any city · then €${HUNT_PRICE_EUROS} per hunt`,
   })
 }

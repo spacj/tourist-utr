@@ -49,7 +49,7 @@ export function renderOg({
           </div>
 
           <div style={{ display: 'flex', fontSize: 24, color: '#5E574B' }}>
-            {footer ?? 'First hunt in every city free · €5 unlocks the whole city'}
+            {footer ?? 'Your first hunt is free, any city · then €5 per hunt'}
           </div>
         </div>
       </div>

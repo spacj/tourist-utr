@@ -66,6 +66,6 @@ Connecting these stops in the right order saves you about 40 minutes of zigzaggi
   "kind": "city",
   "targetId": "city_utrecht",
   "title": "Pick your Utrecht hunt",
-  "description": "First hunt is free. Two more for €5 lifetime — including offline GPS, riddles, and stories at every stop."
+  "description": "Your first hunt is free, any hunt you like. After that, €5 per hunt, yours to replay — with offline GPS, riddles, and stories at every stop."
 }
 ```

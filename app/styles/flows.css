@@ -78,6 +78,12 @@
 .hunt-badge.locked-badge { background: var(--surface-2); color: var(--text); box-shadow: none; font-style: normal; font-family: inherit; }
 .hunt-badge.free-badge { background: var(--canal); color: #fff; box-shadow: none; font-style: normal; font-family: inherit; }
 .hunt-badge.completed-badge { color: #fff; }
+.hunt-badge.owned-badge { background: var(--surface-2); color: var(--canal); box-shadow: none; font-style: normal; font-family: inherit; }
+.hunt-badge.locked-badge, .hunt-badge.owned-badge { display: inline-flex; align-items: center; gap: 4px; }
+/* "Free — your first hunt" is long: keep it clear of the title. */
+.hunt-card:has(.free-badge) .hunt-card-top { margin-top: 22px; }
+.city-hero-pricing { margin: 0; text-align: left; justify-content: flex-start; font-size: 14px; line-height: 1.4; }
+.city-hero-pricing .city-hero-cta-icon { flex: none; }
 .hunt-arrow .spinner-mini { display: inline-block; vertical-align: middle; }
 .meta-pill { font-size: 12px; border: 1px solid transparent; }
 .diff-pill.diff-easy   { color: var(--canal); background: var(--canal-soft); border-color: rgba(46, 106, 88, 0.3); }

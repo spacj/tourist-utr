@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
 import { adminDb, FieldValue } from '@/lib/firebaseAdmin'
 import { handle, requireUser, readJson, id, rateLimit, HttpError } from '@/lib/apiAuth'
-import { isCityUnlocked } from '@/lib/cityUnlock'
+import { claimHuntAccess } from '@/lib/huntAccess'
 import { toMillis } from '@/lib/sessionServer'
 import { normalizeDifficulty } from '@/lib/clueView'
-import { STARTING_CREDITS, isHuntFree } from '@/types'
+import { STARTING_CREDITS } from '@/types'
 
 /**
  * POST /api/start-session  — Authorization: Bearer <ID token> (guests = anonymous)
@@ -22,26 +22,16 @@ export const POST = handle(async (req) => {
   if (!huntSnap.exists) throw new HttpError(404, 'hunt_not_found')
   const hunt = huntSnap.data() as {
     cityId?: string; city?: string; order?: number; tourType?: 'hunt' | 'tour'; active?: boolean
-    difficulty?: string
+    difficulty?: string; priceEuros?: unknown
   }
   if (hunt.active === false) throw new HttpError(404, 'hunt_not_found')
 
-  // ── City-unlock gate ── exactly one freebie per city (first hunt, never a
-  // tour). The free hunt is complete — no stop limit.
   const tourType: 'hunt' | 'tour' = hunt.tourType === 'tour' ? 'tour' : 'hunt'
-  const isFree = isHuntFree({ order: hunt.order ?? 0, tourType })
   const cityId = hunt.cityId ?? null
-  if (!isFree) {
-    const unlocked = cityId ? await isCityUnlocked(user.uid, cityId) : false
-    if (!unlocked) {
-      // Guests can't own a city unlock — tell the client to sign in first.
-      return user.isAnonymous
-        ? NextResponse.json({ error: 'sign_in_required', cityId }, { status: 401 })
-        : NextResponse.json({ error: 'city_locked', cityId }, { status: 402 })
-    }
-  }
 
-  // ── Resume an in-progress session for this user + hunt ──
+  // ── Resume an in-progress session for this user + hunt ── checked before
+  // the paywall: resuming never spends the free hunt or asks for payment
+  // (also keeps sessions started under the old per-city model working).
   const existing = await db.collection('sessions')
     .where('userId', '==', user.uid)
     .where('huntId', '==', huntId)
@@ -61,6 +51,19 @@ export const POST = handle(async (req) => {
   if (cluesSnap.empty) throw new HttpError(404, 'no_clues')
   const firstClue = cluesSnap.docs[0]
 
+  // ── Paywall ── owned (bought / free hunt spent here / legacy city pass),
+  // else spend the account's one free hunt on this one, else 402.
+  let claimedFree = false
+  try {
+    claimedFree = (await claimHuntAccess(user.uid, { id: huntId, cityId, priceEuros: hunt.priceEuros })).claimedFree
+  } catch (e) {
+    // Guests can't buy — tell the client to sign in first.
+    if (e instanceof HttpError && e.code === 'hunt_locked' && user.isAnonymous) {
+      throw new HttpError(401, 'sign_in_required', e.extra)
+    }
+    throw e
+  }
+
   const sessionRef = db.collection('sessions').doc()
   const batch = db.batch()
   batch.set(sessionRef, {
@@ -68,7 +71,8 @@ export const POST = handle(async (req) => {
     huntCity: hunt.city || null,
     userId: user.uid,
     tourType,
-    isFree,
+    // This play-through spent the account's one free hunt.
+    isFree: claimedFree,
     cityId,
     difficulty: normalizeDifficulty(hunt.difficulty),
     score: 0,

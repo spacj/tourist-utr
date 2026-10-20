@@ -74,7 +74,7 @@ async function resolveCta(spec: CtaSpec): Promise<CtaTarget | null> {
       '/multiplayer',
       'Multiplayer',
       spec.title ?? 'Race friends through a hunt',
-      spec.description ?? 'Real-time multiplayer races. First to all stops wins. First hunt in every city is free.'
+      spec.description ?? 'Real-time multiplayer races. First to all stops wins. Your first hunt is free, any city.'
     )
   }
 
@@ -84,7 +84,7 @@ async function resolveCta(spec: CtaSpec): Promise<CtaTarget | null> {
     const badge = isTourCta ? 'Self-guided tour' : 'Hunt'
     const fallbackDesc = isTourCta
       ? 'Walk it at your own pace. GPS-guided, in-app maps, fun facts at every stop.'
-      : 'GPS-guided self-guided scavenger hunt. The first hunt in every city is free.'
+      : 'GPS-guided self-guided scavenger hunt. Your first hunt is free, any hunt you like.'
     try {
       const huntSnap = await adminDb().collection('hunts').doc(spec.targetId).get()
       if (huntSnap.exists) {
@@ -117,11 +117,11 @@ async function resolveCta(spec: CtaSpec): Promise<CtaTarget | null> {
           `/city/${spec.targetId}`,
           'City',
           spec.title ?? `Explore ${city.name ?? 'this city'}`,
-          spec.description ?? 'First hunt is free. Lifetime access for €5.'
+          spec.description ?? 'Your first hunt is free, any hunt, any city. After that, €5 per hunt.'
         )
       }
     } catch {}
-    return make(`/city/${spec.targetId}`, 'City', spec.title ?? 'Explore the city', spec.description ?? 'First hunt is free.')
+    return make(`/city/${spec.targetId}`, 'City', spec.title ?? 'Explore the city', spec.description ?? 'Your first hunt is free.')
   }
 
   return null

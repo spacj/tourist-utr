@@ -2,7 +2,8 @@
 
 Two things are sold through PayPal Checkout (Orders v2):
 
-- **City unlock** — price from `cities/{id}.priceEuros` (1–50 €, else the €5 default). Bound to the buyer's Firebase uid (guests are anonymous users; the uid survives account linking).
+- **Single hunts** — price from `hunts/{id}.priceEuros` (1–50 €, else the €5 default, `huntPriceEuros`). Registered accounts only; bound to the buyer's Firebase uid. Every account also gets one free hunt of its choice (`users/{uid}.freeHuntId`, no payment involved).
+- **City passes (legacy)** — no longer sold (`/api/city-unlocks/checkout` answers 410). Existing `cityUnlocks` still open every hunt in their city, and the capture route + webhook still process old orders and refunds.
 - **Hint-credit packs** — `CREDIT_PACKAGES` in `types/index.ts`, credited to the buyer's own hunt session.
 
 ## How it works
@@ -11,8 +12,10 @@ Two things are sold through PayPal Checkout (Orders v2):
 |---|---|
 | `lib/paypal.ts` | REST client. Fails closed on `PAYPAL_MODE`, checks every response, caches the OAuth token, `refundCapture`, `getCapture`, webhook signature verification. |
 | `lib/payments.ts` | Shared, idempotent grant (`processCapture`) and refund handling (`processRefund`). |
-| `app/api/city-unlocks/checkout` · `app/api/purchases/checkout` | Authenticated (Bearer ID token). Price computed server-side; `custom_id` carries uid + city / session + package. |
-| `app/api/city-unlocks/capture` · `app/api/purchases/capture` | Browser return URL from PayPal (`?token=<orderId>`). Captures, verifies, grants, redirects. |
+| `lib/huntAccess.ts` | Who may play which hunt (free hunt, purchases, legacy city passes); `grantHuntUnlock`. |
+| `app/api/hunt-unlocks/checkout` · `app/api/purchases/checkout` | Authenticated (Bearer ID token). Price computed server-side; `custom_id` carries uid + hunt / session + package. |
+| `app/api/hunt-unlocks/capture` · `app/api/purchases/capture` | Browser return URL from PayPal (`?token=<orderId>`). Captures, verifies, grants, redirects. |
+| `app/api/city-unlocks/capture` | Legacy city-pass orders only. |
 | `app/api/paypal/webhook` | Safety net + refunds. |
 
 Every capture is verified before granting: status `COMPLETED`, currency `EUR`, amount equal to the server price recomputed from `custom_id`, intact `custom_id`, and (if `PAYPAL_MERCHANT_ID` is set) the payee. A mismatch is **refunded automatically** and logged in `paymentIssues`.
@@ -20,7 +23,8 @@ Every capture is verified before granting: status `COMPLETED`, currency `EUR`, a
 Idempotency: one Firestore transaction creates `payments/{orderId}` and `paymentsByCapture/{captureId}` with `create()` and applies the grant, so redirect, refresh and webhook can never grant twice.
 
 Redirect flags:
-- City: `/city/{cityId}?paypal=success&unlocked=1` · `?paypal=cancelled|pending|refunded|error`
+- Hunt: `/city/{cityId}?paypal=success|cancelled|pending|refunded|error&hunt={huntId}`
+- Legacy city pass: `/city/{cityId}?paypal=success&unlocked=1` · `?paypal=pending|refunded|error`
 - Credits: `/hunt?session={sid}&credits=added|pending|refunded|error`
 
 ## Environment
@@ -50,20 +54,20 @@ In production, `PAYPAL_MODE` other than `live` is refused unless `PAYPAL_ALLOW_S
    Copy the Webhook ID into `PAYPAL_WEBHOOK_ID`. Without it every webhook is refused (fail closed). For local testing expose the dev server with ngrok.
 3. **Merchant ID** (optional) — PayPal business account → Account settings → *Merchant account ID* → `PAYPAL_MERCHANT_ID`.
 4. **Firebase Admin** — Firebase console → Project settings → Service accounts → *Generate new private key*; put the JSON (raw or base64) in `FIREBASE_SERVICE_ACCOUNT`.
-5. Deploy, then do one real unlock and refund it from PayPal: the unlock should disappear.
+5. Deploy, then buy one hunt for real and refund it from PayPal: the unlock should disappear.
 
 ## Testing (sandbox)
 
 1. `PAYPAL_MODE=sandbox`, sandbox credentials, ngrok webhook URL.
-2. Unlock a paid city with a sandbox buyer (Developer dashboard → Sandbox → Accounts).
-3. Expect `/city/<id>?paypal=success&unlocked=1`; check `payments/<orderId>` and `cityUnlocks/<uid>__<cityId>` in Firestore.
+2. With a registered account that has already used its free hunt, buy a hunt with a sandbox buyer (Developer dashboard → Sandbox → Accounts).
+3. Expect `/city/<id>?paypal=success&hunt=<huntId>`; check `payments/<orderId>` and `huntUnlocks/<uid>__<huntId>` in Firestore.
 4. Refresh the return URL → still success, no second grant.
 5. Close the tab right after approving → the `CHECKOUT.ORDER.APPROVED` webhook captures and grants.
 6. Refund in the sandbox business account → unlock removed / credits rolled back (credits may go negative if already spent).
 
 ## Firestore collections (server-only)
 
-`payments/{orderId}`, `paymentsByCapture/{captureId}`, `paymentIssues/*`, `paypalRefunds/{refundId}`, `cityUnlocks/{uid}__{cityId}`, `sessions/{sid}/purchases/{orderId}`.
+`payments/{orderId}`, `paymentsByCapture/{captureId}`, `paymentIssues/*`, `paypalRefunds/{refundId}`, `huntUnlocks/{uid}__{huntId}`, `cityUnlocks/{uid}__{cityId}` (legacy), `sessions/{sid}/purchases/{orderId}`. Plus `users/{uid}.freeHuntId` (server-written).
 
 ## Troubleshooting
 

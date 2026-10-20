@@ -36,7 +36,7 @@ type RoomDoc = {
   state: 'lobby' | 'racing' | 'finished'
 }
 
-type PageError = { key: string; cityId?: string | null }
+type PageError = { key: string; cityId?: string | null; huntId?: string | null }
 
 export default function RoomLobbyPage() {
   const params = useParams<{ code: string }>()
@@ -91,7 +91,11 @@ export default function RoomLobbyPage() {
           if (existing) { setConflict(existing); return }
         }
         if (r.error === 'account_required' || r.error === 'unauthenticated') { signInRef.current(); return }
-        setError({ key: roomErrorKey(r.error, r.status), cityId: r.error === 'city_locked' ? (r.data?.cityId ?? null) : undefined })
+        setError({
+          key: roomErrorKey(r.error, r.status),
+          cityId: r.error === 'hunt_locked' ? (r.data?.cityId ?? null) : undefined,
+          huntId: r.error === 'hunt_locked' ? (r.data?.huntId ?? null) : undefined,
+        })
         return
       }
     }
@@ -247,7 +251,17 @@ export default function RoomLobbyPage() {
           <h1 className="mp-title">{t('joinRoom')}</h1>
           <div className="mp-error" role="alert">
             {t(error.key)}
-            {error.cityId && <> <a href={`/city/${error.cityId}`} className="flow-inline-link">{t('unlockToPlay')} →</a></>}
+            {error.cityId && (
+              <>
+                {' '}
+                <a
+                  href={`/city/${encodeURIComponent(error.cityId)}${error.huntId ? `?start=${encodeURIComponent(error.huntId)}` : ''}`}
+                  className="flow-inline-link"
+                >
+                  {t('buyThisHunt')} →
+                </a>
+              </>
+            )}
           </div>
           <div className="flow-actions-row">
             {(error.key === 'errNetwork' || error.key === 'loadError') && (

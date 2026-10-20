@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { normalizePuzzleAnswer, isHuntFree, arrivalRadiusM, MIN_ARRIVAL_RADIUS_M, MAX_ACCURACY_SLACK_M } from '@/types'
+import { normalizePuzzleAnswer, huntPriceEuros, HUNT_PRICE_EUROS, arrivalRadiusM, MIN_ARRIVAL_RADIUS_M, MAX_ACCURACY_SLACK_M } from '@/types'
 
 describe('normalizePuzzleAnswer', () => {
   it('lower-cases', () => {
@@ -25,15 +25,23 @@ describe('normalizePuzzleAnswer', () => {
   })
 })
 
-describe('isHuntFree', () => {
-  it('only the first hunt (order 0) of a city is free', () => {
-    expect(isHuntFree({ order: 0 })).toBe(true)
-    expect(isHuntFree({ order: 0, tourType: 'hunt' })).toBe(true)
-    expect(isHuntFree({ order: 1 })).toBe(false)
-    expect(isHuntFree({ order: 5, tourType: 'hunt' })).toBe(false)
+describe('huntPriceEuros', () => {
+  it('defaults to €5 per hunt', () => {
+    expect(HUNT_PRICE_EUROS).toBe(5)
+    expect(huntPriceEuros(undefined)).toBe(5)
+    expect(huntPriceEuros(null)).toBe(5)
+    expect(huntPriceEuros({})).toBe(5)
   })
-  it('walking tours are never free, even at order 0', () => {
-    expect(isHuntFree({ order: 0, tourType: 'tour' })).toBe(false)
+  it('trusts a sane per-hunt price (1–50 €)', () => {
+    expect(huntPriceEuros({ priceEuros: 7.5 })).toBe(7.5)
+    expect(huntPriceEuros({ priceEuros: 1 })).toBe(1)
+    expect(huntPriceEuros({ priceEuros: 50 })).toBe(50)
+    expect(huntPriceEuros({ priceEuros: 4.999 })).toBe(5)
+  })
+  it('ignores missing or absurd prices', () => {
+    for (const p of [0, 0.5, -5, 51, 1e9, NaN, Infinity, '5', null]) {
+      expect(huntPriceEuros({ priceEuros: p })).toBe(HUNT_PRICE_EUROS)
+    }
   })
 })
 

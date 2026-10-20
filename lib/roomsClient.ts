@@ -3,7 +3,8 @@ import { apiFetch } from '@/lib/apiFetch'
 
 /**
  * POST to a rooms endpoint and keep the full JSON body on errors —
- * create/join put extra fields next to `error` (`existing`, `cityId`).
+ * create/join put extra fields next to `error` (`existing`; for hunt_locked
+ * `huntId`, `cityId`, `priceEuros`).
  * Network failures resolve to { ok:false, status:0, error:'network' }.
  */
 export async function roomPost<T = any>(url: string, body: unknown): Promise<
@@ -29,7 +30,7 @@ export function roomErrorKey(error: string, status = 0): string {
     case 'race_started': return 'errRaceStarted'
     case 'hunt_not_found':
     case 'no_clues': return 'huntUnavailable'
-    case 'city_locked': return 'errCityLockedRoom'
+    case 'hunt_locked': return 'errHuntLockedRoom'
     case 'account_required':
     case 'unauthenticated': return 'signInToPlayMp'
     case 'network': return 'errNetwork'

@@ -25,7 +25,7 @@ Coordinates were compared with OpenStreetMap (Nominatim) for every stop.
 2. **Puzzle `scheme`.** Cipher and reverse puzzles carry `puzzle.scheme` (`caesar:N` | `atbash` | `a1z26` | `reverse`). The client can ignore it; the seeder uses it for verification.
 3. **Puzzle answers** always include every language's place name (built automatically from `locationName`, with and without the bracketed part), so "Torre del Dom" or "Domturm" is accepted. Exception: Amsterdam "SINGEL 7" (`placeNames: false`).
 4. **Puzzle types** `rebus` and `numbers` are used (they are in GAME_DESIGN.md but not yet in `types/index.ts` `PuzzleType`, which still lists `observe`/`sequence`).
-5. **Display order.** Utrecht hunts had duplicate `order` values (1,1,2,2); they are now 0–4. The Milan and Rome tours had `order: 0` (same as the free classic hunt); they are now 10, like the Utrecht tour. Check the "first hunt per city is free" logic if it relies on `order`.
+5. **Display order.** Utrecht hunts had duplicate `order` values (1,1,2,2); they are now 0–4. The Milan and Rome tours had `order: 0` (same as the free classic hunt); they are now 10, like the Utrecht tour. (The "first hunt per city is free" rule this affected is gone: every account now gets one free hunt of its choice, see GAME_DESIGN.md › Pricing.)
 6. **Stale clue docs.** Seeding is still upsert-only (`set` per doc). Clue counts per hunt are unchanged, so nothing stale is left behind, but a hunt that shrinks in future would need a cleanup step.
 7. **Maastricht** is an active city with zero hunts (unchanged; flagging only).
 8. **Tours** keep empty `hint1`/`hint2` (validation allows this only for `tourType: 'tour'`).

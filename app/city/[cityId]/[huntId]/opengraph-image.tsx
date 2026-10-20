@@ -1,6 +1,6 @@
 import { renderOg, ogSize } from '@/lib/og'
 import { ogCityData } from '@/lib/ogCatalog'
-import { CITY_UNLOCK_PRICE_EUROS, isHuntFree, isTour } from '@/types'
+import { huntPriceEuros, isTour } from '@/types'
 
 export const runtime = 'edge'
 export const alt = 'TourHunts scavenger hunt'
@@ -22,8 +22,6 @@ export default async function Image({ params }: { params: { cityId: string; hunt
     eyebrow: `${isTour(hunt) ? 'Walking tour' : 'Scavenger hunt'} · ${city.name}`,
     title: hunt.title,
     note: facts || undefined,
-    footer: isHuntFree(hunt)
-      ? `Free to play · first hunt in ${city.name}`
-      : `Included in the €${city.priceEuros ?? CITY_UNLOCK_PRICE_EUROS} ${city.name} city pass`,
+    footer: `Your first hunt is free · then €${huntPriceEuros(hunt)} per hunt`,
   })
 }

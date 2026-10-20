@@ -18,10 +18,15 @@ export default function TermsPage() {
 
       <h2>What you get</h2>
       <ul>
-        <li>The first hunt in each city is free.</li>
+        <li>Your first hunt is free: one hunt or walking tour of your choice, in any city.</li>
         <li>
-          A city pass (usually €5, the price is always shown before you pay) unlocks every hunt
-          and tour in that city for your account, with no time limit and no subscription.
+          After that it&rsquo;s €5 per hunt, walking tours included (the price is always shown
+          before you pay). A hunt you buy stays with your account, with no time limit and no
+          subscription, and you can replay it as often as you like.
+        </li>
+        <li>
+          City passes bought before we switched to per-hunt pricing keep working: they still
+          open every hunt and tour in that city.
         </li>
         <li>
           Hint credits are optional. They are tied to the hunt you buy them in, and unused
@@ -31,7 +36,7 @@ export default function TermsPage() {
 
       <h2>Refunds</h2>
       <p>
-        If you are not happy with a city pass, email{' '}
+        If you bought a hunt and have not started it yet, email{' '}
         <a href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a> within 14 days of buying it and we will
         refund it, no questions asked. Hint credits that have already been spent are not refunded.
         If a payment ever goes through but your purchase is not activated, we refund it

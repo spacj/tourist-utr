@@ -61,14 +61,17 @@ After arrival, in this order:
 - The HUD always shows the server's `totalScore`.
 
 ## Pricing
-- The first hunt in every city is **free and complete**: no stop limit.
-- A city pass costs €5 and unlocks every hunt and tour in that city. It needs a registered account so the purchase can't be lost.
+- **One free hunt per account**, of the player's choice, in any city (hunts and walking tours alike). It is complete: no stop limit. The free slot is spent when the player starts the first hunt they don't otherwise own (solo start, or creating/joining a race room) and is recorded as `users/{uid}.freeHuntId`. The city page asks for confirmation before spending it.
+- **Every other hunt costs €5** (`HUNT_PRICE_EUROS`; a hunt doc may override it with `priceEuros` between 1 and 50). A bought hunt stays playable forever and can be replayed. Buying needs a registered account so the purchase can't be lost; guests (anonymous accounts) can still play their free hunt.
+- **Legacy city passes** (`cityUnlocks/{uid}__{cityId}`, sold before per-hunt pricing) keep opening every hunt in their city. They are no longer sold.
+- Resuming an unfinished session never spends the free hunt and never asks for payment.
+- Access rules live in `lib/huntAccess.ts` (`resolveAccess`: free-used-here → purchased → city-pass → free-available → locked).
 - Hint credits: every session starts with 12; extra packs are sold per session.
 
 ## Data model
 
 ### `hunts/{huntId}` (public)
-`title, description, city, cityId, order, difficulty ('easy'|'medium'|'hard'), durationMin, distanceKm, tourType?, mystery? (public parts only: suspects, weapons, places, intro), i18n`.
+`title, description, city, cityId, order, difficulty ('easy'|'medium'|'hard'), durationMin, distanceKm, tourType?, priceEuros? (1–50, default 5), mystery? (public parts only: suspects, weapons, places, intro), i18n`.
 There's **no `rating` and no `badge`**: those were invented. Ratings come from real players later.
 
 ### `huntSecrets/{huntId}` (server-only)

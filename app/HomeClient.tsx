@@ -277,7 +277,7 @@ export function HomeClient({ recentPosts, heroPhoto = null }: HomeClientProps) {
           <div className="nb-price">
             <h2 id="pricing-title" className="nb-h2">{t('pricingTitle')}</h2>
             <p className="nb-price-line"><span className="nb-price-mark">€0</span>{t('priceLineFree')}</p>
-            <p className="nb-price-line"><span className="nb-price-mark">€5</span>{t('priceLineCity')}</p>
+            <p className="nb-price-line"><span className="nb-price-mark">€5</span>{t('priceLineHunt')}</p>
             <p className="nb-price-detail">{t('priceDetail')}</p>
           </div>
           <div className="nb-friends">

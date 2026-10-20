@@ -1,9 +1,8 @@
 # TourHunts
 
 GPS puzzle walks for curious travellers. Players solve a puzzle at each stop,
-follow the clue to the next place, and arrival is confirmed by GPS. The first
-hunt in every city is free; a €5 city pass unlocks every hunt and walking tour
-in that city. Installable PWA (works offline once a hunt is started), with an
+follow the clue to the next place, and arrival is confirmed by GPS. Your first
+hunt is free — any hunt, any city. After that, €5 per hunt. Installable PWA (works offline once a hunt is started), with an
 Android wrapper via Trusted Web Activity.
 
 - Game rules, scoring and data model: [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md)
@@ -85,7 +84,7 @@ firebase deploy --only firestore:rules
 ```
 app/                    Next.js App Router
   page.tsx, HomeClient   landing page
-  country/ city/          catalogue pages (city page = hunts + city pass checkout)
+  country/ city/          catalogue pages (city page = hunts + per-hunt checkout)
   hunt/                   the game (HuntClient) and /hunt/complete results
   tour/                   self-guided walking tours (no scoring)
   multiplayer/            race rooms (create / join / live scoreboard)
@@ -106,7 +105,8 @@ lib/
   clueView.ts             the only place that turns secret clue docs into client views
   arrival.ts              arrival transaction and scoring
   payments.ts, paypal.ts  idempotent payment grant/refund, PayPal REST client
-  cityUnlock.ts           city pass price and unlock records
+  huntAccess.ts           who may play which hunt: free hunt, purchases, legacy city passes
+  cityUnlock.ts           legacy city pass records (no longer sold)
   sessionServer.ts, roomsServer.ts   session/room ownership helpers
   offlineQueue.ts, indexedDB.ts      offline write queue and cache
   i18n/                   UI strings per area (core, flows, game, legal), 6 languages

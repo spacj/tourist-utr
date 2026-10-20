@@ -13,7 +13,8 @@
     "check": "npm run typecheck && npm run lint && npm run test",
     "seed": "node scripts/seed.mjs",
     "set-admin": "node scripts/set-admin.mjs",
-    "icons": "node scripts/build-icons.mjs"
+    "icons": "node scripts/build-icons.mjs",
+    "seed:stale": "node scripts/find-stale.mjs"
   },
   "dependencies": {
     "firebase": "^12.12.0",

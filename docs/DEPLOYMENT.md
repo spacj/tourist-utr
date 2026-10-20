@@ -84,14 +84,15 @@ First run this in **sandbox** on a staging deploy (`PAYPAL_MODE=sandbox`, `PAYPA
 
 | # | Scenario | Expected |
 |---|---|---|
-| 1 | Guest taps "Unlock city" | Asked to register or sign in. City passes need a registered account. After sign-in the checkout continues. |
-| 2 | Registered user pays with a sandbox buyer | Redirect to `/city/<id>?paypal=success&unlocked=1`. Firestore has `payments/<orderId>` (`status: granted`) and `cityUnlocks/<uid>__<cityId>`. |
+| 0 | Fresh guest taps any hunt | "Use your free hunt on …?" dialog. Confirming starts it and writes `users/<uid>.freeHuntId`. Every other hunt now shows €5 with a lock. |
+| 1 | Guest taps a locked hunt | Asked to register or sign in. Purchases need a registered account. |
+| 2 | Registered user buys a hunt with a sandbox buyer | Redirect to `/city/<id>?paypal=success&hunt=<huntId>`. Firestore has `payments/<orderId>` (`status: granted`) and `huntUnlocks/<uid>__<huntId>`. |
 | 3 | **Refresh** the return URL | Still success. No second `payments` doc, no duplicate grant. |
-| 4 | Approve in PayPal, then **close the tab** before the redirect | Within about a minute, the `CHECKOUT.ORDER.APPROVED` webhook captures the order and grants it. Reloading the city page shows it unlocked. |
+| 4 | Approve in PayPal, then **close the tab** before the redirect | Within about a minute, the `CHECKOUT.ORDER.APPROVED` webhook captures the order and grants it. Reloading the city page shows the hunt as owned. |
 | 5 | Cancel on the PayPal page | `?paypal=cancelled`, nothing charged, nothing granted. |
-| 6 | Pay for an already-unlocked city in a second tab | The second payment is refunded automatically (`?paypal=refunded`) and logged in `paymentIssues` with `already_unlocked`. |
+| 6 | Pay for an already-owned hunt in a second tab | The second payment is refunded automatically (`?paypal=refunded`) and logged in `paymentIssues` with `already_unlocked`. |
 | 7 | Buy a hint-credit pack during a hunt | `/hunt?session=<sid>&credits=added`. Session credits go up by the package amount, once. |
-| 8 | **Full refund** from the PayPal business account | Webhook `PAYMENT.CAPTURE.REFUNDED`: the city unlock is deleted, or the credits are rolled back (the balance may go negative). `payments/<orderId>.status` is `refunded_by_paypal`. |
+| 8 | **Full refund** from the PayPal business account | Webhook `PAYMENT.CAPTURE.REFUNDED`: the hunt unlock is deleted, or the credits are rolled back (the balance may go negative). `payments/<orderId>.status` is `refunded_by_paypal`. |
 | 9 | **Partial refund** | Grant kept. A `paymentIssues` entry with `partial_refund` appears for manual review. |
 | 10 | Webhook with a wrong `PAYPAL_WEBHOOK_ID` | The PayPal dashboard shows delivery failures (401). Fix the env var and redeliver. |
 

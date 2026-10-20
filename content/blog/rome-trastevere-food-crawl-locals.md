@@ -38,7 +38,7 @@ Cross Viale Trastevere on your way back east. Otaleg's flavors change daily base
   "kind": "tour",
   "targetId": "tour_rome_trastevere",
   "title": "Get the full self-guided crawl",
-  "description": "All 5 stops, GPS-guided, in-app maps, fun facts at every stop. €5 unlocks Rome forever and the first stop is on us."
+  "description": "All 5 stops, GPS-guided, in-app maps, fun facts at every stop. €5, yours to replay, or free if it's your first hunt."
 }
 ```
 

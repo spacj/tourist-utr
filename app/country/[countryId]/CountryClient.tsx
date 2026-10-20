@@ -4,12 +4,13 @@ import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
 import { apiGet } from '@/lib/apiFetch'
 import { fmt } from '@/lib/i18n/fmt'
-import { CITY_UNLOCK_PRICE_EUROS, City, Country, localizeCity, localizeCountry } from '@/types'
+import { HUNT_PRICE_EUROS, City, Country, HuntAccessSummary, localizeCity, localizeCountry } from '@/types'
 import { ResumeRaceBanner } from '@/components/ResumeRaceBanner'
 import Image from 'next/image'
 import { StopIcon } from '@/components/StopIcon'
 import { Check, Users } from 'lucide-react'
 
+/** `isUnlocked` = a legacy city pass (every hunt in the city is open). */
 function CityCard({ city, isUnlocked, t }: { city: City; isUnlocked: boolean; t: (key: string) => string }) {
   const [imgLoaded, setImgLoaded] = useState(false)
   const [imgFailed, setImgFailed] = useState(false)
@@ -34,9 +35,9 @@ function CityCard({ city, isUnlocked, t }: { city: City; isUnlocked: boolean; t:
         ) : (
           <StopIcon icon={city.coverEmoji} size="lg" className="city-cover-emoji" />
         )}
-        {isUnlocked
-          ? <span className="city-cover-tag city-cover-tag-unlocked"><Check size={12} strokeWidth={2.6} aria-hidden /> {t('unlocked')}</span>
-          : <span className="city-cover-tag">{t('firstFree')}</span>}
+        {isUnlocked && (
+          <span className="city-cover-tag city-cover-tag-unlocked"><Check size={12} strokeWidth={2.6} aria-hidden /> {t('unlocked')}</span>
+        )}
       </div>
       <div className="city-body">
         <div className="city-body-top">
@@ -53,7 +54,7 @@ function CityCard({ city, isUnlocked, t }: { city: City; isUnlocked: boolean; t:
             {city.huntCount} {t('hunts')}
           </span>
           {!isUnlocked && (
-            <span className="city-foot-price">€{city.priceEuros ?? CITY_UNLOCK_PRICE_EUROS}</span>
+            <span className="city-foot-price">{fmt(t('pricePerHunt'), { price: HUNT_PRICE_EUROS })}</span>
           )}
         </div>
       </div>
@@ -105,8 +106,8 @@ export function CountryClient({ countryId, initialCountry, initialCities }: Prop
 
   useEffect(() => {
     if (!user) { setUnlocked(new Set()); return }
-    apiGet<string[]>('/api/city-unlocks')
-      .then(ids => setUnlocked(new Set(Array.isArray(ids) ? ids : [])))
+    apiGet<HuntAccessSummary>('/api/hunt-access')
+      .then(a => setUnlocked(new Set(Array.isArray(a?.cityPasses) ? a.cityPasses : [])))
       .catch(() => {})
   }, [user])
 

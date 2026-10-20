@@ -12,7 +12,8 @@ import { adminAuth } from '@/lib/firebaseAdmin'
  */
 
 export class HttpError extends Error {
-  constructor(public status: number, public code: string) {
+  /** `extra` fields are sent next to `error` in the JSON body (e.g. huntId, priceEuros). */
+  constructor(public status: number, public code: string, public extra?: Record<string, unknown>) {
     super(code)
   }
 }
@@ -145,7 +146,7 @@ export function handle<C = unknown>(fn: Handler<C>): Handler<C> {
       return await fn(req, ctx)
     } catch (e) {
       if (e instanceof HttpError) {
-        return NextResponse.json({ error: e.code }, { status: e.status })
+        return NextResponse.json({ ...(e.extra ?? {}), error: e.code }, { status: e.status })
       }
       console.error(`[api] ${req.method} ${new URL(req.url).pathname}`, e)
       return NextResponse.json({ error: 'server_error' }, { status: 500 })
