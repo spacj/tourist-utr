@@ -316,3 +316,63 @@ a.nb-map-card:hover .nb-map-go { text-decoration: underline; text-underline-offs
 .nb-home .sticky-cta-primary { flex: 1; min-height: 48px; border-radius: var(--radius); font-size: 16px; padding: 0 16px; box-shadow: none; }
 .nb-home .sticky-cta-secondary { flex: none; width: 48px; min-height: 48px; padding: 0; border-radius: var(--radius); }
 @media (min-width: 768px) { .nb-home .sticky-cta { display: none; } }
+
+/* ═══ Hero v2: map backdrop, ink swash, card stack, city stamps ═══ */
+.nb-home { overflow-x: clip; }
+.nb-hero { position: relative; isolation: isolate; }
+.nb-hero-map {
+  position: absolute; z-index: -1; top: -24px; bottom: -40px;
+  left: 50%; width: 100vw; height: calc(100% + 64px); transform: translateX(-50%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent);
+          mask-image: linear-gradient(to bottom, #000 70%, transparent);
+  pointer-events: none;
+}
+@media (min-width: 900px) {
+  .nb-hero { min-height: 560px; align-items: center; }
+  .nb-h1 { font-size: clamp(52px, 5.6vw, 76px); }
+}
+
+.nb-h1 { margin-bottom: 4px; }
+.nb-h1-swash { display: block; width: min(320px, 70%); height: 18px; margin: 0 0 18px; }
+@media (prefers-reduced-motion: no-preference) {
+  .nb-h1-swash path { stroke-dasharray: 340; stroke-dashoffset: 340; animation: nb-draw 0.9s 0.3s ease-out forwards; }
+  @keyframes nb-draw { to { stroke-dashoffset: 0; } }
+}
+
+/* City stamps: real links, rubber-stamp look */
+.nb-city-stamps { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.nb-city-stamp {
+  display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px;
+  font-family: var(--font-mono), monospace; font-size: 14px; font-weight: 700;
+  letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none;
+  color: var(--canal); background: rgba(255, 253, 248, 0.85);
+  border: 1.5px dashed rgba(46, 106, 88, 0.55); border-radius: 4px;
+  transition: transform 0.15s, border-color 0.15s, background 0.15s;
+}
+.nb-city-stamp:nth-child(odd) { transform: rotate(-1.2deg); }
+.nb-city-stamp:nth-child(even) { transform: rotate(0.9deg); }
+.nb-city-stamp:hover { border-style: solid; border-color: var(--canal); background: var(--surface); transform: rotate(0); }
+@media (max-width: 480px) { .nb-city-stamp { min-height: 44px; } }
+
+/* Card stack: a finished stop peeking behind the playable one */
+.nb-hero-page { isolation: isolate; }
+.nb-card-behind {
+  position: absolute; z-index: -1; top: -14px; right: -10px; width: 62%; height: 150px;
+  display: flex; flex-direction: column; gap: 6px; padding: 16px 18px;
+  background: #F8F1E1; border: 1px solid rgba(43, 38, 30, 0.22); border-radius: 2px;
+  box-shadow: 0 8px 22px rgba(43, 38, 30, 0.10);
+  transform: rotate(4.5deg);
+}
+.nb-card-behind-head { font-family: var(--font-mono), monospace; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+.nb-card-behind-title { font-family: var(--font-display), serif; font-size: 24px; color: var(--text); }
+.nb-card-behind-stamp {
+  position: absolute; right: 16px; bottom: 18px;
+  font-family: var(--font-mono), monospace; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--brick); border: 2.5px solid var(--brick); border-radius: 4px; padding: 3px 10px;
+  transform: rotate(-8deg); opacity: 0.85;
+}
+@media (max-width: 899px) { .nb-card-behind { display: none; } }
+@media (max-width: 899px) {
+  .nb-hero-route { display: none; }
+  .nb-hero-map { opacity: 0.7; }
+}

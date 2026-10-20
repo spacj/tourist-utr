@@ -13,6 +13,18 @@ import type { BlogPostMeta } from '@/lib/blog'
 import { Avatar } from '@/components/Avatar'
 import Image from 'next/image'
 import { LanguagePicker } from '@/components/LanguagePicker'
+import { HeroMap } from '@/components/HeroMap'
+
+// Live cities, shown as stamps under the hero CTA (real pages, real links).
+const HERO_CITIES = [
+  { id: 'city_utrecht', name: 'Utrecht' },
+  { id: 'city_amsterdam', name: 'Amsterdam' },
+  { id: 'city_delft', name: 'Delft' },
+  { id: 'city_leiden', name: 'Leiden' },
+  { id: 'city_haarlem', name: 'Haarlem' },
+  { id: 'city_the_hague', name: 'Den Haag' },
+  { id: 'city_rotterdam', name: 'Rotterdam' },
+]
 
 /** A real photo for the hero, added later by the owner (see app/page.tsx → HERO_PHOTO). */
 export interface HeroPhoto {
@@ -162,9 +174,13 @@ export function HomeClient({ recentPosts, heroPhoto = null }: HomeClientProps) {
       <main id="main" className="nb-main" tabIndex={-1}>
         {/* ── Hero: the pitch + a page torn from the notebook ── */}
         <section className="nb-hero" aria-labelledby="home-title">
+          <HeroMap />
           <div className="nb-hero-copy">
             <p className="nb-kicker">{t('homeKicker')}</p>
             <h1 id="home-title" className="nb-h1">{t('homeH1')}</h1>
+            <svg className="nb-h1-swash" viewBox="0 0 320 18" aria-hidden focusable="false">
+              <path d="M4 12 C 60 4, 120 16, 180 9 S 280 5, 316 10" fill="none" stroke="#A33B2B" strokeWidth="4" strokeLinecap="round" />
+            </svg>
             <p className="nb-lede">{t('homeLede')}</p>
             <div className="nb-hero-actions">
               <a href={startHref} className="btn-primary nb-cta">
@@ -176,6 +192,11 @@ export function HomeClient({ recentPosts, heroPhoto = null }: HomeClientProps) {
                 {t('playWithFriends')}
               </a>
             </div>
+            <nav className="nb-city-stamps" aria-label={t('homeCitiesAria')}>
+              {HERO_CITIES.map(c => (
+                <a key={c.id} href={`/city/${c.id}`} className="nb-city-stamp">{c.name}</a>
+              ))}
+            </nav>
             <ul className="nb-facts" aria-label={t('statsAria')}>
               <li>{t('homeFactFree')}</li>
               <li>{t('homeFactApp')}</li>
@@ -191,6 +212,11 @@ export function HomeClient({ recentPosts, heroPhoto = null }: HomeClientProps) {
                 {heroPhoto.caption && <figcaption>{heroPhoto.caption}</figcaption>}
               </figure>
             )}
+            <div className="nb-card-behind" aria-hidden>
+              <span className="nb-card-behind-head">{t('homeBehindHead')}</span>
+              <span className="nb-card-behind-title">Pandhof</span>
+              <span className="nb-card-behind-stamp">{t('homeBehindStamp')}</span>
+            </div>
             <SampleStop ctaHref={startHref} />
           </div>
         </section>
