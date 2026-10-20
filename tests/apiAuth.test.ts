@@ -110,3 +110,19 @@ describe('clientIp', () => {
     expect(clientIp(new Request('http://x'))).toBe('unknown')
   })
 })
+
+import { parseServiceAccount } from '@/lib/firebaseAdmin'
+
+describe('parseServiceAccount (hosting paste formats)', () => {
+  const sa = { type: 'service_account', project_id: 'p', client_email: 'x@p.iam', private_key: '-----BEGIN PRIVATE KEY-----\nabc\n-----END PRIVATE KEY-----\n' }
+  const json = JSON.stringify(sa)
+  it('raw JSON', () => expect(parseServiceAccount(json).source).toBe('env-json'))
+  it('quoted JSON', () => expect(parseServiceAccount(`'${json}'`).account.project_id).toBe('p'))
+  it('double-encoded JSON', () => expect(parseServiceAccount(JSON.stringify(json)).account.client_email).toBe('x@p.iam'))
+  it('base64 with line breaks', () => {
+    const b64 = Buffer.from(json).toString('base64').replace(/(.{60})/g, '$1\n')
+    expect(parseServiceAccount(b64).source).toBe('env-base64')
+  })
+  it('turns literal \n into newlines', () => expect(parseServiceAccount(json).account.private_key).toContain('\n'))
+  it('rejects non service-account JSON', () => expect(() => parseServiceAccount('{"a":1}')).toThrow())
+})
