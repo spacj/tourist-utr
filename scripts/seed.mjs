@@ -101,7 +101,7 @@ async function seed() {
     const huntCount = HUNTS.filter(h => h.meta.cityId === city.id).length
     const { id, ...data } = city
     await db.collection('cities').doc(id).set({ ...data, huntCount, createdAt: FieldValue.serverTimestamp() })
-    console.log(`✓ city ${id}: "${city.name}" (${huntCount} hunts, €${city.priceEuros})`)
+    console.log(`✓ city ${id}: "${city.name}" (${huntCount} hunts${city.active === false ? ", hidden" : ""})`)
   }
 
   // 3. Hunts, clues and (server-only) hunt secrets

@@ -362,7 +362,7 @@ export const CITIES = [
     imageUrl: 'https://images.pexels.com/photos/11189428/pexels-photo-11189428.jpeg',
     priceEuros: 5,
     order: 7,
-    active: true,
+    active: false, // no hunts yet — hidden until it has content
     i18n: {
       nl: {
         name: 'Maastricht',
