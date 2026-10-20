@@ -1,65 +1,73 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/firebase'
-import { collection, getDocs, query, where, getDoc, doc } from 'firebase/firestore'
+import { NextResponse } from 'next/server'
+import { adminDb } from '@/lib/firebaseAdmin'
+import { handle, getAuthUser, id, rateLimit, clientIp } from '@/lib/apiAuth'
+import { toMillis } from '@/lib/sessionServer'
 
-export async function GET(req: NextRequest) {
-  const huntId = req.nextUrl.searchParams.get('huntId')
-  const userId = req.nextUrl.searchParams.get('userId')
-  if (!huntId) return NextResponse.json({ error: 'Missing huntId' }, { status: 400 })
+export const dynamic = 'force-dynamic'
 
-  try {
-    const sessionsSnap = await getDocs(
-      query(
-        collection(db, 'sessions'),
-        where('huntId', '==', huntId),
-        where('completedAt', '!=', null),
-      )
-    )
+const TOP_N = 10
+/** Hard cap on sessions scanned per hunt. */
+const MAX_SESSIONS = 2000
 
-    const entries = await Promise.all(
-      sessionsSnap.docs.map(async (sDoc) => {
-        const s = sDoc.data()
-        let displayName = 'Anonymous'
-        if (s.userId) {
-          const userDoc = await getDoc(doc(db, 'users', s.userId)).catch(() => null)
-          if (userDoc?.exists()) {
-            displayName = userDoc.data().displayName ?? 'Anonymous'
-          }
-        }
-        return {
-          sessionId: sDoc.id,
-          userId: s.userId ?? null,
-          displayName,
-          score: s.score ?? 0,
-          completedAt: s.completedAt?.toMillis?.() ?? 0,
-        }
-      })
-    )
+/**
+ * GET /api/leaderboard?huntId=X — public. An optional `Authorization: Bearer`
+ * token fills `isYou` / `yourRank`; `?userId=` is ignored.
+ * One row per player (their best completed score). Ties are broken by total
+ * time (completedAt − startedAt): faster ranks higher (GAME_DESIGN.md).
+ */
+export const GET = handle(async (req) => {
+  rateLimit(`leaderboard:${clientIp(req)}`, 60, 60_000)
+  const huntId = id(req.nextUrl.searchParams.get('huntId'), 'huntId')
+  const me = await getAuthUser(req)
+  const db = adminDb()
 
-    entries.sort((a, b) => b.score - a.score || a.completedAt - b.completedAt)
+  const snap = await db.collection('sessions')
+    .where('huntId', '==', huntId)
+    .select('userId', 'score', 'startedAt', 'completedAt', 'abandoned', 'abandonedAt', 'tourType')
+    .limit(MAX_SESSIONS)
+    .get()
 
-    const top10 = entries.slice(0, 10).map((e, i) => ({
+  // Best completed score per user (faster total time breaks ties).
+  const best = new Map<string, { score: number; completedAt: number; durationMs: number }>()
+  for (const d of snap.docs) {
+    const s = d.data()
+    if (!s.userId || !s.completedAt || s.abandoned === true || s.abandonedAt || s.tourType === 'tour') continue
+    const score = typeof s.score === 'number' ? s.score : 0
+    const completedAt = toMillis(s.completedAt)
+    const startedAt = toMillis(s.startedAt)
+    const durationMs = startedAt && completedAt >= startedAt ? completedAt - startedAt : Number.MAX_SAFE_INTEGER
+    const prev = best.get(s.userId)
+    if (!prev || score > prev.score || (score === prev.score && durationMs < prev.durationMs)) {
+      best.set(s.userId, { score, completedAt, durationMs })
+    }
+  }
+
+  const entries = Array.from(best, ([userId, v]) => ({ userId, ...v }))
+    .sort((a, b) => b.score - a.score || a.durationMs - b.durationMs || a.completedAt - b.completedAt)
+
+  const top = entries.slice(0, TOP_N)
+  const userSnaps = top.length
+    ? await db.getAll(...top.map(e => db.collection('users').doc(e.userId)))
+    : []
+
+  const leaderboard = top.map((e, i) => {
+    const u = userSnaps[i]?.exists ? userSnaps[i].data() : undefined
+    return {
       rank: i + 1,
-      displayName: e.displayName,
+      displayName: (typeof u?.displayName === 'string' && u.displayName) || 'Anonymous',
+      photoURL: (typeof u?.photoURL === 'string' && u.photoURL) || null,
       score: e.score,
       completedAt: e.completedAt,
-      isYou: userId ? e.userId === userId : false,
-    }))
-
-    let yourRank = null
-    if (userId) {
-      const idx = entries.findIndex(e => e.userId === userId)
-      if (idx >= 0) {
-        yourRank = {
-          rank: idx + 1,
-          score: entries[idx].score,
-          total: entries.length,
-        }
-      }
+      durationMs: e.durationMs === Number.MAX_SAFE_INTEGER ? null : e.durationMs,
+      isYou: !!me && e.userId === me.uid,
     }
+  })
 
-    return NextResponse.json({ leaderboard: top10, yourRank, totalPlayers: entries.length })
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+  let yourRank: { rank: number; score: number; total: number } | null = null
+  if (me) {
+    const idx = entries.findIndex(e => e.userId === me.uid)
+    if (idx >= 0) yourRank = { rank: idx + 1, score: entries[idx].score, total: entries.length }
   }
-}
+
+  return NextResponse.json({ leaderboard, yourRank, totalPlayers: entries.length })
+})

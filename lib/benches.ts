@@ -1,5 +1,5 @@
-import { db } from '@/lib/firebase'
-import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore'
+import 'server-only'
+import { adminDb } from '@/lib/firebaseAdmin'
 import { type Bench, type SpotKind, deriveSpotKind, spotCategoryIds } from '@/types'
 
 /**
@@ -34,15 +34,20 @@ export function coerceBench(id: string, raw: Record<string, any>): Bench {
 }
 export const coerceSpot = coerceBench
 
+/** Every spot (both kinds), newest first. */
+export async function getEverySpot(): Promise<Bench[]> {
+  const snap = await adminDb().collection('benches').get()
+  return snap.docs
+    .map(d => coerceBench(d.id, d.data()))
+    .sort((a, b) => b.createdAt - a.createdAt)
+}
+
 /** All spots of one kind, newest first. */
 export async function getAllSpots(kind: SpotKind): Promise<Bench[]> {
   try {
-    const snap = await getDocs(collection(db, 'benches'))
-    return snap.docs
-      .map(d => coerceBench(d.id, d.data()))
-      .filter(s => s.kind === kind)
-      .sort((a, b) => b.createdAt - a.createdAt)
-  } catch {
+    return (await getEverySpot()).filter(s => s.kind === kind)
+  } catch (e) {
+    console.error('[benches] getAllSpots failed', e)
     return []
   }
 }
@@ -50,13 +55,12 @@ export async function getAllSpots(kind: SpotKind): Promise<Bench[]> {
 /** A single spot by slug (slug is unique across kinds), or null. */
 export async function getSpotBySlug(slug: string): Promise<Bench | null> {
   try {
-    const snap = await getDocs(
-      query(collection(db, 'benches'), where('slug', '==', slug), limit(1))
-    )
+    const snap = await adminDb().collection('benches').where('slug', '==', slug).limit(1).get()
     if (snap.empty) return null
     const d = snap.docs[0]
     return coerceBench(d.id, d.data())
-  } catch {
+  } catch (e) {
+    console.error('[benches] getSpotBySlug failed', e)
     return null
   }
 }

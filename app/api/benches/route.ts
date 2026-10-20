@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
-import { db } from '@/lib/firebase'
-import { collection, getDocs, doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
+import { adminDb, FieldValue } from '@/lib/firebaseAdmin'
+import { handle, requireAdmin, readJson, id, num, oneOf, HttpError } from '@/lib/apiAuth'
 import { benchSlug, spotCategoryIds, deriveSpotKind, SPOT_KINDS, type SpotKind } from '@/types'
-import { coerceBench } from '@/lib/benches'
+import { getEverySpot } from '@/lib/benches'
+
+export const dynamic = 'force-dynamic'
 
 /** Refresh the cached pages that list or render a spot (and the sitemap) so a
  *  new/edited spot goes live immediately instead of waiting for hourly ISR. */
@@ -13,128 +15,108 @@ function revalidateSpot(kind: SpotKind, slug?: string) {
     revalidatePath(`/${base}`)
     revalidatePath('/sitemap.xml')
     if (slug) revalidatePath(`/${base}/${slug}`)
-  } catch {}
+  } catch (e) {
+    console.error('[benches] revalidate failed', e)
+  }
 }
 
-function normalizeKind(v: unknown): SpotKind {
-  return v === 'fountain' ? 'fountain' : 'bench'
+const KINDS = ['bench', 'fountain'] as const
+
+/** Optional trimmed string, bounded; empty → null. */
+function optText(v: unknown, field: string, max: number): string | null {
+  if (v === undefined || v === null) return null
+  if (typeof v !== 'string') throw new HttpError(400, `invalid_${field}`)
+  const s = v.trim()
+  if (s.length > max) throw new HttpError(400, `invalid_${field}`)
+  return s || null
 }
 
-/** Admin allowlist — server reads ADMIN_EMAILS first (private), falls back to
- *  the public NEXT_PUBLIC_ADMIN_EMAILS that the client useIsAdmin() hook uses,
- *  so a single env var keeps both in sync if you only set the public one. */
-function adminEmails(): string[] {
-  const raw = process.env.ADMIN_EMAILS || process.env.NEXT_PUBLIC_ADMIN_EMAILS || ''
-  return raw.split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
-}
+/** Shared validation for POST + PATCH bodies. */
+function parseSpotFields(body: Record<string, unknown>, kind: SpotKind) {
+  const title = optText(body.title, 'title', 80)
+  if (!title) throw new HttpError(400, 'title_required')
+  const description = optText(body.description, 'description', 600) ?? ''
+  const lat = num(body.lat, 'lat', -90, 90)
+  const lng = num(body.lng, 'lng', -180, 180)
+  const city = optText(body.city, 'city', 60)
+  const address = optText(body.address, 'address', 120)
+  const postalCode = optText(body.postalCode, 'postalCode', 16)
 
-// GET /api/benches?kind=bench|fountain — list spots of one kind (newest first).
-// Omitting kind returns every spot.
-export async function GET(req: NextRequest) {
-  try {
-    const kindParam = req.nextUrl.searchParams.get('kind')
-    const snap = await getDocs(collection(db, 'benches'))
-    let spots = snap.docs
-      .map(d => coerceBench(d.id, d.data()))
-      .sort((a, b) => b.createdAt - a.createdAt)
-    if (kindParam === 'bench' || kindParam === 'fountain') {
-      spots = spots.filter(s => s.kind === kindParam)
+  let categories: unknown = body.categories
+  if (categories !== undefined) {
+    if (!Array.isArray(categories) || categories.length > 20 ||
+        categories.some(c => typeof c !== 'string' || c.length > 40)) {
+      throw new HttpError(400, 'invalid_categories')
     }
-    return NextResponse.json(spots)
-  } catch {
-    return NextResponse.json([], { status: 200 })
   }
-}
-
-// POST /api/benches — create a spot (bench or fountain). Admin-only.
-export async function POST(req: NextRequest) {
-  const body = await req.json().catch(() => null)
-  if (!body) return NextResponse.json({ error: 'bad_request' }, { status: 400 })
-
-  const { email, uid, title, description, category, categories, lat, lng, city, address, postalCode } = body as {
-    email?: string; uid?: string; title?: string; description?: string
-    category?: string; categories?: string[]; lat?: number; lng?: number
-    city?: string; address?: string; postalCode?: string
-  }
-  const kind = normalizeKind((body as { kind?: unknown }).kind)
-
-  // ── Admin gate ──
-  const allow = adminEmails()
-  if (!email || !allow.includes(String(email).toLowerCase())) {
-    return NextResponse.json({ error: 'not_admin' }, { status: 403 })
-  }
-
-  // ── Validate ──
-  if (!title?.trim()) return NextResponse.json({ error: 'title_required' }, { status: 400 })
-  if (typeof lat !== 'number' || typeof lng !== 'number' || Number.isNaN(lat) || Number.isNaN(lng)) {
-    return NextResponse.json({ error: 'location_required' }, { status: 400 })
-  }
+  const category = typeof body.category === 'string' && body.category.length <= 40 ? body.category : undefined
+  // spotCategoryIds keeps only ids that exist for this kind.
   const catIds = spotCategoryIds({ categories, category }, kind)
 
-  const ref = doc(collection(db, 'benches'))
-  const slug = benchSlug(title.trim(), ref.id)
+  return { title, description, lat, lng, city, address, postalCode, categories: catIds }
+}
 
-  await setDoc(ref, {
+// GET /api/benches?kind=bench|fountain — public list (newest first).
+export const GET = handle(async (req: NextRequest) => {
+  const kindParam = req.nextUrl.searchParams.get('kind')
+  let spots
+  try {
+    spots = await getEverySpot()
+  } catch (e) {
+    // Clients render the list directly — keep the response an array.
+    console.error('[benches] list failed', e)
+    return NextResponse.json([])
+  }
+  if (kindParam === 'bench' || kindParam === 'fountain') {
+    spots = spots.filter(s => s.kind === kindParam)
+  }
+  return NextResponse.json(spots)
+})
+
+// POST /api/benches — create a spot (bench or fountain). Admin claim required.
+export const POST = handle(async (req: NextRequest) => {
+  const admin = await requireAdmin(req)
+  const body = await readJson(req)
+  const kind: SpotKind = body.kind === undefined ? 'bench' : oneOf(body.kind, 'kind', KINDS)
+  const fields = parseSpotFields(body, kind)
+
+  const ref = adminDb().collection('benches').doc()
+  const slug = benchSlug(fields.title, ref.id)
+
+  await ref.create({
     slug,
     kind,
-    title: title.trim().slice(0, 80),
-    description: (description ?? '').trim().slice(0, 600),
-    categories: catIds,
-    lat,
-    lng,
-    address: address?.trim()?.slice(0, 120) || null,
-    postalCode: postalCode?.trim()?.slice(0, 16) || null,
-    city: city?.trim()?.slice(0, 60) || null,
-    createdBy: uid ?? null,
-    createdByEmail: String(email).toLowerCase(),
-    createdAt: serverTimestamp(),
+    ...fields,
+    createdBy: admin.uid,
+    createdByEmail: admin.email?.toLowerCase() ?? null,
+    createdAt: FieldValue.serverTimestamp(),
   })
 
   revalidateSpot(kind, slug)
   return NextResponse.json({ ok: true, id: ref.id, slug })
-}
+})
 
-// PATCH /api/benches — update an existing spot. Admin-only. The slug + kind
-// stay fixed so existing links/SEO and the section it lives in don't change.
-export async function PATCH(req: NextRequest) {
-  const body = await req.json().catch(() => null)
-  if (!body) return NextResponse.json({ error: 'bad_request' }, { status: 400 })
+// PATCH /api/benches — update an existing spot. Admin claim required. The slug
+// + kind stay fixed so existing links/SEO and its section don't change.
+export const PATCH = handle(async (req: NextRequest) => {
+  const admin = await requireAdmin(req)
+  const body = await readJson(req)
+  const spotId = id(body.id, 'id')
 
-  const { id, email, title, description, category, categories, lat, lng, city, address, postalCode } = body as {
-    id?: string; email?: string; title?: string; description?: string
-    category?: string; categories?: string[]; lat?: number; lng?: number
-    city?: string; address?: string; postalCode?: string
-  }
+  const ref = adminDb().collection('benches').doc(spotId)
+  const snap = await ref.get()
+  if (!snap.exists) throw new HttpError(404, 'not_found')
+  const data = snap.data() ?? {}
+  const kind = deriveSpotKind(data)
+  const fields = parseSpotFields(body, kind)
 
-  const allow = adminEmails()
-  if (!email || !allow.includes(String(email).toLowerCase())) {
-    return NextResponse.json({ error: 'not_admin' }, { status: 403 })
-  }
-  if (!id) return NextResponse.json({ error: 'id_required' }, { status: 400 })
-
-  const ref = doc(db, 'benches', id)
-  const snap = await getDoc(ref)
-  if (!snap.exists()) return NextResponse.json({ error: 'not_found' }, { status: 404 })
-
-  if (!title?.trim()) return NextResponse.json({ error: 'title_required' }, { status: 400 })
-  if (typeof lat !== 'number' || typeof lng !== 'number' || Number.isNaN(lat) || Number.isNaN(lng)) {
-    return NextResponse.json({ error: 'location_required' }, { status: 400 })
-  }
-  const kind = deriveSpotKind(snap.data())
-  const catIds = spotCategoryIds({ categories, category }, kind)
-
-  await updateDoc(ref, {
-    title: title.trim().slice(0, 80),
-    description: (description ?? '').trim().slice(0, 600),
-    categories: catIds,
-    lat,
-    lng,
-    address: address?.trim()?.slice(0, 120) || null,
-    postalCode: postalCode?.trim()?.slice(0, 16) || null,
-    city: city?.trim()?.slice(0, 60) || null,
-    updatedAt: serverTimestamp(),
+  await ref.update({
+    ...fields,
+    updatedBy: admin.uid,
+    updatedAt: FieldValue.serverTimestamp(),
   })
 
-  revalidateSpot(kind, snap.data().slug)
-  return NextResponse.json({ ok: true, id, slug: snap.data().slug })
-}
+  const slug = String(data.slug ?? spotId)
+  revalidateSpot(kind, slug)
+  return NextResponse.json({ ok: true, id: spotId, slug })
+})

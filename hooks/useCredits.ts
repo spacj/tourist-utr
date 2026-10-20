@@ -1,73 +1,68 @@
-// hooks/useCredits.ts
 'use client'
-import { useCallback, useEffect, useState } from 'react'
-import { HINT_COSTS, HintTier } from '@/types'
-import { enqueue, onReplay } from '@/lib/offlineQueue'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { apiPost, ApiError } from '@/lib/apiFetch'
+import type { ActiveClueView, HintContent, HintTier, LatLngRadius } from '@/types'
 
-function isNetworkError(err: unknown): boolean {
-  // fetch throws TypeError on offline / DNS failure / unreachable host.
-  return err instanceof TypeError
+export interface UnlockResult {
+  ok: true
+  alreadyUnlocked: boolean
+  credits: number
+  tier: HintTier
+  content: HintContent | null
+  target?: LatLngRadius
+  clue: ActiveClueView | null
 }
 
+export type UnlockOutcome =
+  | { ok: true; data: UnlockResult }
+  | { ok: false; code: string }
+
+/**
+ * Hint credits for one session. `credits` follows the prop (HuntClient
+ * refreshes it after a PayPal return), and every server reply that carries a
+ * balance updates it. Errors come back as codes for the caller to show.
+ */
 export function useCredits(initial: number, sessionId: string) {
-  const [credits,   setCredits]   = useState(initial)
-  const [unlocking, setUnlocking] = useState(false)
-  const [error,     setError]     = useState<string | null>(null)
+  const [credits, setCredits] = useState(initial)
+  const [unlocking, setUnlocking] = useState<HintTier | null>(null)
+  const inFlight = useRef(false)
 
-  const canAfford = useCallback((tier: HintTier) => credits >= HINT_COSTS[tier], [credits])
+  // Fix stale initial state: follow the prop when the parent refreshes it.
+  useEffect(() => { setCredits(initial) }, [initial])
 
-  // When a queued hint-unlock replays successfully, the server returns the
-  // authoritative creditsRemaining. Reconcile our optimistic local count.
-  useEffect(() => {
-    return onReplay((item, response) => {
-      if (item.url !== '/api/hints/unlock') return
-      if ((item.body as any)?.sessionId !== sessionId) return
-      const r = response as { creditsRemaining?: number } | null
-      if (r && typeof r.creditsRemaining === 'number') setCredits(r.creditsRemaining)
-    })
-  }, [sessionId])
-
-  const unlockHint = useCallback(async (clueId: string, tier: HintTier): Promise<boolean> => {
-    setUnlocking(true)
-    setError(null)
+  const unlock = useCallback(async (clueId: string, tier: HintTier): Promise<UnlockOutcome> => {
+    if (inFlight.current) return { ok: false, code: 'busy' }
+    if (typeof navigator !== 'undefined' && !navigator.onLine) return { ok: false, code: 'offline' }
+    inFlight.current = true
+    setUnlocking(tier)
     try {
-      const res = await fetch('/api/hints/unlock', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, clueId, tier }),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) { setError(data.error ?? 'Failed'); return false }
-      if (typeof data.creditsRemaining === 'number') setCredits(data.creditsRemaining)
-      return true
+      const data = await apiPost<UnlockResult>('/api/hints/unlock', { sessionId, clueId, tier })
+      if (typeof data.credits === 'number') setCredits(data.credits)
+      return { ok: true, data }
     } catch (e) {
-      // Offline: optimistically decrement local credits and queue the spend
-      // so it replays once the network is back.
-      if (isNetworkError(e)) {
-        await enqueue({
-          url: '/api/hints/unlock',
-          body: { sessionId, clueId, tier },
-          reconcileKey: `hint:${sessionId}:${clueId}:${tier}`,
-        })
-        setCredits(c => Math.max(0, c - HINT_COSTS[tier]))
-        return true
-      }
-      setError('Network error')
-      return false
+      if (e instanceof ApiError) return { ok: false, code: e.code }
+      return { ok: false, code: 'network' }
     } finally {
-      setUnlocking(false)
+      inFlight.current = false
+      setUnlocking(null)
     }
   }, [sessionId])
 
-  const startCheckout = useCallback(async (packageId: string) => {
-    const res  = await fetch('/api/purchases/checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId, packageId }),
-    })
-    const { url } = await res.json()
-    if (url) window.location.href = url
+  /** Start a PayPal checkout. Resolves true when the browser is redirecting. */
+  const startCheckout = useCallback(async (packageId: string): Promise<{ ok: boolean; code?: string }> => {
+    try {
+      const { url } = await apiPost<{ url?: string }>('/api/purchases/checkout', { sessionId, packageId })
+      if (url) {
+        window.location.href = url
+        return { ok: true }
+      }
+      return { ok: false, code: 'checkout_failed' }
+    } catch (e) {
+      return { ok: false, code: e instanceof ApiError ? e.code : 'network' }
+    }
   }, [sessionId])
 
-  return { credits, canAfford, unlockHint, unlocking, error, startCheckout }
+  const canAfford = useCallback((cost: number) => credits >= cost, [credits])
+
+  return { credits, setCredits, canAfford, unlock, unlocking, startCheckout }
 }

@@ -1,47 +1,72 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/firebase'
-import { doc, getDoc, setDoc, updateDoc, increment, serverTimestamp } from 'firebase/firestore'
+import { NextResponse } from 'next/server'
+import { adminDb, FieldValue } from '@/lib/firebaseAdmin'
+import { handle, requireUser, readJson, id, rateLimit, HttpError } from '@/lib/apiAuth'
+import { loadOwnedSession, isAbandoned } from '@/lib/sessionServer'
 
 /**
- * POST /api/accuse  — body: { sessionId, suspect, weapon, place }
+ * POST /api/accuse — Authorization: Bearer <ID token>
+ * Body: { sessionId, suspect, weapon, place }
  *
- * Validates a mystery accusation against the hunt's solution (kept server-side
- * only, never shipped to the client). One accusation per session: the result
- * is stored idempotently so re-submitting can't farm the bonus. Returns the
- * solution ids so the finale can reveal the answer after the guess.
+ * One accusation per session, only after every stop has been found. The
+ * accusation is recorded (create-once, in a transaction with the bonus)
+ * BEFORE the solution is returned, so the solution can't be fished out with
+ * a throwaway guess and then re-guessed.
  */
 const ACCUSE_BONUS = 300
 
-export async function POST(req: NextRequest) {
-  const { sessionId, suspect, weapon, place } = await req.json().catch(() => ({} as any))
-  if (!sessionId || !suspect || !weapon || !place) {
-    return NextResponse.json({ error: 'missing_params' }, { status: 400 })
+export const POST = handle(async (req) => {
+  const user = await requireUser(req)
+  rateLimit(`accuse:${user.uid}`, 10, 60_000)
+  const body = await readJson(req)
+  const sessionId = id(body.sessionId, 'sessionId')
+  const suspect = id(body.suspect, 'suspect')
+  const weapon = id(body.weapon, 'weapon')
+  const place = id(body.place, 'place')
+
+  const db = adminDb()
+  const { ref: sessionRef, data: session } = await loadOwnedSession(sessionId, user)
+  if (isAbandoned(session)) throw new HttpError(409, 'session_abandoned')
+
+  const huntRef = db.collection('hunts').doc(session.huntId)
+  // The solution lives in the server-only huntSecrets/{huntId}; older data
+  // kept it on hunt.mystery.solution.
+  const [secretSnap, huntSnap] = await Promise.all([
+    db.collection('huntSecrets').doc(session.huntId).get(),
+    huntRef.get(),
+  ])
+  type Solution = { suspect: string; weapon: string; place: string }
+  const isSolution = (v: unknown): v is Solution =>
+    !!v && typeof (v as Solution).suspect === 'string' &&
+    typeof (v as Solution).weapon === 'string' && typeof (v as Solution).place === 'string'
+  const secret = secretSnap.exists ? secretSnap.data()?.mysterySolution : undefined
+  const legacy = huntSnap.exists ? huntSnap.data()?.mystery?.solution : undefined
+  const solution: Solution | undefined = isSolution(secret) ? secret : isSolution(legacy) ? legacy : undefined
+  if (!solution) throw new HttpError(400, 'not_a_mystery')
+
+  // The case must be fully gathered: every stop of the hunt found.
+  const [cluesCount, arrivedCount] = await Promise.all([
+    huntRef.collection('clues').count().get(),
+    sessionRef.collection('sessionClues').where('arrivedAt', '!=', null).count().get(),
+  ])
+  const total = cluesCount.data().count
+  if (!session.completedAt || total === 0 || arrivedCount.data().count < total) {
+    throw new HttpError(409, 'case_not_finished')
   }
-
-  const sessionRef = doc(db, 'sessions', sessionId)
-  const sessionSnap = await getDoc(sessionRef)
-  if (!sessionSnap.exists()) return NextResponse.json({ error: 'session_not_found' }, { status: 404 })
-  const session = sessionSnap.data() as { huntId?: string }
-  if (!session.huntId) return NextResponse.json({ error: 'no_hunt' }, { status: 400 })
-
-  const huntSnap = await getDoc(doc(db, 'hunts', session.huntId))
-  const mystery = huntSnap.exists() ? (huntSnap.data() as any).mystery : null
-  const solution = mystery?.solution
-  if (!solution) return NextResponse.json({ error: 'not_a_mystery' }, { status: 400 })
 
   const correct = suspect === solution.suspect && weapon === solution.weapon && place === solution.place
+  const accuseRef = sessionRef.collection('accusation').doc('result')
 
-  // One accusation per session — return the locked-in result on re-submit.
-  const accuseRef = doc(db, 'sessions', sessionId, 'accusation', 'result')
-  const existing = await getDoc(accuseRef)
-  if (existing.exists()) {
-    const d = existing.data() as { correct?: boolean }
-    return NextResponse.json({ alreadyAccused: true, correct: !!d.correct, solution, bonus: 0 })
-  }
+  const r = await db.runTransaction(async (tx) => {
+    const existing = await tx.get(accuseRef)
+    if (existing.exists) {
+      return { alreadyAccused: true, correct: !!existing.data()?.correct, bonus: 0 }
+    }
+    const bonus = correct ? ACCUSE_BONUS : 0
+    tx.create(accuseRef, { suspect, weapon, place, correct, bonus, at: FieldValue.serverTimestamp() })
+    if (bonus > 0) tx.update(sessionRef, { score: FieldValue.increment(bonus) })
+    return { alreadyAccused: false, correct, bonus }
+  })
 
-  const bonus = correct ? ACCUSE_BONUS : 0
-  await setDoc(accuseRef, { suspect, weapon, place, correct, bonus, at: serverTimestamp() })
-  if (bonus > 0) await updateDoc(sessionRef, { score: increment(bonus) })
-
-  return NextResponse.json({ correct, solution, bonus })
-}
+  // Recorded (now or earlier) → safe to reveal the solution.
+  return NextResponse.json({ ...r, solution })
+})

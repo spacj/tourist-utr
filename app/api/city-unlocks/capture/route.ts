@@ -1,60 +1,55 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/firebase'
+import { NextRequest } from 'next/server'
 import { captureOrder } from '@/lib/paypal'
-import { CITY_UNLOCK_PRICE_EUROS } from '@/types'
-import { cityUnlockId } from '@/lib/cityUnlock'
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { processCapture, priorPayment, redirectTo } from '@/lib/payments'
 
+export const dynamic = 'force-dynamic'
+
+const ID_RE = /^[A-Za-z0-9_-]{1,128}$/
+
+/**
+ * GET /api/city-unlocks/capture?cityId=…&token=<PayPal order id>
+ *
+ * Browser redirect back from PayPal — no Bearer token. Authorization comes
+ * from the PayPal-verified order (custom_id → uid + cityId), never from the
+ * query string; `cityId` in the URL is only used to pick a redirect target
+ * when the order can't be read. Always answers with a redirect:
+ *   /city/{cityId}?paypal=success&unlocked=1 | ?paypal=pending|refunded|error
+ */
 export async function GET(req: NextRequest) {
-  const cityId = req.nextUrl.searchParams.get('cityId')
-  const userId = req.nextUrl.searchParams.get('userId')
-  const paypalToken = req.nextUrl.searchParams.get('token')
-
-  if (!cityId || !userId || !paypalToken) {
-    return NextResponse.json({ error: 'Missing parameters' }, { status: 400 })
+  const qCity = req.nextUrl.searchParams.get('cityId')
+  const token = req.nextUrl.searchParams.get('token')
+  const fallbackCity = qCity && ID_RE.test(qCity) ? qCity : null
+  // `unlocked=1` is kept alongside paypal=success for the existing city page.
+  const to = (cityId: string | null, flag: string) => {
+    const q = flag === 'success' ? 'paypal=success&unlocked=1' : `paypal=${flag}`
+    return redirectTo(cityId ? `/city/${encodeURIComponent(cityId)}?${q}` : `/?${q}`)
   }
 
-  const unlockRef = doc(db, 'cityUnlocks', cityUnlockId(userId, cityId))
+  if (!token || !ID_RE.test(token)) return to(fallbackCity, 'error')
 
-  // Idempotency — webhook might have written this already.
-  const existing = await getDoc(unlockRef)
-  if (existing.exists()) {
-    return NextResponse.redirect(new URL(`/city/${cityId}?unlocked=1`, req.url))
+  try {
+    const prior = await priorPayment(token)
+    if (prior) {
+      const flag = prior.status === 'granted' ? 'success' : prior.status === 'refunded' ? 'refunded' : 'error'
+      return to(prior.cityId ?? fallbackCity, flag)
+    }
+
+    const info = await captureOrder(token)
+    const outcome = await processCapture(info, 'redirect')
+    const cityId = outcome.meta?.kind === 'city_unlock' ? outcome.meta.cityId : fallbackCity
+    if (outcome.meta && outcome.meta.kind !== 'city_unlock') {
+      // A credit-pack order sent to the city route — it was still processed
+      // correctly by processCapture; just land somewhere sensible.
+      return redirectTo(`/hunt?session=${encodeURIComponent(outcome.meta.sessionId)}&credits=${outcome.status === 'granted' ? 'added' : 'error'}`)
+    }
+    switch (outcome.status) {
+      case 'granted': return to(cityId, 'success')
+      case 'refunded': return to(cityId, 'refunded')
+      case 'pending': return to(cityId, 'pending')
+      default: return to(cityId, 'error')
+    }
+  } catch (e) {
+    console.error('[city-unlocks/capture]', token, e)
+    return to(fallbackCity, 'error')
   }
-
-  const result = await captureOrder(paypalToken)
-  if (!result.success) {
-    return NextResponse.redirect(new URL(`/city/${cityId}?paypal=cancelled`, req.url))
-  }
-
-  // Security: verify the captured order's metadata matches the URL params.
-  // Without this, an attacker could swap cityId/userId in the redirect URL
-  // to grant a different unlock from their own paid order.
-  const meta = result.metadata
-  if (
-    !meta ||
-    meta.kind !== 'city_unlock' ||
-    meta.cityId !== cityId ||
-    meta.userId !== userId
-  ) {
-    // The capture went through on PayPal's side but the metadata doesn't
-    // match — refuse to grant. The customer keeps their charge but we
-    // don't grant access; investigate via PayPal dashboard if this happens.
-    return NextResponse.redirect(new URL(`/city/${cityId}?paypal=mismatch`, req.url))
-  }
-
-  const citySnap = await getDoc(doc(db, 'cities', cityId))
-  const priceEuros = (citySnap.data() as { priceEuros?: number } | undefined)?.priceEuros ?? CITY_UNLOCK_PRICE_EUROS
-
-  await setDoc(unlockRef, {
-    userId,
-    cityId,
-    paypalCaptureId: result.captureId ?? paypalToken,
-    paypalOrderId: paypalToken,
-    amountCents: Math.round(priceEuros * 100),
-    completedAt: serverTimestamp(),
-    grantedVia: 'redirect',
-  })
-
-  return NextResponse.redirect(new URL(`/city/${cityId}?unlocked=1`, req.url))
 }

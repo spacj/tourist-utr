@@ -1,39 +1,47 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, Fraunces } from 'next/font/google'
-import Script from 'next/script'
+import { Instrument_Sans, Young_Serif, Courier_Prime } from 'next/font/google'
 import { AuthProvider } from '@/components/AuthProvider'
 import { I18nProvider } from '@/hooks/useI18n'
 import { PwaInstallBanner } from '@/components/PwaInstallBanner'
 import { OfflineIndicator } from '@/components/OfflineIndicator'
+import { ConsentManager } from '@/components/ConsentManager'
+import { ToastProvider } from '@/components/Toast'
+import { SITE_URL, SITE_NAME } from '@/lib/site'
 import './globals.css'
+import './styles/components.css'
+import './styles/flows.css'
+import './styles/game.css'
 
-// Google Analytics 4. Override per environment with NEXT_PUBLIC_GA_ID; only
-// loaded in production so local dev traffic doesn't pollute the metrics.
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-KQ3MX9KC6G'
-const GA_ENABLED = process.env.NODE_ENV === 'production' && !!GA_ID
+// Google Analytics 4 and AdSense. Production-only, and loaded by
+// <ConsentManager> only after the visitor opts in (GDPR/ePrivacy).
+const IS_PROD = process.env.NODE_ENV === 'production'
+const GA_ID = IS_PROD ? (process.env.NEXT_PUBLIC_GA_ID || 'G-KQ3MX9KC6G') : null
+const ADSENSE_CLIENT = IS_PROD ? (process.env.NEXT_PUBLIC_ADSENSE_CLIENT || 'ca-pub-7503389769071622') : null
 
-// Google AdSense. Override with NEXT_PUBLIC_ADSENSE_CLIENT; production-only so
-// the script (and crawler) only see it on the live site.
-const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT || 'ca-pub-7503389769071622'
-const ADSENSE_ENABLED = process.env.NODE_ENV === 'production' && !!ADSENSE_CLIENT
-
-const inter = Inter({
-  subsets: ['latin'],
+// Field-notebook type: a crisp grotesk for UI, a warm display serif for
+// headings, and a typewriter face for clues and case notes.
+const sans = Instrument_Sans({
+  subsets: ['latin', 'latin-ext'],
   display: 'swap',
   variable: '--font-sans',
 })
 
-const fraunces = Fraunces({
-  subsets: ['latin'],
+const display = Young_Serif({
+  subsets: ['latin', 'latin-ext'],
   display: 'swap',
-  weight: ['500', '600', '700'],
+  weight: '400',
   variable: '--font-serif',
 })
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tourhunts.com'
-const SITE_NAME = 'TourHunts'
-const DEFAULT_TITLE = 'TourHunts — GPS scavenger hunts in cities around the world'
-const DEFAULT_DESC = 'Self-guided GPS walking adventures through the world\'s most beautiful cities. Solve riddles, discover hidden stories, race friends in real-time multiplayer. €5 lifetime per city — first hunt free.'
+const typewriter = Courier_Prime({
+  subsets: ['latin', 'latin-ext'],
+  display: 'swap',
+  weight: ['400', '700'],
+  variable: '--font-mono',
+})
+
+const DEFAULT_TITLE = 'TourHunts — puzzle walks through Dutch cities'
+const DEFAULT_DESC = 'Walk Utrecht, Amsterdam, Delft and more with a phone full of riddles. Crack each clue, find the place, hear its story. Your first hunt in every city is free; €5 unlocks the rest of that city.'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -46,33 +54,22 @@ export const metadata: Metadata = {
   authors: [{ name: 'TourHunts' }],
   generator: 'Next.js',
   keywords: [
-    'scavenger hunt', 'walking tour', 'GPS game', 'self-guided city tour',
-    'Netherlands tour', 'Italy tour', 'Spain tour', 'France tour',
-    'Utrecht walking tour', 'Amsterdam scavenger hunt', 'Rome treasure hunt',
-    'city game', 'treasure hunt app', 'multiplayer city game', 'family travel activity',
-    'tourist game', 'tour hunts',
+    'scavenger hunt', 'city puzzle walk', 'self-guided walking tour',
+    'Utrecht scavenger hunt', 'Utrecht walking tour', 'Amsterdam scavenger hunt',
+    'Delft city game', 'Leiden walking tour', 'Haarlem scavenger hunt',
+    'family activity Netherlands', 'outdoor escape game', 'treasure hunt app',
   ],
   category: 'travel',
   referrer: 'origin-when-cross-origin',
   creator: 'TourHunts',
   publisher: 'TourHunts',
   formatDetection: { email: false, address: false, telephone: false },
-  alternates: {
-    canonical: SITE_URL,
-    languages: {
-      'en': SITE_URL,
-      'nl': SITE_URL,
-      'de': SITE_URL,
-      'fr': SITE_URL,
-      'it': SITE_URL,
-      'es': SITE_URL,
-      'x-default': SITE_URL,
-    },
-  },
+  // No site-wide canonical: each page declares its own (a layout-level
+  // canonical would tell Google every page is the homepage). Languages share
+  // one URL (client-side switch), so no hreflang alternates either.
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    alternateLocale: ['nl_NL', 'de_DE', 'fr_FR', 'it_IT', 'es_ES'],
     url: SITE_URL,
     siteName: SITE_NAME,
     title: DEFAULT_TITLE,
@@ -97,14 +94,15 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
     ],
-    apple: '/icon.svg',
+    apple: '/apple-touch-icon.png',
   },
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     title: 'TourHunts',
-    statusBarStyle: 'black-translucent',
+    statusBarStyle: 'default',
   },
 }
 
@@ -116,7 +114,7 @@ export const viewport: Viewport = {
   maximumScale: 5,
   userScalable: true,
   viewportFit: 'cover',
-  themeColor: '#0b0d1a',
+  themeColor: '#F5F0E6',
 }
 
 const ORG_JSONLD = {
@@ -124,7 +122,7 @@ const ORG_JSONLD = {
   '@type': 'Organization',
   name: SITE_NAME,
   url: SITE_URL,
-  logo: `${SITE_URL}/icon.svg`,
+  logo: `${SITE_URL}/icon-512.png`,
   sameAs: [],
 }
 
@@ -134,16 +132,11 @@ const WEBSITE_JSONLD = {
   name: SITE_NAME,
   url: SITE_URL,
   inLanguage: ['en', 'nl', 'de', 'fr', 'it', 'es'],
-  potentialAction: {
-    '@type': 'SearchAction',
-    target: `${SITE_URL}/?q={search_term_string}`,
-    'query-input': 'required name=search_term_string',
-  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${fraunces.variable}`}>
+    <html lang="en" className={`${sans.variable} ${display.variable} ${typewriter.variable}`}>
       <head>
         <script
           type="application/ld+json"
@@ -157,9 +150,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <I18nProvider>
           <AuthProvider>
-            {children}
-            <PwaInstallBanner />
-            <OfflineIndicator />
+            <ToastProvider>
+              <ConsentManager gaId={GA_ID} adsClient={ADSENSE_CLIENT}>
+                {children}
+                <PwaInstallBanner />
+                <OfflineIndicator />
+              </ConsentManager>
+            </ToastProvider>
           </AuthProvider>
         </I18nProvider>
         <script dangerouslySetInnerHTML={{ __html: `
@@ -170,29 +167,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }
         ` }} />
 
-        {GA_ENABLED && (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-              strategy="afterInteractive"
-            />
-            <Script id="ga-init" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', '${GA_ID}');
-            ` }} />
-          </>
-        )}
-
-        {ADSENSE_ENABLED && (
-          <Script
-            id="adsbygoogle-init"
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
-            strategy="afterInteractive"
-            crossOrigin="anonymous"
-          />
-        )}
       </body>
     </html>
   )

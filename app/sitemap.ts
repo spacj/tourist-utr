@@ -1,6 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { db } from '@/lib/firebase'
-import { collection, getDocs } from 'firebase/firestore'
+import { adminDb } from '@/lib/firebaseAdmin'
 import { getAllPostsMeta } from '@/lib/blog'
 import { getAllSpots } from '@/lib/benches'
 import { SPOT_KINDS, type SpotKind } from '@/types'
@@ -46,7 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           priority: 0.6,
         })
       }
-    } catch {}
+    } catch (e) { console.error('[sitemap]', e) }
   }
 
   // ── Blog posts ───────────────────────────────────────────────────
@@ -62,7 +61,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // ── Countries ────────────────────────────────────────────────────
   const countryEntries: MetadataRoute.Sitemap = []
   try {
-    const countriesSnap = await getDocs(collection(db, 'countries'))
+    const countriesSnap = await adminDb().collection('countries').get()
     countriesSnap.docs
       .filter(d => d.data().active !== false && !d.data().comingSoon)
       .forEach(d => {
@@ -74,12 +73,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           priority: 0.95,
         })
       })
-  } catch {}
+  } catch (e) { console.error('[sitemap]', e) }
 
   // ── Cities ───────────────────────────────────────────────────────
   const cityEntries: MetadataRoute.Sitemap = []
   try {
-    const citiesSnap = await getDocs(collection(db, 'cities'))
+    const citiesSnap = await adminDb().collection('cities').get()
     citiesSnap.docs
       .filter(d => d.data().active !== false)
       .forEach(d => {
@@ -91,7 +90,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           priority: 0.9,
         })
       })
-  } catch {}
+  } catch (e) { console.error('[sitemap]', e) }
 
   // ── Static / index pages ─────────────────────────────────────────
   // Their lastmod reflects the freshest item they list, so the value moves

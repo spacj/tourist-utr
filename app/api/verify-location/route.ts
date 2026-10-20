@@ -1,230 +1,87 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/firebase'
-import { SCORE, FREE_HUNT_STOP_LIMIT, playableStopCount } from '@/types'
+import { NextResponse } from 'next/server'
+import { adminDb } from '@/lib/firebaseAdmin'
+import { handle, requireUser, readJson, id, num, rateLimit, HttpError } from '@/lib/apiAuth'
+import { loadOwnedSession, isAbandoned } from '@/lib/sessionServer'
+import { haversineM, bearingDeg } from '@/lib/geo'
 import {
-  doc, getDoc, getDocs, collection, query, where, orderBy,
-  writeBatch, serverTimestamp, increment, runTransaction,
-} from 'firebase/firestore'
+  type ClueDoc, type SessionClueDoc, navState, sessionDifficulty, unlockedTiersFor,
+} from '@/lib/clueView'
+import { performArrival, arrivalPayload, closeRoomIfDone, resolveAt, roomIdOf } from '@/lib/arrival'
+import { arrivalRadiusM, warmthFor, type NotArrivedResponse } from '@/types'
 
-const RACE_FIRST_BONUS = 50
+/**
+ * POST /api/verify-location — Authorization: Bearer <ID token>
+ * Body: { sessionId, clueId, lat, lng, accuracy?, at?, debugArrive? }
+ *   at          — ms epoch of the fix, for queued offline replays (accepted within 2 h)
+ *   debugArrive — admins only: treat as arrived
+ *
+ * Not arrived → NotArrivedResponse { arrived:false, warmth, distanceM?, bearing?, totalScore }
+ *   (distance/bearing only while the stop's navigation is 'compass')
+ * Arrived     → ArrivalResponse (see types/index.ts)
+ */
+export const POST = handle(async (req) => {
+  const user = await requireUser(req)
+  rateLimit(`verify-location:${user.uid}`, 40, 60_000)
 
-function haversineM(lat1: number, lng1: number, lat2: number, lng2: number) {
-  const R = 6_371_000
-  const r = (d: number) => (d * Math.PI) / 180
-  const a =
-    Math.sin(r(lat2 - lat1) / 2) ** 2 +
-    Math.cos(r(lat1)) * Math.cos(r(lat2)) * Math.sin(r(lng2 - lng1) / 2) ** 2
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-}
+  const body = await readJson(req)
+  const sessionId = id(body.sessionId, 'sessionId')
+  const clueId = id(body.clueId, 'clueId')
+  const lat = num(body.lat, 'lat', -90, 90)
+  const lng = num(body.lng, 'lng', -180, 180)
+  const accuracy = body.accuracy === undefined || body.accuracy === null
+    ? 0
+    : num(body.accuracy, 'accuracy', 0, 100_000)
+  const debugArrive = user.isAdmin && body.debugArrive === true
 
-function bearingDeg(lat1: number, lng1: number, lat2: number, lng2: number) {
-  const r = (d: number) => (d * Math.PI) / 180
-  const y = Math.sin(r(lng2 - lng1)) * Math.cos(r(lat2))
-  const x = Math.cos(r(lat1)) * Math.sin(r(lat2)) -
-             Math.sin(r(lat1)) * Math.cos(r(lat2)) * Math.cos(r(lng2 - lng1))
-  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360
-}
+  const db = adminDb()
+  const { ref: sessionRef, data: session } = await loadOwnedSession(sessionId, user)
+  if (isAbandoned(session)) throw new HttpError(409, 'session_abandoned')
 
-function compassDir(deg: number) {
-  const dirs = ['north','north-east','east','south-east','south','south-west','west','north-west']
-  return dirs[Math.round(((deg % 360) + 360) % 360 / 45) % 8]
-}
+  const clueSnap = await db.collection('hunts').doc(session.huntId).collection('clues').doc(clueId).get()
+  if (!clueSnap.exists) throw new HttpError(404, 'clue_not_found')
+  const clue = clueSnap.data() as ClueDoc
 
-export async function POST(req: NextRequest) {
-  const { sessionId, clueId, lat, lng } = await req.json()
-
-  const sessionRef = doc(db, 'sessions', sessionId)
-  const sessionSnap = await getDoc(sessionRef)
-  if (!sessionSnap.exists()) return NextResponse.json({ error: 'Session not found' }, { status: 404 })
-  const session = sessionSnap.data()
-
-  const clueSnap = await getDoc(doc(db, 'hunts', session.huntId, 'clues', clueId))
-  if (!clueSnap.exists()) return NextResponse.json({ error: 'Clue not found' }, { status: 404 })
-  const clue = clueSnap.data()
-
-  const scRef = doc(db, 'sessions', sessionId, 'sessionClues', clueId)
-  const scSnap = await getDoc(scRef)
-  if (!scSnap.exists()) return NextResponse.json({ error: 'Clue not active' }, { status: 403 })
-  const sc = scSnap.data()
-
-  if (sc.arrivedAt) return NextResponse.json({ arrived: true, alreadyConfirmed: true })
+  const scSnap = await sessionRef.collection('sessionClues').doc(clueId).get()
+  if (!scSnap.exists) throw new HttpError(403, 'clue_not_active')
+  const sc = scSnap.data() as SessionClueDoc
+  if (sc.arrivedAt) {
+    return NextResponse.json(await arrivalPayload({ db, sessionRef, session, clueId, clue, alreadyConfirmed: true }))
+  }
 
   const distanceM = haversineM(lat, lng, clue.lat, clue.lng)
-  const bearing = bearingDeg(lat, lng, clue.lat, clue.lng)
-  const rounded = Math.round(distanceM / 10) * 10
-
-  if (distanceM > clue.radiusM) {
-    return NextResponse.json({
+  if (!debugArrive && distanceM > arrivalRadiusM(clue.radiusM, accuracy)) {
+    const [difficulty, tiers] = await Promise.all([
+      sessionDifficulty(db, session),
+      unlockedTiersFor(sessionRef, clueId),
+    ])
+    const hasPuzzle = !!clue.puzzle?.prompt && !!clue.puzzle?.answer
+    const nav = navState(
+      difficulty,
+      hasPuzzle && !!sc.puzzleSolvedAt,
+      !!sc.pinRevealedAt || tiers.includes('3'),
+    )
+    const out: NotArrivedResponse = {
       arrived: false,
-      distanceM: Math.round(distanceM),
-      bearing,
-      dynamicHint3: `You're about ${rounded}m ${compassDir(bearing)} of the location.`,
-    })
-  }
-
-  // --- Scoring ---
-
-  const hintsSnap = await getDocs(
-    query(collection(db, 'sessions', sessionId, 'hintUnlocks'), where('clueId', '==', clueId))
-  )
-  const hintTiers = hintsSnap.docs.map(d => d.data().tier as number)
-  const hintPenalty = hintsSnap.docs.reduce((acc: number, d) => {
-    const h = d.data()
-    if (h.tier === 2) return acc + SCORE.hint2Penalty
-    if (h.tier === 3) return acc + SCORE.hint3Penalty
-    return acc
-  }, 0)
-
-  const elapsedMs = Date.now() - sc.unlockedAt.toMillis()
-  const timeFraction = Math.max(0, 1 - elapsedMs / SCORE.timeBonusWindowMs)
-  const timeBonus = Math.round(SCORE.timeBonus * timeFraction)
-
-  const usedNoHints = hintTiers.length === 0
-  const perfectBonus = usedNoHints ? SCORE.perfectClueBonus : 0
-
-  // Streak: count consecutive completed clues that also earned time bonus
-  const allScSnap = await getDocs(collection(db, 'sessions', sessionId, 'sessionClues'))
-  const completedClues = allScSnap.docs
-    .filter(d => d.data().arrivedAt !== null)
-    .sort((a, b) => {
-      const aTime = a.data().arrivedAt?.toMillis?.() ?? 0
-      const bTime = b.data().arrivedAt?.toMillis?.() ?? 0
-      return bTime - aTime
-    })
-
-  let streak = 0
-  for (const d of completedClues) {
-    if ((d.data().pointsEarned ?? 0) >= SCORE.base) {
-      streak++
-    } else {
-      break
+      warmth: warmthFor(distanceM),
+      totalScore: Number(session.score) || 0,
     }
-  }
-  if (timeBonus > 0 && usedNoHints) streak++
-  else streak = 0
-
-  const streakBonus = streak >= 2 ? SCORE.streakBonus * (streak - 1) : 0
-
-  // ── Race first-to-arrive bonus ──
-  // If this session belongs to a racing room, atomically claim the first-to-arrive slot
-  // for this clue. The first claimant for each clue earns RACE_FIRST_BONUS extra points.
-  let raceFirstBonus = 0
-  if (session.roomId) {
-    const claimRef = doc(db, 'rooms', session.roomId, 'clueClaims', clueId)
-    try {
-      raceFirstBonus = await runTransaction(db, async (tx) => {
-        const claimSnap = await tx.get(claimRef)
-        if (claimSnap.exists()) return 0
-        tx.set(claimRef, {
-          userId: session.userId,
-          sessionId,
-          claimedAt: serverTimestamp(),
-        })
-        return RACE_FIRST_BONUS
-      })
-    } catch {
-      raceFirstBonus = 0
+    if (nav.navigation === 'compass') {
+      out.distanceM = Math.round(distanceM)
+      out.bearing = Math.round(bearingDeg(lat, lng, clue.lat, clue.lng))
     }
+    return NextResponse.json(out)
   }
 
-  const pointsEarned = Math.max(0, SCORE.base + timeBonus + perfectBonus + streakBonus + raceFirstBonus - hintPenalty)
-
-  // --- Next clue ---
-
-  const allCluesSnap = await getDocs(
-    query(collection(db, 'hunts', session.huntId, 'clues'), orderBy('order'))
-  )
-  // Free hunts are a teaser: only the first FREE_HUNT_STOP_LIMIT stops are
-  // playable. Once the player completes that stop, the hunt ends with an
-  // unlock prompt instead of serving the next clue.
-  const isFree = session.isFree === true
-  const totalClues = playableStopCount(allCluesSnap.size, isFree)
-  const freeCapReached = isFree && clue.order >= FREE_HUNT_STOP_LIMIT
-  const nextClueDoc = freeCapReached
-    ? undefined
-    : allCluesSnap.docs.find(d => d.data().order === clue.order + 1)
-
-  const batch = writeBatch(db)
-
-  batch.update(scRef, { arrivedAt: serverTimestamp(), pointsEarned })
-  batch.update(sessionRef, {
-    score: increment(pointsEarned),
-    streak: streak,
+  const result = await performArrival({
+    db, uid: user.uid, sessionId, sessionRef, session, clueId, clue,
+    atMs: resolveAt(body.at),
+    skipSpeedCheck: debugArrive,
   })
+  if (result.kind === 'not_active') throw new HttpError(403, 'clue_not_active')
+  if (result.kind === 'implausible') throw new HttpError(422, 'implausible_speed')
+  if (result.kind === 'arrived' && result.huntComplete) await closeRoomIfDone(db, roomIdOf(session))
 
-  if (nextClueDoc) {
-    const nextScRef = doc(db, 'sessions', sessionId, 'sessionClues', nextClueDoc.id)
-    batch.set(nextScRef, {
-      clueId: nextClueDoc.id,
-      unlockedAt: serverTimestamp(),
-      arrivedAt: null,
-      pointsEarned: 0,
-    })
-  } else {
-    batch.update(sessionRef, { completedAt: serverTimestamp() })
-  }
-
-  // Mirror progress onto the room player document if this is a multiplayer session.
-  if (session.roomId && session.userId) {
-    const playerRef = doc(db, 'rooms', session.roomId, 'players', session.userId)
-    batch.update(playerRef, {
-      score: increment(pointsEarned),
-      cluesDone: increment(1),
-      currentClueId: nextClueDoc ? nextClueDoc.id : null,
-      ...(nextClueDoc ? {} : { finishedAt: serverTimestamp() }),
-    })
-    // When the player finishes, flip their active-room state to 'finished' so the
-    // resume banner switches over to "View race results" on every device they're on.
-    if (!nextClueDoc) {
-      batch.set(doc(db, 'userActiveRooms', session.userId), {
-        state: 'finished',
-        updatedAt: serverTimestamp(),
-      }, { merge: true })
-    }
-  }
-
-  await batch.commit()
-
-  // If this player just finished and they were the last unfinished racer, close out the room.
-  if (session.roomId && session.userId && !nextClueDoc) {
-    try {
-      const playersSnap = await getDocs(collection(db, 'rooms', session.roomId, 'players'))
-      const allDone = playersSnap.docs.every(d => d.data().finishedAt != null)
-      if (allDone) {
-        const roomSnap2 = await getDoc(doc(db, 'rooms', session.roomId))
-        if (roomSnap2.exists() && roomSnap2.data().state === 'racing') {
-          await runTransaction(db, async (tx) => {
-            const fresh = await tx.get(doc(db, 'rooms', session.roomId))
-            if (fresh.exists() && fresh.data().state === 'racing') {
-              tx.update(doc(db, 'rooms', session.roomId), {
-                state: 'finished',
-                finishedAt: serverTimestamp(),
-              })
-            }
-          })
-        }
-      }
-    } catch {
-      // Best-effort; scoreboard already reflects truth.
-    }
-  }
-
-  const nextClue = nextClueDoc
-    ? { id: nextClueDoc.id, ...nextClueDoc.data(), totalClues }
-    : null
-
-  return NextResponse.json({
-    arrived: true,
-    pointsEarned,
-    timeBonus,
-    streakBonus,
-    perfectBonus,
-    hintPenalty,
-    raceFirstBonus,
-    streak,
-    funFact: clue.funFact ?? null,
-    huntComplete: !nextClueDoc,
-    freeCapReached,
-    nextClue,
-  })
-}
+  return NextResponse.json(await arrivalPayload({
+    db, sessionRef, session, clueId, clue, alreadyConfirmed: result.kind === 'already',
+  }))
+})

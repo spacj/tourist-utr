@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { useIsAdmin } from '@/hooks/useIsAdmin'
+import { apiFetch, apiGet } from '@/lib/apiFetch'
 import { Bench, SpotKind, SPOT_KINDS } from '@/types'
 import { PlacesGuideMap } from '@/components/PlacesGuideMap'
 import type { Place, PlaceCategory } from '@/lib/md'
@@ -60,11 +61,8 @@ export function SpotEditForm({ kind, id }: { kind: SpotKind; id: string }) {
   const reverseGeocode = async (lat: number, lng: number) => {
     setAddrState('looking')
     try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
-        { headers: { 'Accept-Language': 'en' } }
-      )
-      const data = await res.json()
+      // Server proxy: Nominatim's policy forbids anonymous browser traffic.
+      const data = await apiGet(`/api/geocode?lat=${lat}&lng=${lng}`)
       const a = data?.address ?? {}
       const road = a.road || a.pedestrian || a.footway || a.path || a.cycleway || ''
       const houseNumber = a.house_number || ''
@@ -104,12 +102,10 @@ export function SpotEditForm({ kind, id }: { kind: SpotKind; id: string }) {
     if (!user || !spot || !coords || !title.trim() || categories.length === 0 || submitting) return
     setSubmitting(true); setError(null)
     try {
-      const res = await fetch('/api/benches', {
+      const res = await apiFetch('/api/benches', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: spot.id,
-          email: user.email,
           title: title.trim(),
           description: description.trim(),
           city: city.trim(),

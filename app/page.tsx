@@ -1,5 +1,10 @@
+import type { Metadata } from 'next'
 import { HomeClient } from './HomeClient'
 import { getAllPostsMeta } from '@/lib/blog'
+
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+}
 
 // Server component: pulls the 3 most recent blog posts off disk so the
 // client homepage can show them in a "From the blog" strip without doing

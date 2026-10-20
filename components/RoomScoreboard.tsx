@@ -3,7 +3,12 @@ import { useEffect, useState } from 'react'
 import { collection, doc, onSnapshot, query, orderBy } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useAuth } from '@/components/AuthProvider'
+import { ConfirmDialog } from '@/components/Modal'
+import { useToast } from '@/components/Toast'
 import { useI18n } from '@/hooks/useI18n'
+import { apiPost } from '@/lib/apiFetch'
+import { errorKey } from '@/lib/apiErrors'
+import { fmt } from '@/lib/i18n/fmt'
 
 interface Props {
   roomId: string
@@ -12,7 +17,8 @@ interface Props {
 }
 
 type Player = {
-  userId: string
+  /** Player docs are keyed by uid; compared to the signed-in uid only. */
+  isYou: boolean
   displayName: string
   photoURL: string | null
   score: number
@@ -21,10 +27,12 @@ type Player = {
   currentClueId?: string | null
 }
 
+// Public stop list written to the room doc at race start (no coordinates,
+// answers or location names — hunts/*/clues is server-only).
 type ClueInfo = {
   id: string
   order: number
-  locationName: string
+  theme: string | null
   icon: string
 }
 
@@ -35,9 +43,13 @@ function formatTime(ms: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
-export function RoomScoreboard({ roomId, totalClues, huntId }: Props) {
+export function RoomScoreboard({ roomId, totalClues }: Props) {
   const { user } = useAuth()
   const { t } = useI18n()
+  const toast = useToast()
+  const [confirmAbandon, setConfirmAbandon] = useState(false)
+  const [abandoning, setAbandoning] = useState(false)
+  const uid = user?.uid ?? null
   const [players, setPlayers] = useState<Player[]>([])
   const [roomCode, setRoomCode] = useState<string | null>(null)
   const [roomStartedAt, setRoomStartedAt] = useState<number | null>(null)
@@ -51,8 +63,8 @@ export function RoomScoreboard({ roomId, totalClues, huntId }: Props) {
         setPlayers(snap.docs.map(d => {
           const p = d.data()
           return {
-            userId: p.userId,
-            displayName: p.displayName || 'Player',
+            isYou: !!uid && d.id === uid,
+            displayName: p.displayName || t('playerFallback'),
             photoURL: p.photoURL ?? null,
             score: p.score ?? 0,
             cluesDone: p.cluesDone ?? 0,
@@ -67,25 +79,16 @@ export function RoomScoreboard({ roomId, totalClues, huntId }: Props) {
         const d = s.data()
         setRoomCode(d.code ?? null)
         setRoomStartedAt(d.startedAt?.toMillis?.() ?? null)
+        setClues(Array.isArray(d.stops) ? d.stops.map((c: any) => ({
+          id: String(c.id),
+          order: c.order ?? 0,
+          theme: c.theme ?? null,
+          icon: c.icon ?? '📍',
+        })) : [])
       }
     })
     return () => { unsub(); unsubRoom() }
-  }, [roomId])
-
-  useEffect(() => {
-    const unsub = onSnapshot(
-      query(collection(db, 'hunts', huntId, 'clues'), orderBy('order')),
-      snap => {
-        setClues(snap.docs.map(d => ({
-          id: d.id,
-          order: d.data().order,
-          locationName: d.data().locationName,
-          icon: d.data().icon ?? '📍',
-        })))
-      }
-    )
-    return () => unsub()
-  }, [huntId])
+  }, [roomId, uid, t])
 
   const sorted = [...players].sort((a, b) => {
     if (a.finishedAt && b.finishedAt) return a.finishedAt - b.finishedAt
@@ -95,8 +98,8 @@ export function RoomScoreboard({ roomId, totalClues, huntId }: Props) {
     return b.score - a.score
   })
 
-  const myRank = user ? sorted.findIndex(p => p.userId === user.uid) + 1 : 0
-  const me = user ? sorted.find(p => p.userId === user.uid) : null
+  const myRank = sorted.findIndex(p => p.isYou) + 1
+  const me = sorted.find(p => p.isYou) ?? null
   const ahead = me ? sorted.filter(p => p !== me && (p.cluesDone > me.cluesDone || (p.cluesDone === me.cluesDone && p.score > me.score))) : []
   const leader = sorted[0]
   const isRacing = roomStartedAt !== null && !players.every(p => p.finishedAt)
@@ -104,6 +107,19 @@ export function RoomScoreboard({ roomId, totalClues, huntId }: Props) {
   if (players.length <= 1) return null
 
   const clueMap = new Map(clues.map(c => [c.id, c]))
+
+  const abandon = async () => {
+    setConfirmAbandon(false)
+    if (abandoning) return
+    setAbandoning(true)
+    try {
+      await apiPost('/api/rooms/abandon', { roomId })
+      window.location.href = roomCode ? `/multiplayer/${roomCode}` : '/multiplayer'
+    } catch (e) {
+      setAbandoning(false)
+      toast.error(t(errorKey(e)))
+    }
+  }
 
   return (
     <>
@@ -121,18 +137,18 @@ export function RoomScoreboard({ roomId, totalClues, huntId }: Props) {
         <div className="mp-scoreboard-panel">
           <div className="mp-scoreboard-header">
             <span>{t('liveScoreboard')}</span>
-            <button className="mp-scoreboard-close" onClick={() => setOpen(false)} aria-label="close">×</button>
+            <button type="button" className="mp-scoreboard-close" onClick={() => setOpen(false)} aria-label={t('close')}>×</button>
           </div>
           <ul className="mp-scoreboard-list">
             {sorted.map((p, i) => {
-              const isMe = !!user && p.userId === user.uid
+              const isMe = p.isYou
               const pct = totalClues ? Math.min(100, Math.round((p.cluesDone / totalClues) * 100)) : 0
               const currentClue = p.currentClueId ? clueMap.get(p.currentClueId) : null
               const elapsed = p.finishedAt && roomStartedAt ? p.finishedAt - roomStartedAt : null
               const behindMs = leader?.finishedAt && p.finishedAt ? p.finishedAt - leader.finishedAt : null
 
               return (
-                <li key={p.userId} className={`mp-scoreboard-row ${isMe ? 'is-me' : ''} ${p.finishedAt ? 'is-done' : ''}`}>
+                <li key={i} className={`mp-scoreboard-row ${isMe ? 'is-me' : ''} ${p.finishedAt ? 'is-done' : ''}`}>
                   <span className="mp-scoreboard-rank">
                     {i === 0 && p.finishedAt ? '🥇' : i === 1 && p.finishedAt ? '🥈' : i === 2 && p.finishedAt ? '🥉' : i + 1}
                   </span>
@@ -148,7 +164,7 @@ export function RoomScoreboard({ roomId, totalClues, huntId }: Props) {
                   <div className="mp-scoreboard-meta">
                     {currentClue && !p.finishedAt && (
                       <div className="mp-scoreboard-location">
-                        {currentClue.icon} {currentClue.locationName}
+                        {currentClue.icon} {currentClue.theme ?? ''}
                       </div>
                     )}
                     {p.finishedAt && elapsed && (
@@ -172,7 +188,7 @@ export function RoomScoreboard({ roomId, totalClues, huntId }: Props) {
           </ul>
           {isRacing && ahead.length > 0 && (
             <div className="mp-scoreboard-foot">
-              {ahead.length} {t('players')} {t('mpBehindLeader')}
+              {fmt(t('playersAhead'), { n: ahead.length })}
             </div>
           )}
           {roomCode && (
@@ -180,25 +196,28 @@ export function RoomScoreboard({ roomId, totalClues, huntId }: Props) {
               {t('openLobby')} · {roomCode}
             </a>
           )}
-          {isRacing && me && !me.finishedAt && user && (
+          {isRacing && me && !me.finishedAt && (
             <button
               type="button"
               className="mp-scoreboard-abandon"
-              onClick={async () => {
-                if (!confirm(t('abandonConfirm'))) return
-                await fetch('/api/rooms/abandon', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ roomId, userId: user.uid }),
-                })
-                window.location.href = `/multiplayer/${roomCode}`
-              }}
+              onClick={() => setConfirmAbandon(true)}
+              disabled={abandoning}
             >
               {t('abandonRace')}
             </button>
           )}
         </div>
       )}
+      <ConfirmDialog
+        open={confirmAbandon}
+        title={t('abandonRace')}
+        body={t('abandonConfirm')}
+        confirmLabel={t('abandonRace')}
+        cancelLabel={t('keepRacing')}
+        danger
+        onConfirm={abandon}
+        onCancel={() => setConfirmAbandon(false)}
+      />
     </>
   )
 }

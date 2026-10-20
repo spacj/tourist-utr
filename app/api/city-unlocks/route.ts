@@ -1,19 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/firebase'
-import { collection, getDocs, query, where } from 'firebase/firestore'
+import { adminDb } from '@/lib/firebaseAdmin'
+import { handle, getAuthUser } from '@/lib/apiAuth'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-export async function GET(req: NextRequest) {
-  const userId = req.nextUrl.searchParams.get('userId')
-  if (!userId) return NextResponse.json([])
-
-  try {
-    const snap = await getDocs(query(collection(db, 'cityUnlocks'), where('userId', '==', userId)))
-    const cityIds = snap.docs.map(d => (d.data() as { cityId: string }).cityId)
-    return NextResponse.json(cityIds)
-  } catch {
-    return NextResponse.json([])
-  }
-}
+/**
+ * GET /api/city-unlocks — the caller's unlocked city ids (string[]).
+ * Identity from the Bearer token only; no token → [] (signed out).
+ */
+export const GET = handle(async (req: NextRequest) => {
+  const user = await getAuthUser(req)
+  if (!user) return NextResponse.json([])
+  const snap = await adminDb().collection('cityUnlocks').where('userId', '==', user.uid).get()
+  const cityIds = snap.docs.map(d => d.data().cityId).filter((c): c is string => typeof c === 'string')
+  return NextResponse.json(cityIds, { headers: { 'Cache-Control': 'private, no-store' } })
+})

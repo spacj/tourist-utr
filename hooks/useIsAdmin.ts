@@ -1,25 +1,36 @@
 'use client'
-import { useAuth } from '@/components/AuthProvider'
+import { useEffect, useState } from 'react'
+import { onIdTokenChanged } from 'firebase/auth'
+import { auth } from '@/lib/auth'
 
 /**
- * Returns true when the signed-in user is on the admin allowlist.
+ * True when the signed-in user's ID token carries the `admin: true` custom
+ * claim (granted with `npm run set-admin -- you@example.com`).
  *
- * Admins are identified by email and configured via the public env var
- * `NEXT_PUBLIC_ADMIN_EMAILS` (comma-separated). For example:
- *   NEXT_PUBLIC_ADMIN_EMAILS=alice@example.com,bob@example.com
- *
- * The env var is read at build time and exposed to the client, so this
- * hook stays cheap (no network call) and works for the rare admin-only
- * UI affordances we need: dev/test buttons that should never ship to
- * normal users.
+ * This only toggles admin UI affordances — every admin action is re-checked
+ * server-side against the same verified claim (see requireAdmin in
+ * lib/apiAuth.ts). After granting the claim, the user must sign out/in (or
+ * wait for the hourly token refresh) for it to show up.
  */
 export function useIsAdmin(): boolean {
-  const { user } = useAuth()
-  if (!user?.email) return false
-  const raw = process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? ''
-  const allowlist = raw
-    .split(',')
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean)
-  return allowlist.includes(user.email.toLowerCase())
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    const unsub = onIdTokenChanged(auth, async (u) => {
+      if (!u || u.isAnonymous) {
+        if (!cancelled) setIsAdmin(false)
+        return
+      }
+      try {
+        const res = await u.getIdTokenResult()
+        if (!cancelled) setIsAdmin(res.claims.admin === true)
+      } catch {
+        if (!cancelled) setIsAdmin(false)
+      }
+    })
+    return () => { cancelled = true; unsub() }
+  }, [])
+
+  return isAdmin
 }

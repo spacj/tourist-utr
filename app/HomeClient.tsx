@@ -1,11 +1,13 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
+import { apiGet } from '@/lib/apiFetch'
 import { Country, LANGUAGES, localizeCountry } from '@/types'
 import { ResumeRaceBanner } from '@/components/ResumeRaceBanner'
 import { AnimatedNumber } from '@/components/AnimatedNumber'
 import { useScrollReveal } from '@/hooks/useScrollReveal'
+import { CookieSettingsLink } from '@/components/ConsentManager'
 import type { BlogPostMeta } from '@/lib/blog'
 
 function CountryCard({ country, t }: { country: Country; t: (key: string) => string }) {
@@ -17,17 +19,16 @@ function CountryCard({ country, t }: { country: Country; t: (key: string) => str
   return (
     <a
       href={href}
-      className={`country-card ${isComingSoon ? 'is-coming-soon' : ''}`}
+      className={`country-card flow-card-link ${isComingSoon ? 'is-coming-soon' : ''}`}
       onClick={(e) => { if (isComingSoon) e.preventDefault() }}
       aria-disabled={isComingSoon}
-      style={{ textDecoration: 'none' }}
     >
       <div className="country-cover" aria-hidden>
         {showImage ? (
           <>
             <img
               src={country.imageUrl}
-              alt={country.name}
+              alt=""
               className={`country-cover-img ${imgLoaded ? 'loaded' : ''}`}
               onLoad={() => setImgLoaded(true)}
               onError={() => setImgFailed(true)}
@@ -74,31 +75,26 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
   const { user, loading, signIn } = useAuth()
   const { lang, setLang, t } = useI18n()
   const [countries, setCountries] = useState<Country[]>([])
-  const [cookieAccepted, setCookieAccepted] = useState(false)
+  const [countriesState, setCountriesState] = useState<'loading' | 'ready' | 'error'>('loading')
   const [mounted, setMounted] = useState(false)
   const [imgLoaded, setImgLoaded] = useState(false)
 
   useEffect(() => {
-    setCookieAccepted(localStorage.getItem('cookieConsent') === 'yes')
     setMounted(true)
   }, [])
 
-  useEffect(() => {
-    fetch('/api/countries').then(r => r.json()).then(setCountries).catch(() => {})
+  const loadCountries = useCallback(() => {
+    setCountriesState('loading')
+    apiGet<Country[]>('/api/countries')
+      .then(cs => { setCountries(Array.isArray(cs) ? cs : []); setCountriesState('ready') })
+      .catch(() => setCountriesState('error'))
   }, [])
 
-  const acceptCookies = () => {
-    localStorage.setItem('cookieConsent', 'yes')
-    setCookieAccepted(true)
-  }
+  useEffect(() => { loadCountries() }, [loadCountries])
 
-  if (loading) {
-    return (
-      <main className="page-center">
-        <div className="spinner" />
-      </main>
-    )
-  }
+  // Only auth-dependent bits (avatar / sign-in prompts) wait for auth.
+  const showGuestCtas = !loading && !user
+  const statValue = (n: number) => (countriesState === 'ready' ? n : '–')
 
   const features = [
     t('featStops'),
@@ -121,12 +117,6 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
     { icon: '🌐', title: t('whyNoApp'), desc: t('whyNoAppDesc') },
     { icon: '📖', title: t('whyStories'), desc: t('whyStoriesDesc') },
     { icon: '🔓', title: t('whyPrice'), desc: t('whyPriceDesc') },
-  ]
-
-  const reviews = [
-    { name: t('review1Name'), text: t('review1Text'), avatar: '👩‍❤️‍👨' },
-    { name: t('review2Name'), text: t('review2Text'), avatar: '👨‍👩‍👧‍👦' },
-    { name: t('review3Name'), text: t('review3Text'), avatar: '🧑' },
   ]
 
   const faq = [
@@ -159,22 +149,24 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
               src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1600&q=85&auto=format&fit=crop"
               srcSet="https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=900&q=80&auto=format&fit=crop 900w, https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1600&q=85&auto=format&fit=crop 1600w"
               sizes="(max-width: 767px) 100vw, 1100px"
-              alt="Travel and exploration with TourHunts"
+              alt={t('heroImgAlt')}
               className={`hero-img ${imgLoaded ? 'loaded' : ''}`}
               onLoad={() => setImgLoaded(true)}
             />
             <div className="hero-img-overlay" />
             <div className="hero-overlay-content">
               <div className="hero-overlay-top">
-                <a href="/" className="hero-brand" aria-label="TourHunts home">
+                <a href="/" className="hero-brand" aria-label={t('homeAria')}>
                   <span className="hero-brand-mark" aria-hidden>🧭</span>
                   <span className="hero-brand-name">TourHunts</span>
                 </a>
                 <div className="hero-top-right">
-                  <div className="lang-switch hero-langs" role="group" aria-label={t('selectLanguage') || 'Language'}>
+                  <div className="lang-switch hero-langs" role="group" aria-label={t('selectLanguage')}>
                     {LANGUAGES.map(l => (
                       <button
                         key={l.code}
+                        type="button"
+                        aria-pressed={lang === l.code}
                         onClick={() => setLang(l.code)}
                         className={`lang-btn ${lang === l.code ? 'active' : ''}`}
                         title={l.label}
@@ -184,7 +176,9 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
                       </button>
                     ))}
                   </div>
-                  {user ? (
+                  {loading ? (
+                    <span className="avatar-btn avatar-btn-light flow-avatar-placeholder" aria-hidden />
+                  ) : user ? (
                     <a href="/profile" className="avatar-btn avatar-btn-light" aria-label={t('viewProfile')}>
                       {user.photoURL ? (
                         <img src={user.photoURL} alt="" className="avatar-img" referrerPolicy="no-referrer" />
@@ -193,7 +187,7 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
                       )}
                     </a>
                   ) : (
-                    <button onClick={signIn} className="sign-in-btn sign-in-btn-light">{t('signIn')}</button>
+                    <button type="button" onClick={signIn} className="sign-in-btn sign-in-btn-light">{t('signIn')}</button>
                   )}
                 </div>
               </div>
@@ -208,7 +202,6 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
                 <h1 className="hero-overlay-title">{t('title')}</h1>
                 <p className="hero-overlay-tagline">{t('tagline')}</p>
                 <div className="hero-trust" aria-hidden>
-                  <span className="hero-trust-chip hero-trust-rating">★ 4.9</span>
                   <span className="hero-trust-chip">🎟️ {t('pricingFreeTag')}</span>
                   <span className="hero-trust-chip">📡 {t('whyOffline')}</span>
                   <span className="hero-trust-chip">🌐 EN · NL · DE · FR · IT · ES</span>
@@ -229,13 +222,13 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
                   sense of the gameplay (a clue with a puzzle to solve). */}
               <aside className="hero-preview-card" aria-hidden>
                 <div className="hero-preview-head">
-                  <span className="hero-preview-chip">📍 Stop 3 of 8 · Utrecht</span>
-                  <span className="hero-preview-pts">+150 pts</span>
+                  <span className="hero-preview-chip">📍 {t('previewChip')}</span>
+                  <span className="hero-preview-pts">{t('previewPts')}</span>
                 </div>
-                <h3 className="hero-preview-title">Two-level canal</h3>
-                <p className="hero-preview-text">For seven centuries I have been the main artery of Utrecht — a canal lined with two-level wharves. Find my stone steps down to the water.</p>
+                <h3 className="hero-preview-title">{t('previewTitle')}</h3>
+                <p className="hero-preview-text">{t('previewText')}</p>
                 <div className="hero-preview-puzzle">
-                  <div className="hero-preview-puzzle-label">🔤 Anagram</div>
+                  <div className="hero-preview-puzzle-label">🔤 {t('puzzleTypeAnagram')}</div>
                   <div className="hero-preview-tiles">
                     {['H','D','T','R','E','A','C','O','G','U'].map((c, i) => (
                       <span key={i} className="hero-preview-tile">{c}</span>
@@ -243,8 +236,8 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
                   </div>
                 </div>
                 <div className="hero-preview-actions">
-                  <span className="hero-preview-solve">Solve →</span>
-                  <span className="hero-preview-streak">🔥 streak ×3</span>
+                  <span className="hero-preview-solve">{t('previewSolve')} →</span>
+                  <span className="hero-preview-streak">🔥 {t('previewStreak')}</span>
                 </div>
               </aside>
             </div>
@@ -254,22 +247,18 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
         <ResumeRaceBanner />
 
         {/* ── Stats bar ── */}
-        <div className="stats-bar" role="list" aria-label="Highlights">
+        <div className="stats-bar" role="list" aria-label={t('statsAria')}>
           <div className="stat-item" role="listitem">
-            <div className="stat-num">{countries.filter(c => !c.comingSoon).length || 1}</div>
+            <div className="stat-num">{statValue(countries.filter(c => !c.comingSoon).length)}</div>
             <div className="stat-label">{t('countries')}</div>
           </div>
           <div className="stat-item" role="listitem">
-            <div className="stat-num">{countries.reduce((sum, c) => sum + (c.cityCount || 0), 0) || 2}</div>
+            <div className="stat-num">{statValue(countries.reduce((sum, c) => sum + (c.cityCount || 0), 0))}</div>
             <div className="stat-label">{t('statCities')}</div>
           </div>
           <div className="stat-item" role="listitem">
-            <div className="stat-num">{countries.reduce((sum, c) => sum + (c.huntCount || 0), 0) || 5}</div>
+            <div className="stat-num">{statValue(countries.reduce((sum, c) => sum + (c.huntCount || 0), 0))}</div>
             <div className="stat-label">{t('statHunts')}</div>
-          </div>
-          <div className="stat-item" role="listitem">
-            <div className="stat-num">4.9</div>
-            <div className="stat-label">{t('statRating')}</div>
           </div>
         </div>
 
@@ -361,53 +350,52 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
 
         {/* ── Multiplayer CTA ── */}
         <a href="/multiplayer" className="mp-home-cta">
-          <div className="mp-home-cta-icon">👥</div>
+          <div className="mp-home-cta-icon" aria-hidden>👥</div>
           <div className="mp-home-cta-body">
             <div className="mp-home-cta-title">{t('playWithFriends')}</div>
             <div className="mp-home-cta-desc">{t('shareRoomCode')}</div>
           </div>
-          <div className="mp-home-cta-arrow">→</div>
+          <div className="mp-home-cta-arrow" aria-hidden>→</div>
         </a>
 
         {/* ── Countries ── */}
         <h2 id="countries" className="section-label" style={{ scrollMarginTop: '20px' }}>{t('chooseCountry')}</h2>
 
-        {countries.length === 0 && (
+        {countriesState === 'loading' && (
+          <div className="skel-grid" aria-busy="true">
+            <span className="flow-sr-only" role="status">{t('loading')}</span>
+            <span className="skel skel-card" />
+            <span className="skel skel-card" />
+            <span className="skel skel-card" />
+          </div>
+        )}
+
+        {countriesState === 'error' && (
+          <div className="empty-card" role="alert">
+            <p>{t('loadError')}</p>
+            <button type="button" className="btn-primary flow-retry" onClick={loadCountries}>{t('retry')}</button>
+          </div>
+        )}
+
+        {countriesState === 'ready' && countries.length === 0 && (
           <div className="empty-card">
-            <p>{t('noHuntsYet')}</p>
+            <p>{t('noCountriesYet')}</p>
           </div>
         )}
 
         <div className="country-grid">
           {countries.map((rawCountry) => {
             const country = localizeCountry(rawCountry, lang)
-            return <CountryCard key={country.id} country={country} t={(key: string) => t(key as any)} />
+            return <CountryCard key={country.id} country={country} t={t} />
           })}
         </div>
-
-        {/* ── Reviews ── */}
-        <section className="reviews-section" aria-labelledby="reviews-title">
-          <h2 id="reviews-title" className="section-label">{t('reviewsTitle')}</h2>
-          <div className="reviews-grid">
-            {reviews.map((r, i) => (
-              <article key={i} className="review-card" style={{ animationDelay: `${0.08 + i * 0.1}s` }}>
-                <div className="review-stars" aria-label="5 out of 5 stars">★★★★★</div>
-                <p className="review-text">"{r.text}"</p>
-                <div className="review-author">
-                  <span className="review-avatar" aria-hidden>{r.avatar}</span>
-                  <span className="review-name">{r.name}</span>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
 
         {/* ── From the blog ── */}
         {recentPosts.length > 0 && (
           <section className="home-blog-section" aria-labelledby="home-blog-title">
             <div className="home-blog-head">
-              <h2 id="home-blog-title" className="section-label" style={{ margin: 0 }}>From the blog</h2>
-              <a href="/blog" className="home-blog-all">All stories →</a>
+              <h2 id="home-blog-title" className="section-label flow-m0">{t('fromTheBlog')}</h2>
+              <a href="/blog" className="home-blog-all">{t('allStories')} →</a>
             </div>
             <ul className="home-blog-list">
               {recentPosts.map(post => (
@@ -422,7 +410,7 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
                       <div className="home-blog-card-meta">
                         <span className="home-blog-card-cat">{post.category}</span>
                         <span aria-hidden>·</span>
-                        <span>{post.readMinutes} min</span>
+                        <span>{post.readMinutes} {t('min')}</span>
                       </div>
                       <h3 className="home-blog-card-title">{post.title}</h3>
                       <p className="home-blog-card-excerpt">{post.excerpt}</p>
@@ -451,12 +439,12 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
         </section>
 
         {/* ── CTA section ── */}
-        {!user && (
+        {showGuestCtas && (
           <div className="cta-section">
             <div className="cta-content">
               <h2 className="cta-title">{t('ctaTitle')}</h2>
               <p className="cta-subtitle">{t('ctaSubtitle')}</p>
-              <button onClick={signIn} className="cta-primary-btn">
+              <button type="button" onClick={signIn} className="cta-primary-btn">
                 {t('ctaButton')}
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </button>
@@ -464,26 +452,26 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
           </div>
         )}
 
-        {!user && (
-          <p className="footer-note">{t('signInHint')}</p>
+        {showGuestCtas && (
+          <p className="footer-note">{t('signInSaveHint')}</p>
         )}
 
         {/* ── Benches + Fountains map CTAs ── */}
         <a href="/benches" className="mp-home-cta benches-home-cta">
-          <div className="mp-home-cta-icon">🪑</div>
+          <div className="mp-home-cta-icon" aria-hidden>🪑</div>
           <div className="mp-home-cta-body">
             <div className="mp-home-cta-title">{t('benchesCtaTitle')}</div>
             <div className="mp-home-cta-desc">{t('benchesCtaDesc')}</div>
           </div>
-          <div className="mp-home-cta-arrow">→</div>
+          <div className="mp-home-cta-arrow" aria-hidden>→</div>
         </a>
         <a href="/fountains" className="mp-home-cta fountains-home-cta">
-          <div className="mp-home-cta-icon">⛲</div>
+          <div className="mp-home-cta-icon" aria-hidden>⛲</div>
           <div className="mp-home-cta-body">
             <div className="mp-home-cta-title">{t('fountainsCtaTitle')}</div>
             <div className="mp-home-cta-desc">{t('fountainsCtaDesc')}</div>
           </div>
-          <div className="mp-home-cta-arrow">→</div>
+          <div className="mp-home-cta-arrow" aria-hidden>→</div>
         </a>
 
         {/* ── Footer ── */}
@@ -502,12 +490,13 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
               </div>
               <div className="footer-nav-col">
                 <div className="footer-nav-title">{t('footerAbout')}</div>
-                <a href="/blog" className="footer-nav-link">Blog</a>
-                <a href="/benches" className="footer-nav-link">Benches map</a>
-                <a href="/fountains" className="footer-nav-link">Fountains map</a>
-                <a href="#" className="footer-nav-link">{t('footerContact')}</a>
-                <a href="#" className="footer-nav-link">{t('footerPrivacy')}</a>
-                <a href="#" className="footer-nav-link">{t('footerTerms')}</a>
+                <a href="/blog" className="footer-nav-link">{t('footerBlog')}</a>
+                <a href="/benches" className="footer-nav-link">{t('footerBenches')}</a>
+                <a href="/fountains" className="footer-nav-link">{t('footerFountains')}</a>
+                <a href="/contact" className="footer-nav-link">{t('footerContact')}</a>
+                <a href="/privacy" className="footer-nav-link">{t('footerPrivacy')}</a>
+                <a href="/terms" className="footer-nav-link">{t('footerTerms')}</a>
+                <CookieSettingsLink className="footer-nav-link footer-nav-button" />
               </div>
             </div>
           </div>
@@ -517,24 +506,9 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
         </footer>
       </div>
 
-      {/* ── Cookie banner ── */}
-      {mounted && !cookieAccepted && (
-        <div className="cookie-banner">
-          <div className="cookie-body">
-            <span className="cookie-icon" aria-hidden>🍪</span>
-            <span className="cookie-text">
-              We use cookies to enhance your experience and save progress.
-            </span>
-          </div>
-          <div className="cookie-actions">
-            <button className="cookie-accept" onClick={acceptCookies}>Accept</button>
-          </div>
-        </div>
-      )}
-
       {/* ── Sticky mobile CTA bar ── */}
       {mounted && (
-        <nav className="sticky-cta" aria-label="Quick actions">
+        <nav className="sticky-cta" aria-label={t('quickActionsAria')}>
           <a href={startHref} className="sticky-cta-primary">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 6 8 12 8 12s8-6 8-12a8 8 0 0 0-8-8z"/></svg>
             {t('stickyCtaPrimary')}

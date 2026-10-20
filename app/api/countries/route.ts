@@ -1,18 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/firebase'
-import { collection, getDocs, query, where } from 'firebase/firestore'
+import { NextResponse } from 'next/server'
+import { adminDb } from '@/lib/firebaseAdmin'
+import { handle } from '@/lib/apiAuth'
 
 export const dynamic = 'force-dynamic'
-export const revalidate = 0
 
-export async function GET(_req: NextRequest) {
-  try {
-    const snap = await getDocs(query(collection(db, 'countries'), where('active', '==', true)))
-    const countries = snap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
-      .sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0))
-    return NextResponse.json(countries)
-  } catch {
-    return NextResponse.json([])
-  }
-}
+const CACHE = 'public, s-maxage=60, stale-while-revalidate=300'
+
+/** GET /api/countries — public list of active countries, sorted by `order`. */
+export const GET = handle(async () => {
+  const snap = await adminDb().collection('countries').where('active', '==', true).get()
+  const countries = snap.docs
+    .map(d => ({ id: d.id, ...d.data() }) as { id: string; order?: number })
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+  return NextResponse.json(countries, { headers: { 'Cache-Control': CACHE } })
+})

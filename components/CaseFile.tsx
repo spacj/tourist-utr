@@ -1,14 +1,14 @@
 'use client'
 import { useI18n } from '@/hooks/useI18n'
 import {
-  Clue, MysterySpec, MysteryAxis, MysteryCandidate,
+  ClueEvidence, MysterySpec, MysteryAxis, MysteryCandidate,
   localizeMystery, localizeEvidenceText, accumulateEliminations,
 } from '@/types'
 
 interface Props {
   mystery: MysterySpec
   /** Clues whose evidence the player has already uncovered (arrived stops). */
-  knownClues: Clue[]
+  knownClues: { id: string; evidence?: ClueEvidence | null }[]
   onClose: () => void
 }
 
@@ -21,7 +21,7 @@ interface Props {
 export function CaseFile({ mystery, knownClues, onClose }: Props) {
   const { t, lang } = useI18n()
   const m = localizeMystery(mystery, lang)
-  const elim = accumulateEliminations(knownClues)
+  const elim = accumulateEliminations(knownClues.map(c => ({ evidence: c.evidence ?? undefined })))
 
   const columns: { axis: MysteryAxis; label: string; items: MysteryCandidate[] }[] = [
     { axis: 'suspects', label: t('caseSuspects'), items: m.suspects },
@@ -31,7 +31,7 @@ export function CaseFile({ mystery, knownClues, onClose }: Props) {
 
   const evidenceLog = knownClues
     .filter(c => c.evidence)
-    .map(c => ({ id: c.id, text: localizeEvidenceText(c.evidence, lang) as string }))
+    .map(c => ({ id: c.id, text: localizeEvidenceText(c.evidence ?? undefined, lang) as string }))
 
   return (
     <div className="history-backdrop" onClick={onClose}>

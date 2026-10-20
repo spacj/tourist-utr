@@ -1,34 +1,25 @@
 {
-  "name": "TourHunts",
+  "id": "/",
+  "name": "TourHunts — city puzzle walks",
   "short_name": "TourHunts",
-  "description": "GPS-guided scavenger hunts in cities around the world.",
-  "start_url": "/",
+  "description": "Puzzle your way through Dutch cities on foot. Solve a clue, find the place, hear its story.",
+  "lang": "en",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0b0d1a",
-  "theme_color": "#0b0d1a",
-  "categories": ["travel", "entertainment", "lifestyle"],
+  "background_color": "#F5F0E6",
+  "theme_color": "#F5F0E6",
+  "categories": ["travel", "games", "entertainment"],
   "prefer_related_applications": false,
-  "offline_enabled": true,
   "icons": [
-    {
-      "src": "/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    }
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Continue my hunt", "short_name": "Continue", "url": "/profile?source=shortcut", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Play with friends", "short_name": "Multiplayer", "url": "/multiplayer?source=shortcut", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
   ]
 }

@@ -2,6 +2,7 @@
 import { useMemo, useState, useEffect } from 'react'
 import { Bench, SpotKind, SPOT_KINDS } from '@/types'
 import { useIsAdmin } from '@/hooks/useIsAdmin'
+import { apiGet } from '@/lib/apiFetch'
 import { PlacesGuideMap } from '@/components/PlacesGuideMap'
 import type { Place, PlaceCategory } from '@/lib/md'
 
@@ -29,7 +30,7 @@ export function SpotsClient({ kind, initialSpots }: Props) {
   // Refresh from the API on mount so a freshly-added spot appears without a
   // full rebuild (the server page is ISR-cached for an hour).
   useEffect(() => {
-    fetch(`/api/benches?kind=${kind}`).then(r => r.json()).then((rows: Bench[]) => {
+    apiGet<Bench[]>(`/api/benches?kind=${kind}`).then((rows) => {
       if (Array.isArray(rows)) setSpots(rows)
     }).catch(() => {})
   }, [kind])

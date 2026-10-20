@@ -1,20 +1,24 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
 import { ResumeRaceBanner } from '@/components/ResumeRaceBanner'
+import { apiGet } from '@/lib/apiFetch'
+import { fmt } from '@/lib/i18n/fmt'
 import { db } from '@/lib/firebase'
 import { doc, getDoc } from 'firebase/firestore'
 import { ACHIEVEMENTS_DEF, levelFromXp, type PlayerProfile } from '@/types'
 
 interface Session {
   id: string
+  huntId: string
   huntTitle: string
   huntI18n: Record<string, { title?: string }> | null
   score: number
   totalClues: number
   cluesCompleted: number
-  completedAt: any
+  completedAt: number | null
+  startedAt: number
   multiplayer: {
     roomCode: string
     playerCount: number
@@ -27,53 +31,66 @@ export default function ProfilePage() {
   const { user, loading, signIn, logOut } = useAuth()
   const { t, lang } = useI18n()
   const [sessions, setSessions] = useState<Session[]>([])
-  const [fetching, setFetching] = useState(true)
+  const [historyState, setHistoryState] = useState<'loading' | 'ready' | 'error'>('loading')
   const [profile, setProfile] = useState<Partial<PlayerProfile> | null>(null)
+  const [profileError, setProfileError] = useState(false)
+  const uid = user?.uid ?? null
+
+  const loadHistory = useCallback(() => {
+    setHistoryState('loading')
+    apiGet<Session[]>('/api/user-history')
+      .then(d => { setSessions(Array.isArray(d) ? d : []); setHistoryState('ready') })
+      .catch(() => setHistoryState('error'))
+  }, [])
+
+  const loadProfile = useCallback(() => {
+    if (!uid) return
+    setProfileError(false)
+    getDoc(doc(db, 'users', uid))
+      .then(s => { if (s.exists()) setProfile(s.data() as Partial<PlayerProfile>) })
+      .catch(() => setProfileError(true))
+  }, [uid])
 
   useEffect(() => {
-    if (!user) { setFetching(false); return }
-    fetch(`/api/user-history?userId=${user.uid}`)
-      .then(r => r.json())
-      .then(setSessions)
-      .catch(() => {})
-      .finally(() => setFetching(false))
-    getDoc(doc(db, 'users', user.uid))
-      .then(s => { if (s.exists()) setProfile(s.data() as Partial<PlayerProfile>) })
-      .catch(() => {})
-  }, [user])
+    if (!uid) return
+    loadHistory()
+    loadProfile()
+  }, [uid, loadHistory, loadProfile])
 
   if (loading) {
-    return <main className="page-center"><div className="spinner" /></main>
+    return <main className="page-center" aria-busy="true"><div className="spinner" role="status" aria-label={t('loading')} /></main>
   }
 
   if (!user) {
     return (
       <main className="page-center">
-        <div className="container" style={{ textAlign: 'center' }}>
-          <h1 style={{ fontSize: 24, fontWeight: 600, marginBottom: 8 }}>{t('profileTitle')}</h1>
-          <p style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 24 }}>
-            {t('profileSignInHint')}
-          </p>
-          <button className="btn-primary" onClick={signIn}>{t('signInGoogle')}</button>
-          <a href="/" className="btn-secondary" style={{ marginTop: 10, display: 'block', textDecoration: 'none' }}>
-            {t('backToHunts')}
-          </a>
+        <div className="container flow-center">
+          <h1 className="flow-page-title">{t('profileTitle')}</h1>
+          <p className="flow-page-sub">{t('profileSignInHint')}</p>
+          <button type="button" className="btn-primary" onClick={signIn}>{t('signIn')}</button>
+          <a href="/" className="btn-secondary flow-btn flow-mt-12">{t('home')}</a>
         </div>
       </main>
     )
   }
 
+  const titleOf = (s: Session) => (lang !== 'en' && s.huntI18n?.[lang]?.title) || s.huntTitle
+  const solo = sessions.filter(s => !s.multiplayer)
   const completed = sessions.filter(s => s.completedAt)
   const totalScore = sessions.reduce((a, s) => a + s.score, 0)
   const totalClues = sessions.reduce((a, s) => a + s.cluesCompleted, 0)
-  const mpSessions = sessions.filter(s => s.multiplayer)
-  const mpRaces = mpSessions.filter(s => s.multiplayer && s.completedAt)
+  const mpRaces = sessions.filter(s => s.multiplayer && s.completedAt)
+
+  const xp = profile?.xp ?? 0
+  const { level, intoLevel, toNext } = levelFromXp(xp)
+  const levelTitle = t(`levelTitle${level}`)
+  const pct = toNext === 0 ? 100 : Math.round((intoLevel / (intoLevel + toNext)) * 100)
 
   return (
     <main className="page-center">
       <div className="container">
-        <a href="/" className="topbar-back" aria-label={t('home')}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <a href="/" className="topbar-back">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
           <span>{t('home')}</span>
@@ -81,56 +98,53 @@ export default function ProfilePage() {
 
         <div className="profile-header fade-in-up">
           <div className="profile-avatar">
-            {user.photoURL ? (
-              <img src={user.photoURL} alt="" referrerPolicy="no-referrer" />
-            ) : (
-              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-2)', fontSize: 20, fontWeight: 600, color: 'var(--gold)' }}>
-                {user.displayName?.[0] || '?'}
-              </div>
-            )}
+            {user.photoURL
+              ? <img src={user.photoURL} alt="" referrerPolicy="no-referrer" />
+              : <div className="profile-avatar-letter" aria-hidden>{user.displayName?.[0] || '?'}</div>}
           </div>
           <div>
-            <div className="profile-name">{user.displayName}</div>
+            <h1 className="profile-name">{user.displayName || t('playerFallback')}</h1>
             <div className="profile-email">{user.email}</div>
           </div>
         </div>
 
         {/* Level + XP progress */}
-        {(() => {
-          const xp = profile?.xp ?? 0
-          const { level, title, intoLevel, toNext } = levelFromXp(xp)
-          const pct = toNext === 0 ? 100 : Math.round((intoLevel / (intoLevel + toNext)) * 100)
-          return (
-            <div className="level-card fade-in-up">
-              <div className="level-card-row">
-                <span className="level-badge">{level}</span>
-                <div className="level-meta">
-                  <div className="level-title">{title}</div>
-                  <div className="level-xp">{xp} XP{toNext > 0 ? ` · ${toNext} ${t('toNextLevel')}` : ` · ${t('maxLevel')}`}</div>
-                </div>
-              </div>
-              <div className="level-bar"><div className="level-bar-fill" style={{ width: `${pct}%` }} /></div>
+        <div className="level-card fade-in-up">
+          <div className="level-card-row">
+            <span className="level-badge" aria-label={`${t('levelLabel')} ${level}`}>{level}</span>
+            <div className="level-meta">
+              <div className="level-title">{levelTitle}</div>
+              <div className="level-xp">{xp} XP{toNext > 0 ? ` · ${toNext} ${t('toNextLevel')}` : ` · ${t('maxLevel')}`}</div>
             </div>
-          )
-        })()}
+          </div>
+          <div className="level-bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} aria-label={t('levelLabel')}>
+            <div className="level-bar-fill" style={{ width: `${pct}%` }} />
+          </div>
+        </div>
 
-        {/* Achievements gallery */}
-        <div className="section-label" style={{ marginTop: 18 }}>{t('achievementsTitle')}</div>
-        <div className="badge-gallery">
+        {profileError && (
+          <p className="flow-error-text" role="alert">
+            {t('loadError')} <button type="button" className="flow-link-btn" onClick={loadProfile}>{t('retry')}</button>
+          </p>
+        )}
+
+        <h2 className="section-label flow-mt-18">{t('achievementsTitle')}</h2>
+        <ul className="badge-gallery flow-plain-list">
           {ACHIEVEMENTS_DEF.map(a => {
             const earned = !!profile?.achievements?.[a.id]
             return (
-              <div key={a.id} className={`badge-cell ${earned ? 'is-earned' : 'is-locked'}`} title={a.description}>
+              <li key={a.id} className={`badge-cell ${earned ? 'is-earned' : 'is-locked'}`} title={t(`achDesc_${a.id}`)}>
                 <span className="badge-cell-icon" aria-hidden>{earned ? a.icon : '🔒'}</span>
-                <span className="badge-cell-label">{a.title}</span>
-              </div>
+                <span className="badge-cell-label">{t(`ach_${a.id}`)}</span>
+                <span className="flow-sr-only">{earned ? t('badgeEarned') : t('locked')}: {t(`achDesc_${a.id}`)}</span>
+              </li>
             )
           })}
-        </div>
+        </ul>
 
         <ResumeRaceBanner />
 
-        <a href="/multiplayer" className="mp-home-cta" style={{ margin: '12px 0 18px' }}>
+        <a href="/multiplayer" className="mp-home-cta flow-mp-cta">
           <div className="mp-home-cta-icon" aria-hidden>👥</div>
           <div className="mp-home-cta-body">
             <div className="mp-home-cta-title">{t('playWithFriends')}</div>
@@ -149,7 +163,7 @@ export default function ProfilePage() {
             <div className="stat-label">{t('placesFound')}</div>
           </div>
           <div className="stat-card">
-            <div className="stat-value" style={{ color: 'var(--gold)' }}>{totalScore}</div>
+            <div className="stat-value flow-gold">{totalScore}</div>
             <div className="stat-label">{t('totalScore')}</div>
           </div>
           <div className="stat-card">
@@ -158,20 +172,19 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* ── Multiplayer races ── */}
         {mpRaces.length > 0 && (
           <>
-            <div className="section-label">{t('histMpRaces')}</div>
+            <h2 className="section-label">{t('histMpRaces')}</h2>
             {mpRaces.map((s) => (
               <div key={`mp-${s.id}`} className="history-item history-item-mp">
                 <div className="history-mp-body">
-                  <div className="history-title">{(lang !== 'en' && s.huntI18n?.[lang]?.title) || s.huntTitle}</div>
+                  <div className="history-title">{titleOf(s)}</div>
                   <div className="history-detail">
                     {s.multiplayer?.roomCode && (
-                      <span className="history-mp-code">Room {s.multiplayer.roomCode}</span>
+                      <span className="history-mp-code">{fmt(t('roomLabel'), { code: s.multiplayer.roomCode })}</span>
                     )}
                     <span>· {s.multiplayer?.rank}/{s.multiplayer?.totalPlayers}</span>
-                    {s.multiplayer && s.multiplayer.rank === 1 && <span className="history-mp-medal">🥇</span>}
+                    {s.multiplayer?.rank === 1 && <span className="history-mp-medal" role="img" aria-label={t('mpMedalGold')}>🥇</span>}
                   </div>
                 </div>
                 <div className="history-score">{s.score}</div>
@@ -180,26 +193,34 @@ export default function ProfilePage() {
           </>
         )}
 
-        {/* ── Solo history ── */}
-        <div className="section-label" style={{ marginTop: mpRaces.length > 0 ? 20 : 0 }}>
+        <h2 className={`section-label ${mpRaces.length > 0 ? 'flow-mt-20' : ''}`}>
           {t('huntHistory')}
-          {sessions.filter(s => !s.multiplayer).length > 0 && (
-            <span className="history-count">{sessions.filter(s => !s.multiplayer).length}</span>
-          )}
-        </div>
+          {solo.length > 0 && <span className="history-count">{solo.length}</span>}
+        </h2>
 
-        {fetching && <div style={{ textAlign: 'center', padding: 20 }}><div className="spinner" style={{ margin: '0 auto' }} /></div>}
-
-        {!fetching && sessions.filter(s => !s.multiplayer).length === 0 && mpRaces.length === 0 && (
-          <div className="empty-card">
-            <p>{t('noHuntsPlayed')}</p>
+        {historyState === 'loading' && (
+          <div aria-busy="true">
+            <span className="flow-sr-only" role="status">{t('loading')}</span>
+            <span className="skel skel-line" />
+            <span className="skel skel-line" />
           </div>
         )}
 
-        {sessions.filter(s => !s.multiplayer).map((s) => (
+        {historyState === 'error' && (
+          <div className="empty-card" role="alert">
+            <p>{t('loadError')}</p>
+            <button type="button" className="btn-primary flow-retry" onClick={loadHistory}>{t('retry')}</button>
+          </div>
+        )}
+
+        {historyState === 'ready' && solo.length === 0 && mpRaces.length === 0 && (
+          <div className="empty-card"><p>{t('noHuntsPlayed')}</p></div>
+        )}
+
+        {historyState === 'ready' && solo.map((s) => (
           <div key={s.id} className="history-item">
             <div>
-              <div className="history-title">{(lang !== 'en' && s.huntI18n?.[lang]?.title) || s.huntTitle}</div>
+              <div className="history-title">{titleOf(s)}</div>
               <div className="history-detail">
                 {s.cluesCompleted}/{s.totalClues} {t('places')}
                 {s.completedAt ? ` · ${t('ctaCompleted')}` : ` · ${t('inProgress')}`}
@@ -209,10 +230,10 @@ export default function ProfilePage() {
           </div>
         ))}
 
-        <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
-          <a href="/" className="btn-primary" style={{ textDecoration: 'none' }}>{t('playHunt')}</a>
+        <div className="flow-actions-row">
+          <a href="/" className="btn-primary flow-btn">{t('playHunt')}</a>
         </div>
-        <button className="btn-secondary" style={{ marginTop: 8 }} onClick={logOut}>{t('signOut')}</button>
+        <button type="button" className="btn-secondary flow-mt-8" onClick={logOut}>{t('signOut')}</button>
       </div>
     </main>
   )

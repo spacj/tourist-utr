@@ -1,238 +1,238 @@
 'use client'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { onSnapshot, collection, doc, query, orderBy } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useAuth } from '@/components/AuthProvider'
+import { useToast } from '@/components/Toast'
+import { ConfirmDialog } from '@/components/Modal'
 import { useI18n } from '@/hooks/useI18n'
+import { useActiveRoom } from '@/hooks/useActiveRoom'
+import { apiGet, apiPost } from '@/lib/apiFetch'
+import { errorCode, errorKey } from '@/lib/apiErrors'
+import { roomPost, roomErrorKey } from '@/lib/roomsClient'
+import { fmt } from '@/lib/i18n/fmt'
 import { normalizeCode, ROOM_CODE_LEN } from '@/lib/rooms'
 import { MultiplayerResults } from '@/components/MultiplayerResults'
+import { RoomConflictDialog, existingRoomFrom, type ExistingRoom } from '@/components/RoomConflictDialog'
 
 type Player = {
-  userId: string
+  key: string
+  isYou: boolean
   displayName: string
   photoURL: string | null
   isHost: boolean
   score: number
   cluesDone: number
   finishedAt: number | null
-  sessionId: string | null
-  currentClueId?: string | null
+  abandoned: boolean
 }
 
 type RoomDoc = {
   code: string
-  hostUserId: string
   huntId: string
   huntTitle: string
   state: 'lobby' | 'racing' | 'finished'
-  startedAt: any
-  finishedAt: any
 }
+
+type PageError = { key: string; cityId?: string | null }
 
 export default function RoomLobbyPage() {
   const params = useParams<{ code: string }>()
   const router = useRouter()
   const { user, loading, signIn } = useAuth()
   const { t } = useI18n()
+  const toast = useToast()
+  const { active } = useActiveRoom()
 
-  const code = useMemo(() => normalizeCode((params?.code as string) || ''), [params])
+  const rawCode = (params?.code as string) || ''
+  const code = useMemo(() => normalizeCode(rawCode), [rawCode])
+  const codeValid = code.length === ROOM_CODE_LEN && rawCode.replace(/[^A-Za-z0-9]/g, '').length === ROOM_CODE_LEN
+
   const [roomId, setRoomId] = useState<string | null>(null)
   const [room, setRoom] = useState<RoomDoc | null>(null)
   const [players, setPlayers] = useState<Player[]>([])
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<PageError | null>(null)
+  const [conflict, setConflict] = useState<ExistingRoom | null>(null)
   const [starting, setStarting] = useState(false)
+  const [leaving, setLeaving] = useState(false)
+  const [confirmForfeit, setConfirmForfeit] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [autoJoined, setAutoJoined] = useState(false)
-  // Snapshot once when the room first loads: were we already racing/finished
-  // when the user arrived? If yes, never auto-redirect to /hunt — they came
-  // here on purpose (via "Open lobby" from the in-hunt scoreboard) and want
-  // to see the live leaderboard.
-  const [arrivedDuringActiveRace, setArrivedDuringActiveRace] = useState<boolean | null>(null)
+  // Were we already racing/finished when the page first loaded? Then the user
+  // came to look at the scoreboard — never auto-redirect them to /hunt.
+  const arrivedDuringActiveRace = useRef<boolean | null>(null)
+  // signIn/displayName via refs so `resolve` (and the join it may trigger)
+  // only re-runs when the code or the signed-in uid changes.
+  const signInRef = useRef(signIn)
+  signInRef.current = signIn
+  const nameRef = useRef<string | null>(null)
+  nameRef.current = user?.displayName ?? null
+  const uid = user?.uid ?? null
 
-  // Resolve code -> roomId, and ensure user is a member.
-  useEffect(() => {
-    if (loading || !user || code.length !== ROOM_CODE_LEN) return
-    let cancelled = false
-    ;(async () => {
-      try {
-        const res = await fetch(`/api/rooms/get?code=${code}`)
-        const data = await res.json()
-        if (!res.ok) {
-          if (!cancelled) setError(data.error || 'not_found')
-          return
+  /** Resolve code → room and make sure the caller is a member (joining if needed). */
+  const resolve = useCallback(async (force = false) => {
+    setError(null)
+    setConflict(null)
+    let info: { roomId: string; state: RoomDoc['state']; isMember: boolean }
+    try {
+      info = await apiGet(`/api/rooms/get?code=${code}`)
+    } catch (e) {
+      const c = errorCode(e)
+      setError({ key: c === 'network' ? 'errNetwork' : roomErrorKey(c, 0) })
+      return
+    }
+    if (!info.isMember) {
+      if (info.state !== 'lobby') { setError({ key: 'errRaceStarted' }); return }
+      const r = await roomPost('/api/rooms/join', { code, displayName: nameRef.current || undefined, force })
+      if (!r.ok) {
+        if (r.error === 'already_in_room') {
+          const existing = existingRoomFrom(r.data)
+          if (existing) { setConflict(existing); return }
         }
-        if (cancelled) return
-        setRoomId(data.roomId)
-        const isMember = (data.players as Player[]).some(p => p.userId === user.uid)
-
-        // Note: we intentionally do NOT redirect to /hunt here even when the race
-        // is in progress. Visiting /multiplayer/[code] during a race is how the
-        // user opens the live scoreboard — see the lobby→racing transition
-        // handler below for the only auto-redirect.
-
-        if (!isMember && !autoJoined) {
-          // Try to join (might 409 if race already started).
-          setAutoJoined(true)
-          const joinRes = await fetch('/api/rooms/join', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              code,
-              userId: user.uid,
-              displayName: user.displayName || 'Player',
-              photoURL: user.photoURL || null,
-            }),
-          })
-          if (!joinRes.ok) {
-            const j = await joinRes.json()
-            if (!cancelled) {
-              if (j.error === 'already_in_room' && j.existing?.code) {
-                // User already has an active room — surface so they can confirm or cancel.
-                setError(`already_in_room:${j.existing.code}`)
-              } else {
-                setError(j.error || 'join_failed')
-              }
-            }
-            return
-          }
-          // Successfully joined — userActiveRooms is updated server-side.
-        }
-      } catch {
-        if (!cancelled) setError('not_found')
+        if (r.error === 'account_required' || r.error === 'unauthenticated') { signInRef.current(); return }
+        setError({ key: roomErrorKey(r.error, r.status), cityId: r.error === 'city_locked' ? (r.data?.cityId ?? null) : undefined })
+        return
       }
-    })()
-    return () => { cancelled = true }
-  }, [code, user, loading, autoJoined, router])
+    }
+    setRoomId(info.roomId)
+  }, [code])
+
+  useEffect(() => {
+    if (loading || !uid || !codeValid) return
+    resolve()
+  }, [loading, uid, codeValid, resolve])
 
   // Live listeners for room + players.
   useEffect(() => {
-    if (!roomId) return
+    if (!roomId || !uid) return
     const unsubRoom = onSnapshot(doc(db, 'rooms', roomId), snap => {
-      if (snap.exists()) setRoom(snap.data() as RoomDoc)
-    })
+      if (!snap.exists()) { setRoom(null); setError({ key: 'errRoomClosed' }); return }
+      const d = snap.data()
+      setRoom({ code: d.code, huntId: d.huntId, huntTitle: d.huntTitle, state: d.state })
+    }, () => setError({ key: 'loadError' }))
     const unsubPlayers = onSnapshot(
       query(collection(db, 'rooms', roomId, 'players'), orderBy('joinedAt')),
       snap => {
-        setPlayers(snap.docs.map(d => {
+        setPlayers(snap.docs.map((d, i) => {
           const p = d.data()
           return {
-            userId: p.userId,
-            displayName: p.displayName || 'Player',
+            key: `p${i}`,
+            // Player docs are keyed by uid: this is the only uid comparison and
+            // it never leaves the client.
+            isYou: d.id === uid,
+            displayName: p.displayName || t('playerFallback'),
             photoURL: p.photoURL ?? null,
             isHost: !!p.isHost,
             score: p.score ?? 0,
             cluesDone: p.cluesDone ?? 0,
             finishedAt: p.finishedAt?.toMillis?.() ?? null,
-            sessionId: p.sessionId ?? null,
-            currentClueId: p.currentClueId ?? null,
+            abandoned: !!p.abandoned,
           }
         }))
-      }
+      },
     )
     return () => { unsubRoom(); unsubPlayers() }
-  }, [roomId])
+  }, [roomId, uid, t])
 
-  // First time we see room data, snapshot whether the race was already in
-  // progress. The decision sticks for the lifetime of this page mount.
   useEffect(() => {
-    if (!room || arrivedDuringActiveRace !== null) return
-    setArrivedDuringActiveRace(room.state !== 'lobby')
-  }, [room, arrivedDuringActiveRace])
+    if (room && arrivedDuringActiveRace.current === null) arrivedDuringActiveRace.current = room.state !== 'lobby'
+  }, [room])
 
-  // Auto-redirect to /hunt only when WE were waiting in the lobby and the
-  // race just started. If the user arrived to view the live leaderboard
-  // (race was already racing/finished on arrival), we never redirect them
-  // away — they tap "Go to hunt" manually if they want to.
+  // My race session comes from my private userActiveRooms pointer.
+  const mySessionId = active && active.roomId === roomId ? active.sessionId : null
+  const me = players.find(p => p.isYou)
+  const isHost = !!me?.isHost
+
+  // Waiting in the lobby and the host just started → go race.
   useEffect(() => {
-    if (arrivedDuringActiveRace !== false) return
-    if (!user || !room || !roomId) return
-    if (room.state !== 'racing') return
-    const me = players.find(p => p.userId === user.uid)
-    if (me?.sessionId) {
-      router.replace(`/hunt?session=${me.sessionId}`)
-    }
-  }, [arrivedDuringActiveRace, room, players, user, roomId, router])
-
-  const isHost = !!user && !!room && user.uid === room.hostUserId
-  const canStart = isHost && room?.state === 'lobby' && players.length >= 1
+    if (arrivedDuringActiveRace.current !== false) return
+    if (room?.state === 'racing' && mySessionId) router.replace(`/hunt?session=${encodeURIComponent(mySessionId)}`)
+  }, [room?.state, mySessionId, router])
 
   const onStart = async () => {
-    if (!user || !roomId) return
+    if (!roomId || starting) return
     setStarting(true)
     try {
-      const res = await fetch('/api/rooms/start', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomId, userId: user.uid }),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) {
-        setError(data.error || 'start_failed')
-        return
-      }
-      // Optimistic navigation — listener would catch up but we have hostSessionId.
-      if (data.hostSessionId) {
-        router.replace(`/hunt?session=${data.hostSessionId}`)
-      }
-    } finally {
+      const data = await apiPost<{ ok: boolean; hostSessionId: string | null }>('/api/rooms/start', { roomId })
+      if (data.hostSessionId) { router.replace(`/hunt?session=${encodeURIComponent(data.hostSessionId)}`); return }
       setStarting(false)
+    } catch (e) {
+      setStarting(false)
+      const c = errorCode(e)
+      toast.error(t(
+        c === 'not_host' ? 'errNotHost'
+        : c === 'already_started' ? 'errRaceStarted'
+        : c === 'no_clues' || c === 'hunt_not_found' ? 'huntUnavailable'
+        : errorKey(e),
+      ))
     }
   }
 
-  const onLeave = async () => {
-    if (!user || !roomId) return
+  const leave = async (forfeit: boolean) => {
+    if (!roomId || leaving) return
+    setLeaving(true)
     try {
-      // During a race, leave just removes you from the active-room pointer; abandon truly forfeits.
-      if (room?.state === 'racing') {
-        await fetch('/api/rooms/abandon', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ roomId, userId: user.uid }),
-        })
-      } else {
-        await fetch('/api/rooms/leave', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ roomId, userId: user.uid }),
-        })
-      }
-    } finally {
+      await apiPost(forfeit ? '/api/rooms/abandon' : '/api/rooms/leave', { roomId })
       router.replace('/multiplayer')
+    } catch (e) {
+      setLeaving(false)
+      toast.error(t(errorKey(e)))
     }
+  }
+
+  const onLeaveClick = () => {
+    if (room?.state === 'racing' && me && !me.finishedAt) setConfirmForfeit(true)
+    else if (room?.state === 'racing') router.push('/multiplayer')
+    else leave(false)
   }
 
   const onCopy = async () => {
     try {
       await navigator.clipboard.writeText(code)
       setCopied(true)
+      toast.success(t('copied'))
       setTimeout(() => setCopied(false), 1500)
-    } catch {}
+    } catch {
+      toast.error(t('copyFailed'))
+    }
   }
 
   const onShare = async () => {
-    const url = typeof window !== 'undefined' ? window.location.href : ''
-    if (typeof navigator !== 'undefined' && (navigator as any).share) {
+    const url = window.location.href
+    if (typeof navigator.share === 'function') {
       try {
-        await (navigator as any).share({ title: 'Join my TourHunts race', text: `Join my hunt — code ${code}`, url })
+        await navigator.share({ title: t('shareRoomTitle'), text: fmt(t('shareRoomText'), { code }), url })
       } catch {}
     } else {
       onCopy()
     }
   }
 
-  if (loading) {
-    return <main className="page-center"><div className="spinner" /></main>
+  // ── Render ──
+
+  if (!codeValid) {
+    return (
+      <main className="page-center">
+        <div className="container flow-narrow">
+          <h1 className="mp-title">{t('joinRoom')}</h1>
+          <div className="mp-error" role="alert">{fmt(t('errCodeFormat'), { n: ROOM_CODE_LEN })}</div>
+          <a href="/multiplayer" className="mp-cta-secondary flow-mt-12">{t('backToMultiplayer')}</a>
+        </div>
+      </main>
+    )
   }
+
+  if (loading) {
+    return <main className="page-center" aria-busy="true"><div className="spinner" role="status" aria-label={t('loading')} /></main>
+  }
+
   if (!user) {
     return (
       <main className="page-center">
-        <div className="container" style={{ maxWidth: 480, padding: '32px 20px' }}>
+        <div className="container flow-narrow">
           <h1 className="mp-title">{t('joinRoom')}</h1>
           <p className="mp-sub">{t('signInToPlayMp')}</p>
-          <button onClick={signIn} className="cta-primary-btn" style={{ marginTop: 20 }}>
-            {t('signInGoogle')}
-          </button>
+          <button type="button" onClick={signIn} className="cta-primary-btn flow-mt-20">{t('signIn')}</button>
         </div>
       </main>
     )
@@ -241,29 +241,49 @@ export default function RoomLobbyPage() {
   if (error) {
     return (
       <main className="page-center">
-        <div className="container" style={{ maxWidth: 480, padding: '32px 20px' }}>
-          <a href="/multiplayer" className="back-link">{t('backToHunts')}</a>
+        <div className="container flow-narrow">
+          <a href="/multiplayer" className="back-link">{t('backToMultiplayer')}</a>
           <h1 className="mp-title">{t('joinRoom')}</h1>
-          <div className="mp-error">
-            {error === 'invalid_code' || error === 'not_found' ? t('invalidRoomCode')
-             : error === 'room_full' ? t('roomFull')
-             : error === 'race_started' ? t('raceStarted')
-             : t('invalidRoomCode')}
+          <div className="mp-error" role="alert">
+            {t(error.key)}
+            {error.cityId && <> <a href={`/city/${error.cityId}`} className="flow-inline-link">{t('unlockToPlay')} →</a></>}
           </div>
-          <a href="/multiplayer" className="mp-cta-secondary" style={{ marginTop: 16, display: 'inline-block' }}>
-            {t('createRoom')}
-          </a>
+          <div className="flow-actions-row">
+            {(error.key === 'errNetwork' || error.key === 'loadError') && (
+              <button type="button" className="mp-cta" onClick={() => resolve()}>{t('retry')}</button>
+            )}
+            <a href="/multiplayer" className="mp-cta-secondary">{t('createRoom')}</a>
+          </div>
         </div>
       </main>
     )
   }
 
-  // Finished state — show enhanced race results.
-  if (room?.state === 'finished' && roomId) {
+  if (conflict) {
     return (
       <main className="page-center">
-        <div className="container" style={{ maxWidth: 800, padding: '20px 20px 48px' }}>
-          <a href="/" className="back-link">{t('backToHunts')}</a>
+        <div className="container flow-narrow">
+          <a href="/multiplayer" className="back-link">{t('backToMultiplayer')}</a>
+          <h1 className="mp-title">{t('joinRoom')}</h1>
+          <RoomConflictDialog
+            existing={conflict}
+            onContinue={() => resolve(true)}
+            onClose={() => router.push('/multiplayer')}
+          />
+        </div>
+      </main>
+    )
+  }
+
+  if (!roomId || !room) {
+    return <main className="page-center" aria-busy="true"><div className="spinner" role="status" aria-label={t('loading')} /></main>
+  }
+
+  if (room.state === 'finished') {
+    return (
+      <main className="page-center">
+        <div className="container flow-mp-wide">
+          <a href="/" className="back-link">{t('home')}</a>
           <div className="mp-room-header">
             <div className="mp-room-badge">{t('raceFinished')}</div>
             <div className="mp-room-hunt">{room.huntTitle}</div>
@@ -274,91 +294,91 @@ export default function RoomLobbyPage() {
     )
   }
 
+  const racing = room.state === 'racing'
+
   return (
     <main className="page-center">
-      <div className="container" style={{ maxWidth: 560, padding: '20px 20px 48px' }}>
-        <a href="/multiplayer" className="back-link">{t('backToHunts')}</a>
+      <div className="container flow-mp-container">
+        <a href="/multiplayer" className="back-link">{t('backToMultiplayer')}</a>
 
         <div className="mp-room-header">
           <div className="mp-room-badge">{t('inRoomBadge')}</div>
-          <div className="mp-room-hunt">{room?.huntTitle ?? '…'}</div>
+          <h1 className="mp-room-hunt">{room.huntTitle}</h1>
 
           <div className="mp-code-display">
-            <div className="mp-code-label">{t('roomCode')}</div>
-            <div className="mp-code-value" onClick={onCopy} role="button" tabIndex={0}>
+            <div className="mp-code-label" id="room-code-label">{t('roomCode')}</div>
+            <button type="button" className="mp-code-value mp-code-value-btn" onClick={onCopy} aria-describedby="room-code-label" aria-label={`${t('copyCode')}: ${code.split('').join(' ')}`}>
               {code}
-            </div>
+            </button>
             <div className="mp-code-actions">
-              <button className="mp-cta-secondary" onClick={onCopy}>
+              <button type="button" className="mp-cta-secondary" onClick={onCopy}>
                 {copied ? t('copied') : t('copyCode')}
               </button>
-              <button className="mp-cta-secondary" onClick={onShare}>
-                {t('share')}
-              </button>
+              <button type="button" className="mp-cta-secondary" onClick={onShare}>{t('share')}</button>
             </div>
           </div>
         </div>
 
-        <section className="mp-card">
-          <h2 className="mp-card-title">
+        <section className="mp-card" aria-labelledby="players-title">
+          <h2 className="mp-card-title" id="players-title">
             {t('players')} <span className="mp-count">({players.length})</span>
           </h2>
           <ul className="mp-player-list">
-            {players.map(p => {
-              const isMe = !!user && p.userId === user.uid
-              return (
-                <li key={p.userId} className="mp-player-row">
-                  <div className="mp-player-avatar">
-                    {p.photoURL
-                      ? <img src={p.photoURL} alt="" referrerPolicy="no-referrer" />
-                      : <span>{p.displayName?.[0]?.toUpperCase() || '?'}</span>}
+            {players.map(p => (
+              <li key={p.key} className="mp-player-row">
+                <div className="mp-player-avatar" aria-hidden>
+                  {p.photoURL
+                    ? <img src={p.photoURL} alt="" referrerPolicy="no-referrer" />
+                    : <span>{p.displayName?.[0]?.toUpperCase() || '?'}</span>}
+                </div>
+                <div className="mp-player-name">
+                  {p.displayName}
+                  {p.isYou && <span className="mp-tag">{t('you')}</span>}
+                  {p.isHost && <span className="mp-tag mp-tag-host">{t('host')}</span>}
+                </div>
+                {racing && (
+                  <div className="mp-player-progress">
+                    {p.abandoned ? t('playerForfeited') : `${p.cluesDone} ${t('stopsCompleted')} · ${p.score} ${t('points')}`}
                   </div>
-                  <div className="mp-player-name">
-                    {p.displayName}
-                    {isMe && <span className="mp-tag">{t('you')}</span>}
-                    {p.isHost && <span className="mp-tag mp-tag-host">{t('host')}</span>}
-                  </div>
-                  {room?.state === 'racing' && (
-                    <div className="mp-player-progress">
-                      {p.cluesDone} {t('stopsCompleted')} · {p.score} {t('points')}
-                    </div>
-                  )}
-                </li>
-              )
-            })}
+                )}
+              </li>
+            ))}
           </ul>
         </section>
 
-        {room?.state === 'lobby' && (
+        {room.state === 'lobby' && (
           isHost ? (
-            <button
-              className="mp-cta mp-cta-large"
-              onClick={onStart}
-              disabled={!canStart || starting}
-            >
+            <button type="button" className="mp-cta mp-cta-large" onClick={onStart} disabled={starting} aria-busy={starting}>
               {starting ? '…' : t('startRace')}
             </button>
           ) : (
-            <div className="mp-waiting">{t('waitingForHost')}</div>
+            <div className="mp-waiting" role="status">{t('waitingForHost')}</div>
           )
         )}
 
-        {room?.state === 'racing' && (() => {
-          const me = players.find(p => p.userId === user?.uid)
-          if (me?.sessionId) {
-            return (
-              <a href={`/hunt?session=${me.sessionId}`} className="mp-cta mp-cta-large" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>
-                {t('goToHunt')} →
-              </a>
-            )
-          }
-          return <div className="mp-waiting">{t('raceStarted')}</div>
-        })()}
+        {racing && (mySessionId && !me?.finishedAt ? (
+          <a href={`/hunt?session=${encodeURIComponent(mySessionId)}`} className="mp-cta mp-cta-large flow-block-cta">
+            {t('goToHunt')} →
+          </a>
+        ) : (
+          <div className="mp-waiting" role="status">{me?.finishedAt ? t('mpFinished') : t('raceStarted')}</div>
+        ))}
 
-        <button className="mp-cta-secondary mp-leave" onClick={onLeave}>
-          {t('leaveRoom')}
+        <button type="button" className="mp-cta-secondary mp-leave" onClick={onLeaveClick} disabled={leaving}>
+          {racing && me && !me.finishedAt ? t('abandonRace') : t('leaveRoom')}
         </button>
       </div>
+
+      <ConfirmDialog
+        open={confirmForfeit}
+        title={t('abandonRace')}
+        body={t('abandonConfirm')}
+        confirmLabel={t('abandonRace')}
+        cancelLabel={t('keepRacing')}
+        danger
+        onConfirm={() => { setConfirmForfeit(false); leave(true) }}
+        onCancel={() => setConfirmForfeit(false)}
+      />
     </main>
   )
 }

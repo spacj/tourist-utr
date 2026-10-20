@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { onSnapshot, doc, getDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useAuth } from '@/components/AuthProvider'
+import { apiPost } from '@/lib/apiFetch'
 
 export type ActiveRoomState = 'lobby' | 'racing' | 'finished'
 
@@ -12,6 +13,7 @@ export type ActiveRoomInfo = {
   huntId: string
   huntTitle: string
   state: ActiveRoomState
+  /** The caller's own session in this race (null until the race starts). */
   sessionId: string | null
   cluesDone: number
   score: number
@@ -21,11 +23,11 @@ export type ActiveRoomInfo = {
 export type ActiveRoom = ActiveRoomInfo | null
 
 /**
- * Real-time view of the user's active multiplayer room.
- *
- * Subscribes to `userActiveRooms/{userId}` so the resume banner updates
- * the moment the host starts the race, the player finishes, or another
- * device leaves the room. Works across tabs and devices.
+ * Real-time view of the signed-in user's active multiplayer room, from
+ * `userActiveRooms/{uid}` (readable by its owner only — the server writes it
+ * on create/join/start/finish). It's the only client-side source of the
+ * user's race sessionId: public player docs don't carry it.
+ * Guests can't be in rooms, so they always get null.
  */
 export function useActiveRoom() {
   const { user, loading } = useAuth()
@@ -39,43 +41,39 @@ export function useActiveRoom() {
       setChecked(true)
       return
     }
-
+    let cancelled = false
     const unsub = onSnapshot(
       doc(db, 'userActiveRooms', user.uid),
       async (snap) => {
         if (!snap.exists()) {
-          setActive(null)
-          setChecked(true)
+          if (!cancelled) { setActive(null); setChecked(true) }
           return
         }
         const a = snap.data()
-
-        // Hydrate with player progress so the banner can show "X stops · Y points".
+        // Hydrate with own progress so the banner can show "X stops · Y points".
         let cluesDone = 0
         let score = 0
         let finishedAt: number | null = null
         try {
-          const playerSnap = await getDoc(doc(db, 'rooms', a.roomId, 'players', user.uid))
-          if (playerSnap.exists()) {
-            const p = playerSnap.data()
-            cluesDone = p.cluesDone ?? 0
-            score = p.score ?? 0
-            finishedAt = p.finishedAt?.toMillis?.() ?? null
-          } else {
-            // Player record was deleted (left room). Resume pointer is stale.
-            setActive(null)
-            setChecked(true)
+          const playerSnap = await getDoc(doc(db, 'rooms', String(a.roomId), 'players', user.uid))
+          if (!playerSnap.exists()) {
+            // Player record gone (left / room closed): the pointer is stale.
+            if (!cancelled) { setActive(null); setChecked(true) }
             return
           }
+          const p = playerSnap.data()
+          cluesDone = p.cluesDone ?? 0
+          score = p.score ?? 0
+          finishedAt = p.finishedAt?.toMillis?.() ?? null
         } catch {}
-
+        if (cancelled) return
         setActive({
-          roomId: a.roomId,
-          code: a.code,
-          huntId: a.huntId,
-          huntTitle: a.huntTitle,
-          state: a.state as ActiveRoomState,
-          sessionId: a.sessionId ?? null,
+          roomId: String(a.roomId),
+          code: String(a.code ?? ''),
+          huntId: String(a.huntId ?? ''),
+          huntTitle: String(a.huntTitle ?? ''),
+          state: (a.state as ActiveRoomState) ?? 'lobby',
+          sessionId: typeof a.sessionId === 'string' ? a.sessionId : null,
           cluesDone,
           score,
           finishedAt,
@@ -83,37 +81,23 @@ export function useActiveRoom() {
         setChecked(true)
       },
       () => {
-        setActive(null)
-        setChecked(true)
-      }
+        if (!cancelled) { setActive(null); setChecked(true) }
+      },
     )
-    return () => unsub()
+    return () => { cancelled = true; unsub() }
   }, [user, loading])
 
   /**
-   * Dismiss the active-room banner.
-   *  - lobby     → leave the room (player record + pointer removed)
-   *  - finished  → just clear the pointer (results stay viewable via room code)
-   *  - racing    → noop (use abandon to actually quit a race)
+   * Dismiss the active-room banner. Throws ApiError on failure.
+   *  - lobby     → leave the room
+   *  - finished  → clear the pointer (results stay viewable via the code)
+   *  - racing    → no-op (abandoning a race is an explicit, confirmed action)
    */
   const dismiss = useCallback(async () => {
     if (!user || !active) return
-    try {
-      if (active.state === 'lobby') {
-        await fetch('/api/rooms/leave', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: user.uid, roomId: active.roomId }),
-        })
-      } else if (active.state === 'finished') {
-        await fetch('/api/rooms/dismiss', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: user.uid }),
-        })
-      }
-    } catch {}
-    // Listener will pick up the deletion and clear local state.
+    if (active.state === 'lobby') await apiPost('/api/rooms/leave', { roomId: active.roomId })
+    else if (active.state === 'finished') await apiPost('/api/rooms/dismiss', {})
+    // The listener picks up the deletion and clears local state.
   }, [user, active])
 
   return { active, checked, dismiss }

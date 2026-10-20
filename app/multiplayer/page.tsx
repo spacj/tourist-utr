@@ -1,147 +1,124 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
+import { useToast } from '@/components/Toast'
 import { useI18n } from '@/hooks/useI18n'
-import { Hunt, City, localizeHunt, localizeCity } from '@/types'
+import { apiGet } from '@/lib/apiFetch'
+import { roomPost, roomErrorKey } from '@/lib/roomsClient'
+import { Hunt, City, isHuntFree, localizeHunt, localizeCity } from '@/types'
 import { ROOM_CODE_LEN, normalizeCode } from '@/lib/rooms'
 import { ResumeRaceBanner } from '@/components/ResumeRaceBanner'
+import { RoomConflictDialog, existingRoomFrom, type ExistingRoom } from '@/components/RoomConflictDialog'
+
+type RoomError = { key: string; cityId?: string | null }
 
 export default function MultiplayerEntryPage() {
   const router = useRouter()
   const { user, loading, signIn } = useAuth()
   const { lang, t } = useI18n()
+  const toast = useToast()
 
   const [cities, setCities] = useState<City[]>([])
   const [hunts, setHunts] = useState<Hunt[]>([])
+  const [catalogState, setCatalogState] = useState<'loading' | 'ready' | 'error'>('loading')
   const [unlockedCities, setUnlockedCities] = useState<Set<string>>(new Set())
   const [selectedHuntId, setSelectedHuntId] = useState<string | null>(null)
-  const [creating, setCreating] = useState(false)
 
+  const [creating, setCreating] = useState(false)
+  const [createError, setCreateError] = useState<RoomError | null>(null)
   const [code, setCode] = useState('')
   const [joining, setJoining] = useState(false)
-  const [joinError, setJoinError] = useState<string | null>(null)
+  const [joinError, setJoinError] = useState<RoomError | null>(null)
+  const [conflict, setConflict] = useState<{ existing: ExistingRoom; retry: () => Promise<void> } | null>(null)
 
-  useEffect(() => {
-    fetch('/api/cities').then(r => r.json()).then(setCities).catch(() => {})
-    fetch('/api/hunts').then(r => r.json()).then(setHunts).catch(() => {})
+  const loadCatalog = useCallback(() => {
+    setCatalogState('loading')
+    Promise.all([apiGet<City[]>('/api/cities'), apiGet<Hunt[]>('/api/hunts')])
+      .then(([cs, hs]) => { setCities(cs); setHunts(hs); setCatalogState('ready') })
+      .catch(() => setCatalogState('error'))
   }, [])
+  useEffect(() => { loadCatalog() }, [loadCatalog])
 
   useEffect(() => {
     if (!user) { setUnlockedCities(new Set()); return }
-    fetch(`/api/city-unlocks?userId=${user.uid}`)
-      .then(r => r.json())
-      .then((ids: string[]) => setUnlockedCities(new Set(ids)))
+    apiGet<string[]>('/api/city-unlocks')
+      .then(ids => setUnlockedCities(new Set(Array.isArray(ids) ? ids : [])))
       .catch(() => {})
   }, [user])
 
-  const playableHunts = hunts.filter(h => h.active && (h.order === 0 || (h.cityId && unlockedCities.has(h.cityId))))
+  const playableHunts = hunts.filter(h => h.active !== false && (isHuntFree(h) || (h.cityId && unlockedCities.has(h.cityId))))
 
-  const onCreate = async (force = false) => {
-    if (!user || !selectedHuntId) return
-    setCreating(true)
-    try {
-      const res = await fetch('/api/rooms/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          huntId: selectedHuntId,
-          userId: user.uid,
-          displayName: user.displayName || 'Player',
-          photoURL: user.photoURL || null,
-          force,
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        // If user already in another lobby, ask them to confirm before stomping it.
-        if (data.error === 'already_in_room' && data.existing?.code) {
-          const ok = confirm(
-            t('alreadyInRoomConfirm').replace('{code}', data.existing.code)
-          )
-          if (ok) {
-            // Leave the old room first, then retry create with force.
-            await fetch('/api/rooms/leave', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ userId: user.uid, roomId: data.existing.roomId }),
-            }).catch(() => {})
-            return onCreate(true)
-          }
-        } else {
-          setJoinError(data.error || 'create_failed')
-        }
-        setCreating(false)
-        return
-      }
-      router.push(`/multiplayer/${data.code}`)
-    } catch {
-      setCreating(false)
+  /** Shared failure handling for create + join. Returns the inline error to show, if any. */
+  const handleRoomFailure = (
+    r: { status: number; error: string; data: any },
+    retry: () => Promise<void>,
+  ): RoomError | null => {
+    if (r.error === 'already_in_room') {
+      const existing = existingRoomFrom(r.data)
+      if (existing) { setConflict({ existing, retry }); return null }
     }
+    if (r.error === 'account_required' || r.error === 'unauthenticated') {
+      toast.info(t('signInToPlayMp'))
+      signIn()
+      return null
+    }
+    return { key: roomErrorKey(r.error, r.status), cityId: r.error === 'city_locked' ? (r.data?.cityId ?? null) : undefined }
   }
 
-  const onJoin = async (force = false) => {
-    if (!user) return
+  const onCreate = async (force = false): Promise<void> => {
+    if (!user || !selectedHuntId || creating) return
+    setCreating(true)
+    setCreateError(null)
+    setConflict(null)
+    const r = await roomPost<{ roomId: string; code: string }>('/api/rooms/create', {
+      huntId: selectedHuntId,
+      displayName: user.displayName || undefined,
+      force,
+    })
+    if (r.ok) { router.push(`/multiplayer/${r.data.code}`); return }
+    setCreating(false)
+    setCreateError(handleRoomFailure(r, () => onCreate(true)))
+  }
+
+  const onJoin = async (force = false): Promise<void> => {
+    if (!user || joining) return
     const norm = normalizeCode(code)
-    if (norm.length !== ROOM_CODE_LEN) {
-      setJoinError('invalid_code')
-      return
-    }
+    if (norm.length !== ROOM_CODE_LEN) { setJoinError({ key: 'errCodeLength' }); return }
     setJoining(true)
     setJoinError(null)
-    try {
-      const res = await fetch('/api/rooms/join', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code: norm,
-          userId: user.uid,
-          displayName: user.displayName || 'Player',
-          photoURL: user.photoURL || null,
-          force,
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        if (data.error === 'already_in_room' && data.existing?.code) {
-          const ok = confirm(
-            t('alreadyInRoomConfirm').replace('{code}', data.existing.code)
-          )
-          if (ok) {
-            await fetch('/api/rooms/leave', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ userId: user.uid, roomId: data.existing.roomId }),
-            }).catch(() => {})
-            return onJoin(true)
-          }
-        } else {
-          setJoinError(data.error || 'join_failed')
-        }
-        setJoining(false)
-        return
-      }
-      router.push(`/multiplayer/${data.code}`)
-    } catch {
-      setJoinError('join_failed')
-      setJoining(false)
-    }
+    setConflict(null)
+    const r = await roomPost<{ roomId: string; code: string }>('/api/rooms/join', {
+      code: norm,
+      displayName: user.displayName || undefined,
+      force,
+    })
+    if (r.ok) { router.push(`/multiplayer/${r.data.code}`); return }
+    setJoining(false)
+    setJoinError(handleRoomFailure(r, () => onJoin(true)))
   }
 
+  const renderError = (err: RoomError | null, id: string) => err && (
+    <div className="mp-error" id={id} role="alert">
+      {t(err.key)}
+      {err.cityId && (
+        <> <a href={`/city/${err.cityId}`} className="flow-inline-link">{t('unlockToPlay')} →</a></>
+      )}
+    </div>
+  )
+
   if (loading) {
-    return <main className="page-center"><div className="spinner" /></main>
+    return <main className="page-center" aria-busy="true"><div className="spinner" role="status" aria-label={t('loading')} /></main>
   }
 
   if (!user) {
     return (
       <main className="page-center">
-        <div className="container" style={{ maxWidth: 480, padding: '32px 20px' }}>
-          <a href="/" className="back-link">{t('backToHunts')}</a>
+        <div className="container flow-narrow">
+          <a href="/" className="back-link">{t('home')}</a>
           <h1 className="mp-title">{t('playWithFriends')}</h1>
           <p className="mp-sub">{t('signInToPlayMp')}</p>
-          <button onClick={signIn} className="cta-primary-btn" style={{ marginTop: 20 }}>
-            {t('signInGoogle')}
-          </button>
+          <button type="button" onClick={signIn} className="cta-primary-btn flow-mt-20">{t('signIn')}</button>
         </div>
       </main>
     )
@@ -149,18 +126,20 @@ export default function MultiplayerEntryPage() {
 
   return (
     <main className="page-center">
-      <div className="container" style={{ maxWidth: 560, padding: '24px 20px 48px' }}>
-        <a href="/" className="back-link">{t('backToHunts')}</a>
+      <div className="container flow-mp-container">
+        <a href="/" className="back-link">{t('home')}</a>
         <h1 className="mp-title">{t('playWithFriends')}</h1>
 
         <ResumeRaceBanner />
 
         {/* ── Join card ── */}
-        <section className="mp-card">
-          <h2 className="mp-card-title">{t('joinRoom')}</h2>
-          <p className="mp-card-desc">{t('enterRoomCode')}</p>
-          <div className="mp-code-input-row">
+        <section className="mp-card" aria-labelledby="mp-join-title">
+          <h2 className="mp-card-title" id="mp-join-title">{t('joinRoom')}</h2>
+          <form onSubmit={(e) => { e.preventDefault(); onJoin() }}>
+            <label htmlFor="mp-code" className="mp-card-desc flow-label">{t('enterRoomCode')}</label>
+            <div className="mp-code-input-row">
             <input
+              id="mp-code"
               type="text"
               className="mp-code-input"
               value={code}
@@ -169,43 +148,43 @@ export default function MultiplayerEntryPage() {
               maxLength={ROOM_CODE_LEN}
               autoCapitalize="characters"
               autoCorrect="off"
+              autoComplete="off"
               spellCheck={false}
-              inputMode="text"
+              aria-invalid={!!joinError}
+              aria-describedby={joinError ? 'mp-join-error' : undefined}
             />
-            <button
-              className="mp-cta"
-              onClick={() => onJoin()}
-              disabled={joining || code.length !== ROOM_CODE_LEN}
-            >
+            <button type="submit" className="mp-cta" disabled={joining || code.length !== ROOM_CODE_LEN}>
               {joining ? '…' : t('joinRoom')}
             </button>
-          </div>
-          {joinError && (
-            <div className="mp-error">
-              {joinError === 'invalid_code' ? t('invalidRoomCode')
-               : joinError === 'room_full' ? t('roomFull')
-               : joinError === 'race_started' ? t('raceStarted')
-               : t('invalidRoomCode')}
             </div>
-          )}
+          </form>
+          {renderError(joinError, 'mp-join-error')}
         </section>
 
         {/* ── Create card ── */}
-        <section className="mp-card">
-          <h2 className="mp-card-title">{t('createRoom')}</h2>
+        <section className="mp-card" aria-labelledby="mp-create-title">
+          <h2 className="mp-card-title" id="mp-create-title">{t('createRoom')}</h2>
           <p className="mp-card-desc">{t('shareRoomCode')}</p>
-          {playableHunts.length === 0 ? (
+          {catalogState === 'loading' ? (
+            <div aria-busy="true">
+              <span className="flow-sr-only" role="status">{t('loading')}</span>
+              <span className="skel skel-line" />
+              <span className="skel skel-line" />
+              <span className="skel skel-line is-short" />
+            </div>
+          ) : catalogState === 'error' ? (
+            <div className="mp-empty" role="alert">
+              <p className="flow-error-text">{t('loadError')}</p>
+              <button type="button" className="mp-cta-secondary flow-retry" onClick={loadCatalog}>{t('retry')}</button>
+            </div>
+          ) : playableHunts.length === 0 ? (
             <div className="mp-empty">
-              <p style={{ margin: 0, color: 'var(--text-secondary, #8b8aaa)' }}>
-                {t('noHuntsYet')}
-              </p>
-              <a href="/" className="mp-cta-secondary" style={{ marginTop: 12 }}>
-                {t('chooseCity')}
-              </a>
+              <p className="flow-muted">{t('noPlayableHunts')}</p>
+              <a href="/" className="mp-cta-secondary flow-mt-12">{t('chooseCity')}</a>
             </div>
           ) : (
             <>
-              <div className="mp-hunt-list">
+              <div className="mp-hunt-list" role="radiogroup" aria-labelledby="mp-create-title">
                 {playableHunts.map(rawHunt => {
                   const hunt = localizeHunt(rawHunt, lang)
                   const city = cities.find(c => c.id === hunt.cityId)
@@ -215,32 +194,42 @@ export default function MultiplayerEntryPage() {
                     <button
                       key={hunt.id}
                       type="button"
+                      role="radio"
+                      aria-checked={selected}
                       className={`mp-hunt-item ${selected ? 'selected' : ''}`}
-                      onClick={() => setSelectedHuntId(hunt.id)}
+                      onClick={() => { setSelectedHuntId(hunt.id); setCreateError(null) }}
                     >
-                      <div>
-                        <div className="mp-hunt-name">{hunt.title}</div>
-                        <div className="mp-hunt-meta">
+                      <span>
+                        <span className="mp-hunt-name">{hunt.title}</span>
+                        <span className="mp-hunt-meta">
                           {cityName} · {hunt.clueCount} {t('places')} · {hunt.durationMin} {t('min')}
-                        </div>
-                      </div>
+                        </span>
+                      </span>
                       <span className="mp-hunt-radio" aria-hidden>{selected ? '●' : '○'}</span>
                     </button>
                   )
                 })}
               </div>
               <button
-                className="mp-cta"
+                type="button"
+                className="mp-cta flow-full-cta"
                 onClick={() => onCreate()}
                 disabled={!selectedHuntId || creating}
-                style={{ marginTop: 16, width: '100%' }}
+                aria-describedby={createError ? 'mp-create-error' : undefined}
               >
                 {creating ? '…' : t('createRoom')}
               </button>
+              {renderError(createError, 'mp-create-error')}
             </>
           )}
         </section>
       </div>
+
+      <RoomConflictDialog
+        existing={conflict?.existing ?? null}
+        onContinue={() => conflict?.retry()}
+        onClose={() => setConflict(null)}
+      />
     </main>
   )
 }

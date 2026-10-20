@@ -1,8 +1,11 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
-import maplibregl from 'maplibre-gl'
+import type { Map as MlMap, Marker as MlMarker } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { Clue } from '@/types'
+import { useI18n } from '@/hooks/useI18n'
+
+type MapLib = typeof import('maplibre-gl')
 
 interface Props {
   clues: Clue[]
@@ -65,16 +68,20 @@ export function TourMapView({
   clues, visited, selectedId, onSelect, userLat, userLng, accentColor = '#ff6a13',
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const mapRef = useRef<maplibregl.Map>()
-  const userMarkerRef = useRef<maplibregl.Marker>()
-  const stopMarkersRef = useRef<Map<string, { marker: maplibregl.Marker; inner: HTMLDivElement }>>(new Map())
+  const { t } = useI18n()
+  const libRef = useRef<MapLib | null>(null)
+  const mapRef = useRef<MlMap>()
+  const userMarkerRef = useRef<MlMarker>()
+  const stopMarkersRef = useRef<Map<string, { marker: MlMarker; inner: HTMLDivElement }>>(new Map())
   const userInteractedRef = useRef(false)
   const [followingUser, setFollowingUser] = useState(false)
   const [mapReady, setMapReady] = useState(false)
 
-  // ── Initialize map once, fit it to all stops ───────────────────────
+  // ── Initialize map once (maplibre loaded lazily), fit it to all stops ──
   useEffect(() => {
     if (!containerRef.current || clues.length === 0) return
+    let cancelled = false
+    let map: MlMap | null = null
 
     const lngs = clues.map(c => c.lng)
     const lats = clues.map(c => c.lat)
@@ -83,12 +90,17 @@ export function TourMapView({
       [Math.max(...lngs), Math.max(...lats)],
     ]
 
-    const map = new maplibregl.Map({
+    import('maplibre-gl').then((mod) => {
+    if (cancelled || !containerRef.current) return
+    const lib = ((mod as any).default ?? mod) as MapLib
+    libRef.current = lib
+    map = new lib.Map({
       container: containerRef.current,
       style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
       bounds,
       fitBoundsOptions: { padding: 80, maxZoom: 16 },
-      attributionControl: false,
+      // OSM/CARTO licence: attribution must stay visible.
+      attributionControl: { compact: true },
     })
     mapRef.current = map
 
@@ -104,21 +116,21 @@ export function TourMapView({
     map.on('pitchstart', onUserMove)
 
     map.on('load', () => {
-      // No connecting polyline: tour stops are presented as a set of independent
-      // points on the map, not as a strict sequenced route. The numbered markers
-      // already convey order; drawing a path between them implied a single
-      // mandatory walking sequence.
-      setMapReady(true)
+      // No connecting polyline: tour stops are independent points; the
+      // numbered markers already convey order.
+      if (!cancelled) setMapReady(true)
     })
+    }).catch(() => {})
 
     return () => {
+      cancelled = true
       stopMarkersRef.current.forEach(({ marker }) => marker.remove())
       stopMarkersRef.current.clear()
       if (userMarkerRef.current) {
         userMarkerRef.current.remove()
         userMarkerRef.current = undefined
       }
-      map.remove()
+      map?.remove()
       mapRef.current = undefined
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -127,7 +139,8 @@ export function TourMapView({
   // ── Render / update stop markers when state changes ───────────────
   useEffect(() => {
     const map = mapRef.current
-    if (!map || !mapReady) return
+    const lib = libRef.current
+    if (!map || !lib || !mapReady) return
 
     const seen = new Set<string>()
     clues.forEach(clue => {
@@ -145,7 +158,7 @@ export function TourMapView({
         })
         // Circular badge — anchor on center so the disc sits exactly on the
         // lat/lng (instead of the bottom edge that the old teardrop needed).
-        const marker = new maplibregl.Marker({ element: root, anchor: 'center' })
+        const marker = new lib.Marker({ element: root, anchor: 'center' })
           .setLngLat([clue.lng, clue.lat])
           .addTo(map)
         entry = { marker, inner }
@@ -173,7 +186,8 @@ export function TourMapView({
   // ── User position marker ──────────────────────────────────────────
   useEffect(() => {
     const map = mapRef.current
-    if (!map || userLat === null || userLng === null) return
+    const lib = libRef.current
+    if (!map || !lib || !mapReady || userLat === null || userLng === null) return
 
     if (!userMarkerRef.current) {
       const root = document.createElement('div')
@@ -181,7 +195,7 @@ export function TourMapView({
       const inner = document.createElement('div')
       inner.className = 'tour-user-marker-inner'
       root.appendChild(inner)
-      userMarkerRef.current = new maplibregl.Marker({ element: root })
+      userMarkerRef.current = new lib.Marker({ element: root })
         .setLngLat([userLng, userLat])
         .addTo(map)
     } else {
@@ -191,16 +205,16 @@ export function TourMapView({
     if (followingUser) {
       map.easeTo({ center: [userLng, userLat], duration: 600 })
     }
-  }, [userLat, userLng, followingUser])
+  }, [userLat, userLng, followingUser, mapReady])
 
   // ── Pan/zoom to selected stop when it changes ─────────────────────
   useEffect(() => {
     const map = mapRef.current
-    if (!map || !selectedId) return
+    if (!map || !mapReady || !selectedId) return
     const clue = clues.find(c => c.id === selectedId)
     if (!clue) return
     map.easeTo({ center: [clue.lng, clue.lat], zoom: Math.max(map.getZoom(), 15.5), duration: 600 })
-  }, [selectedId, clues])
+  }, [selectedId, clues, mapReady])
 
   const recenterOnUser = () => {
     const map = mapRef.current
@@ -227,7 +241,7 @@ export function TourMapView({
     <div className="tour-map">
       <div ref={containerRef} className="tour-map-canvas" />
       <div className="tour-map-controls">
-        <button type="button" className="tour-map-control" onClick={fitAll} aria-label="Fit all stops">
+        <button type="button" className="tour-map-control" onClick={fitAll} aria-label={t('fitAllStops')}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 7V4a1 1 0 0 1 1-1h3M21 7V4a1 1 0 0 0-1-1h-3M3 17v3a1 1 0 0 0 1 1h3M21 17v3a1 1 0 0 1-1 1h-3" />
           </svg>
@@ -237,7 +251,7 @@ export function TourMapView({
             type="button"
             className={`tour-map-control ${followingUser ? 'is-active' : ''}`}
             onClick={recenterOnUser}
-            aria-label="Center on my location"
+            aria-label={t('recenterMap')}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="3" />

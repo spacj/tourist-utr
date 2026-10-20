@@ -1,10 +1,11 @@
-import { db } from '@/lib/firebase'
-import { doc, getDoc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore'
+import 'server-only'
+import type { Transaction } from 'firebase-admin/firestore'
+import { adminDb, FieldValue } from '@/lib/firebaseAdmin'
 
 /**
- * Server-side helpers for the `userActiveRooms/{userId}` collection.
- * This is the source of truth for "what room is this user currently in?"
- * across devices — replacing the per-device localStorage approach.
+ * Server-side helpers for the `userActiveRooms/{userId}` collection (readable
+ * by its owner only). Source of truth for "what room is this user currently
+ * in?" across devices.
  *
  * Lifecycle:
  *   create room      → upsert {state:'lobby'}
@@ -28,29 +29,46 @@ export interface UserActiveRoomDoc {
   updatedAt?: any
 }
 
-export async function setUserActiveRoom(
-  userId: string,
-  data: Omit<UserActiveRoomDoc, 'updatedAt' | 'joinedAt'> & { joinedAt?: number }
-): Promise<void> {
-  await setDoc(
-    doc(db, 'userActiveRooms', userId),
-    {
-      ...data,
-      joinedAt: data.joinedAt ?? serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    },
-    { merge: true }
-  )
+type ActiveInput = Omit<UserActiveRoomDoc, 'updatedAt' | 'joinedAt'>
+
+export function userActiveRoomRef(userId: string) {
+  return adminDb().collection('userActiveRooms').doc(userId)
+}
+
+function payload(data: ActiveInput, setJoinedAt: boolean) {
+  return {
+    ...data,
+    ...(setJoinedAt ? { joinedAt: FieldValue.serverTimestamp() } : {}),
+    updatedAt: FieldValue.serverTimestamp(),
+  }
+}
+
+export async function setUserActiveRoom(userId: string, data: ActiveInput, setJoinedAt = true): Promise<void> {
+  await userActiveRoomRef(userId).set(payload(data, setJoinedAt), { merge: true })
+}
+
+/** Transaction variant (writes only — do your reads first). */
+export function txSetUserActiveRoom(tx: Transaction, userId: string, data: ActiveInput, setJoinedAt = true): void {
+  tx.set(userActiveRoomRef(userId), payload(data, setJoinedAt), { merge: true })
 }
 
 export async function getUserActiveRoom(userId: string): Promise<UserActiveRoomDoc | null> {
-  const snap = await getDoc(doc(db, 'userActiveRooms', userId))
-  if (!snap.exists()) return null
+  const snap = await userActiveRoomRef(userId).get()
+  if (!snap.exists) return null
   return snap.data() as UserActiveRoomDoc
 }
 
 export async function clearUserActiveRoom(userId: string): Promise<void> {
-  await deleteDoc(doc(db, 'userActiveRooms', userId))
+  await userActiveRoomRef(userId).delete()
+}
+
+/** Clear the pointer only if it still points at `roomId`. */
+export async function clearUserActiveRoomIf(userId: string, roomId: string): Promise<void> {
+  const ref = userActiveRoomRef(userId)
+  await adminDb().runTransaction(async (tx) => {
+    const s = await tx.get(ref)
+    if (s.exists && s.data()?.roomId === roomId) tx.delete(ref)
+  })
 }
 
 export async function isUserInOtherRoom(userId: string, currentRoomId?: string): Promise<UserActiveRoomDoc | null> {
@@ -59,5 +77,9 @@ export async function isUserInOtherRoom(userId: string, currentRoomId?: string):
   if (existing.roomId === currentRoomId) return null
   // Only block if the other room is still in lobby or racing — finished is fine to overwrite.
   if (existing.state === 'finished') return null
+  // Stale pointer (room deleted or expired) never blocks.
+  const room = await adminDb().collection('rooms').doc(existing.roomId).get()
+  const expiresAt = room.data()?.expiresAt
+  if (!room.exists || (typeof expiresAt === 'number' && Date.now() > expiresAt)) return null
   return existing
 }

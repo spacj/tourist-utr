@@ -1,64 +1,94 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { Modal } from '@/components/Modal'
 import { useI18n } from '@/hooks/useI18n'
+import { apiGet } from '@/lib/apiFetch'
+import { fmt } from '@/lib/i18n/fmt'
 
-interface Row { rank: number; displayName: string; score: number; isYou: boolean }
-interface Data { leaderboard: Row[]; yourRank: { rank: number; score: number; total: number } | null; totalPlayers: number }
+interface Row {
+  rank: number
+  displayName: string
+  photoURL: string | null
+  score: number
+  completedAt: number
+  isYou: boolean
+}
+interface Data {
+  leaderboard: Row[]
+  yourRank: { rank: number; score: number; total: number } | null
+  totalPlayers: number
+}
 
-/** Per-hunt leaderboard sheet. Reads /api/leaderboard (top 10 + your rank). */
-export function Leaderboard({ huntId, userId, onClose }: { huntId: string; userId?: string | null; onClose: () => void }) {
+const MEDALS = ['🥇', '🥈', '🥉']
+
+/** Per-hunt leaderboard sheet: top players + the caller's own rank (token-based). */
+export function Leaderboard({ huntId, onClose }: { huntId: string; onClose: () => void }) {
   const { t } = useI18n()
   const [data, setData] = useState<Data | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading')
 
-  useEffect(() => {
-    const qs = new URLSearchParams({ huntId, ...(userId ? { userId } : {}) })
-    fetch(`/api/leaderboard?${qs}`)
-      .then(r => r.json())
-      .then((d) => { if (d && Array.isArray(d.leaderboard)) setData(d) })
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [huntId, userId])
+  const load = useCallback(() => {
+    setState('loading')
+    apiGet<Data>(`/api/leaderboard?huntId=${encodeURIComponent(huntId)}`)
+      .then(d => {
+        if (!d || !Array.isArray(d.leaderboard)) throw new Error('bad_shape')
+        setData(d)
+        setState('ready')
+      })
+      .catch(() => setState('error'))
+  }, [huntId])
+  useEffect(() => { load() }, [load])
 
-  const outsideTop = data?.yourRank && data.yourRank.rank > 10
+  const youInTop = !!data?.leaderboard.some(r => r.isYou)
 
   return (
-    <div className="history-backdrop" onClick={onClose}>
-      <div className="history-sheet" onClick={(e) => e.stopPropagation()}>
-        <div className="sheet-grab" aria-hidden />
-        <div className="history-header">
-          <h2 className="history-title">🏆 {t('leaderboardTitle')}</h2>
-          <button className="history-close" onClick={onClose} aria-label={t('close')}>✕</button>
+    <Modal open onClose={onClose} variant="sheet" title={<>🏆 {t('leaderboardTitle')}</>} className="lb-panel">
+      {state === 'loading' && (
+        <div className="lb-state" aria-busy="true">
+          <div className="spinner" role="status" aria-label={t('loading')} />
         </div>
+      )}
 
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: 28 }}><div className="spinner" style={{ margin: '0 auto' }} /></div>
-        ) : !data || data.leaderboard.length === 0 ? (
-          <p className="history-empty">{t('leaderboardEmpty')}</p>
-        ) : (
-          <>
-            <p className="history-sub">{data.totalPlayers} {t('lbPlayers')}</p>
-            <ol className="lb-list">
-              {data.leaderboard.map(row => (
-                <li key={row.rank} className={`lb-row ${row.isYou ? 'is-you' : ''}`}>
-                  <span className={`lb-rank ${row.rank <= 3 ? 'lb-medal' : ''}`}>
-                    {row.rank === 1 ? '🥇' : row.rank === 2 ? '🥈' : row.rank === 3 ? '🥉' : row.rank}
-                  </span>
-                  <span className="lb-name">{row.displayName}{row.isYou ? ` · ${t('lbYou')}` : ''}</span>
-                  <span className="lb-score">{row.score}</span>
-                </li>
-              ))}
-            </ol>
-            {outsideTop && data.yourRank && (
-              <div className="lb-yours">
-                <span className="lb-rank">{data.yourRank.rank}</span>
-                <span className="lb-name">{t('lbYou')}</span>
-                <span className="lb-score">{data.yourRank.score}</span>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </div>
+      {state === 'error' && (
+        <div className="lb-state" role="alert">
+          <p className="flow-error-text">{t('loadError')}</p>
+          <button type="button" className="btn-primary flow-retry" onClick={load}>{t('retry')}</button>
+        </div>
+      )}
+
+      {state === 'ready' && data && data.leaderboard.length === 0 && (
+        <p className="history-empty">{t('leaderboardEmpty')}</p>
+      )}
+
+      {state === 'ready' && data && data.leaderboard.length > 0 && (
+        <>
+          <p className="history-sub">{data.totalPlayers} {t('lbPlayers')}</p>
+          <ol className="lb-list">
+            {data.leaderboard.map(row => (
+              <li key={row.rank} className={`lb-row ${row.isYou ? 'is-you' : ''}`} aria-current={row.isYou ? 'true' : undefined}>
+                <span className={`lb-rank ${row.rank <= 3 ? 'lb-medal' : ''}`}>
+                  {row.rank <= 3 ? <span role="img" aria-label={`#${row.rank}`}>{MEDALS[row.rank - 1]}</span> : row.rank}
+                </span>
+                {row.photoURL
+                  ? <img src={row.photoURL} alt="" className="lb-avatar" referrerPolicy="no-referrer" />
+                  : <span className="lb-avatar lb-avatar-letter" aria-hidden>{row.displayName?.[0]?.toUpperCase() || '?'}</span>}
+                <span className="lb-name">
+                  {row.displayName}
+                  {row.isYou && <span className="mp-tag">{t('lbYou')}</span>}
+                </span>
+                <span className="lb-score">{row.score}</span>
+              </li>
+            ))}
+          </ol>
+          {data.yourRank && !youInTop && (
+            <div className="lb-yours" aria-label={fmt(t('lbYourRank'), { rank: data.yourRank.rank, total: data.yourRank.total })}>
+              <span className="lb-rank">{data.yourRank.rank}</span>
+              <span className="lb-name">{t('lbYou')}</span>
+              <span className="lb-score">{data.yourRank.score}</span>
+            </div>
+          )}
+        </>
+      )}
+    </Modal>
   )
 }

@@ -1,29 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/firebase'
-import { doc, getDoc } from 'firebase/firestore'
+import { handle, getAuthUser } from '@/lib/apiAuth'
+import { roomRef, playerRef, millis } from '@/lib/roomsServer'
+import { userActiveRoomRef } from '@/lib/userActiveRoom'
+
+export const dynamic = 'force-dynamic'
 
 /**
- * GET /api/rooms/active?userId=X
- *
- * Returns the user's active multiplayer room across devices.
- * Reads from `userActiveRooms/{userId}` (Firestore-backed source of truth).
- * Hydrates with progress data so the resume banner can render details.
+ * GET /api/rooms/active
+ * The caller's active multiplayer room across devices. Identity from the
+ * Bearer token only; signed-out or guest callers simply get {active:false}
+ * (guests can't be in rooms).
  */
-export async function GET(req: NextRequest) {
-  const userId = req.nextUrl.searchParams.get('userId')
-  if (!userId) return NextResponse.json({ active: false })
+export const GET = handle(async (req: NextRequest) => {
+  const user = await getAuthUser(req)
+  if (!user || user.isAnonymous) return NextResponse.json({ active: false })
 
-  const activeSnap = await getDoc(doc(db, 'userActiveRooms', userId))
-  if (!activeSnap.exists()) return NextResponse.json({ active: false })
-  const a = activeSnap.data()
+  const activeSnap = await userActiveRoomRef(user.uid).get()
+  if (!activeSnap.exists) return NextResponse.json({ active: false })
+  const a = activeSnap.data()!
 
-  // Verify the room still exists and the user is still listed.
-  const roomSnap = await getDoc(doc(db, 'rooms', a.roomId))
-  if (!roomSnap.exists()) return NextResponse.json({ active: false })
-
-  const playerSnap = await getDoc(doc(db, 'rooms', a.roomId, 'players', userId))
-  if (!playerSnap.exists()) return NextResponse.json({ active: false })
-  const player = playerSnap.data()
+  const [roomSnap, playerSnap] = await Promise.all([
+    roomRef(String(a.roomId)).get(),
+    playerRef(String(a.roomId), user.uid).get(),
+  ])
+  if (!roomSnap.exists || !playerSnap.exists) return NextResponse.json({ active: false })
+  const player = playerSnap.data()!
 
   return NextResponse.json({
     active: true,
@@ -32,9 +33,9 @@ export async function GET(req: NextRequest) {
     huntId: a.huntId,
     huntTitle: a.huntTitle,
     state: a.state,                  // 'lobby' | 'racing' | 'finished'
-    sessionId: a.sessionId ?? null,
+    sessionId: a.sessionId ?? null,  // the caller's own session
     cluesDone: player.cluesDone ?? 0,
     score: player.score ?? 0,
-    finishedAt: player.finishedAt?.toMillis?.() ?? null,
-  })
-}
+    finishedAt: millis(player.finishedAt),
+  }, { headers: { 'Cache-Control': 'private, no-store' } })
+})

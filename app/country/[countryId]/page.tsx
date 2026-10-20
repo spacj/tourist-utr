@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { db } from '@/lib/firebase'
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
+import { adminDb } from '@/lib/firebaseAdmin'
 import { CountryClient } from './CountryClient'
 import { Country } from '@/types'
 
@@ -11,19 +10,21 @@ export const revalidate = 60
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tourhunts.com'
 
 async function loadCountry(countryId: string): Promise<Country | null> {
-  const snap = await getDoc(doc(db, 'countries', countryId))
-  if (!snap.exists()) return null
+  if (!/^[A-Za-z0-9_-]{1,128}$/.test(countryId)) return null
+  const snap = await adminDb().collection('countries').doc(countryId).get()
+  if (!snap.exists) return null
   return { id: snap.id, ...(snap.data() as any) } as Country
 }
 
 async function loadCitySummaries(countryId: string) {
   try {
-    const snap = await getDocs(query(collection(db, 'cities'), where('active', '==', true)))
+    const snap = await adminDb().collection('cities').where('active', '==', true).get()
     return snap.docs
       .map(d => ({ id: d.id, ...(d.data() as any) }))
       .filter(c => (c.countryId ?? 'nl') === countryId)
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-  } catch {
+  } catch (e) {
+    console.error('[country page]', e)
     return []
   }
 }
@@ -32,11 +33,12 @@ async function loadHuntSummaries(cityIds: string[]) {
   if (cityIds.length === 0) return []
   try {
     // Fetch all hunts and filter — small dataset, simpler than chunked `in` queries.
-    const snap = await getDocs(query(collection(db, 'hunts'), where('active', '==', true)))
+    const snap = await adminDb().collection('hunts').where('active', '==', true).get()
     return snap.docs
       .map(d => ({ id: d.id, ...(d.data() as any) }))
       .filter(h => cityIds.includes(h.cityId))
-  } catch {
+  } catch (e) {
+    console.error('[country page]', e)
     return []
   }
 }

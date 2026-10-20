@@ -1,0 +1,44 @@
+rules_version = '2';
+
+// Deny-by-default. All game, payment and progression writes go through the
+// Next.js API routes, which use the Admin SDK (rules don't apply to it).
+// The browser only gets read access to public catalogue data and to the live
+// multiplayer docs it needs for realtime listeners, plus its own profile name.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isSelf(uid) { return signedIn() && request.auth.uid == uid; }
+
+    // ── Public catalogue (read-only) ──────────────────────────────
+    match /countries/{id} { allow read: if true; }
+    match /cities/{id}    { allow read: if true; }
+    match /benches/{id}   { allow read: if true; }
+    match /hunts/{huntId} {
+      allow read: if true;
+      // Clues hold answers and exact coordinates: server only.
+      match /clues/{clueId} { allow read, write: if false; }
+    }
+
+    // ── Own profile: only the display fields are client-writable ──
+    match /users/{uid} {
+      allow read: if isSelf(uid);
+      allow create, update: if isSelf(uid)
+        && request.resource.data.diff(resource == null ? {} : resource.data)
+             .affectedKeys().hasOnly(['displayName', 'photoURL', 'updatedAt'])
+        && (!('displayName' in request.resource.data)
+            || (request.resource.data.displayName is string
+                && request.resource.data.displayName.size() <= 40));
+    }
+
+    // ── Multiplayer realtime listeners (read-only) ────────────────
+    match /rooms/{roomId} {
+      allow read: if signedIn();
+      match /players/{uid} { allow read: if signedIn(); }
+    }
+    match /userActiveRooms/{uid} { allow read: if isSelf(uid); }
+
+    // Everything else (sessions, cityUnlocks, purchases, …) is server-only.
+    match /{document=**} { allow read, write: if false; }
+  }
+}

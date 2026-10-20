@@ -1,0 +1,239 @@
+/* ══════════════════════════════════════════════════════════════════
+ * Flows: city / checkout / auth / multiplayer / profile / complete.
+ * Loaded after globals.css — overrides and new classes only.
+ * ══════════════════════════════════════════════════════════════════ */
+
+/* ── Shared helpers ── */
+.flow-sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.flow-error-text { color: var(--red); font-size: 14px; line-height: 1.45; margin: 8px 0 0; }
+.flow-retry { margin-top: 12px; min-height: 44px; }
+.flow-link-btn {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 44px;
+  padding: 0 4px; border: 0; background: transparent; color: var(--primary);
+  font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer;
+}
+.flow-mt-12 { margin-top: 12px; }
+:where(.city-back, .back-link, .topbar-back, .mp-cta, .mp-cta-secondary, .btn-primary, .btn-secondary,
+  .checkout-option, .checkout-cta, .auth-tab, .auth-link, .flow-link-btn, .resume-race-dismiss,
+  .hunt-card, .lb-row, .pwa-banner-cta, .pwa-banner-dismiss):focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ── Skeletons ── */
+.skel {
+  display: block; border-radius: 12px;
+  background: linear-gradient(90deg, var(--surface-2) 0%, var(--bg-2) 50%, var(--surface-2) 100%);
+  background-size: 200% 100%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .skel { animation: skel-shimmer 1.4s ease-in-out infinite; }
+  @keyframes skel-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+}
+.skel-card { height: 132px; margin-bottom: 12px; border: 1px solid var(--border); }
+.skel-hero { height: 220px; margin: 16px 0; border-radius: 20px; }
+.skel-line { height: 16px; margin: 8px 0; }
+.skel-line.is-short { width: 40%; }
+.skel-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.skel-grid .skel-card { height: 220px; margin: 0; }
+
+/* ── Checkout sheet (Modal variant="sheet") ── */
+.modal-panel.checkout-panel { max-width: 520px; }
+.checkout-panel .modal-title {
+  font-family: var(--font-serif, serif); font-weight: 700; font-size: 22px; letter-spacing: -0.3px;
+}
+.checkout-panel .checkout-subtitle { margin: 0 0 14px; font-size: 14px; }
+.checkout-panel .checkout-option { min-height: 64px; }
+.checkout-panel .checkout-option.is-selected {
+  border-color: var(--accent, var(--primary));
+  background: color-mix(in srgb, var(--accent, var(--primary)) 7%, var(--surface));
+}
+.checkout-panel .checkout-option.is-selected .checkout-option-price { color: var(--accent, var(--primary)); }
+.checkout-panel .checkout-option-badge { background: var(--accent, var(--primary)); }
+.checkout-panel .checkout-option-radio.is-checked { border-color: var(--accent, var(--primary)); background: var(--accent, var(--primary)); }
+.checkout-panel .checkout-option-items { display: flex; }
+.checkout-panel .checkout-option-item { position: relative; padding-left: 14px; display: block; }
+.checkout-panel .checkout-option-item::before {
+  content: "✓"; position: absolute; left: 0; top: 0; color: var(--green); font-weight: 700; font-size: 11px;
+}
+.checkout-panel .checkout-option-subtitle,
+.checkout-panel .checkout-option-items { font-size: 13.5px; }
+.checkout-panel .checkout-option-subtitle,
+.checkout-panel .checkout-option-main { display: block; }
+.checkout-panel .checkout-trust li { font-size: 13px; }
+.checkout-trust-link { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.checkout-trust-link:hover { color: var(--primary); }
+.checkout-panel .checkout-cta { min-height: 48px; }
+.checkout-panel .checkout-footnote { font-size: 13px; }
+
+/* ── City page ── */
+.hunt-card .hunt-title, .hunt-card .hunt-desc,
+.hunt-card .resume-bar-track, .hunt-card .resume-bar-fill { display: block; }
+.hunt-card .hunt-desc { font-size: 14px; }
+.hunt-card.is-locked { opacity: 0.82; }
+.hunt-card:disabled { opacity: 0.6; cursor: progress; }
+.hunt-badge.locked-badge { background: var(--surface-2); color: var(--text); box-shadow: none; font-style: normal; font-family: inherit; }
+.hunt-badge.free-badge { background: var(--canal); color: #fff; box-shadow: none; font-style: normal; font-family: inherit; }
+.hunt-badge.completed-badge { color: #fff; }
+.hunt-arrow .spinner-mini { display: inline-block; vertical-align: middle; }
+.meta-pill { font-size: 12px; border: 1px solid transparent; }
+.diff-pill.diff-easy   { color: var(--canal); background: var(--canal-soft); border-color: rgba(46, 106, 88, 0.3); }
+.diff-pill.diff-medium { color: #8a5300; background: rgba(176, 106, 0, 0.10); border-color: rgba(176, 106, 0, 0.3); }
+.diff-pill.diff-hard   { color: var(--red); background: var(--brick-soft); border-color: rgba(178, 58, 46, 0.3); }
+.cat-pill { color: var(--text); background: var(--surface-2); border-color: var(--border); }
+.cat-pill-icon { margin-right: 4px; }
+.cat-pill.cat-nightlife { color: #5b2bb5; background: rgba(91, 43, 181, 0.08); border-color: rgba(91, 43, 181, 0.25); }
+.cat-pill.cat-food      { color: #a32020; background: rgba(163, 32, 32, 0.08); border-color: rgba(163, 32, 32, 0.25); }
+.cat-pill.cat-shopping  { color: #0a6177; background: rgba(10, 97, 119, 0.08); border-color: rgba(10, 97, 119, 0.25); }
+.cat-pill.cat-culture   { color: var(--canal); background: var(--canal-soft); border-color: rgba(46, 106, 88, 0.25); }
+.cat-pill.cat-family    { color: #8a5300; background: rgba(176, 106, 0, 0.08); border-color: rgba(176, 106, 0, 0.25); }
+.cat-pill.cat-general   { color: #3f3fa8; background: rgba(63, 63, 168, 0.08); border-color: rgba(63, 63, 168, 0.25); }
+.flow-mp-cta { margin: 16px 0; }
+.flow-anchor { scroll-margin-top: 20px; }
+.flow-section-gap { margin-top: 24px; }
+.city-back { min-height: 44px; }
+
+/* Closable flash banner (PayPal return etc.) */
+.flow-flash { display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 14px; font-size: 15px; }
+.flow-flash-text { flex: 1; padding: 6px 0; }
+.flow-flash.is-success { background: var(--canal-soft); color: var(--canal); border-color: rgba(46, 106, 88, 0.35); }
+.flow-flash.is-error { background: var(--brick-soft); color: var(--red); border-color: rgba(178, 58, 46, 0.35); }
+.flow-flash.is-info { background: var(--surface-2); color: var(--text); border-color: var(--border-2); }
+.flow-flash-close {
+  flex: none; width: 44px; height: 44px; border: 0; border-radius: 10px; background: transparent;
+  color: inherit; font-size: 22px; line-height: 1; cursor: pointer;
+}
+.flow-flash-close:hover { background: rgba(20, 20, 30, 0.06); }
+.flow-flash-close:focus-visible { outline: 3px solid var(--primary); outline-offset: 1px; }
+
+/* ── Country page ── */
+.flow-pb-48 { padding-bottom: 48px; }
+.flow-back-top { margin-top: 16px; min-height: 44px; display: inline-flex; align-items: center; }
+.flow-card-link { text-decoration: none; }
+
+/* ── Home ── */
+.flow-m0 { margin: 0; }
+.flow-avatar-placeholder { opacity: 0.35; }
+
+/* ── Multiplayer ── */
+.flow-narrow { max-width: 480px; padding: 32px 20px; }
+.flow-mp-container { max-width: 560px; padding: 24px 20px 48px; }
+.flow-mp-wide { max-width: 800px; padding: 20px 20px 48px; }
+.flow-mt-20 { margin-top: 20px; }
+.flow-label { display: block; margin-bottom: 8px; font-size: 14px; }
+.flow-muted { margin: 0; color: var(--text-muted); font-size: 14px; }
+.flow-full-cta { margin-top: 16px; width: 100%; min-height: 48px; }
+.flow-inline-link { color: var(--primary); font-weight: 700; text-decoration: underline; white-space: nowrap; }
+.mp-error { font-size: 14px; }
+.mp-hunt-item .mp-hunt-name, .mp-hunt-item .mp-hunt-meta { display: block; text-align: left; }
+.mp-hunt-item { min-height: 52px; }
+.mp-hunt-meta { font-size: 13px; }
+.mp-code-input { font-size: 18px; min-height: 48px; }
+.mp-cta, .mp-cta-secondary { min-height: 44px; }
+.resume-race-dismiss { width: 44px; min-height: 44px; }
+.flow-stack-actions { flex-wrap: wrap; }
+.flow-stack-actions > * { flex: 1 1 160px; }
+.flow-btn { display: inline-flex; align-items: center; justify-content: center; text-align: center; text-decoration: none; min-height: 46px; }
+.mp-code-value-btn {
+  border: 0; background: transparent; font: inherit; color: inherit; cursor: pointer;
+  min-height: 44px; padding: 0 8px; border-radius: 10px;
+}
+.mp-code-value-btn:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+.flow-actions-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.flow-actions-row > * { flex: 1 1 160px; text-align: center; }
+.flow-block-cta { display: block; text-align: center; text-decoration: none; }
+.mp-results-actions .mp-cta-secondary { display: inline-flex; align-items: center; justify-content: center; text-align: center; }
+.mp-breakdown-toggle { min-height: 48px; }
+.mp-scoreboard-close { min-width: 44px; min-height: 44px; }
+.mp-scoreboard-abandon { min-height: 44px; }
+
+/* ── Profile ── */
+.flow-center { text-align: center; }
+.flow-page-title { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+.flow-page-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 24px; }
+.flow-mt-8 { margin-top: 8px; }
+.flow-mt-18 { margin-top: 18px; }
+.flow-gold { color: var(--gold); }
+.flow-plain-list { list-style: none; margin: 0; padding: 0; }
+.profile-avatar-letter {
+  width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+  background: var(--surface-2); font-size: 20px; font-weight: 600; color: var(--gold);
+}
+.profile-email { font-size: 14px; }
+.badge-cell-label { font-size: 13px; }
+.history-detail { font-size: 14px; }
+
+/* ── Hunt complete ── */
+.cmp-container { text-align: center; }
+.cmp-back { align-self: flex-start; min-height: 44px; }
+.cmp-title { font-family: var(--font-serif, Georgia), serif; font-size: 26px; font-weight: 600; margin-bottom: 4px; }
+.cmp-hunt { font-size: 15px; color: var(--gold); margin-bottom: 16px; letter-spacing: 0.02em; }
+.cmp-score-label { font-size: 13px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 2px; }
+.cmp-score { font-family: var(--font-serif, Georgia), serif; font-size: 58px; font-weight: 700; color: var(--gold); line-height: 1; }
+.cmp-score-unit { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+.xp-badge { font-size: 13px; border-color: var(--border-2); }
+.cmp-clues {
+  list-style: none; margin: 0 0 18px; padding: 0; text-align: left;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+}
+.cmp-clue {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+}
+.cmp-clue:last-child { border-bottom: 0; }
+.cmp-clue-main { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.cmp-clue-icon {
+  flex: none; width: 32px; height: 32px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center; font-size: 15px;
+  background: var(--surface-2); border: 1px solid var(--border); color: var(--text-muted);
+}
+.cmp-clue.is-done .cmp-clue-icon { background: var(--canal-soft); border-color: rgba(46, 106, 88, 0.35); color: var(--text); }
+.cmp-clue-name { font-size: 15px; font-weight: 500; }
+.cmp-clue-status { font-size: 13px; color: var(--text-dim); }
+.cmp-clue-points { font-size: 15px; font-weight: 600; color: var(--text-dim); font-family: var(--font-serif, Georgia), serif; }
+.cmp-clue.is-done .cmp-clue-points { color: var(--gold); }
+.cmp-lb-btn { width: 100%; margin-bottom: 8px; cursor: pointer; min-height: 44px; background: var(--surface); font-family: inherit; font-size: 14px; }
+.next-secondary { font-size: 14px; min-height: 44px; }
+.cmp-gap { margin-bottom: 8px; }
+
+/* ── Leaderboard (Modal sheet) ── */
+.lb-panel .lb-state { text-align: center; padding: 24px 0; }
+.lb-panel .lb-state .spinner { margin: 0 auto; }
+.lb-panel .lb-row, .lb-panel .lb-yours { min-height: 44px; align-items: center; }
+.lb-panel .lb-name { font-size: 15px; display: flex; align-items: center; gap: 6px; }
+.lb-panel .lb-score { font-size: 15px; }
+.lb-avatar { flex: none; width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+.lb-avatar-letter {
+  display: grid; place-items: center; background: var(--surface-2); color: var(--text-muted);
+  font-size: 13px; font-weight: 700;
+}
+.lb-panel .history-sub, .lb-panel .history-empty { font-size: 14px; }
+
+/* ── Mystery accusation ── */
+.accuse-chip { min-height: 44px; font-size: 14px; }
+
+/* ── Auth modal ── */
+.modal-panel.auth-panel { max-width: 400px; }
+.auth-why { font-size: 14px; color: var(--text-muted); line-height: 1.45; margin: 0 0 6px; }
+.auth-tab { min-height: 44px; }
+.auth-field { margin-bottom: 10px; }
+.auth-label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
+.auth-panel .auth-input { margin-bottom: 0; }
+.auth-panel .auth-error, .auth-panel .auth-notice { font-size: 14px; }
+.auth-link { min-height: 44px; display: block; margin: 6px auto 0; font-size: 14px; }
+.auth-google:focus-visible, .auth-input:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+.accuse-card .flow-error-text:empty { margin: 0; }
+
+/* ── PWA install banner ── */
+.pwa-banner-desc { font-size: 14px; color: rgba(255, 255, 255, 0.85); }
+.pwa-banner-cta, .pwa-banner-dismiss { min-height: 44px; min-width: 44px; font-size: 14px; }
+.pwa-banner-dismiss { color: rgba(255, 255, 255, 0.85); }
+.pwa-banner-cta:focus-visible, .pwa-banner-dismiss:focus-visible { outline-color: #fff; }
+
+/* ── not-found / error pages ── */
+.flow-status-page { max-width: 480px; text-align: center; padding: 48px 20px; }
+.flow-status-icon { font-size: 52px; margin-bottom: 12px; }
+.flow-status-page .flow-actions-row { justify-content: center; }

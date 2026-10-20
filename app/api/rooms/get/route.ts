@@ -1,40 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/firebase'
-import { findRoomByCode, isRoomExpired, normalizeCode } from '@/lib/rooms'
-import { collection, getDocs } from 'firebase/firestore'
+import { handle, requireUser, rateLimit, clientIp, HttpError } from '@/lib/apiAuth'
+import { ROOM_CODE_LEN, normalizeCode } from '@/lib/rooms'
+import { findRoomByCode, roomRef, millis } from '@/lib/roomsServer'
 
-export async function GET(req: NextRequest) {
-  const code = req.nextUrl.searchParams.get('code') || ''
-  const norm = normalizeCode(code)
-  if (!norm) return NextResponse.json({ error: 'invalid_code' }, { status: 400 })
+export const dynamic = 'force-dynamic'
 
-  const found = await findRoomByCode(norm)
-  if (!found) return NextResponse.json({ error: 'not_found' }, { status: 404 })
-  if (isRoomExpired(found.data)) return NextResponse.json({ error: 'expired' }, { status: 410 })
+/**
+ * GET /api/rooms/get?code=ABC123
+ * Auth: any signed-in user (anonymous ok). Read-only, rate-limited.
+ * No uids/sessionIds of other players are returned — `isYou` flags the caller.
+ */
+export const GET = handle(async (req: NextRequest) => {
+  const user = await requireUser(req)
+  rateLimit(`rooms-lookup:uid:${user.uid}`, 20, 60_000)
+  rateLimit(`rooms-lookup:ip:${clientIp(req)}`, 60, 60_000)
 
-  const playersSnap = await getDocs(collection(db, 'rooms', found.id, 'players'))
+  const code = normalizeCode(req.nextUrl.searchParams.get('code') || '')
+  if (code.length !== ROOM_CODE_LEN) throw new HttpError(400, 'invalid_code')
+
+  const found = await findRoomByCode(code)
+  if (!found) throw new HttpError(404, 'not_found')
+  const room = found.data
+
+  const playersSnap = await roomRef(found.id).collection('players').orderBy('joinedAt').get()
   const players = playersSnap.docs.map(d => {
     const p = d.data()
     return {
-      userId: p.userId,
-      displayName: p.displayName,
+      displayName: p.displayName || 'Player',
       photoURL: p.photoURL ?? null,
       isHost: !!p.isHost,
+      isYou: d.id === user.uid,
       score: p.score ?? 0,
       cluesDone: p.cluesDone ?? 0,
-      finishedAt: p.finishedAt?.toMillis?.() ?? null,
+      finishedAt: millis(p.finishedAt),
+      abandoned: !!p.abandoned,
     }
   })
 
   return NextResponse.json({
     roomId: found.id,
-    code: found.data.code,
-    huntId: found.data.huntId,
-    huntTitle: found.data.huntTitle,
-    cityId: found.data.cityId ?? null,
-    state: found.data.state,
-    hostUserId: found.data.hostUserId,
-    startedAt: found.data.startedAt?.toMillis?.() ?? null,
+    code: room.code,
+    huntId: room.huntId,
+    huntTitle: room.huntTitle,
+    cityId: room.cityId ?? null,
+    state: room.state,
+    isHost: room.hostUserId === user.uid,
+    isMember: players.some(p => p.isYou),
+    playerCount: players.length,
+    maxPlayers: room.maxPlayers ?? null,
+    startedAt: millis(room.startedAt),
+    expiresAt: room.expiresAt ?? null,
     players,
   })
-}
+})

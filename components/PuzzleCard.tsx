@@ -1,257 +1,196 @@
 'use client'
 import { useState } from 'react'
 import { useI18n } from '@/hooks/useI18n'
-import { Puzzle, HINT_COSTS, normalizePuzzleAnswer, SCORE } from '@/types'
+import { useToast } from '@/components/Toast'
+import { apiPost, ApiError } from '@/lib/apiFetch'
 import { enqueue } from '@/lib/offlineQueue'
+import { checkAnswerOffline, errorKey, isNetworkFailure, vibrate, fmt } from '@/lib/gameClient'
+import { HINT_COSTS, SCORE, pickTxt, type ActiveClueView, type PuzzleType } from '@/types'
+
+export interface PuzzleSolved {
+  bonus: number
+  totalScore?: number
+  clue?: ActiveClueView | null
+  offline?: boolean
+}
 
 interface Props {
-  puzzle: Puzzle
+  huntId: string
   sessionId: string
-  clueId: string
-  /** Prose flavor text revealed once the puzzle is solved (the original riddle). */
-  storyOnSolve?: string
-  /** Theme label shown in the header (e.g. "Medieval giant"). */
-  theme?: string
-  /** Called once the player solves the puzzle. */
-  onSolved?: (bonus: number) => void
-  /** Live credit balance, for showing the hint price and gating affordability. */
+  clue: ActiveClueView
+  /** Solved offline, waiting to sync (kept by the parent across re-renders). */
+  solvedOffline: boolean
+  onSolved: (r: PuzzleSolved) => void
   credits: number
-  /** Spends credits and unlocks the puzzle hint; resolves true if unlocked. */
-  onUnlockHint: () => Promise<boolean>
-  /** Opens the credit shop when the player can't afford the hint. */
-  onOpenShop: () => void
+  unlockingHint: boolean
+  onUnlockHint: () => void
 }
 
-// Icon + accent color per puzzle type. The label is translated via i18n
-// keys (puzzleTypeCipher, puzzleTypeAnagram, …) and resolved at render time.
-const TYPE_META: Record<Puzzle['type'], { icon: string; labelKey: string; color: string }> = {
-  cipher:   { icon: '🔐', labelKey: 'puzzleTypeCipher',   color: '#6366f1' },
-  anagram:  { icon: '🔤', labelKey: 'puzzleTypeAnagram',  color: '#a855f7' },
-  logic:    { icon: '🧠', labelKey: 'puzzleTypeLogic',    color: '#0891b2' },
-  sequence: { icon: '🔢', labelKey: 'puzzleTypeSequence', color: '#16a34a' },
-  wordplay: { icon: '✍️', labelKey: 'puzzleTypeWordplay', color: '#db2777' },
-  reverse:  { icon: '🔁', labelKey: 'puzzleTypeReverse',  color: '#7c3aed' },
-  observe:  { icon: '👀', labelKey: 'puzzleTypeObserve',  color: '#0d9488' },
+const TYPE_META: Record<PuzzleType, { icon: string; labelKey: string; color: string }> = {
+  cipher:   { icon: '🔐', labelKey: 'puzzleTypeCipher',   color: '#4f46e5' },
+  anagram:  { icon: '🔤', labelKey: 'puzzleTypeAnagram',  color: '#7e22ce' },
+  logic:    { icon: '🧠', labelKey: 'puzzleTypeLogic',    color: '#0e7490' },
+  sequence: { icon: '🔢', labelKey: 'puzzleTypeSequence', color: '#15803d' },
+  numbers:  { icon: '🔢', labelKey: 'puzzleTypeNumbers',  color: '#15803d' },
+  wordplay: { icon: '✍️', labelKey: 'puzzleTypeWordplay', color: '#be185d' },
+  reverse:  { icon: '🔁', labelKey: 'puzzleTypeReverse',  color: '#6d28d9' },
+  rebus:    { icon: '🖼️', labelKey: 'puzzleTypeRebus',    color: '#b45309' },
+  observe:  { icon: '👀', labelKey: 'puzzleTypeObserve',  color: '#0f766e' },
 }
 
-/** First successful display of the puzzle prompt — styled per type. */
-function PromptDisplay({ puzzle }: { puzzle: Puzzle }) {
-  const text = puzzle.prompt
-
-  switch (puzzle.type) {
+function PromptDisplay({ type, text }: { type: PuzzleType; text: string }) {
+  switch (type) {
     case 'cipher':
     case 'reverse':
-      // Monospace, letter-spaced "ciphertext" look
       return <div className="puzzle-display puzzle-display-cipher">{text}</div>
-
     case 'anagram': {
-      // Render each non-space character as a tile, preserving word breaks
       const tokens = text.split(/\s+/).filter(Boolean)
       return (
-        <div className="puzzle-display puzzle-display-anagram">
+        <div className="puzzle-display puzzle-display-anagram" aria-label={text}>
           {tokens.map((token, ti) => (
-            <span key={ti} className="puzzle-tiles">
-              {token.split('').map((ch, i) => (
-                <span key={i} className="puzzle-tile">{ch}</span>
-              ))}
+            <span key={ti} className="puzzle-tiles" aria-hidden>
+              {token.split('').map((ch, i) => <span key={i} className="puzzle-tile">{ch}</span>)}
             </span>
           ))}
         </div>
       )
     }
-
     case 'sequence':
+    case 'numbers':
       return <div className="puzzle-display puzzle-display-sequence">{text}</div>
-
     case 'observe':
-      // "Stand here and look for X" — styled as an on-site instruction card.
       return <p className="puzzle-display puzzle-display-observe">{text}</p>
-
-    case 'logic':
-    case 'wordplay':
     default:
       return <p className="puzzle-display puzzle-display-prose">{text}</p>
   }
 }
 
-export function PuzzleCard({ puzzle, sessionId, clueId, storyOnSolve, theme, onSolved, credits, onUnlockHint, onOpenShop }: Props) {
-  const { t } = useI18n()
+/** The puzzle IS the clue: solving it reveals the story and unlocks navigation help. */
+export function PuzzleCard({
+  huntId, sessionId, clue, solvedOffline, onSolved, credits, unlockingHint, onUnlockHint,
+}: Props) {
+  const { t, lang } = useI18n()
+  const toast = useToast()
   const [answer, setAnswer] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [solved, setSolved] = useState(false)
-  const [solvedAnswer, setSolvedAnswer] = useState<string | null>(null)
-  const [wrongTryAt, setWrongTryAt] = useState<number | null>(null)
-  const [hintShown, setHintShown] = useState(false)
-  const [unlockingHint, setUnlockingHint] = useState(false)
-  const [bonus, setBonus] = useState(0)
-  const [solvedOffline, setSolvedOffline] = useState(false)
-
-  const meta = TYPE_META[puzzle.type]
+  const [wrongAt, setWrongAt] = useState<number | null>(null)
+  const puzzle = clue.puzzle!
+  const meta = TYPE_META[puzzle.type] ?? TYPE_META.logic
+  const hint = clue.hintsUnlocked.puzzle
   const hintCost = HINT_COSTS.puzzle
-  const canAffordHint = credits >= hintCost
 
-  const requestHint = async () => {
-    if (hintShown || unlockingHint) return
-    if (!canAffordHint) { onOpenShop(); return }
-    setUnlockingHint(true)
-    const ok = await onUnlockHint()
-    setUnlockingHint(false)
-    if (ok) setHintShown(true)
+  const markWrong = () => {
+    setWrongAt(Date.now())
+    vibrate([15, 20, 15])
   }
 
-  // Local check using the same normalization the server applies. Used as the
-  // single source of truth for the offline fallback (and as a cheap optimism
-  // if the network is reachable but slow — we still confirm with the server).
-  const isLocallyCorrect = (raw: string): boolean => {
-    const accepted = puzzle.answer.split('|').map(normalizePuzzleAnswer).filter(Boolean)
-    const submitted = normalizePuzzleAnswer(raw)
-    return submitted.length > 0 && accepted.includes(submitted)
+  const solveOffline = async (): Promise<boolean> => {
+    const ok = await checkAnswerOffline(huntId, clue.id, answer, puzzle.answerHashes)
+    if (ok === null) { toast.error(t('errOffline')); return true }
+    if (!ok) { markWrong(); return true }
+    const queued = await enqueue({
+      url: '/api/verify-puzzle',
+      body: { sessionId, clueId: clue.id, answer },
+      reconcileKey: `puzzle:${sessionId}:${clue.id}`,
+    })
+    if (!queued) toast.error(t('errQueueUnavailable'))
+    vibrate([40, 30, 60])
+    onSolved({ bonus: 0, offline: true })
+    return true
   }
 
   const submit = async () => {
-    if (submitting || solved || !answer.trim()) return
+    if (submitting || !answer.trim()) return
     setSubmitting(true)
     try {
-      const res = await fetch('/api/verify-puzzle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, clueId, answer }),
-      })
-      const data = await res.json()
-      if (data.correct) {
-        setSolved(true)
-        setSolvedAnswer(answer.trim())
-        setBonus(data.bonus ?? 0)
-        if (data.bonus > 0) {
-          onSolved?.(data.bonus)
-          try { (navigator as any).vibrate?.([40, 30, 60]) } catch {}
-        }
-      } else {
-        setWrongTryAt(Date.now())
-        try { (navigator as any).vibrate?.([15, 20, 15]) } catch {}
-      }
-    } catch {
-      // Network failed — fall back to client-side verification. The puzzle's
-      // accepted-answers list is part of the Clue payload (already on-device
-      // from the initial seed/cache), so we can verify locally and queue the
-      // claim for replay when the network returns. The server-side route is
-      // idempotent (puzzleClaims/{clueId}), so a successful replay credits
-      // the bonus exactly once.
-      if (isLocallyCorrect(answer)) {
-        const optimisticBonus = puzzle.bonus ?? SCORE.puzzleBonus
-        await enqueue({
-          url: '/api/verify-puzzle',
-          body: { sessionId, clueId, answer },
-          reconcileKey: `puzzle:${sessionId}:${clueId}`,
-        })
-        setSolved(true)
-        setSolvedOffline(true)
-        setSolvedAnswer(answer.trim())
-        setBonus(optimisticBonus)
-        onSolved?.(optimisticBonus)
-        try { (navigator as any).vibrate?.([40, 30, 60]) } catch {}
-      } else {
-        setWrongTryAt(Date.now())
-        try { (navigator as any).vibrate?.([15, 20, 15]) } catch {}
-      }
+      if (typeof navigator !== 'undefined' && !navigator.onLine) { await solveOffline(); return }
+      const r = await apiPost<{ correct: boolean; bonus?: number; totalScore?: number; clue?: ActiveClueView | null }>(
+        '/api/verify-puzzle', { sessionId, clueId: clue.id, answer },
+      )
+      if (!r.correct) { markWrong(); return }
+      vibrate([40, 30, 60])
+      onSolved({ bonus: r.bonus ?? 0, totalScore: r.totalScore, clue: r.clue ?? null })
+    } catch (e) {
+      if (e instanceof ApiError) toast.error(t(errorKey(e.code)))
+      else if (isNetworkFailure(e)) await solveOffline()
+      else toast.error(t('errGeneric'))
     } finally {
       setSubmitting(false)
     }
   }
 
-  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      submit()
-    }
-  }
-
-  // Solved state: show the decoded answer + story reveal
-  if (solved) {
+  if (clue.puzzleSolved || solvedOffline) {
+    const story = pickTxt(clue.riddle, lang)
+    const explain = pickTxt(puzzle.explain, lang)
     return (
-      <div className="puzzle-card puzzle-card-primary is-solved" style={{ borderColor: '#22c97a' }}>
+      <div className="puzzle-card puzzle-card-primary is-solved">
         <div className="puzzle-head">
           <span className="puzzle-icon" aria-hidden>✓</span>
-          <span className="puzzle-label" style={{ color: '#22c97a' }}>
-            {bonus > 0 ? `${t('puzzleCorrect')}` : t('correct')}
-          </span>
+          <span className="puzzle-label puzzle-label-solved">{t('puzzleSolvedLabel')}</span>
         </div>
-        <div className="puzzle-reveal">
-          <div className="puzzle-reveal-label">{t('yourClue')}</div>
-          <div className="puzzle-reveal-answer">{(solvedAnswer ?? '').toUpperCase()}</div>
-        </div>
-        {storyOnSolve && (
-          <p className="puzzle-story">{storyOnSolve}</p>
-        )}
-        {puzzle.explain && (
-          <div className="puzzle-explain">{puzzle.explain}</div>
-        )}
-        {solvedOffline && (
+        {story && <p className="puzzle-story">{story}</p>}
+        {explain && <div className="puzzle-explain">{explain}</div>}
+        {solvedOffline && !clue.puzzleSolved && (
           <div className="puzzle-offline-note">📡 {t('puzzleOfflineSolved')}</div>
         )}
       </div>
     )
   }
 
+  const theme = pickTxt(clue.theme, lang)
   return (
-    <div
-      className={`puzzle-card puzzle-card-primary puzzle-${puzzle.type}`}
-      style={{ borderColor: `${meta.color}40` }}
-    >
+    <div className={`puzzle-card puzzle-card-primary puzzle-${puzzle.type}`} style={{ borderColor: `${meta.color}40` }}>
       <div className="puzzle-head">
         <span className="puzzle-icon" aria-hidden>{meta.icon}</span>
-        <span className="puzzle-label" style={{ color: meta.color }}>
-          {t(meta.labelKey)}
-        </span>
+        <span className="puzzle-label" style={{ color: meta.color }}>{t(meta.labelKey)}</span>
         {theme && <span className="puzzle-theme">· {theme}</span>}
+        <span className="puzzle-points">+{SCORE.puzzle}</span>
       </div>
 
-      <PromptDisplay puzzle={puzzle} />
+      <PromptDisplay type={puzzle.type} text={pickTxt(puzzle.prompt, lang)} />
 
-      <div className="puzzle-input-row">
+      <form className="puzzle-input-row" onSubmit={(e) => { e.preventDefault(); void submit() }}>
+        <label className="sr-only" htmlFor={`puzzle-${clue.id}`}>{t('puzzlePlaceholder')}</label>
         <input
+          id={`puzzle-${clue.id}`}
           type="text"
           className="puzzle-input"
           value={answer}
-          onChange={(e) => { setAnswer(e.target.value); setWrongTryAt(null) }}
-          onKeyDown={onKeyDown}
+          onChange={(e) => { setAnswer(e.target.value); setWrongAt(null) }}
           placeholder={t('puzzlePlaceholder')}
           autoCapitalize="characters"
           autoCorrect="off"
           autoComplete="off"
           spellCheck={false}
           disabled={submitting}
+          aria-invalid={wrongAt !== null}
         />
-        <button
-          type="button"
-          onClick={submit}
-          disabled={submitting || !answer.trim()}
-          className="puzzle-submit"
-          style={{ background: meta.color }}
-        >
+        <button type="submit" disabled={submitting || !answer.trim()} className="puzzle-submit" style={{ background: meta.color }}>
           {submitting ? '…' : t('puzzleSubmit')}
         </button>
-      </div>
+      </form>
 
-      {puzzle.hint && !hintShown && (
+      {puzzle.hasHint && !hint && (
         <button
           type="button"
           className="puzzle-hint-toggle"
-          onClick={requestHint}
+          onClick={onUnlockHint}
           disabled={unlockingHint}
+          aria-busy={unlockingHint}
           style={{ borderColor: `${meta.color}66`, color: meta.color }}
         >
-          💡 {unlockingHint ? '…' : `${t('puzzleShowHint')} · 💎 ${hintCost}`}
+          💡 {unlockingHint ? '…' : fmt(t('puzzleHintCta'), { cost: hintCost })}
+          {credits < hintCost && <span className="puzzle-hint-short"> · {t('notEnoughCredits')}</span>}
         </button>
       )}
-      {puzzle.hint && hintShown && (
+      {hint && (
         <div className="puzzle-hint" style={{ borderLeftColor: meta.color, background: `${meta.color}14` }}>
-          {puzzle.hint}
+          {pickTxt(hint.text, lang)}
         </div>
       )}
 
-      {wrongTryAt !== null && (
-        <div className="puzzle-feedback puzzle-wrong" key={wrongTryAt}>
+      {wrongAt !== null && (
+        <div className="puzzle-feedback puzzle-wrong" key={wrongAt} role="alert">
           ✗ {t('puzzleTryAgain')}
         </div>
       )}

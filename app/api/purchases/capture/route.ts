@@ -1,62 +1,49 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/firebase'
+import { NextRequest } from 'next/server'
 import { captureOrder } from '@/lib/paypal'
-import { CREDIT_PACKAGES } from '@/types'
-import { doc, getDoc, setDoc, updateDoc, increment, serverTimestamp } from 'firebase/firestore'
+import { processCapture, priorPayment, redirectTo } from '@/lib/payments'
 
+export const dynamic = 'force-dynamic'
+
+const ID_RE = /^[A-Za-z0-9_-]{1,128}$/
+
+/**
+ * GET /api/purchases/capture?session=…&token=<PayPal order id>
+ *
+ * Browser redirect back from PayPal — no Bearer token. What gets credited is
+ * derived only from the PayPal-verified order (custom_id → session + package
+ * + uid). Always answers with a redirect:
+ *   /hunt?session={sid}&credits=added|pending|refunded|error
+ */
 export async function GET(req: NextRequest) {
-  const sessionId = req.nextUrl.searchParams.get('session')
-  const packageId = req.nextUrl.searchParams.get('pkg')
-  const paypalToken = req.nextUrl.searchParams.get('token')
+  const qSession = req.nextUrl.searchParams.get('session')
+  const token = req.nextUrl.searchParams.get('token')
+  const fallbackSession = qSession && ID_RE.test(qSession) ? qSession : null
+  const to = (sessionId: string | null, flag: string) =>
+    redirectTo(sessionId ? `/hunt?session=${encodeURIComponent(sessionId)}&credits=${flag}` : `/?credits=${flag}`)
 
-  if (!sessionId || !packageId || !paypalToken) {
-    return NextResponse.json({ error: 'Missing parameters' }, { status: 400 })
+  if (!token || !ID_RE.test(token)) return to(fallbackSession, 'error')
+
+  try {
+    const prior = await priorPayment(token)
+    if (prior) {
+      const flag = prior.status === 'granted' ? 'added' : prior.status === 'refunded' ? 'refunded' : 'error'
+      return to(prior.sessionId ?? fallbackSession, flag)
+    }
+
+    const info = await captureOrder(token)
+    const outcome = await processCapture(info, 'redirect')
+    if (outcome.meta?.kind === 'city_unlock') {
+      return redirectTo(`/city/${encodeURIComponent(outcome.meta.cityId)}?paypal=${outcome.status === 'granted' ? 'success&unlocked=1' : 'error'}`)
+    }
+    const sessionId = outcome.meta?.kind === 'credit_pack' ? outcome.meta.sessionId : fallbackSession
+    switch (outcome.status) {
+      case 'granted': return to(sessionId, 'added')
+      case 'refunded': return to(sessionId, 'refunded')
+      case 'pending': return to(sessionId, 'pending')
+      default: return to(sessionId, 'error')
+    }
+  } catch (e) {
+    console.error('[purchases/capture]', token, e)
+    return to(fallbackSession, 'error')
   }
-
-  const pkg = CREDIT_PACKAGES.find((p) => p.id === packageId)
-  if (!pkg) return NextResponse.json({ error: 'Unknown package' }, { status: 400 })
-
-  // Idempotency keyed by paypal token (order id) — the webhook keys by
-  // capture id so they may write different docs, but we check both before
-  // crediting to avoid double-credit.
-  const existingByOrder = await getDoc(doc(db, 'sessions', sessionId, 'purchases', paypalToken))
-  if (existingByOrder.exists()) {
-    return NextResponse.redirect(new URL(`/hunt?session=${sessionId}&credits=added`, req.url))
-  }
-
-  const result = await captureOrder(paypalToken)
-  if (!result.success) {
-    return NextResponse.redirect(new URL(`/hunt?session=${sessionId}`, req.url))
-  }
-
-  // Security: validate the captured order's metadata matches our URL params.
-  const meta = result.metadata
-  if (
-    !meta ||
-    meta.kind !== 'credit_pack' ||
-    meta.sessionId !== sessionId ||
-    meta.packageId !== packageId
-  ) {
-    return NextResponse.redirect(new URL(`/hunt?session=${sessionId}&paypal=mismatch`, req.url))
-  }
-
-  // Webhook may have written by captureId already — second guard.
-  const captureId = result.captureId ?? paypalToken
-  const existingByCapture = await getDoc(doc(db, 'sessions', sessionId, 'purchases', captureId))
-  if (existingByCapture.exists()) {
-    return NextResponse.redirect(new URL(`/hunt?session=${sessionId}&credits=added`, req.url))
-  }
-
-  await setDoc(doc(db, 'sessions', sessionId, 'purchases', captureId), {
-    packageId,
-    creditsAdded: pkg.credits,
-    amountCents: pkg.priceCents,
-    paypalOrderId: paypalToken,
-    paypalCaptureId: captureId,
-    completedAt: serverTimestamp(),
-    grantedVia: 'redirect',
-  })
-  await updateDoc(doc(db, 'sessions', sessionId), { credits: increment(pkg.credits) })
-
-  return NextResponse.redirect(new URL(`/hunt?session=${sessionId}&credits=added`, req.url))
 }

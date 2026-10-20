@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation'
-import { db } from '@/lib/firebase'
-import { doc, getDoc, getDocs, collection, query, where } from 'firebase/firestore'
-import { FREE_HUNT_STOP_LIMIT, isTour, type MysterySpec } from '@/types'
+import { adminDb } from '@/lib/firebaseAdmin'
+import { isTour, type MysterySpec } from '@/types'
 import { CompleteClient } from './CompleteClient'
 
 export const dynamic = 'force-dynamic'
@@ -14,21 +13,28 @@ export default async function CompletePage({
   const sessionId = searchParams.session
   if (!sessionId) notFound()
 
-  const sessionSnap = await getDoc(doc(db, 'sessions', sessionId))
-  if (!sessionSnap.exists()) notFound()
-  const session = sessionSnap.data()
+  if (!/^[A-Za-z0-9_-]{1,128}$/.test(sessionId)) notFound()
+  const db = adminDb()
+  const sessionRef = db.collection('sessions').doc(sessionId)
+  const sessionSnap = await sessionRef.get()
+  if (!sessionSnap.exists) notFound()
+  const session = sessionSnap.data()!
 
-  const huntSnap = await getDoc(doc(db, 'hunts', session.huntId))
+  const huntRef = db.collection('hunts').doc(session.huntId)
+  const huntSnap = await huntRef.get()
+  if (!huntSnap.exists) notFound()
   const hunt = huntSnap.data()!
 
-  const scSnap = await getDocs(collection(db, 'sessions', sessionId, 'sessionClues'))
-  const hintsSnap = await getDocs(collection(db, 'sessions', sessionId, 'hintUnlocks'))
+  const [scSnap, hintsSnap] = await Promise.all([
+    sessionRef.collection('sessionClues').get(),
+    sessionRef.collection('hintUnlocks').get(),
+  ])
 
   const clues = await Promise.all(
     scSnap.docs.map(async (scDoc) => {
       const sc = scDoc.data()
-      const clueSnap = await getDoc(doc(db, 'hunts', session.huntId, 'clues', scDoc.id))
-      const clue = clueSnap.data()!
+      const clueSnap = await huntRef.collection('clues').doc(scDoc.id).get()
+      const clue = clueSnap.data() ?? {}
       return {
         id: scDoc.id,
         locationName: clue.locationName as string,
@@ -47,13 +53,7 @@ export default async function CompletePage({
   const hintsUsed = hintsSnap.size
   const creditsSpent = hintsSnap.docs.reduce((s, d) => s + (d.data().creditCost || 0), 0)
 
-  // The hunt ended on the free teaser cap if it's a free session, the player
-  // reached the free limit, and the full hunt actually has more stops.
   const fullHuntStops = (hunt.clueCount as number) ?? totalClues
-  const freeCapReached =
-    session.isFree === true &&
-    cluesArrived >= FREE_HUNT_STOP_LIMIT &&
-    fullHuntStops > FREE_HUNT_STOP_LIMIT
 
   // Mystery accusation: only once the whole case has been gathered. Strip the
   // solution — the accusation is graded server-side in /api/accuse.
@@ -70,7 +70,7 @@ export default async function CompletePage({
   const cityId = (hunt.cityId as string) ?? null
   if (cityId) {
     try {
-      const cityHuntsSnap = await getDocs(query(collection(db, 'hunts'), where('cityId', '==', cityId), where('active', '==', true)))
+      const cityHuntsSnap = await db.collection('hunts').where('cityId', '==', cityId).where('active', '==', true).get()
       const cityHunts = cityHuntsSnap.docs
         .map(d => ({ id: d.id, ...(d.data() as any) }))
         .filter(h => !isTour(h))
@@ -78,7 +78,7 @@ export default async function CompletePage({
 
       const completed = new Set<string>([session.huntId])
       if (session.userId) {
-        const mineSnap = await getDocs(query(collection(db, 'sessions'), where('userId', '==', session.userId)))
+        const mineSnap = await db.collection('sessions').where('userId', '==', session.userId).get()
         mineSnap.docs.forEach(d => { const s = d.data(); if (s.completedAt) completed.add(s.huntId) })
       }
       cityTotal = cityHunts.length
@@ -88,7 +88,9 @@ export default async function CompletePage({
         nextHuntTitle = next.title ?? null
         nextHuntI18n = (next.i18n ?? null) as Record<string, { title?: string }> | null
       }
-    } catch {}
+    } catch (e) {
+      console.error('[hunt/complete] city progress failed', e)
+    }
   }
 
   return (
@@ -110,7 +112,6 @@ export default async function CompletePage({
       cluesArrived={cluesArrived}
       hintsUsed={hintsUsed}
       creditsSpent={creditsSpent}
-      freeCapReached={freeCapReached}
       cityId={(hunt.cityId as string) ?? null}
       fullHuntStops={fullHuntStops}
     />

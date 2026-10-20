@@ -1,1 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#6c63f5"/><circle cx="14" cy="14" r="7" fill="none" stroke="white" stroke-width="2.5"/><line x1="19" y1="19" x2="26" y2="26" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>TourHunts</title>
+  <rect width="512" height="512" rx="112" fill="#F5F0E6"/>
+  <rect x="40" y="40" width="432" height="432" rx="84" fill="none" stroke="#23201B" stroke-width="18"/>
+  <!-- the route: dotted walking trail -->
+  <path d="M128 372 C 150 300, 230 330, 236 262 S 300 176, 344 168" fill="none" stroke="#2E6A58" stroke-width="22" stroke-linecap="round" stroke-dasharray="2 40"/>
+  <circle cx="128" cy="372" r="22" fill="#2E6A58"/>
+  <!-- X marks the spot -->
+  <path d="M332 112 L 408 188 M 408 112 L 332 188" stroke="#A33B2B" stroke-width="30" stroke-linecap="round"/>
+</svg>

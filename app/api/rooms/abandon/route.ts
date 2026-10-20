@@ -1,58 +1,64 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/firebase'
-import { clearUserActiveRoom } from '@/lib/userActiveRoom'
-import { doc, getDoc, getDocs, collection, runTransaction, serverTimestamp, writeBatch } from 'firebase/firestore'
+import { adminDb, FieldValue } from '@/lib/firebaseAdmin'
+import { handle, requireUser, readJson, id, HttpError } from '@/lib/apiAuth'
+import { roomRef, playerRef, getPlayerSessionId } from '@/lib/roomsServer'
+import { clearUserActiveRoomIf } from '@/lib/userActiveRoom'
+
+export const dynamic = 'force-dynamic'
 
 /**
- * POST /api/rooms/abandon
+ * POST /api/rooms/abandon  { roomId }
+ * Auth: registered user; acts only on the caller's own player.
  *
- * Lets a player officially bow out of an in-progress race.
- *  - Marks their player record as finished (with current score)
- *  - Marks their session as completed (so progress freezes)
- *  - Clears their userActiveRooms pointer
- *  - If they were the last unfinished racer, flips the room to 'finished'
- *
- * Different from /leave: leave is for lobby; abandon is for racing.
+ * Bows out of an in-progress race:
+ *  - player: finishedAt + abandoned
+ *  - session: abandoned + abandonedAt + completedAt (finish refuses XP for it)
+ *  - clears the caller's userActiveRooms pointer
+ *  - if everyone is now done, flips the room to 'finished'
  */
-export async function POST(req: NextRequest) {
-  const { roomId, userId } = await req.json()
-  if (!roomId || !userId) return NextResponse.json({ error: 'missing' }, { status: 400 })
+export const POST = handle(async (req: NextRequest) => {
+  const user = await requireUser(req, { registered: true })
+  const body = await readJson(req)
+  const roomId = id(body.roomId, 'roomId')
+  const db = adminDb()
+  const rRef = roomRef(roomId)
+  const pRef = playerRef(roomId, user.uid)
 
-  const roomRef = doc(db, 'rooms', roomId)
-  const playerRef = doc(db, 'rooms', roomId, 'players', userId)
+  const [roomSnap, playerSnap] = await db.getAll(rRef, pRef)
+  if (!roomSnap.exists) throw new HttpError(404, 'room_not_found')
+  if (!playerSnap.exists) throw new HttpError(404, 'not_a_player')
+  if (roomSnap.data()?.state === 'lobby') throw new HttpError(409, 'not_racing')
 
-  const roomSnap = await getDoc(roomRef)
-  if (!roomSnap.exists()) return NextResponse.json({ error: 'room_not_found' }, { status: 404 })
-
-  const playerSnap = await getDoc(playerRef)
-  if (!playerSnap.exists()) return NextResponse.json({ error: 'not_a_player' }, { status: 404 })
-  const player = playerSnap.data()
-
-  // Already finished? Just clear pointer.
-  if (player.finishedAt) {
-    await clearUserActiveRoom(userId)
+  if (playerSnap.data()?.finishedAt) {
+    await clearUserActiveRoomIf(user.uid, roomId)
     return NextResponse.json({ ok: true, alreadyFinished: true })
   }
 
-  const batch = writeBatch(db)
-  batch.update(playerRef, { finishedAt: serverTimestamp(), abandoned: true })
-  if (player.sessionId) {
-    batch.update(doc(db, 'sessions', player.sessionId), { completedAt: serverTimestamp(), abandoned: true })
+  const sessionId = await getPlayerSessionId(roomId, user.uid)
+  const batch = db.batch()
+  batch.update(pRef, { finishedAt: FieldValue.serverTimestamp(), abandoned: true, currentClueId: null })
+  if (sessionId) {
+    batch.update(db.collection('sessions').doc(sessionId), {
+      abandoned: true,
+      abandonedAt: FieldValue.serverTimestamp(),
+      completedAt: FieldValue.serverTimestamp(),
+    })
   }
   await batch.commit()
 
-  // After commit, check whether everyone is now finished and flip room state if so.
-  const playersSnap = await getDocs(collection(db, 'rooms', roomId, 'players'))
-  const allDone = playersSnap.docs.every(d => d.data().finishedAt != null)
-  if (allDone) {
-    await runTransaction(db, async (tx) => {
-      const fresh = await tx.get(roomRef)
-      if (fresh.exists() && fresh.data().state === 'racing') {
-        tx.update(roomRef, { state: 'finished', finishedAt: serverTimestamp() })
+  // Close the race if nobody is still running.
+  try {
+    await db.runTransaction(async (tx) => {
+      const [fresh, players] = await Promise.all([tx.get(rRef), tx.get(rRef.collection('players'))])
+      const allDone = players.docs.every(d => d.data().finishedAt != null)
+      if (allDone && fresh.exists && fresh.data()?.state === 'racing') {
+        tx.update(rRef, { state: 'finished', finishedAt: FieldValue.serverTimestamp() })
       }
-    }).catch(() => {})
+    })
+  } catch (e) {
+    console.error('[rooms/abandon] finish-room check failed', roomId, e)
   }
 
-  await clearUserActiveRoom(userId)
+  await clearUserActiveRoomIf(user.uid, roomId)
   return NextResponse.json({ ok: true })
-}
+})

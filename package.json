@@ -7,20 +7,25 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "node scripts/seed.mjs"
+    "seed": "node scripts/seed.mjs",
+    "set-admin": "node scripts/set-admin.mjs",
+    "icons": "node scripts/build-icons.mjs"
   },
   "dependencies": {
     "firebase": "^12.12.0",
+    "firebase-admin": "^13.10.0",
     "maplibre-gl": "^5.23.0",
-    "next": "14.2.3",
+    "next": "^14.2.35",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.5.0",
+    "sharp": "^0.33.5",
     "typescript": "^5"
   }
 }

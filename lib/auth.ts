@@ -2,7 +2,8 @@
 import {
   getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged,
   createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  updateProfile, sendPasswordResetEmail, type User,
+  updateProfile, sendPasswordResetEmail, signInAnonymously, linkWithPopup,
+  linkWithCredential, EmailAuthProvider, type User,
 } from 'firebase/auth'
 import { initializeApp, getApps } from 'firebase/app'
 
@@ -22,6 +23,7 @@ const googleProvider = new GoogleAuthProvider()
 export {
   auth, googleProvider, signInWithPopup, signOut, onAuthStateChanged,
   createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  updateProfile, sendPasswordResetEmail,
+  updateProfile, sendPasswordResetEmail, signInAnonymously, linkWithPopup,
+  linkWithCredential, EmailAuthProvider,
 }
 export type { User }

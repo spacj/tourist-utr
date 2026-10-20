@@ -1,8 +1,7 @@
 import { Fragment } from 'react'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { db } from '@/lib/firebase'
-import { doc, getDoc } from 'firebase/firestore'
+import { adminDb } from '@/lib/firebaseAdmin'
 import { getAllSlugs, getPost } from '@/lib/blog'
 import type { CtaSpec } from '@/lib/md'
 import { PlacesGuide } from '@/components/PlacesGuide'
@@ -78,8 +77,8 @@ async function resolveCta(spec: CtaSpec): Promise<CtaTarget | null> {
 
   if (spec.kind === 'hunt' && spec.targetId) {
     try {
-      const huntSnap = await getDoc(doc(db, 'hunts', spec.targetId))
-      if (huntSnap.exists()) {
+      const huntSnap = await adminDb().collection('hunts').doc(spec.targetId).get()
+      if (huntSnap.exists) {
         const hunt = huntSnap.data() as { title?: string; description?: string; cityId?: string }
         return make(
           hunt.cityId ? `/city/${hunt.cityId}#hunts` : '/',
@@ -94,8 +93,8 @@ async function resolveCta(spec: CtaSpec): Promise<CtaTarget | null> {
 
   if (spec.kind === 'city' && spec.targetId) {
     try {
-      const citySnap = await getDoc(doc(db, 'cities', spec.targetId))
-      if (citySnap.exists()) {
+      const citySnap = await adminDb().collection('cities').doc(spec.targetId).get()
+      if (citySnap.exists) {
         const city = citySnap.data() as { name?: string }
         return make(
           `/city/${spec.targetId}`,

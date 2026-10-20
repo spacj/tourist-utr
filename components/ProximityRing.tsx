@@ -1,23 +1,34 @@
 'use client'
-import { useEffect, useRef } from 'react'
-import { getProximityZone, getProximityKey, ProximityZoneKey } from '@/types'
+import { useEffect, useRef, useState } from 'react'
+import { useI18n } from '@/hooks/useI18n'
+import { fmt } from '@/lib/gameClient'
+import { warmthColor, warmthFor, type Navigation, type Warmth } from '@/types'
 
 const SIZE = 160
 const CX = SIZE / 2
 const CY = SIZE / 2
 const R = 64
 const C = 2 * Math.PI * R
+const WARMTH_ORDER: Warmth[] = ['cold', 'warm', 'hot', 'burning']
+const ZONE_FREQ: Record<Warmth, number> = { cold: 440, warm: 660, hot: 880, burning: 1175 }
+const DIR_KEYS = ['dirN', 'dirNE', 'dirE', 'dirSE', 'dirS', 'dirSW', 'dirW', 'dirNW']
 
 interface Props {
+  mode: Navigation
+  /** Compass mode: metres to the target. */
   distanceM: number | null
-  bearing: number
-  arrived: boolean
+  /** Compass mode: degrees clockwise from north. */
+  bearing: number | null
+  /** Warmth band (both modes; derived from distance in compass mode). */
+  warmth: Warmth | null
   accuracy: number | null
+  /** Device heading, when the compass sensor is on. */
   heading?: number | null
+  compact?: boolean
 }
 
-// Synthesized chime — no audio files, no bandwidth cost
-function playChime(freq = 880, duration = 0.14) {
+// Synthesized chime — no audio files.
+function playChime(freq: number, duration = 0.14) {
   if (typeof window === 'undefined') return
   try {
     const AC = (window as any).AudioContext || (window as any).webkitAudioContext
@@ -38,197 +49,130 @@ function playChime(freq = 880, duration = 0.14) {
   } catch {}
 }
 
-function vibrate(pattern: number | number[]) {
-  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-    try { (navigator as any).vibrate(pattern) } catch {}
-  }
-}
+/**
+ * Navigation dial. Compass mode: arrow to the target (relative to the phone's
+ * heading when known), N marker rotating with the heading, distance readout.
+ * Warmth mode: no direction — four bands, the current one lit.
+ */
+export function ProximityRing({ mode, distanceM, bearing, warmth: warmthProp, accuracy, heading, compact }: Props) {
+  const { t } = useI18n()
+  const warmth: Warmth | null = mode === 'compass' && distanceM !== null ? warmthFor(distanceM) : warmthProp
+  const color = warmthColor(warmth)
+  const hasHeading = typeof heading === 'number'
+  const arrowDeg = bearing === null ? null : hasHeading ? ((bearing - heading! + 360) % 360) : bearing
+  const northDeg = hasHeading ? (360 - heading!) % 360 : 0
 
-const ZONE_FREQ: Record<ProximityZoneKey, number> = {
-  cold:    440,
-  cool:    587,
-  warm:    740,
-  hot:     880,
-  burning: 1175,
-}
-
-// 12 tick marks (every 30°). Cardinals are longer / labeled.
-const TICKS = Array.from({ length: 12 }, (_, i) => i * 30)
-
-export function ProximityRing({ distanceM, bearing, arrived, accuracy, heading }: Props) {
-  const MAX  = 400
-  const fill = distanceM === null ? 0 : Math.max(0, 1 - distanceM / MAX)
-  const dash = (fill * C).toFixed(1)
-
-  const zone    = getProximityZone(distanceM)
-  const zoneKey = getProximityKey(distanceM)
-  const prevZoneRef = useRef<ProximityZoneKey | null>(null)
-
-  const adjustedBearing = heading !== null && heading !== undefined
-    ? ((bearing - heading) + 360) % 360
-    : bearing
-
-  // audio + haptic feedback when crossing into a warmer zone
+  // Warmer → chime + buzz.
+  const prevRef = useRef<Warmth | null>(null)
   useEffect(() => {
-    if (arrived) return
-    if (!zoneKey) return
-    const prev = prevZoneRef.current
-    prevZoneRef.current = zoneKey
-    if (!prev || prev === zoneKey) return
-    const order: ProximityZoneKey[] = ['cold', 'cool', 'warm', 'hot', 'burning']
-    if (order.indexOf(zoneKey) > order.indexOf(prev)) {
-      playChime(ZONE_FREQ[zoneKey])
-      vibrate(40)
+    const prev = prevRef.current
+    prevRef.current = warmth
+    if (!prev || !warmth || prev === warmth) return
+    if (WARMTH_ORDER.indexOf(warmth) > WARMTH_ORDER.indexOf(prev)) {
+      playChime(ZONE_FREQ[warmth])
+      try { (navigator as any).vibrate?.(40) } catch {}
     }
-  }, [zoneKey, arrived])
+  }, [warmth])
 
-  // celebration on arrival
+  // Screen-reader announcement of zone changes, at most every 10 s.
+  const [announce, setAnnounce] = useState('')
+  const lastAnnounce = useRef(0)
   useEffect(() => {
-    if (!arrived) return
-    playChime(660, 0.18)
-    setTimeout(() => playChime(880, 0.18), 140)
-    setTimeout(() => playChime(1175, 0.3), 280)
-    vibrate([60, 40, 60, 40, 120])
-  }, [arrived])
+    if (!warmth) return
+    const now = Date.now()
+    if (now - lastAnnounce.current < 10_000) return
+    lastAnnounce.current = now
+    setAnnounce(t(`zone_${warmth}`))
+  }, [warmth, t])
 
-  const ringColor = arrived ? '#22c97a' : (zone?.color ?? '#ff6a13')
-  const burning = !arrived && zoneKey === 'burning'
-  const showCenterDistance = arrived || (distanceM !== null && distanceM <= 15)
+  const dirLabel = bearing === null ? '' : t(DIR_KEYS[Math.round(bearing / 45) % 8])
+  const label = mode === 'compass' && distanceM !== null
+    ? fmt(t('ringCompassLabel'), { distance: distanceM, direction: dirLabel })
+    : warmth
+      ? fmt(t('ringWarmthLabel'), { zone: t(`zone_${warmth}`) })
+      : t('locating')
+
+  const fill = mode === 'compass' && distanceM !== null ? Math.max(0.04, 1 - distanceM / 600) : 0
+  const showArrow = mode === 'compass' && arrowDeg !== null && distanceM !== null && distanceM > 10
 
   return (
-    <div className={`compass ${burning ? 'compass-burning' : ''} ${arrived ? 'compass-arrived' : ''}`}>
-      <svg className="compass-ring-svg" width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} style={{ overflow: 'visible' }}>
-        <defs>
-          <linearGradient id="ring-grad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%"  stopColor={ringColor} stopOpacity="0.55" />
-            <stop offset="100%" stopColor={ringColor} stopOpacity="1" />
-          </linearGradient>
-          <radialGradient id="ring-bg" cx="50%" cy="50%" r="50%">
-            <stop offset="0%"  stopColor="#ffffff" stopOpacity="1" />
-            <stop offset="100%" stopColor="#fff4e8" stopOpacity="1" />
-          </radialGradient>
-          <filter id="soft-glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="3" />
-          </filter>
-        </defs>
+    <div className={`compass ${warmth === 'burning' ? 'compass-burning' : ''} ${compact ? 'compass-compact' : ''}`}>
+      <svg
+        className="compass-ring-svg"
+        width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}
+        role="img" aria-label={label}
+        style={{ overflow: 'visible' }}
+      >
+        <circle cx={CX} cy={CY} r={R - 2} fill="#fffdf8" stroke="rgba(43,38,30,0.10)" strokeWidth="1" />
 
-        {/* Outer halo glow (color-pulses on burning zone) */}
-        {!arrived && zone && (
-          <circle cx={CX} cy={CY} r={R + 8} fill="none"
-            stroke={ringColor}
-            strokeWidth="2"
-            opacity="0.18"
-            filter="url(#soft-glow)"
-            className="compass-halo"
-          />
-        )}
-
-        {/* Bezel face */}
-        <circle cx={CX} cy={CY} r={R - 2} fill="url(#ring-bg)"
-          stroke="rgba(20,20,30,0.06)" strokeWidth="1" />
-
-        {/* Tick marks (cardinal & intercardinal) */}
-        {TICKS.map(deg => {
-          const isCardinal = deg % 90 === 0
-          const len = isCardinal ? 7 : 4
-          const r1 = R + 2
-          const r2 = r1 + len
-          const rad = ((deg - 90) * Math.PI) / 180
-          const x1 = CX + r1 * Math.cos(rad)
-          const y1 = CY + r1 * Math.sin(rad)
-          const x2 = CX + r2 * Math.cos(rad)
-          const y2 = CY + r2 * Math.sin(rad)
-          return (
-            <line key={deg} x1={x1} y1={y1} x2={x2} y2={y2}
-              stroke={isCardinal ? '#1a1a25' : 'rgba(20,20,30,0.32)'}
-              strokeWidth={isCardinal ? 1.6 : 1}
-              strokeLinecap="round" />
-          )
-        })}
-
-        {/* Track */}
-        <circle cx={CX} cy={CY} r={R} fill="none"
-          stroke="rgba(20,20,30,0.08)" strokeWidth="6" />
-
-        {/* Fill arc */}
-        <circle cx={CX} cy={CY} r={R} fill="none"
-          stroke="url(#ring-grad)"
-          strokeWidth="6"
-          strokeLinecap="round"
-          strokeDasharray={`${dash} ${C.toFixed(1)}`}
-          transform={`rotate(-90 ${CX} ${CY})`}
-          style={{ transition: 'stroke-dasharray 1.1s cubic-bezier(.4,0,.2,1)' }}
-        />
-
-        {/* Bearing arrow (rotates with bearing, adjusted for device heading) */}
-        {!arrived && distanceM !== null && distanceM > 15 && (
-          <g style={{ transition: 'transform .9s ease' }}
-             transform={`rotate(${adjustedBearing} ${CX} ${CY})`}>
-            {/* Arrow shaft */}
-            <line x1={CX} y1={CY + 8} x2={CX} y2={CY - 32}
-              stroke={ringColor} strokeWidth="3.2" strokeLinecap="round" opacity="0.85" />
-            {/* Arrow head */}
-            <polygon points={`${CX},${CY - 42} ${CX - 7},${CY - 28} ${CX + 7},${CY - 28}`}
-              fill={ringColor} />
-            {/* Tail */}
-            <circle cx={CX} cy={CY + 12} r="3" fill={ringColor} opacity="0.5" />
-          </g>
-        )}
-
-        {/* Centre hub + N */}
-        {!arrived && distanceM !== null && distanceM > 15 && (
+        {mode === 'compass' ? (
           <>
-            <circle cx={CX} cy={CY} r="6" fill="#fff" stroke={ringColor} strokeWidth="2" />
-            <text x={CX} y={CY - 18} textAnchor="middle" fontSize="10"
-              fill="rgba(20,20,30,0.55)" fontFamily="system-ui" fontWeight="700"
-              letterSpacing="0.06em">N</text>
+            {/* Rotating bezel: ticks + N follow the device heading. */}
+            <g transform={`rotate(${northDeg} ${CX} ${CY})`} style={{ transition: 'transform .4s ease' }}>
+              {Array.from({ length: 12 }, (_, i) => i * 30).map(deg => {
+                const cardinal = deg % 90 === 0
+                const r1 = R + 2, r2 = r1 + (cardinal ? 7 : 4)
+                const rad = ((deg - 90) * Math.PI) / 180
+                return (
+                  <line key={deg}
+                    x1={CX + r1 * Math.cos(rad)} y1={CY + r1 * Math.sin(rad)}
+                    x2={CX + r2 * Math.cos(rad)} y2={CY + r2 * Math.sin(rad)}
+                    stroke={cardinal ? '#23201B' : 'rgba(43,38,30,0.32)'}
+                    strokeWidth={cardinal ? 1.6 : 1} strokeLinecap="round" />
+                )
+              })}
+              <text x={CX} y={CY - R + 14} textAnchor="middle" fontSize="11" fontWeight="700"
+                fill="#A33B2B" fontFamily="system-ui">N</text>
+            </g>
+            <circle cx={CX} cy={CY} r={R} fill="none" stroke="rgba(43,38,30,0.08)" strokeWidth="6" />
+            <circle cx={CX} cy={CY} r={R} fill="none" stroke={color} strokeWidth="6" strokeLinecap="round"
+              strokeDasharray={`${(fill * C).toFixed(1)} ${C.toFixed(1)}`}
+              transform={`rotate(-90 ${CX} ${CY})`}
+              style={{ transition: 'stroke-dasharray 1s ease' }} />
+            {showArrow && (
+              <g transform={`rotate(${arrowDeg} ${CX} ${CY})`} style={{ transition: 'transform .6s ease' }}>
+                <line x1={CX} y1={CY + 8} x2={CX} y2={CY - 30} stroke={color} strokeWidth="3.2" strokeLinecap="round" />
+                <polygon points={`${CX},${CY - 42} ${CX - 7},${CY - 28} ${CX + 7},${CY - 28}`} fill={color} />
+              </g>
+            )}
+            <circle cx={CX} cy={CY} r="5" fill="#fff" stroke={color} strokeWidth="2" />
           </>
-        )}
-
-        {/* Centre — arrived state */}
-        {arrived && (
-          <>
-            <circle cx={CX} cy={CY} r="22" fill="rgba(34,201,122,0.12)" />
-            <text x={CX} y={CY + 4} textAnchor="middle" fontSize="32"
-              fill="#22c97a" fontFamily="system-ui" fontWeight="600">✓</text>
-            <text x={CX} y={CY + 24} textAnchor="middle" fontSize="11"
-              fill="#22c97a" fontFamily="system-ui" fontWeight="600"
-              letterSpacing="0.08em">ARRIVED</text>
-          </>
-        )}
-
-        {/* Centre — close-range readout (≤15 m) */}
-        {!arrived && distanceM !== null && distanceM <= 15 && (
-          <>
-            <circle cx={CX} cy={CY} r="26" fill={`${ringColor}22`} />
-            <text x={CX} y={CY + 4} textAnchor="middle" fontSize="28"
-              fill={ringColor} fontFamily="system-ui" fontWeight="700">
-              {distanceM}
-            </text>
-            <text x={CX} y={CY + 22} textAnchor="middle" fontSize="10"
-              fill={ringColor} fontFamily="system-ui" fontWeight="600"
-              letterSpacing="0.1em">METRES</text>
-          </>
+        ) : (
+          // Warmth: concentric bands, outer = cold, inner = burning.
+          WARMTH_ORDER.map((w, i) => {
+            const active = warmth === w
+            const reached = warmth !== null && WARMTH_ORDER.indexOf(warmth) >= i
+            return (
+              <circle key={w} cx={CX} cy={CY} r={R - 4 - i * 14}
+                fill={active ? `${warmthColor(w)}33` : 'none'}
+                stroke={warmthColor(w)}
+                strokeOpacity={reached ? 0.95 : 0.22}
+                strokeWidth={active ? 5 : 3} />
+            )
+          })
         )}
       </svg>
 
-      {/* Below ring — distance, zone, accuracy */}
-      <div className="compass-readout">
-        {!arrived && distanceM !== null && distanceM > 15 && (
-          <div className="compass-distance" style={{ color: ringColor }}>
+      <div className="compass-readout" aria-hidden="true">
+        {mode === 'compass' && distanceM !== null && (
+          <div className="compass-distance" style={{ color }}>
             <span className="compass-distance-num">{distanceM}</span>
-            <span className="compass-distance-unit">m</span>
+            <span className="compass-distance-unit">{t('metresShort')}</span>
           </div>
         )}
-        {zone && !arrived && (
-          <span className="compass-zone" style={{ color: zone.color, background: `${zone.color}1f`, borderColor: `${zone.color}40` }}>
-            {zone.label}
+        {warmth ? (
+          <span className="compass-zone" style={{ color, background: `${color}1a`, borderColor: `${color}55` }}>
+            {t(`zone_${warmth}`)}
           </span>
+        ) : (
+          <span className="compass-zone compass-zone-pending">{t('locating')}</span>
         )}
-        {accuracy !== null && !arrived && (
-          <span className="compass-accuracy">GPS ±{accuracy}m</span>
+        {accuracy !== null && !compact && (
+          <span className="compass-accuracy">{fmt(t('gpsAccuracy'), { m: accuracy })}</span>
         )}
       </div>
+      <span className="sr-only" aria-live="polite">{announce}</span>
     </div>
   )
 }
+

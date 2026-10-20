@@ -1,63 +1,66 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/firebase'
-import { collection, getDocs, query, where } from 'firebase/firestore'
+import { NextResponse } from 'next/server'
+import { adminDb } from '@/lib/firebaseAdmin'
+import { handle, getAuthUser } from '@/lib/apiAuth'
+import { toMillis } from '@/lib/sessionServer'
 
-// Returns { [huntId]: { sessionId, cluesCompleted, totalClues, status, score } }.
-// For each hunt, prefers the best COMPLETED session; otherwise the most recent
-// in-progress one. The home page uses this to show Resume / Completed badges.
-export async function GET(req: NextRequest) {
-  const userId = req.nextUrl.searchParams.get('userId')
-  if (!userId) return NextResponse.json({})
+export const dynamic = 'force-dynamic'
 
-  try {
-    const sessionsSnap = await getDocs(
-      query(collection(db, 'sessions'), where('userId', '==', userId))
-    )
+const MAX_SESSIONS = 200
 
-    type Entry = {
-      sessionId: string
-      cluesCompleted: number
-      totalClues: number
-      status: 'in_progress' | 'completed'
-      score: number
-      sortKey: number
-    }
-    const result: Record<string, Entry> = {}
+/**
+ * GET /api/user-progress — Authorization: Bearer <ID token> (optional: no
+ * token → `{}`). `?userId=` is ignored.
+ * → { [huntId]: { sessionId, cluesCompleted, totalClues, status, score } }
+ * Per hunt: the best COMPLETED session, else the most recent in-progress one.
+ */
+export const GET = handle(async (req) => {
+  const user = await getAuthUser(req)
+  if (!user) return NextResponse.json({})
+  const db = adminDb()
 
-    for (const sDoc of sessionsSnap.docs) {
-      const s = sDoc.data()
-      const cluesSnap = await getDocs(collection(db, 'sessions', sDoc.id, 'sessionClues'))
-      const total = cluesSnap.size
-      const done = cluesSnap.docs.filter(c => c.data().arrivedAt).length
-      const isCompleted = !!s.completedAt
-      const startedAt = s.startedAt?.toMillis?.() ?? 0
-      const score = s.score ?? 0
+  const sessionsSnap = await db.collection('sessions')
+    .where('userId', '==', user.uid)
+    .limit(MAX_SESSIONS)
+    .get()
 
-      const entry: Entry = {
-        sessionId: sDoc.id,
-        cluesCompleted: done,
-        totalClues: total,
-        status: isCompleted ? 'completed' : 'in_progress',
-        score,
-        // completed entries score-based, in-progress recency-based.
-        // Bias completed sessions higher than in-progress so they win when both exist.
-        sortKey: isCompleted ? 1_000_000_000 + score : startedAt,
-      }
-
-      const existing = result[s.huntId]
-      if (!existing || entry.sortKey > existing.sortKey) {
-        result[s.huntId] = entry
-      }
-    }
-
-    // Strip internal sort key
-    const out: Record<string, Omit<Entry, 'sortKey'>> = {}
-    for (const k in result) {
-      const { sortKey, ...rest } = result[k]
-      out[k] = rest
-    }
-    return NextResponse.json(out)
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+  type Entry = {
+    sessionId: string
+    cluesCompleted: number
+    totalClues: number
+    status: 'in_progress' | 'completed'
+    score: number
+    sortKey: number
   }
-}
+  const result: Record<string, Entry> = {}
+
+  const docs = sessionsSnap.docs.filter(d => {
+    const s = d.data()
+    return typeof s.huntId === 'string' && s.abandoned !== true && !s.abandonedAt
+  })
+  const clueSnaps = await Promise.all(docs.map(d => d.ref.collection('sessionClues').get()))
+
+  docs.forEach((sDoc, i) => {
+    const s = sDoc.data()
+    const cluesSnap = clueSnaps[i]
+    const isCompleted = !!s.completedAt
+    const score = typeof s.score === 'number' ? s.score : 0
+    const entry: Entry = {
+      sessionId: sDoc.id,
+      cluesCompleted: cluesSnap.docs.filter(c => c.data().arrivedAt).length,
+      totalClues: cluesSnap.size,
+      status: isCompleted ? 'completed' : 'in_progress',
+      score,
+      // Completed sessions outrank in-progress ones; in-progress by recency.
+      sortKey: isCompleted ? 1e15 + score : toMillis(s.startedAt),
+    }
+    const existing = result[s.huntId]
+    if (!existing || entry.sortKey > existing.sortKey) result[s.huntId] = entry
+  })
+
+  const out: Record<string, Omit<Entry, 'sortKey'>> = {}
+  for (const k in result) {
+    const { sortKey: _sortKey, ...rest } = result[k]
+    out[k] = rest
+  }
+  return NextResponse.json(out)
+})

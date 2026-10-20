@@ -1,27 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/firebase'
-import { verifyWebhook } from '@/lib/paypal'
-import { CITY_UNLOCK_PRICE_EUROS, CREDIT_PACKAGES } from '@/types'
-import { cityUnlockId } from '@/lib/cityUnlock'
-import { doc, getDoc, setDoc, updateDoc, increment, runTransaction, serverTimestamp } from 'firebase/firestore'
+import { verifyWebhook, captureOrder, PayPalError, type CaptureInfo } from '@/lib/paypal'
+import { processCapture, processRefund } from '@/lib/payments'
+
+export const dynamic = 'force-dynamic'
 
 /**
- * PayPal webhook handler.
+ * PayPal webhook. Subscribe (PayPal Developer dashboard) to:
+ *   CHECKOUT.ORDER.APPROVED    — capture orders whose buyer never made it back
+ *                                to the redirect capture route (closed tab)
+ *   PAYMENT.CAPTURE.COMPLETED  — grant (also completes PENDING captures)
+ *   PAYMENT.CAPTURE.REFUNDED   — revoke on full refund
+ *   PAYMENT.CAPTURE.REVERSED   — revoke on chargeback/reversal
  *
- * Subscribed events (configured in PayPal Developer dashboard):
- *   PAYMENT.CAPTURE.COMPLETED  — finalize the unlock / credit pack even if
- *                                 the user closed the tab between paying
- *                                 and the redirect back to /api/.../capture
- *   PAYMENT.CAPTURE.REFUNDED   — revoke an unlock or roll back credits
+ * Grants go through the same idempotent processCapture() as the redirect
+ * routes (payments/{orderId} + paymentsByCapture/{captureId} locks), so the
+ * order of redirect vs. webhook delivery doesn't matter.
  *
- * The redirect-based capture routes (/api/city-unlocks/capture and
- * /api/purchases/capture) are kept for the happy path; the webhook is
- * the safety net for users who never make it back. Both paths write the
- * same Firestore docs and check existence before writing, so they're
- * idempotent and order-independent.
+ * Answers 500 on handler failure so PayPal retries.
  */
 export async function POST(req: NextRequest) {
-  // We need the raw body for both signature verification and JSON parsing.
   const raw = await req.text()
   let event: any
   try {
@@ -38,114 +35,81 @@ export async function POST(req: NextRequest) {
     'paypal-auth-algo':         req.headers.get('paypal-auth-algo'),
   }
 
-  const verified = await verifyWebhook(headers, event).catch(() => false)
+  let verified = false
+  try {
+    verified = await verifyWebhook(headers, event)
+  } catch (e) {
+    // Couldn't reach PayPal to verify — let PayPal retry later.
+    console.error('[paypal/webhook] verification call failed', e)
+    return NextResponse.json({ error: 'verify_failed' }, { status: 500 })
+  }
   if (!verified) {
+    console.warn('[paypal/webhook] signature verification failed', event?.id)
     return NextResponse.json({ error: 'unverified' }, { status: 401 })
   }
 
   try {
-    if (event.event_type === 'PAYMENT.CAPTURE.COMPLETED') {
-      await handleCaptureCompleted(event.resource)
-    } else if (event.event_type === 'PAYMENT.CAPTURE.REFUNDED') {
-      await handleCaptureRefunded(event.resource)
+    const type = String(event?.event_type ?? '')
+    const resource = event?.resource
+    switch (type) {
+      case 'CHECKOUT.ORDER.APPROVED': {
+        const orderId = typeof resource?.id === 'string' ? resource.id : null
+        if (orderId) {
+          let info: CaptureInfo
+          try {
+            info = await captureOrder(orderId)
+          } catch (e) {
+            if (e instanceof PayPalError && e.status === 422) {
+              // Unprocessable (declined instrument, expired order…): retrying won't help.
+              console.warn('[paypal/webhook] approved order not capturable', orderId, e.message)
+              break
+            }
+            throw e
+          }
+          const outcome = await processCapture(info, 'webhook')
+          console.info('[paypal/webhook] order approved → capture', orderId, outcome.status)
+        }
+        break
+      }
+      case 'PAYMENT.CAPTURE.COMPLETED': {
+        const info = captureFromResource(resource)
+        if (!info) {
+          console.error('[paypal/webhook] malformed capture resource', event?.id)
+          break
+        }
+        const outcome = await processCapture(info, 'webhook')
+        console.info('[paypal/webhook] capture completed', info.orderId, outcome.status)
+        break
+      }
+      case 'PAYMENT.CAPTURE.REFUNDED':
+      case 'PAYMENT.CAPTURE.REVERSED':
+        await processRefund(resource, type)
+        break
+      default:
+        // Acknowledge so PayPal stops retrying.
+        break
     }
-    // Other events: acknowledge so PayPal stops retrying.
     return NextResponse.json({ ok: true })
   } catch (e) {
-    // Return 500 so PayPal retries.
+    console.error('[paypal/webhook] handler failed', event?.event_type, event?.id, e)
     return NextResponse.json({ error: 'handler_failed' }, { status: 500 })
   }
 }
 
-function parseCustomId(resource: any): Record<string, string> | null {
-  const raw = resource?.custom_id
-    ?? resource?.purchase_units?.[0]?.custom_id
-    ?? null
-  if (!raw) return null
-  try { return JSON.parse(raw) } catch { return null }
-}
-
-async function handleCaptureCompleted(resource: any) {
-  const meta = parseCustomId(resource)
-  if (!meta) return
-  const captureId = resource.id
-
-  if (meta.kind === 'city_unlock' && meta.cityId && meta.userId) {
-    const unlockRef = doc(db, 'cityUnlocks', cityUnlockId(meta.userId, meta.cityId))
-    const existing = await getDoc(unlockRef)
-    // Idempotent: redirect-based capture may have written this already.
-    if (existing.exists()) return
-
-    const citySnap = await getDoc(doc(db, 'cities', meta.cityId))
-    const priceEuros = (citySnap.data() as { priceEuros?: number } | undefined)?.priceEuros ?? CITY_UNLOCK_PRICE_EUROS
-    await setDoc(unlockRef, {
-      userId: meta.userId,
-      cityId: meta.cityId,
-      paypalCaptureId: captureId,
-      amountCents: Math.round(priceEuros * 100),
-      completedAt: serverTimestamp(),
-      grantedVia: 'webhook',
-    })
-    return
-  }
-
-  if (meta.kind === 'credit_pack' && meta.sessionId && meta.packageId) {
-    const pkg = CREDIT_PACKAGES.find(p => p.id === meta.packageId)
-    if (!pkg) return
-
-    // Key the purchase doc by capture id so we don't double-credit if the
-    // redirect-capture and webhook both fire.
-    const purchaseRef = doc(db, 'sessions', meta.sessionId, 'purchases', captureId)
-    const existing = await getDoc(purchaseRef)
-    if (existing.exists()) return
-
-    await setDoc(purchaseRef, {
-      packageId: meta.packageId,
-      creditsAdded: pkg.credits,
-      amountCents: pkg.priceCents,
-      paypalCaptureId: captureId,
-      completedAt: serverTimestamp(),
-      grantedVia: 'webhook',
-    })
-    await updateDoc(doc(db, 'sessions', meta.sessionId), {
-      credits: increment(pkg.credits),
-    })
-  }
-}
-
-async function handleCaptureRefunded(resource: any) {
-  // resource.id is the refund id. PayPal can deliver the same refund event
-  // more than once, so every rollback is guarded by a paypalRefunds/{refundId}
-  // marker written in the SAME transaction as the mutation — making the whole
-  // handler idempotent (a duplicate webhook is a no-op, no double-decrement).
-  const meta = parseCustomId(resource)
-  if (!meta) return
-  const refundId = resource?.id
-  if (!refundId) return
-  const refundRef = doc(db, 'paypalRefunds', String(refundId))
-
-  if (meta.kind === 'city_unlock' && meta.cityId && meta.userId) {
-    const unlockRef = doc(db, 'cityUnlocks', cityUnlockId(meta.userId, meta.cityId))
-    await runTransaction(db, async (tx) => {
-      const processed = await tx.get(refundRef)
-      if (processed.exists()) return
-      const unlock = await tx.get(unlockRef)
-      tx.set(refundRef, { refundId: String(refundId), kind: 'city_unlock', processedAt: serverTimestamp() })
-      if (unlock.exists()) tx.delete(unlockRef)
-    }).catch(() => {})
-    return
-  }
-
-  if (meta.kind === 'credit_pack' && meta.sessionId && meta.packageId) {
-    const pkg = CREDIT_PACKAGES.find(p => p.id === meta.packageId)
-    if (!pkg) return
-    const sessionRef = doc(db, 'sessions', meta.sessionId)
-    await runTransaction(db, async (tx) => {
-      const processed = await tx.get(refundRef)
-      if (processed.exists()) return
-      tx.set(refundRef, { refundId: String(refundId), kind: 'credit_pack', processedAt: serverTimestamp() })
-      // Roll back the credits we granted; balance may go negative if spent.
-      tx.update(sessionRef, { credits: increment(-pkg.credits) })
-    }).catch(() => {})
+/** Map a signature-verified capture resource onto the shared CaptureInfo. */
+function captureFromResource(r: any): CaptureInfo | null {
+  if (!r || typeof r.id !== 'string') return null
+  const orderId = r.supplementary_data?.related_ids?.order_id
+  return {
+    // Without an order id we key the lock by capture id; paymentsByCapture
+    // still dedupes against a redirect that keyed by order id.
+    orderId: typeof orderId === 'string' ? orderId : r.id,
+    orderStatus: '',
+    captureId: r.id,
+    status: String(r.status ?? ''),
+    amountValue: String(r.amount?.value ?? ''),
+    currency: String(r.amount?.currency_code ?? ''),
+    payeeMerchantId: r.payee?.merchant_id ?? null,
+    customId: typeof r.custom_id === 'string' ? r.custom_id : null,
   }
 }

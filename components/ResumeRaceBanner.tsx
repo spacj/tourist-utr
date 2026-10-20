@@ -1,22 +1,27 @@
 'use client'
+import { useState } from 'react'
 import { useActiveRoom } from '@/hooks/useActiveRoom'
 import { useI18n } from '@/hooks/useI18n'
+import { useToast } from '@/components/Toast'
+import { errorKey } from '@/lib/apiErrors'
 
 export function ResumeRaceBanner() {
   const { active, dismiss } = useActiveRoom()
   const { t } = useI18n()
+  const toast = useToast()
+  const [busy, setBusy] = useState(false)
 
   if (!active) return null
 
-  let href = ''
-  let title = ''
-  let desc = ''
-  let badge = ''
-  let icon = '👥'
+  let href: string
+  let title: string
+  let desc: string
+  let badge: string
+  let icon: string
   let canDismiss = false
 
   if (active.state === 'racing' && active.sessionId) {
-    href = `/hunt?session=${active.sessionId}`
+    href = `/hunt?session=${encodeURIComponent(active.sessionId)}`
     title = t('resumeRaceTitle')
     desc = `${active.huntTitle} · ${active.cluesDone} ${t('stopsCompleted')} · ${active.score} ${t('points')}`
     badge = t('inRoomBadge')
@@ -29,16 +34,21 @@ export function ResumeRaceBanner() {
     icon = '🏁'
     canDismiss = true
   } else {
-    // lobby
     href = `/multiplayer/${active.code}`
-    title = t('rejoinLobbyTitle')
+    title = active.state === 'racing' ? t('resumeRaceTitle') : t('rejoinLobbyTitle')
     desc = active.huntTitle ? `${active.huntTitle} · ${active.code}` : active.code
-    badge = t('lobby')
+    badge = active.state === 'racing' ? t('inRoomBadge') : t('lobby')
     icon = '👥'
-    canDismiss = true
+    canDismiss = active.state === 'lobby'
   }
 
-  if (!href) return null
+  const onDismiss = async () => {
+    if (busy) return
+    setBusy(true)
+    try { await dismiss() }
+    catch (e) { toast.error(t(errorKey(e))) }
+    finally { setBusy(false) }
+  }
 
   return (
     <div className="resume-race-banner" role="region" aria-label={title}>
@@ -55,8 +65,9 @@ export function ResumeRaceBanner() {
         <button
           type="button"
           className="resume-race-dismiss"
-          onClick={dismiss}
-          aria-label={t('dismiss')}
+          onClick={onDismiss}
+          disabled={busy}
+          aria-label={active.state === 'lobby' ? t('leaveRoom') : t('dismiss')}
         >
           ×
         </button>

@@ -1,6 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { useI18n } from '@/hooks/useI18n'
+import { apiPost } from '@/lib/apiFetch'
+import { errorCode, errorKey } from '@/lib/apiErrors'
 import { MysterySpec, MysteryAxis, MysteryCandidate, localizeMystery } from '@/types'
 
 interface Props {
@@ -10,7 +12,7 @@ interface Props {
   onSolved?: (bonus: number) => void
 }
 
-type AccuseResult = { correct: boolean; solution: { suspect: string; weapon: string; place: string }; bonus: number }
+type AccuseResult = { alreadyAccused: boolean; correct: boolean; solution: { suspect: string; weapon: string; place: string }; bonus: number }
 
 /**
  * The finale of a mystery hunt: pick a suspect, weapon and place, then accuse.
@@ -39,20 +41,18 @@ export function MysteryAccusation({ sessionId, mystery, onSolved }: Props) {
     if (!ready || submitting || result) return
     setSubmitting(true); setError(null)
     try {
-      const res = await fetch('/api/accuse', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, suspect: pick.suspect, weapon: pick.weapon, place: pick.place }),
+      const data = await apiPost<AccuseResult>('/api/accuse', {
+        sessionId, suspect: pick.suspect, weapon: pick.weapon, place: pick.place,
       })
-      const data = await res.json()
-      if (res.ok && typeof data.correct === 'boolean') {
-        setResult(data)
-        if (data.correct && data.bonus > 0) onSolved?.(data.bonus)
-      } else {
-        setError(t('loadError'))
-      }
-    } catch {
-      setError(t('loadError'))
+      setResult(data)
+      if (data.correct && data.bonus > 0) onSolved?.(data.bonus)
+    } catch (e) {
+      const code = errorCode(e)
+      setError(t(
+        code === 'case_not_finished' ? 'errCaseNotFinished'
+        : code === 'session_abandoned' ? 'errSessionAbandoned'
+        : errorKey(e),
+      ))
     } finally {
       setSubmitting(false)
     }
@@ -60,12 +60,13 @@ export function MysteryAccusation({ sessionId, mystery, onSolved }: Props) {
 
   if (result) {
     return (
-      <div className={`accuse-card ${result.correct ? 'is-correct' : 'is-wrong'}`}>
+      <div className={`accuse-card ${result.correct ? 'is-correct' : 'is-wrong'}`} role="status">
         <div className="accuse-result-icon" aria-hidden>{result.correct ? '🕵️' : '🔚'}</div>
         <div className="accuse-result-title">
           {result.correct ? t('caseSolvedBadge') : t('caseClosedBadge')}
           {result.correct && result.bonus > 0 && <span className="accuse-bonus">+{result.bonus}</span>}
         </div>
+        {result.alreadyAccused && <p className="accuse-result-text">{t('alreadyAccused')}</p>}
         <p className="accuse-result-text">{result.correct ? m.solvedText : m.failedText}</p>
         <div className="accuse-solution">
           <span>{m.suspects.find(c => c.id === result.solution.suspect)?.icon} {nameOf(m.suspects, result.solution.suspect)}</span>
@@ -80,10 +81,10 @@ export function MysteryAccusation({ sessionId, mystery, onSolved }: Props) {
 
   return (
     <div className="accuse-card">
-      <div className="accuse-head">🕵️ {m.accuseTitle}</div>
+      <h2 className="accuse-head">🕵️ {m.accuseTitle}</h2>
       {axes.map(col => (
-        <div key={col.axis} className="accuse-axis">
-          <div className="accuse-axis-label">{col.label}</div>
+        <div key={col.axis} className="accuse-axis" role="group" aria-labelledby={`accuse-${col.axis}`}>
+          <div className="accuse-axis-label" id={`accuse-${col.axis}`}>{col.label}</div>
           <div className="accuse-axis-opts">
             {col.items.map(item => {
               const on = pick[col.key] === item.id
@@ -102,8 +103,8 @@ export function MysteryAccusation({ sessionId, mystery, onSolved }: Props) {
           </div>
         </div>
       ))}
-      {error && <p className="bench-add-error">{error}</p>}
-      <button className="btn-primary accuse-submit" onClick={accuse} disabled={!ready || submitting}>
+      <p className="flow-error-text" role="alert">{error ?? ''}</p>
+      <button type="button" className="btn-primary accuse-submit" onClick={accuse} disabled={!ready || submitting} aria-busy={submitting}>
         {submitting ? '…' : t('accuseSubmit')}
       </button>
     </div>

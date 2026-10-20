@@ -1,71 +1,87 @@
 'use client'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Clue, VerifyResponse, localizeClue, localizeEvidenceText, MysterySpec, SCORE } from '@/types'
-import { enqueue } from '@/lib/offlineQueue'
-import { useGPS } from '@/hooks/useGPS'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import {
+  pickTxt, type ActiveClueView, type ArrivalResponse, type CompletedClueView, type HintTier,
+  type MysterySpec, type ClueEvidence,
+} from '@/types'
+import { useGPS, type GpsFix } from '@/hooks/useGPS'
 import { useDeviceOrientation } from '@/hooks/useDeviceOrientation'
-import { haversineM, bearingDeg } from '@/lib/geo'
 import { useCredits } from '@/hooks/useCredits'
 import { useI18n } from '@/hooks/useI18n'
 import { useIsAdmin } from '@/hooks/useIsAdmin'
+import { useToast } from '@/components/Toast'
+import { ConfirmDialog } from '@/components/Modal'
+import { errorKey } from '@/lib/gameClient'
 import { MapView } from './MapView'
 import { ProximityRing } from './ProximityRing'
-import { ArrivalBanner } from './ArrivalBanner'
 import { CreditShop } from './CreditShop'
-import { PuzzleCard } from './PuzzleCard'
+import { PuzzleCard, type PuzzleSolved } from './PuzzleCard'
 import { ClueHistory } from './ClueHistory'
 import { CaseFile } from './CaseFile'
-import { HINT_COSTS } from '@/types'
+import { ClueHud } from './game/ClueHud'
+import { HintList } from './game/HintList'
+import { ClueNavigator, useNavReadout, useCheckInAvailable } from './game/ClueNavigator'
+import { StopIntro, useTutorialState } from './game/StopIntro'
+import { CheckInDialog } from './game/CheckInDialog'
+import { useLocationCheck } from './game/useLocationCheck'
 
 interface Props {
-  clue: Clue
-  huntCity: string
+  clue: ActiveClueView
+  huntId: string
   sessionId: string
-  initialCredits: number
-  totalScore: number
-  onComplete: (result: { nextClue: Clue | null; huntComplete: boolean }) => void
-  // Full clue list for the hunt — passed in so we can compute the next clue
-  // client-side when an arrival happens while offline.
-  allClues?: Clue[]
-  /** Clues the player has already finished — viewable from the History sheet. */
-  completedClues?: Clue[]
-  /** Mystery case spec (solution stripped) — enables the deduction board. */
-  mystery?: MysterySpec | null
+  cityId: string | null
+  credits: number
+  score: number
+  completed: CompletedClueView[]
+  mystery: MysterySpec | null
+  /** Evidence of stops reached but not yet in `completed` (mystery hunts). */
+  extraEvidence: { id: string; evidence: ClueEvidence | null }[]
+  /** False while the arrival flow is on screen — stops position checks. */
+  active: boolean
+  onArrived: (r: ArrivalResponse) => void
+  onOfflineArrival: (fix: GpsFix) => void
+  onClueUpdate: (view: ActiveClueView) => void
+  onScore: (total: number) => void
 }
 
-export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits, totalScore, onComplete, allClues, completedClues = [], mystery = null }: Props) {
+type SheetState = 'minimized' | 'default' | 'expanded'
+
+/** The "find" half of a stop: puzzle → navigation → walk there. */
+export function ClueScreen({
+  clue, huntId, sessionId, cityId, credits: creditsProp, score, completed, mystery, extraEvidence,
+  active, onArrived, onOfflineArrival, onClueUpdate, onScore,
+}: Props) {
   const { t, lang } = useI18n()
-  const clue = localizeClue(rawClue, lang)
-  const evidenceText = localizeEvidenceText(rawClue.evidence, lang)
-  const [arrived,       setArrived]       = useState(false)
-  const [arrivalData,   setArrivalData]   = useState<VerifyResponse | null>(null)
-  const [userPos,       setUserPos]       = useState<{ lat: number; lng: number } | null>(null)
-  const [unlockedTiers, setUnlockedTiers] = useState<Set<number>>(new Set())
-  const [openHint,      setOpenHint]      = useState<number | null>(null)
-  const [shopOpen,      setShopOpen]      = useState(false)
-  const [historyOpen,   setHistoryOpen]   = useState(false)
-  const [caseOpen,      setCaseOpen]      = useState(false)
-  const [showIntro,     setShowIntro]     = useState(true)
-  const [reading,       setReading]       = useState(false)
-  const [score,         setScore]         = useState(totalScore)
-  const [puzzleBonus,   setPuzzleBonus]   = useState(0)
-  type SheetState = 'minimized' | 'default' | 'expanded'
-  const [sheetState,    setSheetState]    = useState<SheetState>('default')
-  const [isOffline,     setIsOffline]     = useState(false)
-  const [showTutorial,  setShowTutorial]  = useState(false)
+  const toast = useToast()
+  const router = useRouter()
+  const isAdmin = useIsAdmin()
 
-  // First-run tutorial: shown once, re-openable from the HUD "?" button.
+  const [shopOpen, setShopOpen] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [caseOpen, setCaseOpen] = useState(false)
+  const [leaveOpen, setLeaveOpen] = useState(false)
+  const [checkInOpen, setCheckInOpen] = useState(false)
+  const [introOpen, setIntroOpen] = useState(true)
+  const [tutorialOpen, closeTutorial, openTutorial] = useTutorialState()
+  const [sheetState, setSheetState] = useState<SheetState>('default')
+  const [isOffline, setIsOffline] = useState(false)
+  const [reading, setReading] = useState(false)
+  const [solvedOffline, setSolvedOffline] = useState<string | null>(null)
+
+  const { credits, unlock, unlocking, startCheckout } = useCredits(creditsProp, sessionId)
+  const { fix, error: gpsError, retry: retryGps } = useGPS(true)
+  const compass = useDeviceOrientation()
+
+  // New stop → show its intro, reset per-stop UI.
   useEffect(() => {
-    try {
-      if (localStorage.getItem('hasSeenTutorial') !== 'yes') setShowTutorial(true)
-    } catch {}
-  }, [])
-  const dismissTutorial = () => {
-    setShowTutorial(false)
-    try { localStorage.setItem('hasSeenTutorial', 'yes') } catch {}
-  }
+    setIntroOpen(true)
+    setCheckInOpen(false)
+    setSheetState('default')
+    if (typeof window !== 'undefined') window.speechSynthesis?.cancel()
+    setReading(false)
+  }, [clue.id])
 
-  // Track connectivity so we can reassure the player their progress is queued.
   useEffect(() => {
     const update = () => setIsOffline(typeof navigator !== 'undefined' && !navigator.onLine)
     update()
@@ -77,87 +93,35 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
     }
   }, [])
 
-  // Swipe gesture on the handle to change sheet state
-  const touchStartY = useRef<number | null>(null)
-  const onHandleTouchStart = (e: React.TouchEvent) => {
-    touchStartY.current = e.touches[0].clientY
-  }
-  const onHandleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartY.current === null) return
-    const dy = e.changedTouches[0].clientY - touchStartY.current
-    touchStartY.current = null
-    if (Math.abs(dy) < 24) return // treat as tap, ignore here (button onClick handles it)
-    setSheetState(prev => {
-      if (dy > 0) return prev === 'expanded' ? 'default' : 'minimized'
-      return prev === 'minimized' ? 'default' : 'expanded'
-    })
-  }
-  const cycleSheet = () => {
-    setSheetState(prev =>
-      prev === 'minimized' ? 'default'
-      : prev === 'default' ? 'expanded'
-      : 'minimized'
-    )
-  }
-
-  const { credits, canAfford, unlockHint, startCheckout } = useCredits(initialCredits, sessionId)
-  const isAdmin = useIsAdmin()
-
-  // Hide intro after 2.8s auto-dismiss and reset local state per-clue
+  // Keep the screen awake while hunting.
   useEffect(() => {
-    setShowIntro(true)
-    setArrived(false)
-    setArrivalData(null)
-    setUnlockedTiers(new Set())
-    setOpenHint(null)
-    setScore(totalScore)
-    setPuzzleBonus(0)
-    const id = setTimeout(() => setShowIntro(false), 2800)
-    return () => clearTimeout(id)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clue.id])
-
-  // Keep screen awake during the hunt — players hate when their phone sleeps mid-walk.
-  useEffect(() => {
-    if (typeof navigator === 'undefined') return
     let lock: any = null
     let cancelled = false
     const acquire = async () => {
       try {
-        const wakeLock = (navigator as any).wakeLock
-        if (!wakeLock) return
-        lock = await wakeLock.request('screen')
-        if (cancelled && lock) lock.release?.().catch(() => {})
+        const wl = (navigator as any).wakeLock
+        if (!wl) return
+        lock = await wl.request('screen')
+        if (cancelled) lock?.release?.().catch(() => {})
       } catch {}
     }
     acquire()
-    const onVisibility = () => {
-      if (document.visibilityState === 'visible' && !lock) acquire()
-    }
-    document.addEventListener('visibilitychange', onVisibility)
+    const onVis = () => { if (document.visibilityState === 'visible') acquire() }
+    document.addEventListener('visibilitychange', onVis)
     return () => {
       cancelled = true
-      document.removeEventListener('visibilitychange', onVisibility)
+      document.removeEventListener('visibilitychange', onVis)
       try { lock?.release?.() } catch {}
     }
   }, [])
 
-  // Track first user gesture so AudioContext can run on iOS Safari (autoplay restriction)
-  const audioPrimedRef = useRef(false)
+  // Prime audio on the first gesture (iOS autoplay rules) for the chimes.
   useEffect(() => {
-    if (audioPrimedRef.current) return
     const prime = () => {
-      audioPrimedRef.current = true
       try {
-        const AC = (window.AudioContext || (window as any).webkitAudioContext)
-        if (AC) {
-          const ctx = new AC()
-          // Resume + immediately suspend; this just unlocks audio for later real chimes.
-          ctx.resume().then(() => ctx.close().catch(() => {})).catch(() => {})
-        }
+        const AC = (window as any).AudioContext || (window as any).webkitAudioContext
+        if (AC) { const ctx = new AC(); ctx.resume().then(() => ctx.close().catch(() => {})).catch(() => {}) }
       } catch {}
-      window.removeEventListener('touchstart', prime)
-      window.removeEventListener('click', prime)
     }
     window.addEventListener('touchstart', prime, { once: true, passive: true })
     window.addEventListener('click', prime, { once: true })
@@ -167,132 +131,49 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
     }
   }, [])
 
-  const handleArrived = useCallback((data: VerifyResponse) => {
-    setArrived(true)
-    setArrivalData(data)
-    setScore(s => s + (data.pointsEarned ?? 0))
-    // Stop any read-aloud
-    if (typeof window !== 'undefined') window.speechSynthesis?.cancel()
-  }, [])
+  useEffect(() => () => { if (typeof window !== 'undefined') window.speechSynthesis?.cancel() }, [])
 
-  const { distanceM: serverDistanceM, bearing: serverBearing, dynamicH3, gpsError, accuracy: serverAccuracy } = useGPS({
-    sessionId, clueId: clue.id, enabled: !arrived, onArrived: handleArrived,
+  const showError = useCallback((code: string) => toast.error(t(errorKey(code))), [toast, t])
+
+  const loc = useLocationCheck({
+    sessionId, clue, fix, enabled: active, onArrived, onOfflineArrival, onError: showError, onScore,
   })
+  const readout = useNavReadout(clue, fix, { warmth: loc.warmth, distanceM: loc.distanceM, bearing: loc.bearing })
+  const checkIn = useCheckInAvailable(clue, fix, gpsError)
 
-  // Device compass heading — makes the arrow point relative to which way you're facing
-  const { heading: deviceHeading, requestPermission } = useDeviceOrientation()
-
-  // Live GPS watcher → drives both userPos and a high-accuracy override
-  const [liveAccuracy, setLiveAccuracy] = useState<number | null>(null)
-  useEffect(() => {
-    if (arrived) return
-    if (typeof navigator === 'undefined' || !navigator.geolocation) return
-    const id = navigator.geolocation.watchPosition(
-      (p) => {
-        setUserPos({ lat: p.coords.latitude, lng: p.coords.longitude })
-        setLiveAccuracy(Math.round(p.coords.accuracy))
-      },
-      undefined,
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 }
-    )
-    return () => navigator.geolocation.clearWatch(id)
-  }, [arrived])
-
-  // Real-time distance + bearing computed client-side from the live GPS watcher.
-  // Falls back to the server-polled values until the first watcher fix arrives.
-  const { liveDistanceM, liveBearing } = useMemo(() => {
-    if (!userPos) return { liveDistanceM: serverDistanceM, liveBearing: serverBearing }
-    return {
-      liveDistanceM: Math.round(haversineM(userPos.lat, userPos.lng, clue.lat, clue.lng)),
-      liveBearing: bearingDeg(userPos.lat, userPos.lng, clue.lat, clue.lng),
-    }
-  }, [userPos, clue.lat, clue.lng, serverDistanceM, serverBearing])
-
-  const distanceM = liveDistanceM
-  const bearing = liveBearing
-  const accuracy = liveAccuracy ?? serverAccuracy
-
-  // Offline arrival: when the network is down but the user is physically at
-  // the clue, advance the game locally and queue the server verify for replay
-  // when the connection returns. The server-side useGPS poll will keep
-  // retrying on its own; this hook is the fallback that unblocks gameplay.
-  useEffect(() => {
-    if (arrived) return
-    if (typeof navigator === 'undefined') return
-    if (navigator.onLine) return  // online — let the server be authoritative
-    if (!userPos || liveDistanceM === null) return
-    if (liveDistanceM > clue.radiusM) return
-
-    // Compute the next clue from the full hunt list (passed in by HuntClient).
-    const nextRaw = (allClues ?? []).find(c => c.order === clue.order + 1) ?? null
-    const nextClue = nextRaw
-      ? { ...nextRaw, totalClues: clue.totalClues } as Clue
-      : null
-
-    const optimistic: VerifyResponse = {
-      arrived: true,
-      // No score is computed offline — the server will reconcile when the
-      // queued verify replays. We return SCORE.base as a placeholder so the
-      // UI can show "+100" instead of zero.
-      pointsEarned: SCORE.base,
-      timeBonus: 0,
-      perfectBonus: 0,
-      streakBonus: 0,
-      hintPenalty: 0,
-      raceFirstBonus: 0,
-      streak: 0,
-      funFact: clue.funFact ?? undefined,
-      huntComplete: !nextClue,
-      nextClue,
-    }
-
-    enqueue({
-      url: '/api/verify-location',
-      body: { sessionId, clueId: clue.id, lat: userPos.lat, lng: userPos.lng },
-      reconcileKey: `verify:${sessionId}:${clue.id}`,
-    }).catch(() => {})
-
-    handleArrived(optimistic)
-  }, [arrived, userPos, liveDistanceM, clue.id, clue.order, clue.radiusM, clue.totalClues, clue.funFact, allClues, sessionId])
-
-  const doUnlock = async (tier: 1 | 2 | 3) => {
-    if (unlockedTiers.has(tier)) {
-      setOpenHint(openHint === tier ? null : tier)
+  // ── Hints ──
+  const doUnlock = async (tier: HintTier) => {
+    const r = await unlock(clue.id, tier)
+    if (r.ok) {
+      if (r.data.clue) onClueUpdate(r.data.clue)
+      if (tier === 3) toast.success(t('pinRevealedToast'))
+      try { (navigator as any).vibrate?.(25) } catch {}
       return
     }
-    if (!canAfford(tier)) {
+    if (r.code === 'busy') return
+    if (r.code === 'insufficient_credits') {
+      toast.info(t('errInsufficientCredits'))
       setShopOpen(true)
       return
     }
-    const ok = await unlockHint(clue.id, tier)
-    if (ok) {
-      setUnlockedTiers((prev) => new Set([...prev, tier]))
-      setOpenHint(tier)
-      try { (navigator as any).vibrate?.(25) } catch {}
-    }
+    showError(r.code)
   }
 
-  const fakeArrive = async () => {
-    const res = await fetch('/api/verify-location', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId, clueId: clue.id, lat: clue.lat, lng: clue.lng }),
-    })
-    const data = await res.json() as VerifyResponse
-    if (data.arrived) handleArrived(data)
+  const onPuzzleSolved = (r: PuzzleSolved) => {
+    if (r.offline) { setSolvedOffline(clue.id); return }
+    if (typeof r.totalScore === 'number') onScore(r.totalScore)
+    if (r.clue) onClueUpdate(r.clue)
+    if (r.bonus > 0) toast.success(t('puzzleSolvedToast'))
   }
 
-  // Web Speech API read-aloud — no files, no storage
   const toggleReadAloud = () => {
     if (typeof window === 'undefined' || !window.speechSynthesis) return
-    if (reading) {
-      window.speechSynthesis.cancel()
-      setReading(false)
-      return
-    }
-    const utter = new SpeechSynthesisUtterance(clue.riddle)
+    if (reading) { window.speechSynthesis.cancel(); setReading(false); return }
+    const text = pickTxt(clue.riddle, lang)
+    if (!text) return
+    const utter = new SpeechSynthesisUtterance(text)
+    utter.lang = lang
     utter.rate = 0.95
-    utter.pitch = 1
     utter.onend = () => setReading(false)
     utter.onerror = () => setReading(false)
     window.speechSynthesis.cancel()
@@ -300,116 +181,59 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
     setReading(true)
   }
 
-  useEffect(() => () => {
-    // Cleanup speech on unmount
-    if (typeof window !== 'undefined') window.speechSynthesis?.cancel()
-  }, [])
+  // ── Bottom sheet gestures ──
+  const touchStartY = useRef<number | null>(null)
+  const onHandleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartY.current === null) return
+    const dy = e.changedTouches[0].clientY - touchStartY.current
+    touchStartY.current = null
+    if (Math.abs(dy) < 24) return
+    setSheetState(prev => dy > 0
+      ? (prev === 'expanded' ? 'default' : 'minimized')
+      : (prev === 'minimized' ? 'default' : 'expanded'))
+  }
+  const cycleSheet = () => setSheetState(prev =>
+    prev === 'minimized' ? 'default' : prev === 'default' ? 'expanded' : 'minimized')
 
-  const showTarget = unlockedTiers.has(3)
+  const leave = () => router.push(cityId ? `/city/${cityId}` : '/')
 
-  const hintRows: { tier: 1 | 2 | 3; label: string }[] = [
-    { tier: 1, label: t('neighbourhoodClue') },
-    { tier: 2, label: t('streetHint') },
-    { tier: 3, label: t('showMap') },
+  const closeIntro = useCallback(() => setIntroOpen(false), [])
+
+  const dots = Array.from({ length: clue.totalClues }, (_, i) =>
+    i + 1 < clue.order ? 'done' : i + 1 === clue.order ? 'current' : '')
+
+  const riddle = pickTxt(clue.riddle, lang)
+  const theme = pickTxt(clue.theme, lang)
+  const knownEvidence = [
+    ...completed.map(c => ({ id: c.id, evidence: c.evidence })),
+    ...extraEvidence,
   ]
-
-  const hintContent = (tier: 1 | 2 | 3): React.ReactNode => {
-    if (tier === 1) return <p>{clue.hint1}</p>
-    if (tier === 2) return <p>{clue.hint2}</p>
-    if (tier === 3) return <p>{dynamicH3 ?? clue.hint3}</p>
-  }
-
-  // Dot trail — one segment per clue
-  const dots = Array.from({ length: clue.totalClues }, (_, i) => {
-    const order = i + 1
-    if (order < clue.order) return 'done'
-    if (order === clue.order) return 'current'
-    return ''
-  })
-
-  const goHome = () => {
-    if (arrived || confirm(t('leaveHuntConfirm'))) {
-      window.location.href = '/'
-    }
-  }
 
   return (
     <div className="game-layout">
-      {/* ── Clue intro card ── */}
-      {showIntro && (
-        <div className="intro-backdrop" onClick={() => setShowIntro(false)}>
-          <div className="intro-card" onClick={(e) => e.stopPropagation()}>
-            <div className="intro-stop">{t('stop')} {clue.order} {t('of')} {clue.totalClues}</div>
-            <div className="intro-icon">{clue.icon ?? '📍'}</div>
-            <div className="intro-theme">{clue.theme ?? t('getReady')}</div>
-            <div className="intro-sub">{t('yourClue')}</div>
-            <button className="btn-primary" onClick={() => setShowIntro(false)}>
-              {t('continue')}
-            </button>
-          </div>
-        </div>
-      )}
+      <StopIntro
+        clue={clue}
+        tutorialOpen={tutorialOpen}
+        onTutorialClose={closeTutorial}
+        introOpen={introOpen && active}
+        onIntroClose={closeIntro}
+      />
 
-      {/* ── First-run tutorial ── */}
-      {showTutorial && (
-        <div className="tutorial-backdrop" onClick={dismissTutorial}>
-          <div className="tutorial-card" onClick={(e) => e.stopPropagation()}>
-            <div className="tutorial-title">{t('tutorialTitle')}</div>
-            <ul className="tutorial-steps">
-              <li><span aria-hidden>🧩</span><span>{t('tutorialStep1')}</span></li>
-              <li><span aria-hidden>🧭</span><span>{t('tutorialStep2')}</span></li>
-              <li><span aria-hidden>💡</span><span>{t('tutorialStep3')}</span></li>
-            </ul>
-            <button className="btn-primary" onClick={dismissTutorial}>{t('tutorialGotIt')}</button>
-          </div>
-        </div>
-      )}
-
-      {/* Pinned top HUD — sits above map AND bottom sheet, never scrolls */}
-      <div className="game-hud">
-        <button onClick={goHome} className="hud-back" aria-label={t('home')}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-        </button>
-        <button onClick={() => setShowIntro(true)} className="hud-pill hud-stop" aria-label={t('yourClue')} title={t('yourClue')}>
-          {clue.icon ?? '📍'} {clue.order}/{clue.totalClues}
-        </button>
-        <button onClick={() => setShopOpen(true)} className="hud-pill hud-credits" aria-label="Credits">
-          💎 {credits}
-        </button>
-        <button onClick={() => setHistoryOpen(true)} className="hud-pill hud-score" aria-label={t('history')} title={t('history')}>
-          ⭐ {score}
-        </button>
-        {completedClues.length > 0 && (
-          <button
-            onClick={() => setHistoryOpen(true)}
-            className="hud-pill hud-history"
-            aria-label={t('history')}
-            title={t('history')}
-          >
-            📜 {completedClues.length}
-          </button>
-        )}
-        {mystery && (
-          <button
-            onClick={() => setCaseOpen(true)}
-            className="hud-pill hud-case"
-            aria-label={t('caseFile')}
-            title={t('caseFile')}
-          >
-            🔍 {t('caseFile')}
-          </button>
-        )}
-        <button
-          onClick={() => setShowTutorial(true)}
-          className="hud-pill hud-help"
-          aria-label={t('helpLabel')}
-          title={t('helpLabel')}
-        >
-          ?
-        </button>
-      </div>
+      <ClueHud
+        icon={clue.icon}
+        order={clue.order}
+        totalClues={clue.totalClues}
+        credits={credits}
+        score={score}
+        historyCount={completed.length}
+        hasCase={!!mystery}
+        onBack={() => setLeaveOpen(true)}
+        onIntro={() => setIntroOpen(true)}
+        onShop={() => setShopOpen(true)}
+        onHistory={() => setHistoryOpen(true)}
+        onCase={() => setCaseOpen(true)}
+        onHelp={openTutorial}
+      />
 
       {isOffline && (
         <div className="game-offline-banner" role="status">
@@ -417,64 +241,36 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
         </div>
       )}
 
-      {historyOpen && (
-        <ClueHistory completedClues={completedClues} onClose={() => setHistoryOpen(false)} />
-      )}
-
+      {historyOpen && <ClueHistory completedClues={completed} onClose={() => setHistoryOpen(false)} />}
       {caseOpen && mystery && (
-        <CaseFile
-          mystery={mystery}
-          knownClues={[...completedClues, ...(arrived ? [rawClue] : [])]}
-          onClose={() => setCaseOpen(false)}
-        />
+        <CaseFile mystery={mystery} knownClues={knownEvidence} onClose={() => setCaseOpen(false)} />
       )}
 
-      {/* Map */}
       <div className="game-map">
         <MapView
-          clue={clue}
-          userLat={userPos?.lat ?? null}
-          userLng={userPos?.lng ?? null}
-          showTarget={showTarget}
+          zone={clue.zone}
+          showZone={clue.navigation !== 'compass'}
+          target={clue.target}
+          showPin={clue.showPin}
+          userLat={fix?.lat ?? null}
+          userLng={fix?.lng ?? null}
         />
-
-        {/* Floating compass — visible when bottom sheet is minimized */}
-        {!arrived && sheetState === 'minimized' && (
-          <button
-            className="floating-compass"
-            onClick={() => setSheetState('default')}
-            aria-label={t('expand')}
-          >
-            <ProximityRing distanceM={distanceM} bearing={bearing} arrived={false} accuracy={accuracy} heading={deviceHeading} />
+        {active && sheetState === 'minimized' && (
+          <button type="button" className="floating-compass" onClick={() => setSheetState('default')} aria-label={t('expand')}>
+            <ProximityRing
+              mode={readout.mode} distanceM={readout.distanceM} bearing={readout.bearing}
+              warmth={readout.warmth} accuracy={fix?.accuracy ?? null} heading={compass.heading} compact
+            />
           </button>
-        )}
-
-        {arrived && arrivalData && (
-          <ArrivalBanner
-            locationName={clue.locationName}
-            huntCity={huntCity}
-            pointsEarned={arrivalData.pointsEarned ?? 0}
-            timeBonus={arrivalData.timeBonus ?? 0}
-            streakBonus={arrivalData.streakBonus ?? 0}
-            perfectBonus={arrivalData.perfectBonus ?? 0}
-            hintPenalty={arrivalData.hintPenalty ?? 0}
-            puzzleBonus={puzzleBonus}
-            funFact={clue.funFact}
-            trivia={clue.trivia ?? null}
-            evidence={evidenceText ?? null}
-            huntComplete={arrivalData.huntComplete ?? false}
-            onNext={() => onComplete({ nextClue: arrivalData.nextClue ?? null, huntComplete: arrivalData.huntComplete ?? false })}
-            onTriviaCorrect={() => setScore(s => s + 25)}
-          />
         )}
       </div>
 
-      {/* Bottom sheet */}
       <div className={`bottom-sheet ${sheetState}`}>
         <button
+          type="button"
           className="sheet-handle-btn"
           onClick={cycleSheet}
-          onTouchStart={onHandleTouchStart}
+          onTouchStart={(e) => { touchStartY.current = e.touches[0].clientY }}
           onTouchEnd={onHandleTouchEnd}
           aria-label={sheetState === 'expanded' ? t('collapse') : t('expand')}
         >
@@ -486,101 +282,97 @@ export function ClueScreen({ clue: rawClue, huntCity, sessionId, initialCredits,
           </span>
         </button>
 
-        {/* Dot trail */}
-        <div className="dot-trail">
-          {dots.map((state, i) => (
-            <div key={i} className={`dot ${state}`} />
-          ))}
-          <span className="dot-trail-label">{clue.order - 1}/{clue.totalClues}</span>
+        <div className="dot-trail" aria-label={`${t('stop')} ${clue.order} ${t('of')} ${clue.totalClues}`}>
+          {dots.map((state, i) => <div key={i} className={`dot ${state}`} aria-hidden />)}
+          <span className="dot-trail-label" aria-hidden>{clue.order - 1}/{clue.totalClues}</span>
         </div>
 
-        {/* Admin-only: skip to location (dev/test affordance — hidden from normal users) */}
-        {!arrived && isAdmin && (
-          <button onClick={fakeArrive} className="btn-ghost" style={{ justifyContent: 'center' }}>
+        {active && isAdmin && (
+          <button type="button" onClick={loc.debugArrive} className="btn-ghost game-admin-skip">
             ⚡ {t('skipTest')}
           </button>
         )}
 
-        {/* Ring + GPS */}
-        <div className="ring-stats">
-          <ProximityRing distanceM={distanceM} bearing={bearing} arrived={arrived} accuracy={accuracy} heading={deviceHeading} />
-          {gpsError && <p style={{ fontSize: 12, color: 'var(--red)', textAlign: 'center' }}>{gpsError}</p>}
-        </div>
+        <ClueNavigator
+          readout={readout}
+          fix={fix}
+          gpsError={gpsError}
+          onRetryGps={retryGps}
+          heading={compass.heading}
+          compassNeedsPermission={compass.needsPermission}
+          onEnableCompass={async () => {
+            const ok = await compass.requestPermission()
+            if (!ok) toast.error(t('compassDenied'))
+          }}
+          poorAccuracy={checkIn.poor}
+          canCheckIn={checkIn.available && active}
+          onCheckIn={() => setCheckInOpen(true)}
+        />
 
-        {/* Clue card: if the clue has a puzzle, the puzzle IS the clue.
-            The prose riddle becomes flavor text revealed once solved. */}
-        {clue.puzzle && !arrived ? (
+        {clue.puzzle ? (
           <PuzzleCard
-            puzzle={clue.puzzle}
+            huntId={huntId}
             sessionId={sessionId}
-            clueId={clue.id}
-            theme={clue.theme}
-            storyOnSolve={clue.riddle}
-            onSolved={(bonus) => {
-              setPuzzleBonus(bonus)
-              setScore(s => s + bonus)
-            }}
+            clue={clue}
+            solvedOffline={solvedOffline === clue.id}
+            onSolved={onPuzzleSolved}
             credits={credits}
-            onUnlockHint={() => unlockHint(clue.id, 'puzzle')}
-            onOpenShop={() => setShopOpen(true)}
+            unlockingHint={unlocking === 'puzzle'}
+            onUnlockHint={() => { void doUnlock('puzzle') }}
           />
         ) : (
           <div className="clue-card">
             <div className="clue-card-header">
-              <div className="clue-icon">{clue.icon ?? '📍'}</div>
-              <div style={{ textAlign: 'right' }}>
+              <div className="clue-icon" aria-hidden>{clue.icon ?? '📍'}</div>
+              <div className="clue-card-titles">
                 <div className="clue-label">{t('yourClue')}</div>
-                {clue.theme && <div className="clue-theme">{clue.theme}</div>}
+                {theme && <div className="clue-theme">{theme}</div>}
               </div>
             </div>
-            <p className="clue-text">{clue.riddle}</p>
-            <div className="clue-actions">
-              <button
-                className={`btn-ghost ${reading ? 'active' : ''}`}
-                onClick={toggleReadAloud}
-                aria-label={t('readAloud')}
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                  {reading ? <path d="M15.5 8.5a5 5 0 0 1 0 7" /> : <><path d="M15.5 8.5a5 5 0 0 1 0 7" /><path d="M19 5a9 9 0 0 1 0 14" /></>}
-                </svg>
-                {reading ? '…' : t('readAloud')}
-              </button>
-            </div>
+            <p className="clue-text">{riddle}</p>
+            {riddle && (
+              <div className="clue-actions">
+                <button type="button" className={`btn-ghost ${reading ? 'active' : ''}`} onClick={toggleReadAloud} aria-pressed={reading}>
+                  🔊 {reading ? t('stopReading') : t('readAloud')}
+                </button>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Hints */}
-        <div>
-          <div className="clue-label" style={{ marginBottom: 8 }}>{t('hints')}</div>
-          {hintRows.map(({ tier, label }) => {
-            const unlocked = unlockedTiers.has(tier as 1 | 2 | 3)
-            const isOpen = openHint === tier
-
-            return (
-              <div key={tier} className={`hint-row ${unlocked ? 'unlocked' : ''}`}>
-                <div className="hint-header" onClick={() => doUnlock(tier as 1 | 2 | 3)}>
-                  <span className="hint-label">{label}</span>
-                  <span className="hint-status" style={{ color: unlocked ? 'var(--green)' : HINT_COSTS[tier] === 0 ? 'var(--gold)' : 'var(--primary-2)' }}>
-                    {unlocked ? t('unlocked') : HINT_COSTS[tier] > 0 ? `${HINT_COSTS[tier]} ${t('credits')}` : t('free')}
-                  </span>
-                </div>
-                {unlocked && isOpen && (
-                  <div className="hint-body">{hintContent(tier as 1 | 2 | 3)}</div>
-                )}
-              </div>
-            )
-          })}
-        </div>
+        <HintList clue={clue} credits={credits} unlocking={unlocking} onUnlock={(tier) => { void doUnlock(tier) }} />
       </div>
 
       {shopOpen && (
         <CreditShop
           credits={credits}
-          onBuy={(pkgId) => startCheckout(pkgId)}
+          onBuy={async (pkgId) => {
+            const r = await startCheckout(pkgId)
+            if (!r.ok) showError(r.code ?? 'checkout_failed')
+            return r.ok
+          }}
           onClose={() => setShopOpen(false)}
         />
       )}
+
+      <CheckInDialog
+        open={checkInOpen}
+        onClose={() => setCheckInOpen(false)}
+        sessionId={sessionId}
+        clueId={clue.id}
+        fix={fix}
+        onArrived={(r) => { setCheckInOpen(false); loc.markDone(); onArrived(r) }}
+      />
+
+      <ConfirmDialog
+        open={leaveOpen}
+        title={t('leaveHuntTitle')}
+        body={t('leaveHuntBody')}
+        confirmLabel={t('leaveHuntConfirmBtn')}
+        cancelLabel={t('keepPlaying')}
+        onConfirm={leave}
+        onCancel={() => setLeaveOpen(false)}
+      />
     </div>
   )
 }

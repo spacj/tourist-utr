@@ -1,13 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/firebase'
-import { doc, getDoc } from 'firebase/firestore'
+import { NextResponse } from 'next/server'
+import { handle, requireUser, id } from '@/lib/apiAuth'
+import { loadOwnedSession } from '@/lib/sessionServer'
 
-export async function GET(req: NextRequest) {
-  const sessionId = req.nextUrl.searchParams.get('session')
-  if (!sessionId) return NextResponse.json({ error: 'Missing session' }, { status: 400 })
+export const dynamic = 'force-dynamic'
 
-  const snap = await getDoc(doc(db, 'sessions', sessionId))
-  if (!snap.exists()) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-
-  return NextResponse.json({ credits: snap.data().credits })
-}
+/**
+ * GET /api/session-credits?session=<sessionId> — Authorization: Bearer <ID token>.
+ * → { credits }  (own sessions only)
+ */
+export const GET = handle(async (req) => {
+  const user = await requireUser(req)
+  const sessionId = id(req.nextUrl.searchParams.get('session'), 'session')
+  const { data } = await loadOwnedSession(sessionId, user)
+  return NextResponse.json({ credits: typeof data.credits === 'number' ? data.credits : 0 })
+})

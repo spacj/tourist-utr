@@ -1,92 +1,223 @@
 'use client'
-import { useEffect, useState } from 'react'
-import { Clue, MysterySpec } from '@/types'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import {
+  type ActiveClueView, type ArrivalResponse, type ArrivedStopView, type CompletedClueView,
+  type MysterySpec, emptyBreakdown, breakdownTotal,
+} from '@/types'
 import { ClueScreen } from '@/components/ClueScreen'
+import { ArrivalBanner } from '@/components/ArrivalBanner'
 import { RoomScoreboard } from '@/components/RoomScoreboard'
+import { useToast } from '@/components/Toast'
+import { markPwaEngaged } from '@/components/PwaInstallBanner'
 import { useServiceWorker } from '@/hooks/useServiceWorker'
-import { saveHuntToIndexedDB } from '@/lib/indexedDB'
+import { useI18n } from '@/hooks/useI18n'
+import { apiGet } from '@/lib/apiFetch'
+import { onDropped, onReplay } from '@/lib/offlineQueue'
+import { errorKey } from '@/lib/gameClient'
+import type { GpsFix } from '@/hooks/useGPS'
 
 interface Props {
-  initialClue: Clue
+  initialClue: ActiveClueView | null
+  upcoming: ActiveClueView[]
+  completed: CompletedClueView[]
+  pendingStop: ArrivedStopView | null
   huntCity: string
+  cityId: string | null
   sessionId: string
   roomId: string | null
-  huntId: string | null
+  huntId: string
   initialCredits: number
   initialScore: number
-  creditsJustAdded: boolean
-  allClues: Array<Record<string, unknown>>
-  mystery?: MysterySpec | null
+  /** ?credits= flag after a PayPal return: added | pending | refunded | error */
+  creditsFlag: string | null
+  mystery: MysterySpec | null
 }
 
-export function HuntClient({ initialClue, huntCity, sessionId, roomId, huntId, initialCredits, initialScore, creditsJustAdded, allClues, mystery }: Props) {
-  const [clue, setClue] = useState(initialClue)
-  const [score, setScore] = useState(initialScore)
-  const [credits, setCredits] = useState(initialCredits)
-  const [transitioning, setTransitioning] = useState(false)
+interface ArrivalState {
+  stop: ArrivedStopView
+  nextClue: ActiveClueView | null
+  huntComplete: boolean
+}
+
+export function HuntClient({
+  initialClue, upcoming: initialUpcoming, completed: initialCompleted, pendingStop,
+  huntCity, cityId, sessionId, roomId, huntId, initialCredits, initialScore, creditsFlag, mystery,
+}: Props) {
+  const { t } = useI18n()
+  const toast = useToast()
+  const router = useRouter()
   const { cacheHunt } = useServiceWorker()
 
-  useEffect(() => {
-    if (creditsJustAdded) {
-      fetch(`/api/session-credits?session=${sessionId}`)
-        .then((r) => r.json())
-        .then((d) => { if (d.credits) setCredits(d.credits) })
-    }
-  }, [creditsJustAdded, sessionId])
+  const [clue, setClue] = useState<ActiveClueView | null>(initialClue)
+  const [upcoming, setUpcoming] = useState(initialUpcoming)
+  const [completed, setCompleted] = useState(initialCompleted)
+  const [score, setScore] = useState(initialScore)
+  const [credits, setCredits] = useState(initialCredits)
+  const [arrival, setArrival] = useState<ArrivalState | null>(
+    pendingStop ? { stop: pendingStop, nextClue: initialClue, huntComplete: !initialClue } : null,
+  )
+  const [transitioning, setTransitioning] = useState(false)
+  const clueRef = useRef(clue)
+  clueRef.current = clue
 
+  const finish = useCallback(() => {
+    router.push(`/hunt/complete?session=${sessionId}`)
+  }, [router, sessionId])
+
+  // ── PayPal return (?credits=…) → toast + refresh the balance ──
   useEffect(() => {
-    if (!huntId || !allClues.length) return
-    let cancelled = false
-    saveHuntToIndexedDB(huntId, { huntId }, allClues).catch(() => {})
+    if (!creditsFlag) return
+    const key = creditsFlag === 'added' ? 'creditsAdded'
+      : creditsFlag === 'pending' ? 'creditsPending'
+      : creditsFlag === 'refunded' ? 'creditsRefunded' : 'creditsError'
+    if (creditsFlag === 'added') toast.success(t(key))
+    else if (creditsFlag === 'pending') toast.info(t(key))
+    else toast.error(t(key))
+    apiGet<{ credits: number }>(`/api/session-credits?session=${encodeURIComponent(sessionId)}`)
+      .then(d => { if (typeof d.credits === 'number') setCredits(d.credits) })
+      .catch(() => {})
+    // Drop the flag so a reload doesn't toast again.
     try {
-      cacheHunt(huntId, { huntId }, allClues)
+      const url = new URL(window.location.href)
+      url.searchParams.delete('credits')
+      window.history.replaceState(null, '', url.toString())
     } catch {}
-    return () => { cancelled = true }
-  }, [huntId, allClues, cacheHunt])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [creditsFlag, sessionId])
 
-  const handleComplete = ({
-    nextClue,
-    huntComplete,
-  }: {
-    nextClue: Clue | null
-    huntComplete: boolean
-  }) => {
-    if (huntComplete || !nextClue) {
-      window.location.href = `/hunt/complete?session=${sessionId}`
+  // ── Offline queue: surface replays that the server rejected ──
+  useEffect(() => {
+    const offDrop = onDropped(({ item, code }) => {
+      if ((item.body as { sessionId?: string } | null)?.sessionId !== sessionId) return
+      toast.error(`${t('syncDropped')} ${t(errorKey(code))}`)
+    })
+    const offReplay = onReplay((item, response) => {
+      if ((item.body as { sessionId?: string } | null)?.sessionId !== sessionId) return
+      const r = response as { totalScore?: number } | null
+      if (r && typeof r.totalScore === 'number') setScore(r.totalScore)
+    })
+    return () => { offDrop(); offReplay() }
+  }, [sessionId, toast, t])
+
+  // ── Cache what the player has already earned for the offline page (no secrets) ──
+  useEffect(() => {
+    try {
+      cacheHunt(huntId, { huntId, city: huntCity }, completed.map(c => ({
+        id: c.id, order: c.order, locationName: c.locationName.en, riddle: c.riddle?.en ?? '',
+      })))
+    } catch {}
+  }, [huntId, huntCity, completed, cacheHunt])
+
+  // ── Arrival ──
+  const onArrived = useCallback((r: ArrivalResponse) => {
+    setScore(r.totalScore)
+    setArrival({ stop: r.stop, nextClue: r.nextClue, huntComplete: r.huntComplete })
+  }, [])
+
+  const onOfflineArrival = useCallback((_fix: GpsFix) => {
+    const c = clueRef.current
+    if (!c) return
+    const next = upcoming.find(u => u.order > c.order) ?? null
+    setArrival({
+      stop: {
+        id: c.id, order: c.order, totalClues: c.totalClues, icon: c.icon,
+        locationName: { en: '' }, lat: c.target?.lat ?? 0, lng: c.target?.lng ?? 0,
+        funFact: null, evidence: null, onSite: null, trivia: null, triviaResult: null,
+        breakdown: emptyBreakdown(), offline: true,
+      },
+      nextClue: next,
+      huntComplete: !next,
+    })
+  }, [upcoming])
+
+  const onNext = (finalStop: ArrivedStopView) => {
+    const a = arrival
+    if (!a) return
+    try { markPwaEngaged() } catch {}
+    const prev = clueRef.current
+    const done: CompletedClueView = {
+      id: finalStop.id,
+      order: finalStop.order,
+      icon: finalStop.icon,
+      theme: prev?.id === finalStop.id ? prev.theme : null,
+      riddle: prev?.id === finalStop.id ? prev.riddle : null,
+      locationName: finalStop.locationName,
+      lat: finalStop.lat,
+      lng: finalStop.lng,
+      funFact: finalStop.funFact,
+      trivia: finalStop.trivia && finalStop.triviaResult ? {
+        ...finalStop.trivia,
+        correctIndex: finalStop.triviaResult.correctIndex,
+        explain: finalStop.triviaResult.explain,
+      } : null,
+      evidence: finalStop.evidence,
+      breakdown: finalStop.breakdown,
+      points: breakdownTotal(finalStop.breakdown),
+    }
+    setCompleted(list => [...list.filter(c => c.id !== done.id), done])
+
+    if (a.huntComplete || !a.nextClue) {
+      if (finalStop.offline) toast.info(t('finishWhenOnline'))
+      finish()
       return
     }
+    const next = a.nextClue
     setTransitioning(true)
     setTimeout(() => {
-      setScore((s) => s + 100)
-      setClue(nextClue)
+      setClue(next)
+      setUpcoming(list => list.filter(u => u.order > next.order))
+      setArrival(null)
       setTransitioning(false)
-    }, 600)
+    }, 450)
   }
 
-  // Clues with order < current are already completed — derived from allClues
-  // so the history viewer survives page reloads without needing a server round-trip.
-  const completedClues = (allClues as unknown as Clue[]).filter((c) => c.order < clue.order)
+  const evidenceExtra = arrival && !arrival.stop.offline
+    ? [{ id: arrival.stop.id, evidence: arrival.stop.evidence }]
+    : []
 
   return (
     <>
-      <div className={`game-transition ${transitioning ? 'fade-out' : 'fade-in'}`}>
-        <ClueScreen
-          clue={clue}
-          huntCity={huntCity}
+      {clue ? (
+        <div className={`game-transition ${transitioning ? 'fade-out' : 'fade-in'}`}>
+          <ClueScreen
+            clue={clue}
+            huntId={huntId}
+            sessionId={sessionId}
+            cityId={cityId}
+            credits={credits}
+            score={score}
+            completed={completed}
+            mystery={mystery}
+            extraEvidence={evidenceExtra}
+            active={!arrival && !transitioning}
+            onArrived={onArrived}
+            onOfflineArrival={onOfflineArrival}
+            onClueUpdate={(v) => setClue(cur => (cur && cur.id === v.id ? v : cur))}
+            onScore={setScore}
+          />
+        </div>
+      ) : (
+        <div className="game-layout game-layout-empty" />
+      )}
+
+      {arrival && !transitioning && (
+        <ArrivalBanner
+          key={arrival.stop.id}
+          stop={arrival.stop}
           sessionId={sessionId}
-          initialCredits={credits}
-          totalScore={score}
-          onComplete={handleComplete}
-          allClues={allClues as unknown as Clue[]}
-          completedClues={completedClues}
-          mystery={mystery ?? null}
+          huntCity={huntCity}
+          huntComplete={arrival.huntComplete}
+          onNext={onNext}
+          onScore={setScore}
         />
-      </div>
-      {roomId && huntId && <RoomScoreboard roomId={roomId} totalClues={clue.totalClues} huntId={huntId} />}
+      )}
+
+      {roomId && clue && <RoomScoreboard roomId={roomId} totalClues={clue.totalClues} huntId={huntId} />}
       {transitioning && (
-        <div className="transition-overlay">
-          <div className="spinner" />
-          <p style={{ marginTop: 12, fontSize: 14, color: '#8b8aaa' }}>Next clue...</p>
+        <div className="transition-overlay" role="status">
+          <div className="spinner" aria-hidden />
+          <p className="game-transition-text">{t('nextClueLoading')}</p>
         </div>
       )}
     </>

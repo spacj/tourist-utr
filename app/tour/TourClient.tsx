@@ -4,11 +4,17 @@ import { Clue, Hunt, localizeClue, localizeHunt, TourCategory } from '@/types'
 import { useI18n } from '@/hooks/useI18n'
 import { haversineM } from '@/lib/geo'
 import { TourMapView } from '@/components/TourMapView'
+import { useGPS } from '@/hooks/useGPS'
+import { useToast } from '@/components/Toast'
+import { apiPost, ApiError } from '@/lib/apiFetch'
+import { enqueue } from '@/lib/offlineQueue'
+import { errorKey, fmt, isNetworkFailure } from '@/lib/gameClient'
 
 interface Props {
   hunt: Hunt
   clues: Clue[]
   sessionId: string
+  cityId: string | null
   initiallyArrivedIds: string[]
 }
 
@@ -23,8 +29,10 @@ const TOUR_CATEGORY_META: Record<TourCategory, { icon: string; color: string }> 
 
 const NEARBY_M = 60
 
-export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, initiallyArrivedIds }: Props) {
+/** Walking tours: self-guided stops, no puzzles and no points. */
+export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, cityId, initiallyArrivedIds }: Props) {
   const { t, lang } = useI18n()
+  const toast = useToast()
   const hunt = localizeHunt(rawHunt, lang)
   const clues = useMemo(
     () => rawClues.map(c => localizeClue(c, lang)).sort((a, b) => a.order - b.order),
@@ -32,24 +40,14 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, initiall
   )
 
   const [arrived, setArrived] = useState<Set<string>>(new Set(initiallyArrivedIds))
-  const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null)
+  const { fix, error: gpsError, retry: retryGps } = useGPS(true)
+  const userPos = fix ? { lat: fix.lat, lng: fix.lng } : null
   const [openClueId, setOpenClueId] = useState<string | null>(clues[0]?.id ?? null)
   const [marking, setMarking] = useState<string | null>(null)
   // 'card' = collapsed sheet showing just the selected stop; 'list' = full
   // expandable list of all stops with details
   const [sheetMode, setSheetMode] = useState<'card' | 'list'>('card')
   const stopRefs = useRef<Map<string, HTMLLIElement>>(new Map())
-
-  // Live GPS — used to surface "you're nearby" hints, not for scoring.
-  useEffect(() => {
-    if (typeof navigator === 'undefined' || !navigator.geolocation) return
-    const id = navigator.geolocation.watchPosition(
-      (p) => setUserPos({ lat: p.coords.latitude, lng: p.coords.longitude }),
-      undefined,
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 12000 }
-    )
-    return () => navigator.geolocation.clearWatch(id)
-  }, [])
 
   // Wake lock so the screen doesn't sleep mid-tour.
   useEffect(() => {
@@ -77,14 +75,18 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, initiall
     const clue = clues.find(c => c.id === clueId)
     if (!clue) { setMarking(null); return }
     setArrived(prev => new Set(prev).add(clueId))
+    const body = { sessionId, clueId, lat: clue.lat, lng: clue.lng, at: Date.now() }
     try {
-      await fetch('/api/verify-location', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, clueId, lat: clue.lat, lng: clue.lng }),
-      })
-    } catch {
-      // Network failure: keep the optimistic state. The next reconnect/visit will reconcile.
+      await apiPost('/api/verify-location', body)
+    } catch (e) {
+      if (e instanceof ApiError) {
+        // Server refused — undo the optimistic tick.
+        setArrived(prev => { const n = new Set(prev); n.delete(clueId); return n })
+        toast.error(t(errorKey(e.code)))
+      } else if (isNetworkFailure(e)) {
+        // Offline: keep the tick and replay later.
+        await enqueue({ url: '/api/verify-location', body, reconcileKey: `verify:${sessionId}:${clueId}` })
+      }
     } finally {
       setMarking(null)
       // Auto-open the next un-visited stop
@@ -123,7 +125,7 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, initiall
     <div className={`tour-fullscreen sheet-${sheetMode}`}>
       {/* Floating top bar */}
       <header className="tour-topbar">
-        <a href="/" className="tour-topbar-back" aria-label={t('exitTour')}>
+        <a href={cityId ? `/city/${cityId}` : '/'} className="tour-topbar-back" aria-label={t('exitTour')}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
@@ -131,11 +133,11 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, initiall
         <div className="tour-topbar-info">
           <div className="tour-topbar-eyebrow">
             <span style={{ marginRight: 4 }}>{catMeta.icon}</span>
-            {t(`cat${cat.charAt(0).toUpperCase()}${cat.slice(1)}` as any) || t('tourLabel')}
+            {cat === 'general' ? t('tourLabel') : t(`cat${cat.charAt(0).toUpperCase()}${cat.slice(1)}`)}
           </div>
           <div className="tour-topbar-title">{hunt.title}</div>
         </div>
-        <div className="tour-topbar-progress" aria-label={`${completedCount} of ${clues.length} stops visited`}>
+        <div className="tour-topbar-progress" aria-label={fmt(t('tourProgressLabel'), { n: completedCount, total: clues.length })}>
           <div className="tour-topbar-progress-num">{completedCount}/{clues.length}</div>
           <div className="tour-topbar-progress-bar">
             <div
@@ -162,13 +164,22 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, initiall
         />
       </div>
 
+      {gpsError && (
+        <div className="tour-gps-error" role="alert">
+          <span>{t(gpsError === 'denied' ? 'gpsDeniedTitle' : gpsError === 'unsupported' ? 'gpsUnsupported' : gpsError === 'timeout' ? 'gpsTimeout' : 'gpsUnavailable')}</span>
+          {gpsError !== 'unsupported' && (
+            <button type="button" className="btn-secondary" onClick={retryGps}>{t('retry')}</button>
+          )}
+        </div>
+      )}
+
       {/* Bottom sheet — two modes: card (selected stop) and list (all stops) */}
       <aside className={`tour-sheet tour-sheet-${sheetMode}`} aria-label={t('tourStops')}>
         <button
           type="button"
           className="tour-sheet-handle"
           onClick={() => setSheetMode(sheetMode === 'list' ? 'card' : 'list')}
-          aria-label={sheetMode === 'list' ? 'Collapse list' : 'Expand list'}
+          aria-label={sheetMode === 'list' ? t('collapse') : t('expand')}
         >
           <span className="tour-sheet-grip" aria-hidden />
           <span className="tour-sheet-handle-label">
@@ -187,13 +198,13 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, initiall
                   {isVisited ? '✓' : selectedClue.order}
                 </span>
                 <div className="tour-card-headline">
-                  <div className="tour-card-name">{selectedClue.locationName || `Stop ${selectedClue.order}`}</div>
+                  <div className="tour-card-name">{selectedClue.locationName || fmt(t('stopN'), { n: selectedClue.order })}</div>
                   {selectedClue.theme && <div className="tour-card-theme">{selectedClue.theme}</div>}
                 </div>
                 {distance !== null && !isVisited && (
                   <div className={`tour-card-distance ${nearby ? 'is-near' : ''}`}>
                     {distance < 1000 ? `${distance} m` : `${(distance / 1000).toFixed(1)} km`}
-                    {nearby && <span className="tour-card-distance-tag">{t('nearby') || 'nearby'}</span>}
+                    {nearby && <span className="tour-card-distance-tag">{t('nearby')}</span>}
                   </div>
                 )}
               </div>
@@ -284,13 +295,13 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, initiall
                       {isVisited ? '✓' : clue.order}
                     </span>
                     <div className="tour-stop-headline">
-                      <div className="tour-stop-name">{clue.locationName || `Stop ${clue.order}`}</div>
+                      <div className="tour-stop-name">{clue.locationName || fmt(t('stopN'), { n: clue.order })}</div>
                       <div className="tour-stop-meta">
                         {clue.theme && <span className="tour-stop-theme">{clue.theme}</span>}
                         {distance !== null && !isVisited && (
                           <span className={`tour-stop-distance ${nearby ? 'is-near' : ''}`}>
                             {distance < 1000 ? `${distance} m` : `${(distance / 1000).toFixed(1)} km`}
-                            {nearby && ' · nearby'}
+                            {nearby && ` · ${t('nearby')}`}
                           </span>
                         )}
                       </div>

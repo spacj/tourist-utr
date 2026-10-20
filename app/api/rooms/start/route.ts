@@ -1,125 +1,123 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/firebase'
+import { adminDb, FieldValue } from '@/lib/firebaseAdmin'
+import { handle, requireUser, readJson, id, HttpError } from '@/lib/apiAuth'
 import { STARTING_CREDITS } from '@/types'
-import {
-  collection, doc, getDoc, getDocs, runTransaction, serverTimestamp,
-  query, orderBy, limit, writeBatch,
-} from 'firebase/firestore'
+import { roomRef, privateRef, huntIsFree } from '@/lib/roomsServer'
+import { userActiveRoomRef } from '@/lib/userActiveRoom'
+import type { RoomStop } from '@/lib/rooms'
 
-export async function POST(req: NextRequest) {
-  const { roomId, userId } = await req.json()
+export const dynamic = 'force-dynamic'
 
-  if (!userId) return NextResponse.json({ error: 'sign_in_required' }, { status: 401 })
-  if (!roomId) return NextResponse.json({ error: 'room_required' }, { status: 400 })
+/**
+ * POST /api/rooms/start  { roomId }
+ * Auth: registered user who is the room's host.
+ *
+ * Everything (state flip to 'racing', one session per player, private
+ * session mapping, active-room pointers, public `stops`/`clueCount`) commits
+ * in ONE transaction, so a failed start leaves the room in 'lobby' — nothing
+ * to roll back. The hunt's clues are loaded before the transaction, so a hunt
+ * with no clues is rejected without touching the room.
+ */
+export const POST = handle(async (req: NextRequest) => {
+  const user = await requireUser(req, { registered: true })
+  const body = await readJson(req)
+  const roomId = id(body.roomId, 'roomId')
+  const db = adminDb()
+  const rRef = roomRef(roomId)
 
-  const roomRef = doc(db, 'rooms', roomId)
+  // Pre-checks (re-validated inside the transaction).
+  const pre = await rRef.get()
+  if (!pre.exists) throw new HttpError(404, 'not_found')
+  const preRoom = pre.data()!
+  if (preRoom.hostUserId !== user.uid) throw new HttpError(403, 'not_host')
+  if (preRoom.state !== 'lobby') throw new HttpError(409, 'already_started')
 
-  // Step 1 — atomically claim the start.
-  // Only the host, only from 'lobby', and the state flip happens inside the transaction
-  // so any concurrent join still sees state='lobby' until commit, and the lobby check
-  // in the join API rejects newcomers from this point on.
-  type ClaimResult =
-    | { ok: true; huntId: string }
-    | { ok: false; reason: 'not_found' | 'not_host' | 'already_started' }
-
-  const claim: ClaimResult = await runTransaction(db, async (tx) => {
-    const snap = await tx.get(roomRef)
-    if (!snap.exists()) return { ok: false, reason: 'not_found' as const }
-    const r = snap.data()
-    if (r.hostUserId !== userId) return { ok: false, reason: 'not_host' as const }
-    if (r.state !== 'lobby') return { ok: false, reason: 'already_started' as const }
-    tx.update(roomRef, { state: 'racing', startedAt: serverTimestamp() })
-    return { ok: true, huntId: r.huntId }
-  })
-
-  if (!claim.ok) {
-    const status = claim.reason === 'not_host' ? 403
-      : claim.reason === 'not_found' ? 404
-      : 409
-    return NextResponse.json({ error: claim.reason }, { status })
-  }
-
-  // Step 2 — load the hunt's first clue + city.
-  const cluesSnap = await getDocs(
-    query(collection(db, 'hunts', claim.huntId, 'clues'), orderBy('order'), limit(1))
-  )
-  if (cluesSnap.empty) {
-    // Roll back the state flip so the host can retry.
-    await runTransaction(db, async (tx) => {
-      const s = await tx.get(roomRef)
-      if (s.exists() && s.data().state === 'racing' && !s.data().startedAt) {
-        tx.update(roomRef, { state: 'lobby', startedAt: null })
-      }
-    }).catch(() => {})
-    return NextResponse.json({ error: 'no_clues' }, { status: 404 })
-  }
+  const huntId = String(preRoom.huntId)
+  const [huntSnap, cluesSnap] = await Promise.all([
+    db.collection('hunts').doc(huntId).get(),
+    db.collection('hunts').doc(huntId).collection('clues').orderBy('order').get(),
+  ])
+  if (!huntSnap.exists) throw new HttpError(404, 'hunt_not_found')
+  if (cluesSnap.empty) throw new HttpError(404, 'no_clues')
+  const hunt = huntSnap.data()!
+  const tourType: 'hunt' | 'tour' = hunt.tourType === 'tour' ? 'tour' : 'hunt'
+  const freeHunt = huntIsFree(hunt)
+  const cityId = typeof hunt.cityId === 'string' ? hunt.cityId : null
   const firstClue = cluesSnap.docs[0]
 
-  const huntSnap = await getDoc(doc(db, 'hunts', claim.huntId))
-  const huntCity = huntSnap.exists() ? (huntSnap.data().city || null) : null
+  // Public, spoiler-free stop list for the live scoreboard: no coordinates,
+  // no answers, no location names.
+  const stops: RoomStop[] = cluesSnap.docs.map(d => {
+    const c = d.data()
+    return {
+      id: d.id,
+      order: typeof c.order === 'number' ? c.order : 0,
+      theme: typeof c.theme === 'string' ? c.theme : null,
+      icon: typeof c.icon === 'string' ? c.icon : '📍',
+    }
+  })
 
-  // Step 3 — enroll every player who joined before the state flip.
-  // Anyone joining after step 1 was rejected by the join API.
-  const playersSnap = await getDocs(collection(db, 'rooms', roomId, 'players'))
+  const hostSessionId = await db.runTransaction(async (tx) => {
+    // ── reads ──
+    const r = await tx.get(rRef)
+    if (!r.exists) throw new HttpError(404, 'not_found')
+    const room = r.data()!
+    if (room.hostUserId !== user.uid) throw new HttpError(403, 'not_host')
+    if (room.state !== 'lobby') throw new HttpError(409, 'already_started')
 
-  const batch = writeBatch(db)
-  let hostSessionId: string | null = null
+    const players = await tx.get(rRef.collection('players'))
 
-  // Read the room once to populate the userActiveRooms updates with code + huntTitle.
-  const roomSnap = await getDoc(roomRef)
-  const room = roomSnap.exists() ? roomSnap.data() : { code: '', huntTitle: 'Hunt' }
+    // ── writes ──
+    let hostSid: string | null = null
+    for (const p of players.docs) {
+      const uid = p.id
+      const sessionRef = db.collection('sessions').doc()
+      if (uid === user.uid) hostSid = sessionRef.id
 
-  for (const playerDoc of playersSnap.docs) {
-    const player = playerDoc.data()
-    const sessionRef = doc(collection(db, 'sessions'))
-    if (player.userId === userId) hostSessionId = sessionRef.id
+      tx.create(sessionRef, {
+        huntId,
+        huntCity: hunt.city || null,
+        userId: uid,
+        roomId,
+        tourType,
+        // Same flags as solo start-session (see docs/GAME_DESIGN.md).
+        isFree: freeHunt,
+        difficulty: ['easy', 'medium', 'hard'].includes(hunt.difficulty) ? hunt.difficulty : 'medium',
+        cityId,
+        score: 0,
+        credits: tourType === 'tour' ? 0 : STARTING_CREDITS,
+        startedAt: FieldValue.serverTimestamp(),
+        completedAt: null,
+      })
+      tx.create(sessionRef.collection('sessionClues').doc(firstClue.id), {
+        clueId: firstClue.id,
+        unlockedAt: FieldValue.serverTimestamp(),
+        arrivedAt: null,
+        pointsEarned: 0,
+      })
+      // Server-only uid → session mapping (player docs are publicly readable).
+      tx.set(privateRef(roomId, uid), { sessionId: sessionRef.id, userId: uid })
+      tx.update(p.ref, { currentClueId: firstClue.id })
+      tx.set(userActiveRoomRef(uid), {
+        roomId,
+        code: room.code,
+        huntId,
+        huntTitle: room.huntTitle ?? 'Hunt',
+        state: 'racing',
+        sessionId: sessionRef.id,
+        updatedAt: FieldValue.serverTimestamp(),
+      }, { merge: true })
+    }
 
-    batch.set(sessionRef, {
-      huntId: claim.huntId,
-      huntCity,
-      userId: player.userId,
-      roomId,
-      score: 0,
-      credits: STARTING_CREDITS,
-      startedAt: serverTimestamp(),
-      completedAt: null,
-    })
-    batch.set(doc(db, 'sessions', sessionRef.id, 'sessionClues', firstClue.id), {
-      clueId: firstClue.id,
-      unlockedAt: serverTimestamp(),
-      arrivedAt: null,
-      pointsEarned: 0,
-    })
-    batch.update(doc(db, 'rooms', roomId, 'players', player.userId), {
-      sessionId: sessionRef.id,
-    })
-
-    // Update each player's active-room pointer so resume banners flip to "racing".
-    batch.set(doc(db, 'userActiveRooms', player.userId), {
-      roomId,
-      code: room.code,
-      huntId: claim.huntId,
-      huntTitle: room.huntTitle ?? 'Hunt',
+    tx.update(rRef, {
       state: 'racing',
-      sessionId: sessionRef.id,
-      updatedAt: serverTimestamp(),
-    }, { merge: true })
-  }
-
-  try {
-    await batch.commit()
-  } catch {
-    // The batch is atomic, so on failure no sessions were created — but the
-    // room is already 'racing'. Roll it back to 'lobby' so the host can retry
-    // instead of being stuck in a race with no sessions.
-    await runTransaction(db, async (tx) => {
-      const s = await tx.get(roomRef)
-      if (s.exists() && s.data().state === 'racing') {
-        tx.update(roomRef, { state: 'lobby', startedAt: null })
-      }
-    }).catch(() => {})
-    return NextResponse.json({ error: 'start_failed' }, { status: 500 })
-  }
+      startedAt: FieldValue.serverTimestamp(),
+      stops,
+      clueCount: stops.length,
+      tourType,
+    })
+    return hostSid
+  })
 
   return NextResponse.json({ ok: true, hostSessionId })
-}
+})

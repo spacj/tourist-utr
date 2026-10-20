@@ -1,98 +1,110 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/firebase'
-import { collection, doc, getDoc, getDocs, query, orderBy } from 'firebase/firestore'
+import { adminDb } from '@/lib/firebaseAdmin'
+import { handle, requireUser, id, HttpError } from '@/lib/apiAuth'
+import { roomRef, millis } from '@/lib/roomsServer'
 
-export async function GET(req: NextRequest) {
-  const roomId = req.nextUrl.searchParams.get('roomId')
-  if (!roomId) return NextResponse.json({ error: 'room_required' }, { status: 400 })
+export const dynamic = 'force-dynamic'
 
-  const roomSnap = await getDoc(doc(db, 'rooms', roomId))
-  if (!roomSnap.exists()) return NextResponse.json({ error: 'not_found' }, { status: 404 })
+/**
+ * GET /api/rooms/results?roomId=…
+ * Auth: registered user who is a player in the room.
+ *
+ * Players are identified by `key` (join order) + `isYou`; other players'
+ * uids and sessionIds are never returned. The caller's own session id is
+ * returned as `mySessionId`. Stop names are revealed only once the caller
+ * has finished (or the race is over) so results can't spoil the route.
+ */
+export const GET = handle(async (req: NextRequest) => {
+  const user = await requireUser(req, { registered: true })
+  const roomId = id(req.nextUrl.searchParams.get('roomId'), 'roomId')
+  const db = adminDb()
+  const rRef = roomRef(roomId)
 
-  const room = roomSnap.data()
-  const huntId = room.huntId
+  const [roomSnap, playersSnap, privateSnap] = await Promise.all([
+    rRef.get(),
+    rRef.collection('players').orderBy('joinedAt').get(),
+    rRef.collection('private').get(),
+  ])
+  if (!roomSnap.exists) throw new HttpError(404, 'not_found')
+  const me = playersSnap.docs.find(d => d.id === user.uid)
+  if (!me) throw new HttpError(403, 'not_a_player')
 
-  // Load all clues for this hunt.
-  const cluesSnap = await getDocs(
-    query(collection(db, 'hunts', huntId, 'clues'), orderBy('order'))
-  )
-  const clues = cluesSnap.docs.map(d => ({
-    id: d.id,
-    order: d.data().order,
-    locationName: d.data().locationName,
-    icon: d.data().icon ?? '📍',
-    i18n: d.data().i18n ?? null,
+  const room = roomSnap.data()!
+  const huntId = String(room.huntId)
+  const reveal = room.state === 'finished' || me.data().finishedAt != null
+
+  // uid → sessionId (server-only mapping written at race start).
+  const sessionOf = new Map<string, string>()
+  privateSnap.docs.forEach(d => {
+    const sid = d.data().sessionId
+    if (typeof sid === 'string') sessionOf.set(d.id, sid)
+  })
+  // Legacy rooms (pre-mapping): one query by roomId instead of a full scan.
+  if (sessionOf.size === 0 && room.state !== 'lobby') {
+    const legacy = await db.collection('sessions').where('roomId', '==', roomId).get()
+    legacy.docs.forEach(d => {
+      const uid = d.data().userId
+      if (typeof uid === 'string' && !sessionOf.has(uid)) sessionOf.set(uid, d.id)
+    })
+  }
+
+  const cluesSnap = await db.collection('hunts').doc(huntId).collection('clues').orderBy('order').get()
+  const clues = cluesSnap.docs.map((d, i) => {
+    const c = d.data()
+    return {
+      id: d.id,
+      order: typeof c.order === 'number' ? c.order : i,
+      locationName: reveal ? (c.locationName ?? null) : null,
+      theme: typeof c.theme === 'string' ? c.theme : null,
+      icon: c.icon ?? '📍',
+      i18n: reveal && c.i18n ? pickLocationI18n(c.i18n) : null,
+    }
+  })
+  const clueMap = new Map(clues.map(c => [c.id, c]))
+
+  const startedAt = millis(room.startedAt)
+
+  const results = await Promise.all(playersSnap.docs.map(async (playerDoc, joinIndex) => {
+    const p = playerDoc.data()
+    const sessionId = sessionOf.get(playerDoc.id) ?? null
+
+    let clueTimes: {
+      clueId: string; locationName: string | null; icon: string; order: number
+      arrivedAt: number | null; pointsEarned: number
+    }[] = []
+    if (sessionId) {
+      const scSnap = await db.collection('sessions').doc(sessionId).collection('sessionClues').get()
+      clueTimes = scSnap.docs.map(scDoc => {
+        const sc = scDoc.data()
+        const info = clueMap.get(scDoc.id)
+        return {
+          clueId: scDoc.id,
+          locationName: info?.locationName ?? null,
+          icon: info?.icon ?? '📍',
+          order: info?.order ?? 0,
+          arrivedAt: millis(sc.arrivedAt),
+          pointsEarned: sc.pointsEarned ?? 0,
+        }
+      }).sort((a, b) => a.order - b.order)
+    }
+
+    const finishedAt = millis(p.finishedAt)
+    return {
+      key: `p${joinIndex}`,
+      isYou: playerDoc.id === user.uid,
+      displayName: p.displayName || 'Player',
+      photoURL: p.photoURL ?? null,
+      isHost: !!p.isHost,
+      abandoned: !!p.abandoned,
+      score: p.score ?? 0,
+      cluesDone: p.cluesDone ?? 0,
+      finishedAt,
+      totalTime: startedAt && finishedAt ? finishedAt - startedAt : null,
+      clueTimes,
+    }
   }))
 
-  // Load all players.
-  const playersSnap = await getDocs(
-    query(collection(db, 'rooms', roomId, 'players'), orderBy('joinedAt'))
-  )
-
-  const startedAt = room.startedAt?.toMillis?.() ?? null
-
-  const results = await Promise.all(
-    playersSnap.docs.map(async (playerDoc) => {
-      const p = playerDoc.data()
-      const userId = p.userId
-
-      // Find this player's session.
-      let sessionId = p.sessionId ?? null
-      if (!sessionId) {
-        // Fallback: search sessions for this user + room.
-        const sessionsSnap = await getDocs(
-          query(
-            collection(db, 'sessions'),
-            orderBy('startedAt'),
-          )
-        )
-        const match = sessionsSnap.docs.find(
-          d => d.data().userId === userId && d.data().roomId === roomId
-        )
-        if (match) sessionId = match.id
-      }
-
-      let clueTimes: { clueId: string; locationName: string; icon: string; order: number; arrivedAt: number | null; pointsEarned: number }[] = []
-
-      if (sessionId) {
-        const scSnap = await getDocs(
-          query(collection(db, 'sessions', sessionId, 'sessionClues'), orderBy('clueId'))
-        )
-        const clueMap = new Map(clues.map(c => [c.id, c]))
-        clueTimes = scSnap.docs.map(scDoc => {
-          const sc = scDoc.data()
-          const clueInfo = clueMap.get(scDoc.id)
-          return {
-            clueId: scDoc.id,
-            locationName: clueInfo?.locationName ?? scDoc.id,
-            icon: clueInfo?.icon ?? '📍',
-            order: clueInfo?.order ?? 0,
-            arrivedAt: sc.arrivedAt?.toMillis?.() ?? null,
-            pointsEarned: sc.pointsEarned ?? 0,
-          }
-        })
-        clueTimes.sort((a, b) => a.order - b.order)
-      }
-
-      const finishedAt = p.finishedAt?.toMillis?.() ?? null
-      const totalTime = startedAt && finishedAt ? finishedAt - startedAt : null
-
-      return {
-        userId,
-        displayName: p.displayName || 'Player',
-        photoURL: p.photoURL ?? null,
-        isHost: !!p.isHost,
-        sessionId,
-        score: p.score ?? 0,
-        cluesDone: p.cluesDone ?? 0,
-        finishedAt,
-        totalTime,
-        clueTimes,
-      }
-    })
-  )
-
-  // Sort: finished players first by time, then by score.
+  // Finished players first by time, then by progress, then score.
   results.sort((a, b) => {
     if (a.finishedAt && b.finishedAt) return a.finishedAt - b.finishedAt
     if (a.finishedAt) return -1
@@ -108,8 +120,18 @@ export async function GET(req: NextRequest) {
     huntTitle: room.huntTitle,
     state: room.state,
     startedAt,
-    finishedAt: room.finishedAt?.toMillis?.() ?? null,
+    finishedAt: millis(room.finishedAt),
+    mySessionId: sessionOf.get(user.uid) ?? null,
     clues,
     results,
   })
+})
+
+/** Only the localized location names — never riddles/answers from i18n. */
+function pickLocationI18n(i18n: Record<string, any>): Record<string, { locationName?: string }> {
+  const out: Record<string, { locationName?: string }> = {}
+  for (const [lang, v] of Object.entries(i18n ?? {})) {
+    if (v && typeof v.locationName === 'string') out[lang] = { locationName: v.locationName }
+  }
+  return out
 }

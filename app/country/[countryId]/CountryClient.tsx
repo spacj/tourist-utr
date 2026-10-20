@@ -1,8 +1,10 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
-import { City, Country, localizeCity, localizeCountry } from '@/types'
+import { apiGet } from '@/lib/apiFetch'
+import { fmt } from '@/lib/i18n/fmt'
+import { CITY_UNLOCK_PRICE_EUROS, City, Country, localizeCity, localizeCountry } from '@/types'
 import { ResumeRaceBanner } from '@/components/ResumeRaceBanner'
 
 function CityCard({ city, isUnlocked, t }: { city: City; isUnlocked: boolean; t: (key: string) => string }) {
@@ -10,17 +12,13 @@ function CityCard({ city, isUnlocked, t }: { city: City; isUnlocked: boolean; t:
   const [imgFailed, setImgFailed] = useState(false)
   const showImage = city.imageUrl && !imgFailed
   return (
-    <a
-      href={`/city/${city.id}`}
-      className={`city-card ${isUnlocked ? 'is-unlocked' : ''}`}
-      style={{ textDecoration: 'none' }}
-    >
+    <a href={`/city/${city.id}`} className={`city-card flow-card-link ${isUnlocked ? 'is-unlocked' : ''}`}>
       <div className="city-cover" aria-hidden>
         {showImage ? (
           <>
             <img
               src={city.imageUrl}
-              alt={city.name}
+              alt=""
               className={`city-cover-img ${imgLoaded ? 'loaded' : ''}`}
               onLoad={() => setImgLoaded(true)}
               onError={() => setImgFailed(true)}
@@ -40,7 +38,7 @@ function CityCard({ city, isUnlocked, t }: { city: City; isUnlocked: boolean; t:
             <div className="city-name">{city.name}</div>
             <div className="city-country">{city.country}</div>
           </div>
-          <div className="city-arrow">→</div>
+          <div className="city-arrow" aria-hidden>→</div>
         </div>
         <p className="city-desc">{city.description}</p>
         <div className="city-foot">
@@ -49,7 +47,7 @@ function CityCard({ city, isUnlocked, t }: { city: City; isUnlocked: boolean; t:
             {city.huntCount} {t('hunts')}
           </span>
           {!isUnlocked && (
-            <span className="city-foot-price">€{city.priceEuros}</span>
+            <span className="city-foot-price">€{city.priceEuros ?? CITY_UNLOCK_PRICE_EUROS}</span>
           )}
         </div>
       </div>
@@ -63,20 +61,22 @@ export function CountryClient({ country: rawCountry }: { country: Country }) {
 
   const country = localizeCountry(rawCountry, lang)
   const [cities, setCities] = useState<City[]>([])
+  const [citiesState, setCitiesState] = useState<'loading' | 'ready' | 'error'>('loading')
   const [unlocked, setUnlocked] = useState<Set<string>>(new Set())
 
-  useEffect(() => {
-    fetch(`/api/cities?countryId=${rawCountry.id}`)
-      .then(r => r.json())
-      .then(setCities)
-      .catch(() => {})
+  const loadCities = useCallback(() => {
+    setCitiesState('loading')
+    apiGet<City[]>(`/api/cities?countryId=${encodeURIComponent(rawCountry.id)}`)
+      .then(cs => { setCities(Array.isArray(cs) ? cs : []); setCitiesState('ready') })
+      .catch(() => setCitiesState('error'))
   }, [rawCountry.id])
+
+  useEffect(() => { loadCities() }, [loadCities])
 
   useEffect(() => {
     if (!user) { setUnlocked(new Set()); return }
-    fetch(`/api/city-unlocks?userId=${user.uid}`)
-      .then(r => r.json())
-      .then((ids: string[]) => setUnlocked(new Set(ids)))
+    apiGet<string[]>('/api/city-unlocks')
+      .then(ids => setUnlocked(new Set(Array.isArray(ids) ? ids : [])))
       .catch(() => {})
   }, [user])
 
@@ -84,8 +84,8 @@ export function CountryClient({ country: rawCountry }: { country: Country }) {
 
   return (
     <main className="page-center">
-      <div className="container" style={{ paddingBottom: 48 }}>
-        <a href="/" className="back-link" style={{ marginTop: 16 }}>{t('backToCountries')}</a>
+      <div className="container flow-pb-48">
+        <a href="/#countries" className="back-link flow-back-top">{t('backToCountries')}</a>
 
         {/* Country hero */}
         <section
@@ -112,7 +112,7 @@ export function CountryClient({ country: rawCountry }: { country: Country }) {
         <ResumeRaceBanner />
 
         {/* Multiplayer CTA */}
-        <a href="/multiplayer" className="mp-home-cta" style={{ margin: '20px 0' }}>
+        <a href="/multiplayer" className="mp-home-cta flow-mp-cta">
           <div className="mp-home-cta-icon" aria-hidden>👥</div>
           <div className="mp-home-cta-body">
             <div className="mp-home-cta-title">{t('playWithFriends')}</div>
@@ -123,10 +123,25 @@ export function CountryClient({ country: rawCountry }: { country: Country }) {
 
         {/* Cities */}
         <h2 className="section-label">
-          {t('citiesIn').replace('{country}', country.name)}
+          {fmt(t('citiesIn'), { country: country.name })}
         </h2>
 
-        {cities.length === 0 && (
+        {citiesState === 'loading' && (
+          <div className="skel-grid" aria-busy="true">
+            <span className="flow-sr-only" role="status">{t('loading')}</span>
+            <span className="skel skel-card" />
+            <span className="skel skel-card" />
+          </div>
+        )}
+
+        {citiesState === 'error' && (
+          <div className="empty-card" role="alert">
+            <p>{t('loadError')}</p>
+            <button type="button" className="btn-primary flow-retry" onClick={loadCities}>{t('retry')}</button>
+          </div>
+        )}
+
+        {citiesState === 'ready' && cities.length === 0 && (
           <div className="empty-card">
             <p>{rawCountry.comingSoon ? t('comingSoon') : t('noCitiesYet')}</p>
           </div>
@@ -136,7 +151,7 @@ export function CountryClient({ country: rawCountry }: { country: Country }) {
           {cities.map((rawCity) => {
             const city = localizeCity(rawCity, lang)
             const isUnlocked = unlocked.has(city.id)
-            return <CityCard key={city.id} city={city} isUnlocked={isUnlocked} t={(key: string) => t(key as any)} />
+            return <CityCard key={city.id} city={city} isUnlocked={isUnlocked} t={t} />
           })}
         </div>
       </div>

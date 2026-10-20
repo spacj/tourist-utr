@@ -1,11 +1,11 @@
 'use client'
-import { useEffect, useState } from 'react'
-import { useAuth } from '@/components/AuthProvider'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useI18n } from '@/hooks/useI18n'
+import { apiGet } from '@/lib/apiFetch'
 
 type ClueTime = {
   clueId: string
-  locationName: string
+  locationName: string | null
   icon: string
   order: number
   arrivedAt: number | null
@@ -13,16 +13,26 @@ type ClueTime = {
 }
 
 type PlayerResult = {
-  userId: string
+  key: string
+  isYou: boolean
   displayName: string
   photoURL: string | null
   isHost: boolean
-  sessionId?: string | null
+  abandoned: boolean
   score: number
   cluesDone: number
   finishedAt: number | null
   totalTime: number | null
   clueTimes: ClueTime[]
+}
+
+type RaceClue = {
+  id: string
+  order: number
+  locationName: string | null
+  theme: string | null
+  icon: string
+  i18n: Record<string, { locationName?: string }> | null
 }
 
 type RaceData = {
@@ -33,156 +43,161 @@ type RaceData = {
   state: string
   startedAt: number | null
   finishedAt: number | null
-  clues: { id: string; order: number; locationName: string; icon: string }[]
+  mySessionId: string | null
+  clues: RaceClue[]
   results: PlayerResult[]
 }
 
 function formatTime(ms: number): string {
   const totalSec = Math.floor(ms / 1000)
-  const m = Math.floor(totalSec / 60)
+  const h = Math.floor(totalSec / 3600)
+  const m = Math.floor((totalSec % 3600) / 60)
   const s = totalSec % 60
-  return `${m}:${s.toString().padStart(2, '0')}`
+  return h > 0
+    ? `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+    : `${m}:${s.toString().padStart(2, '0')}`
 }
 
-function localizeLocation(clueTime: ClueTime, lang: string): string {
-  return clueTime.locationName
+const MEDALS = ['🥇', '🥈', '🥉']
+
+function Avatar({ p, className }: { p: PlayerResult; className: string }) {
+  return (
+    <div className={className} aria-hidden>
+      {p.photoURL
+        ? <img src={p.photoURL} alt="" referrerPolicy="no-referrer" />
+        : <span>{p.displayName?.[0]?.toUpperCase() || '?'}</span>}
+    </div>
+  )
 }
 
 export function MultiplayerResults({ roomId }: { roomId: string }) {
-  const { user } = useAuth()
   const { t, lang } = useI18n()
   const [data, setData] = useState<RaceData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [expandedPlayer, setExpandedPlayer] = useState<string | null>(null)
+  const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [expanded, setExpanded] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetch(`/api/rooms/results?roomId=${roomId}`)
-      .then(r => r.json())
-      .then(setData)
-      .finally(() => setLoading(false))
+  const load = useCallback(() => {
+    setState('loading')
+    apiGet<RaceData>(`/api/rooms/results?roomId=${encodeURIComponent(roomId)}`)
+      .then(d => { setData(d); setState('ready') })
+      .catch(() => setState('error'))
   }, [roomId])
+  useEffect(() => { load() }, [load])
 
-  if (loading) {
+  const clueById = useMemo(() => new Map((data?.clues ?? []).map(c => [c.id, c])), [data])
+
+  /** Earliest arrival per stop across all players → the "1st to arrive" badge. */
+  const firstArrival = useMemo(() => {
+    const m = new Map<string, number>()
+    for (const p of data?.results ?? []) {
+      for (const ct of p.clueTimes) {
+        if (ct.arrivedAt && (!m.has(ct.clueId) || ct.arrivedAt < m.get(ct.clueId)!)) m.set(ct.clueId, ct.arrivedAt)
+      }
+    }
+    return m
+  }, [data])
+
+  const stopName = (clueId: string, fallback: string | null, idx: number): string => {
+    const c = clueById.get(clueId)
+    return (lang !== 'en' && c?.i18n?.[lang]?.locationName) || c?.locationName || fallback || c?.theme || `${t('stop')} ${idx + 1}`
+  }
+
+  if (state === 'loading') {
     return (
-      <div className="mp-results-loading">
+      <div className="mp-results-loading" aria-busy="true">
         <div className="spinner" />
-        <p>{t('mpDetailedResults')}</p>
+        <p role="status">{t('mpDetailedResults')}</p>
       </div>
     )
   }
 
-  if (!data) return null
+  if (state === 'error' || !data) {
+    return (
+      <div className="empty-card" role="alert">
+        <p>{t('loadError')}</p>
+        <button type="button" className="btn-primary flow-retry" onClick={load}>{t('retry')}</button>
+      </div>
+    )
+  }
 
-  const meRank = user ? data.results.findIndex(p => p.userId === user.uid) + 1 : 0
-  const leader = data.results.find(p => p.finishedAt)
+  const finishers = data.results.filter(p => p.finishedAt && !p.abandoned)
+  const leader = finishers[0]
+  const totalStops = data.clues.length
 
   return (
     <div className="mp-results">
-      {/* Overall standings */}
       <div className="mp-results-header">
         <h2 className="mp-results-title">{t('raceResults')}</h2>
-        <p className="mp-results-subtitle">
-          {data.huntTitle} · {data.results.length} {t('players')}
-        </p>
+        <p className="mp-results-subtitle">{data.huntTitle} · {data.results.length} {t('players')}</p>
       </div>
 
-      {/* Top 3 podium */}
-      {data.results.filter(p => p.finishedAt).length > 0 && (
+      {finishers.length > 0 && (
         <div className="mp-podium">
-          {data.results
-            .filter(p => p.finishedAt)
-            .slice(0, 3)
-            .map((p, i) => (
-              <div key={p.userId} className={`mp-podium-item mp-podium-${i + 1}`}>
-                <div className="mp-podium-medal">
-                  {i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}
-                </div>
-                <div className="mp-podium-avatar">
-                  {p.photoURL ? (
-                    <img src={p.photoURL} alt="" referrerPolicy="no-referrer" />
-                  ) : (
-                    <span>{p.displayName?.[0]?.toUpperCase() || '?'}</span>
-                  )}
-                </div>
-                <div className="mp-podium-name">
-                  {p.displayName}
-                  {user && p.userId === user.uid && <span className="mp-tag">{t('you')}</span>}
-                </div>
-                <div className="mp-podium-time">
-                  {p.totalTime ? formatTime(p.totalTime) : '—'}
-                </div>
-                <div className="mp-podium-score">{p.score} {t('points')}</div>
+          {finishers.slice(0, 3).map((p, i) => (
+            <div key={p.key} className={`mp-podium-item mp-podium-${i + 1}`}>
+              <div className="mp-podium-medal" aria-label={[t('mpMedalGold'), t('mpMedalSilver'), t('mpMedalBronze')][i]}>{MEDALS[i]}</div>
+              <Avatar p={p} className="mp-podium-avatar" />
+              <div className="mp-podium-name">
+                {p.displayName}
+                {p.isYou && <span className="mp-tag">{t('you')}</span>}
               </div>
-            ))}
+              <div className="mp-podium-time">{p.totalTime ? formatTime(p.totalTime) : '—'}</div>
+              <div className="mp-podium-score">{p.score} {t('points')}</div>
+            </div>
+          ))}
         </div>
       )}
 
-      {/* Full results table */}
       <div className="mp-results-table-wrap">
         <table className="mp-results-table">
           <thead>
             <tr>
-              <th className="mp-th-rank">#</th>
-              <th className="mp-th-name">{t('players')}</th>
-              <th className="mp-th-progress">{t('mpPlayerProgress')}</th>
-              <th className="mp-th-time">{t('mpRaceTime')}</th>
-              <th className="mp-th-score">{t('points')}</th>
+              <th className="mp-th-rank" scope="col">#</th>
+              <th className="mp-th-name" scope="col">{t('players')}</th>
+              <th className="mp-th-progress" scope="col">{t('mpPlayerProgress')}</th>
+              <th className="mp-th-time" scope="col">{t('mpRaceTime')}</th>
+              <th className="mp-th-score" scope="col">{t('points')}</th>
             </tr>
           </thead>
           <tbody>
             {data.results.map((p, i) => {
-              const isMe = !!user && p.userId === user.uid
               const rank = i + 1
-              const pct = data.clues.length ? Math.round((p.cluesDone / data.clues.length) * 100) : 0
-              const behindLeader = leader?.totalTime && p.totalTime ? p.totalTime - leader.totalTime : null
-
+              const medal = rank <= 3 && p.finishedAt && !p.abandoned
+              const pct = totalStops ? Math.round((p.cluesDone / totalStops) * 100) : 0
+              const behind = leader?.totalTime && p.totalTime && !p.abandoned ? p.totalTime - leader.totalTime : null
+              const last = p.cluesDone > 0 ? p.clueTimes.filter(c => c.arrivedAt).slice(-1)[0] : null
               return (
-                <tr key={p.userId} className={`mp-results-row ${isMe ? 'is-me' : ''} ${p.finishedAt ? 'is-done' : ''}`}>
+                <tr key={p.key} className={`mp-results-row ${p.isYou ? 'is-me' : ''} ${p.finishedAt ? 'is-done' : ''}`}>
                   <td className="mp-td-rank">
-                    <span className={`mp-rank-cell ${rank <= 3 && p.finishedAt ? `mp-medal-${rank}` : ''}`}>
-                      {rank <= 3 && p.finishedAt
-                        ? (rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉')
-                        : rank}
-                    </span>
+                    <span className={`mp-rank-cell ${medal ? `mp-medal-${rank}` : ''}`}>{medal ? MEDALS[rank - 1] : rank}</span>
                   </td>
                   <td className="mp-td-name">
-                    <div className="mp-td-avatar">
-                      {p.photoURL ? (
-                        <img src={p.photoURL} alt="" referrerPolicy="no-referrer" />
-                      ) : (
-                        <span>{p.displayName?.[0]?.toUpperCase() || '?'}</span>
-                      )}
-                    </div>
+                    <Avatar p={p} className="mp-td-avatar" />
                     <div>
                       <div className="mp-td-display-name">
                         {p.displayName}
-                        {isMe && <span className="mp-tag">{t('you')}</span>}
+                        {p.isYou && <span className="mp-tag">{t('you')}</span>}
                       </div>
-                      {!p.finishedAt && p.cluesDone > 0 && (
-                        <div className="mp-td-status">
-                          {t('mpCurrentClue')}: {p.clueTimes.length > 0 ? p.clueTimes[p.cluesDone - 1]?.locationName : '...'}
-                        </div>
+                      {p.abandoned && <div className="mp-td-status">{t('playerForfeited')}</div>}
+                      {!p.abandoned && !p.finishedAt && last && (
+                        <div className="mp-td-status">{t('mpCurrentClue')}: {stopName(last.clueId, last.locationName, p.cluesDone - 1)}</div>
                       )}
-                      {!p.finishedAt && p.cluesDone === 0 && (
+                      {!p.abandoned && !p.finishedAt && p.cluesDone === 0 && (
                         <div className="mp-td-status">{t('mpNotStarted')}</div>
                       )}
-                      {p.finishedAt && behindLeader && behindLeader > 0 && (
-                        <div className="mp-td-behind">+{formatTime(behindLeader)} {t('mpBehindLeader')}</div>
+                      {p.finishedAt && behind !== null && behind > 0 && (
+                        <div className="mp-td-behind">+{formatTime(behind)} {t('mpBehindLeader')}</div>
                       )}
                     </div>
                   </td>
                   <td className="mp-td-progress">
-                    <div className="mp-progress-bar">
+                    <div className="mp-progress-bar" aria-hidden>
                       <div className="mp-progress-fill" style={{ width: `${pct}%` }} />
                     </div>
-                    <span className="mp-progress-text">{p.cluesDone}/{data.clues.length}</span>
+                    <span className="mp-progress-text">{p.cluesDone}/{totalStops}</span>
                   </td>
-                  <td className="mp-td-time">
-                    {p.totalTime ? formatTime(p.totalTime) : '—'}
-                  </td>
-                  <td className="mp-td-score">
-                    <span className="mp-score-value">{p.score}</span>
-                  </td>
+                  <td className="mp-td-time">{p.totalTime && !p.abandoned ? formatTime(p.totalTime) : '—'}</td>
+                  <td className="mp-td-score"><span className="mp-score-value">{p.score}</span></td>
                 </tr>
               )
             })}
@@ -190,69 +205,59 @@ export function MultiplayerResults({ roomId }: { roomId: string }) {
         </table>
       </div>
 
-      {/* Per-player clue breakdown (expandable) */}
       <div className="mp-breakdown-section">
         <h3 className="mp-breakdown-title">{t('mpClueTimes')}</h3>
         <div className="mp-breakdown-grid">
           {data.results.map(p => {
-            const isMe = !!user && p.userId === user.uid
-            const isExpanded = expandedPlayer === p.userId
+            const isExpanded = expanded === p.key
+            const panelId = `mp-breakdown-${p.key}`
             return (
-              <div key={p.userId} className={`mp-breakdown-card ${isMe ? 'is-me' : ''}`}>
+              <div key={p.key} className={`mp-breakdown-card ${p.isYou ? 'is-me' : ''}`}>
                 <button
+                  type="button"
                   className="mp-breakdown-toggle"
-                  onClick={() => setExpandedPlayer(isExpanded ? null : p.userId)}
+                  onClick={() => setExpanded(isExpanded ? null : p.key)}
+                  aria-expanded={isExpanded}
+                  aria-controls={panelId}
                 >
-                  <div className="mp-breakdown-player">
-                    <div className="mp-breakdown-avatar">
-                      {p.photoURL ? (
-                        <img src={p.photoURL} alt="" referrerPolicy="no-referrer" />
-                      ) : (
-                        <span>{p.displayName?.[0]?.toUpperCase() || '?'}</span>
-                      )}
-                    </div>
+                  <span className="mp-breakdown-player">
+                    <Avatar p={p} className="mp-breakdown-avatar" />
                     <span className="mp-breakdown-name">{p.displayName}</span>
-                    {isMe && <span className="mp-tag">{t('you')}</span>}
-                  </div>
-                  <div className="mp-breakdown-summary">
-                    <span>{p.score} pts</span>
-                    <span className={`mp-chevron ${isExpanded ? 'open' : ''}`}>▾</span>
-                  </div>
+                    {p.isYou && <span className="mp-tag">{t('you')}</span>}
+                  </span>
+                  <span className="mp-breakdown-summary">
+                    <span>{p.score} {t('points')}</span>
+                    <span className={`mp-chevron ${isExpanded ? 'open' : ''}`} aria-hidden>▾</span>
+                  </span>
                 </button>
                 {isExpanded && (
-                  <div className="mp-breakdown-detail">
-                    {p.clueTimes.length === 0 && (
-                      <div className="mp-breakdown-empty">{t('mpNotStarted')}</div>
-                    )}
+                  <div className="mp-breakdown-detail" id={panelId}>
+                    {p.clueTimes.length === 0 && <div className="mp-breakdown-empty">{t('mpNotStarted')}</div>}
                     {p.clueTimes.map((ct, idx) => {
-                      const isFirst = idx === 0
-                      const prevTime = idx > 0 ? p.clueTimes[idx - 1].arrivedAt : (data.startedAt || 0)
-                      const delta = ct.arrivedAt && prevTime ? ct.arrivedAt - prevTime : null
+                      const prev = idx > 0 ? p.clueTimes[idx - 1].arrivedAt : data.startedAt
+                      const delta = ct.arrivedAt && prev ? ct.arrivedAt - prev : null
+                      const wasFirst = !!ct.arrivedAt && firstArrival.get(ct.clueId) === ct.arrivedAt && data.results.length > 1
                       return (
                         <div key={ct.clueId} className={`mp-breakdown-clue ${ct.arrivedAt ? 'done' : ''}`}>
-                          <span className="mp-breakdown-clue-icon">{ct.icon}</span>
+                          <span className="mp-breakdown-clue-icon" aria-hidden>{ct.icon}</span>
                           <span className="mp-breakdown-clue-name">
-                            {localizeLocation(ct, lang)}
-                            {ct.arrivedAt && isFirst && <span className="mp-first-badge">{t('mpFirstArrival')}</span>}
+                            {stopName(ct.clueId, ct.locationName, idx)}
+                            {wasFirst && <span className="mp-first-badge">{t('mpFirstArrival')}</span>}
                           </span>
                           <span className="mp-breakdown-clue-time">
                             {ct.arrivedAt && data.startedAt ? formatTime(ct.arrivedAt - data.startedAt) : '—'}
                           </span>
-                          {delta && (
-                            <span className="mp-breakdown-clue-delta">+{formatTime(delta)}</span>
-                          )}
-                          {ct.arrivedAt && (
-                            <span className="mp-breakdown-clue-points">+{ct.pointsEarned}</span>
-                          )}
+                          {delta ? <span className="mp-breakdown-clue-delta">+{formatTime(delta)}</span> : null}
+                          {ct.arrivedAt && <span className="mp-breakdown-clue-points">+{ct.pointsEarned}</span>}
                         </div>
                       )
                     })}
-                    {p.totalTime && (
+                    {p.totalTime && !p.abandoned ? (
                       <div className="mp-breakdown-total">
                         <span>{t('mpTotalTime')}</span>
                         <span>{formatTime(p.totalTime)}</span>
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 )}
               </div>
@@ -261,14 +266,13 @@ export function MultiplayerResults({ roomId }: { roomId: string }) {
         </div>
       </div>
 
-      {/* Actions */}
       <div className="mp-results-actions">
-        <a href={`/hunt/complete?session=${data.results.find(p => user && p.userId === user.uid)?.sessionId || ''}`} className="mp-cta-secondary" style={{ display: 'inline-block', textAlign: 'center' }}>
-          {t('seeFinal')}
-        </a>
-        <a href="/multiplayer" className="mp-cta-secondary mp-leave" style={{ textAlign: 'center', display: 'inline-block' }}>
-          {t('playAgain')}
-        </a>
+        {data.mySessionId && (
+          <a href={`/hunt/complete?session=${encodeURIComponent(data.mySessionId)}`} className="mp-cta-secondary">
+            {t('seeFinal')}
+          </a>
+        )}
+        <a href="/multiplayer" className="mp-cta-secondary mp-leave">{t('newRace')}</a>
       </div>
     </div>
   )

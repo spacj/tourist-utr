@@ -1,0 +1,18 @@
+import type { Dict } from './types'
+
+/** Cookie consent + legal pages. */
+export const legal: Dict = {
+  consentTitle:      { en: 'Cookies, briefly', nl: 'Cookies, kort', de: 'Cookies, kurz', fr: 'Les cookies, en bref', it: 'Cookie, in breve', es: 'Cookies, en breve' },
+  consentText:       { en: 'We need a few essentials to save your hunt progress. With your OK we also use Google Analytics to see which hunts people enjoy, and ads on our blog pages — never during a game.', nl: 'We hebben een paar essentiële cookies nodig om je voortgang te bewaren. Met jouw toestemming gebruiken we ook Google Analytics om te zien welke tochten in de smaak vallen, en advertenties op onze blogpagina’s — nooit tijdens een spel.', de: 'Ein paar notwendige Cookies speichern deinen Spielfortschritt. Mit deiner Zustimmung nutzen wir außerdem Google Analytics, um zu sehen, welche Touren gefallen, und Werbung auf unseren Blogseiten — nie während eines Spiels.', fr: 'Quelques cookies essentiels sauvegardent votre progression. Avec votre accord, nous utilisons aussi Google Analytics pour voir quelles chasses plaisent, et des publicités sur nos pages de blog — jamais pendant une partie.', it: 'Alcuni cookie essenziali salvano i tuoi progressi. Con il tuo consenso usiamo anche Google Analytics per capire quali cacce piacciono, e pubblicità sulle pagine del blog — mai durante il gioco.', es: 'Unas pocas cookies esenciales guardan tu progreso. Con tu permiso también usamos Google Analytics para ver qué búsquedas gustan, y anuncios en las páginas del blog — nunca durante una partida.' },
+  consentAccept:     { en: 'Accept all', nl: 'Alles accepteren', de: 'Alle akzeptieren', fr: 'Tout accepter', it: 'Accetta tutto', es: 'Aceptar todo' },
+  consentReject:     { en: 'Only essentials', nl: 'Alleen essentieel', de: 'Nur notwendige', fr: 'Essentiels seulement', it: 'Solo essenziali', es: 'Solo esenciales' },
+  consentCustomize:  { en: 'Choose', nl: 'Kiezen', de: 'Auswählen', fr: 'Choisir', it: 'Scegli', es: 'Elegir' },
+  consentSave:       { en: 'Save choices', nl: 'Keuze opslaan', de: 'Auswahl speichern', fr: 'Enregistrer', it: 'Salva scelte', es: 'Guardar' },
+  consentSettings:   { en: 'Cookie settings', nl: 'Cookie-instellingen', de: 'Cookie-Einstellungen', fr: 'Paramètres des cookies', it: 'Impostazioni cookie', es: 'Ajustes de cookies' },
+  consentEssential:  { en: 'Essential', nl: 'Essentieel', de: 'Notwendig', fr: 'Essentiels', it: 'Essenziali', es: 'Esenciales' },
+  consentEssentialDesc: { en: 'sign-in, language, hunt progress. Always on.', nl: 'inloggen, taal, voortgang. Altijd aan.', de: 'Anmeldung, Sprache, Spielfortschritt. Immer aktiv.', fr: 'connexion, langue, progression. Toujours actifs.', it: 'accesso, lingua, progressi. Sempre attivi.', es: 'inicio de sesión, idioma, progreso. Siempre activas.' },
+  consentAnalytics:  { en: 'Analytics', nl: 'Statistieken', de: 'Statistik', fr: 'Statistiques', it: 'Statistiche', es: 'Estadísticas' },
+  consentAnalyticsDesc: { en: 'anonymous visit statistics (Google Analytics).', nl: 'anonieme bezoekstatistieken (Google Analytics).', de: 'anonyme Besuchsstatistiken (Google Analytics).', fr: 'statistiques de visite anonymes (Google Analytics).', it: 'statistiche di visita anonime (Google Analytics).', es: 'estadísticas de visita anónimas (Google Analytics).' },
+  consentAds:        { en: 'Ads', nl: 'Advertenties', de: 'Werbung', fr: 'Publicités', it: 'Pubblicità', es: 'Anuncios' },
+  consentAdsDesc:    { en: 'Google AdSense on blog pages only.', nl: 'Google AdSense, alleen op blogpagina’s.', de: 'Google AdSense, nur auf Blogseiten.', fr: 'Google AdSense, uniquement sur le blog.', it: 'Google AdSense, solo sulle pagine del blog.', es: 'Google AdSense, solo en el blog.' },
+}

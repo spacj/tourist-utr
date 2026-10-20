@@ -1,26 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { handle, requireUser, HttpError } from '@/lib/apiAuth'
 import { clearUserActiveRoom, getUserActiveRoom } from '@/lib/userActiveRoom'
 
+export const dynamic = 'force-dynamic'
+
 /**
- * POST /api/rooms/dismiss
- *
- * Clears the user's active-room pointer. Used when the user has seen the finished
- * race results and wants the resume banner to stop showing.
- *
- * Only allowed when the room state is 'finished' to avoid accidentally orphaning
- * an in-progress race from the user's resume flow.
+ * POST /api/rooms/dismiss  (no body needed)
+ * Auth: registered user; clears only the caller's own active-room pointer.
+ * Only allowed once the race is 'finished', so an in-progress race can't be
+ * orphaned from the resume flow.
  */
-export async function POST(req: NextRequest) {
-  const { userId } = await req.json()
-  if (!userId) return NextResponse.json({ error: 'sign_in_required' }, { status: 401 })
+export const POST = handle(async (req: NextRequest) => {
+  const user = await requireUser(req, { registered: true })
 
-  const active = await getUserActiveRoom(userId)
+  const active = await getUserActiveRoom(user.uid)
   if (!active) return NextResponse.json({ ok: true })
+  if (active.state !== 'finished') throw new HttpError(409, 'race_in_progress')
 
-  if (active.state !== 'finished') {
-    return NextResponse.json({ error: 'race_in_progress' }, { status: 409 })
-  }
-
-  await clearUserActiveRoom(userId)
+  await clearUserActiveRoom(user.uid)
   return NextResponse.json({ ok: true })
-}
+})
