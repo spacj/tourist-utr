@@ -10,7 +10,6 @@ import { ArrivalBanner } from '@/components/ArrivalBanner'
 import { RoomScoreboard } from '@/components/RoomScoreboard'
 import { useToast } from '@/components/Toast'
 import { markPwaEngaged } from '@/components/PwaInstallBanner'
-import { useServiceWorker } from '@/hooks/useServiceWorker'
 import { useI18n } from '@/hooks/useI18n'
 import { apiGet } from '@/lib/apiFetch'
 import { onDropped, onReplay } from '@/lib/offlineQueue'
@@ -47,7 +46,6 @@ export function HuntClient({
   const { t } = useI18n()
   const toast = useToast()
   const router = useRouter()
-  const { cacheHunt } = useServiceWorker()
 
   const [clue, setClue] = useState<ActiveClueView | null>(initialClue)
   const [upcoming, setUpcoming] = useState(initialUpcoming)
@@ -99,15 +97,6 @@ export function HuntClient({
     })
     return () => { offDrop(); offReplay() }
   }, [sessionId, toast, t])
-
-  // ── Cache what the player has already earned for the offline page (no secrets) ──
-  useEffect(() => {
-    try {
-      cacheHunt(huntId, { huntId, city: huntCity }, completed.map(c => ({
-        id: c.id, order: c.order, locationName: c.locationName.en, riddle: c.riddle?.en ?? '',
-      })))
-    } catch {}
-  }, [huntId, huntCity, completed, cacheHunt])
 
   // ── Arrival ──
   const onArrived = useCallback((r: ArrivalResponse) => {

@@ -39,7 +39,7 @@ export default async function CompletePage({
         id: scDoc.id,
         locationName: clue.locationName as string,
         i18n: (clue.i18n ?? null) as Record<string, { locationName?: string }> | null,
-        icon: (clue.icon ?? '📍') as string,
+        icon: (clue.icon ?? '') as string,
         order: clue.order as number,
         arrivedAt: sc.arrivedAt ? sc.arrivedAt.toMillis() : null,
         pointsEarned: sc.pointsEarned,
@@ -113,7 +113,6 @@ export default async function CompletePage({
       hintsUsed={hintsUsed}
       creditsSpent={creditsSpent}
       cityId={(hunt.cityId as string) ?? null}
-      fullHuntStops={fullHuntStops}
     />
   )
 }

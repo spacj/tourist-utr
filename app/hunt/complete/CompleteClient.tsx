@@ -1,4 +1,8 @@
 'use client'
+import { SITE_URL } from '@/lib/site'
+import { ArrowLeft, ArrowRight, ArrowUp, Check, Share2, Trophy, Users } from 'lucide-react'
+import { AchievementIcon } from '@/components/AchievementIcon'
+import { StopIcon } from '@/components/StopIcon'
 import { useEffect, useState } from 'react'
 import { useI18n } from '@/hooks/useI18n'
 import { useToast } from '@/components/Toast'
@@ -38,7 +42,6 @@ interface Props {
   hintsUsed: number
   creditsSpent: number
   cityId: string | null
-  fullHuntStops: number
   sessionId: string
   huntId: string
   mystery: MysterySpec | null
@@ -50,12 +53,12 @@ interface Props {
 }
 
 function siteOrigin(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')
+  return SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')
 }
 
 export function CompleteClient({
   huntTitle, huntI18n, huntCity, score, clues, totalClues, cluesArrived, hintsUsed, creditsSpent,
-  cityId, fullHuntStops, sessionId, huntId, mystery,
+  cityId, sessionId, huntId, mystery,
   cityName, cityTotal, cityDone, nextHuntTitle, nextHuntI18n,
 }: Props) {
   const { t, lang } = useI18n()
@@ -110,18 +113,17 @@ export function CompleteClient({
     <main className="page-center">
       <div className="container cmp-container">
         <a href="/" className="topbar-back cmp-back">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
+          <ArrowLeft size={18} strokeWidth={2} aria-hidden />
           <span>{t('home')}</span>
         </a>
 
         <div className="badge-wrap">
-          <div className="badge-icon-big" aria-hidden>🏆</div>
+          <span className="stamp stamp-solved cmp-stamp" aria-hidden>{t('ctaCompleted')}</span>
+          <div className="badge-icon-big" aria-hidden><Trophy size={36} strokeWidth={1.5} /></div>
           <h1 className="cmp-title">{t('huntComplete')}</h1>
           <p className="cmp-hunt">{localizedHuntTitle}</p>
           <div className="cmp-score-label">{t('finalScore')}</div>
-          <div className="cmp-score" aria-live="polite">{displayScore}</div>
+          <div className="cmp-score nb-num" aria-live="polite">{displayScore}</div>
           <div className="cmp-score-unit">{t('points')}</div>
         </div>
 
@@ -131,14 +133,14 @@ export function CompleteClient({
               <span className="xp-gained">+{finish.xpGained} XP</span>
               <span className="xp-level">{t('levelLabel')} {finish.level} · {t(`levelTitle${finish.level}`)}</span>
             </div>
-            {finish.leveledUp && <div className="xp-levelup">⬆️ {t('levelUp')}</div>}
+            {finish.leveledUp && <div className="xp-levelup"><ArrowUp size={16} strokeWidth={2} aria-hidden /> {t('levelUp')}</div>}
             {newBadges.length > 0 && (
               <div className="xp-badges">
                 <div className="xp-badges-label">{t('newBadges')}</div>
                 <ul className="xp-badges-row flow-plain-list">
                   {newBadges.map(b => (
                     <li key={b.id} className="xp-badge" title={t(`achDesc_${b.id}`)}>
-                      <span aria-hidden>{b.icon}</span> {t(`ach_${b.id}`)}
+                      <AchievementIcon id={b.id} size={16} /> {t(`ach_${b.id}`)}
                     </li>
                   ))}
                 </ul>
@@ -168,10 +170,10 @@ export function CompleteClient({
           {clues.map((sc, i) => (
             <li key={sc.id} className={`cmp-clue ${sc.arrivedAt ? 'is-done' : ''}`}>
               <div className="cmp-clue-main">
-                <div className="cmp-clue-icon" aria-hidden>{sc.arrivedAt ? sc.icon : i + 1}</div>
+                {sc.arrivedAt ? <StopIcon icon={sc.icon} size="sm" className="cmp-clue-icon" /> : <div className="cmp-clue-icon" aria-hidden>{i + 1}</div>}
                 <div>
                   <div className="cmp-clue-name">{localizedLocation(sc)}</div>
-                  <div className="cmp-clue-status">{sc.arrivedAt ? `✓ ${t('ctaCompleted')}` : t('notReached')}</div>
+                  <div className="cmp-clue-status">{sc.arrivedAt ? <><Check size={14} strokeWidth={2.25} aria-hidden /> {t('ctaCompleted')}</> : t('notReached')}</div>
                 </div>
               </div>
               <span className="cmp-clue-points">{sc.arrivedAt ? `+${sc.pointsEarned}` : '—'}</span>
@@ -194,27 +196,27 @@ export function CompleteClient({
                   <div className="next-cta-label">{t('playNext')}</div>
                   <div className="next-cta-title">{(lang !== 'en' && nextHuntI18n?.[lang]?.title) || nextHuntTitle}</div>
                 </div>
-                <span className="next-cta-arrow" aria-hidden>→</span>
+                <ArrowRight className="next-cta-arrow" size={20} strokeWidth={2} aria-hidden />
               </a>
             ) : (
               <a href="/#countries" className="next-cta next-cta-done">
                 <div className="next-cta-body">
-                  <div className="next-cta-label">🎉 {t('cityCleared')}</div>
+                  <div className="next-cta-label">{t('cityCleared')}</div>
                   <div className="next-cta-title">{t('exploreMore')}</div>
                 </div>
-                <span className="next-cta-arrow" aria-hidden>→</span>
+                <ArrowRight className="next-cta-arrow" size={20} strokeWidth={2} aria-hidden />
               </a>
             )}
-            <a href="/multiplayer" className="next-secondary">👥 {t('raceAFriend')}</a>
+            <a href="/multiplayer" className="next-secondary"><Users size={18} strokeWidth={1.75} aria-hidden /> {t('raceAFriend')}</a>
           </div>
         )}
 
         <button type="button" className="next-secondary cmp-lb-btn" onClick={() => setLbOpen(true)}>
-          🏆 {lbRank ? fmt(t('lbYourRank'), { rank: lbRank.rank, total: lbRank.total }) : t('leaderboardTitle')}
+          <Trophy size={18} strokeWidth={1.75} aria-hidden /> {lbRank ? fmt(t('lbYourRank'), { rank: lbRank.rank, total: lbRank.total }) : t('leaderboardTitle')}
         </button>
 
         <button type="button" onClick={share} className="btn-primary cmp-gap">
-          📣 {t('share')}
+          <Share2 size={18} strokeWidth={1.75} aria-hidden /> {t('share')}
         </button>
         <a href={cityHref} className="btn-secondary flow-btn cmp-gap">{t('playAgain')}</a>
         <a href="/profile" className="btn-secondary flow-btn">{t('viewProfile')}</a>

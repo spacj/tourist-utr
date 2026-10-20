@@ -3,7 +3,7 @@ import { getAllSpots } from '@/lib/benches'
 import { SpotKind, SPOT_KINDS } from '@/types'
 import { SpotsClient } from '@/components/SpotsClient'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tourhunts.com'
+import { SITE_URL } from '@/lib/site'
 
 /** Metadata for a /benches or /fountains index page. Call from the route's
  *  generateMetadata so each section gets its own title/keywords. */

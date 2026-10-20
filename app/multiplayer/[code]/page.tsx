@@ -15,6 +15,7 @@ import { fmt } from '@/lib/i18n/fmt'
 import { normalizeCode, ROOM_CODE_LEN } from '@/lib/rooms'
 import { MultiplayerResults } from '@/components/MultiplayerResults'
 import { RoomConflictDialog, existingRoomFrom, type ExistingRoom } from '@/components/RoomConflictDialog'
+import { Avatar } from '@/components/Avatar'
 
 type Player = {
   key: string
@@ -328,7 +329,7 @@ export default function RoomLobbyPage() {
               <li key={p.key} className="mp-player-row">
                 <div className="mp-player-avatar" aria-hidden>
                   {p.photoURL
-                    ? <img src={p.photoURL} alt="" referrerPolicy="no-referrer" />
+                    ? <Avatar src={p.photoURL} />
                     : <span>{p.displayName?.[0]?.toUpperCase() || '?'}</span>}
                 </div>
                 <div className="mp-player-name">

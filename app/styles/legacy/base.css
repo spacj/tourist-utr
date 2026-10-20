@@ -1,0 +1,208 @@
+/* Tokens, reset, typography basics, spinner, page layout.
+   Moved verbatim from globals.css (order preserved); notebook.css restyles on top. */
+/* ═══════════════════════════════════════════════════════════════
+   TourHunts — design system: "field notebook"
+   Paper background · ink text · typewriter clues · canal green + brick red
+   Orange is reserved for the main call to action.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Twemoji Country Flags — polyfills 🇳🇱 🇮🇹 etc. on Windows where the
+   system font ships only ASCII letter pairs instead of colored flags. */
+@font-face {
+  font-family: 'Twemoji Country Flags';
+  unicode-range: U+1F1E6-1F1FF, U+1F3F4, U+E0062-E0063, U+E0065, U+E0067, U+E006C, U+E006E, U+E0073-E0074, U+E0077, U+E007F;
+  src: url('https://cdn.jsdelivr.net/npm/country-flag-emoji-polyfill@0.1/dist/TwemojiCountryFlags.woff2') format('woff2');
+  font-display: swap;
+}
+
+:root {
+  /* paper & ink */
+  --bg:          #F5F0E6;
+  --bg-2:        #EFE7D8;
+  --surface:     #FFFDF8;
+  --surface-2:   #F3ECDD;
+  --border:      rgba(43, 38, 30, 0.14);
+  --border-2:    rgba(43, 38, 30, 0.26);
+  --text:        #23201B;
+  --text-muted:  #5E574B;
+  --text-dim:    #6F675A;
+  /* accents — all ≥ 4.5:1 on paper */
+  --primary:     #C2410C;   /* CTA only */
+  --primary-2:   #A8380A;   /* CTA hover */
+  --canal:       #2E6A58;
+  --canal-soft:  rgba(46, 106, 88, 0.10);
+  --brick:       #A33B2B;
+  --brick-soft:  rgba(163, 59, 43, 0.10);
+  --gold:        var(--brick);   /* legacy alias: accent text */
+  --gold-2:      #8C3224;
+  --green:       var(--canal);
+  --red:         #B23A2E;
+  --orange:      var(--primary);
+  --shadow-sm:   0 1px 0 rgba(43, 38, 30, 0.06), 0 1px 3px rgba(43, 38, 30, 0.08);
+  --shadow-md:   0 2px 0 rgba(43, 38, 30, 0.06), 0 6px 18px rgba(43, 38, 30, 0.10);
+  --radius:      10px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  /* Young Serif ships a single weight — never fake-bold it. */
+  font-synthesis-weight: none;
+  /* Smooth-scroll for in-page anchor links — the places-guide [..](#place-id)
+   * jumps look fluid instead of teleporting. Reduce-motion users get instant. */
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Twemoji Country Flags', var(--font-sans, system-ui), -apple-system, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  /* Kill the 300ms tap-delay on older Safari — every interactive element
+   * gets manipulation, so taps register immediately. */
+  touch-action: manipulation;
+}
+
+/* Paper grain: a faint fixed noise layer so the background reads as paper,
+ * not a flat colour. Pure CSS/SVG, ~300 bytes, no network request. */
+body {
+  background-color: var(--bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .18 0 0 0 0 .15 0 0 0 0 .1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Typewriter voice for clues, riddles and case notes. */
+.typewriter,
+.clue-text,
+.puzzle-prompt {
+  font-family: var(--font-mono), 'Courier New', monospace;
+  letter-spacing: -0.01em;
+}
+
+/* Brand-tinted text selection — small detail, makes the app feel curated. */
+::selection { background: rgba(194, 65, 12, 0.22); color: var(--text); }
+
+/* Visible focus ring for keyboard users; mouse/touch users don't see it. */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid rgba(194, 65, 12, 0.55);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Hover affordances belong on devices that can hover. On touch screens the
+ * "hover" state sticks after a tap and feels broken — guard everything in
+ * this app's hover rules with @media (hover: hover) where it matters most. */
+@media (hover: none) {
+  /* Card-level transforms that get stuck on touch — reset them. */
+  .city-card:hover,
+  .hunt-card:hover { transform: none; }
+}
+
+/* When a hunt / tour / places-guide is on the screen, freeze the outer
+ * document. Without this, on iOS Safari the user can:
+ *   - Pull the page down and trigger pull-to-refresh (so swiping the
+ *     places-guide sheet handle down reloads the page instead of
+ *     collapsing the sheet).
+ *   - Drag the URL bar in/out, which changes 100dvh and clips fixed UI.
+ *   - Pinch / over-scroll, which moves the layout and breaks the fixed
+ *     HUD bar pinning.
+ *
+ * `overscroll-behavior: none` kills pull-to-refresh; `position: fixed`
+ * on body locks it to the viewport so no inner element can push it. */
+html:has(.game-layout),
+html:has(.places-guide),
+html:has(.tour-fullscreen),
+html:has(.benches-page),
+body:has(.game-layout),
+body:has(.places-guide),
+body:has(.tour-fullscreen),
+body:has(.benches-page) {
+  overflow: hidden;
+  overscroll-behavior: none;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+}
+
+/* Screen-reader-only — visually hidden but crawlable/announced. Used to give
+ * the canvas-based benches map real text content for SEO + accessibility. */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* subtle noise overlay on the body for texture */
+body::before {
+  content: "";
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence baseFrequency='0.85' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.5'/></svg>");
+}
+
+.serif { font-family: var(--font-serif, Georgia), serif; font-feature-settings: 'ss01', 'liga'; }
+
+button { font-family: inherit; }
+a { color: inherit; }
+
+/* ── Spinner ───────────────────────────────────────────────── */
+.spinner {
+  width: 28px; height: 28px;
+  border: 3px solid rgba(46, 106, 88, 0.2);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Page center layout ─────────────────────────────────────── */
+.page-center {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Mobile: tight 10px horizontal so the cards reach close to the edges;
+   * the cards have their own internal padding for breathing room. Vertical
+   * padding pulls in too so the home page hero starts higher on phones. */
+  padding: 14px 10px max(20px, calc(env(safe-area-inset-bottom, 0px) + 14px));
+  position: relative;
+  z-index: 1;
+}
+@media (min-width: 540px) {
+  .page-center { padding: 24px 18px max(20px, calc(env(safe-area-inset-bottom, 0px) + 16px)); }
+}
+.container {
+  width: 100%;
+  /* Mobile uses the full viewport width up to a small overflow guard.
+   * Tablet/desktop widen for the home page hero and post grid. */
+  max-width: 100%;
+}
+@media (min-width: 540px) {
+  .container { max-width: 480px; }
+}
+@media (min-width: 720px) {
+  .container { max-width: 580px; }
+  .page-center { padding-top: 36px; }
+}
+@media (min-width: 1100px) {
+  .container { max-width: 680px; }
+}

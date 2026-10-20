@@ -1,6 +1,5 @@
 import type { MetadataRoute } from 'next'
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tourhunts.com'
+import { SITE_URL } from '@/lib/site'
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -8,7 +7,20 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/hunt/', '/multiplayer/'],
+        // Game screens (session-bound, would spoil clues), personal pages,
+        // multiplayer rooms, admin forms and the API. `/multiplayer` itself
+        // (the public entry page) stays crawlable.
+        disallow: [
+          '/api/',
+          '/hunt',
+          '/tour',
+          '/profile',
+          '/multiplayer/',
+          '/benches/add',
+          '/benches/edit',
+          '/fountains/add',
+          '/fountains/edit',
+        ],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

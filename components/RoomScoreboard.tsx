@@ -1,4 +1,6 @@
 'use client'
+import { Check, X } from 'lucide-react'
+import { RankMark, StopIcon } from '@/components/StopIcon'
 import { useEffect, useState } from 'react'
 import { collection, doc, onSnapshot, query, orderBy } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
@@ -9,6 +11,7 @@ import { useI18n } from '@/hooks/useI18n'
 import { apiPost } from '@/lib/apiFetch'
 import { errorKey } from '@/lib/apiErrors'
 import { fmt } from '@/lib/i18n/fmt'
+import { Avatar } from '@/components/Avatar'
 
 interface Props {
   roomId: string
@@ -83,7 +86,7 @@ export function RoomScoreboard({ roomId, totalClues }: Props) {
           id: String(c.id),
           order: c.order ?? 0,
           theme: c.theme ?? null,
-          icon: c.icon ?? '📍',
+          icon: c.icon ?? '',
         })) : [])
       }
     })
@@ -137,7 +140,7 @@ export function RoomScoreboard({ roomId, totalClues }: Props) {
         <div className="mp-scoreboard-panel">
           <div className="mp-scoreboard-header">
             <span>{t('liveScoreboard')}</span>
-            <button type="button" className="mp-scoreboard-close" onClick={() => setOpen(false)} aria-label={t('close')}>×</button>
+            <button type="button" className="mp-scoreboard-close" onClick={() => setOpen(false)} aria-label={t('close')}><X size={18} strokeWidth={2} aria-hidden /></button>
           </div>
           <ul className="mp-scoreboard-list">
             {sorted.map((p, i) => {
@@ -150,11 +153,11 @@ export function RoomScoreboard({ roomId, totalClues }: Props) {
               return (
                 <li key={i} className={`mp-scoreboard-row ${isMe ? 'is-me' : ''} ${p.finishedAt ? 'is-done' : ''}`}>
                   <span className="mp-scoreboard-rank">
-                    {i === 0 && p.finishedAt ? '🥇' : i === 1 && p.finishedAt ? '🥈' : i === 2 && p.finishedAt ? '🥉' : i + 1}
+                    <RankMark rank={i + 1} label={fmt(t('rankLabel'), { n: i + 1 })} />
                   </span>
                   <div className="mp-scoreboard-name">
                     {p.photoURL && (
-                      <img src={p.photoURL} alt="" className="mp-scoreboard-avatar-img" referrerPolicy="no-referrer" />
+                      <Avatar src={p.photoURL} className="mp-scoreboard-avatar-img" size={32} />
                     )}
                     <div className="mp-scoreboard-name-text">
                       {p.displayName}
@@ -164,12 +167,12 @@ export function RoomScoreboard({ roomId, totalClues }: Props) {
                   <div className="mp-scoreboard-meta">
                     {currentClue && !p.finishedAt && (
                       <div className="mp-scoreboard-location">
-                        {currentClue.icon} {currentClue.theme ?? ''}
+                        <StopIcon icon={currentClue.icon} size="sm" /> {currentClue.theme ?? ''}
                       </div>
                     )}
                     {p.finishedAt && elapsed && (
                       <div className="mp-scoreboard-finish-time">
-                        ✓ {formatTime(elapsed)}
+                        <Check size={14} strokeWidth={2.25} aria-hidden /> {formatTime(elapsed)}
                         {behindMs && behindMs > 0 && (
                           <span className="mp-scoreboard-behind">+{formatTime(behindMs)}</span>
                         )}

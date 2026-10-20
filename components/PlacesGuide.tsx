@@ -1,7 +1,9 @@
 'use client'
+import { ArrowLeft, ArrowRight, ChevronRight, MapPin } from 'lucide-react'
 import { Fragment, useMemo, useRef, useState, useEffect } from 'react'
 import type { Place, PlacesSpec } from '@/lib/md'
 import { PlacesGuideMap } from './PlacesGuideMap'
+import Image from 'next/image'
 
 interface Props {
   /** Post title — shown in the floating top bar. */
@@ -159,7 +161,7 @@ export function PlacesGuide({
   const selectedCategory = selectedPlace
     ? spec.categories.find(c => c.id === selectedPlace.category) ?? spec.categories[0]
     : null
-  const accentColor = selectedCategory?.color ?? '#6366f1'
+  const accentColor = selectedCategory?.color ?? '#2E6A58'
 
   const handleLabel =
     sheetState === 'full' ? 'Collapse ↓'
@@ -176,7 +178,7 @@ export function PlacesGuide({
           </svg>
         </a>
         <div className="tour-topbar-info">
-          <div className="tour-topbar-eyebrow">📍 {category} · {places.length} places</div>
+          <div className="tour-topbar-eyebrow"><MapPin size={16} strokeWidth={1.75} aria-hidden /> {category} · {places.length} places</div>
           <div className="tour-topbar-title">{title}</div>
         </div>
         <div className="places-guide-view-toggle" role="tablist" aria-label="Layout">
@@ -393,7 +395,7 @@ export function PlacesGuide({
                     >
                       {place.image && (
                         <div className="places-list-card-image">
-                          <img src={place.image} alt={place.name} loading="lazy" />
+                          <Image src={place.image} alt={place.name} width={480} height={320} sizes="(max-width: 700px) 100vw, 400px" />
                         </div>
                       )}
                       <div className="places-list-card-body">
@@ -448,7 +450,7 @@ function FocusedPlaceCard({
     <div className="places-card">
       {place.image && (
         <div className="places-card-image">
-          <img src={place.image} alt={place.name} loading="lazy" />
+          <Image src={place.image} alt={place.name} width={480} height={320} sizes="(max-width: 700px) 100vw, 400px" />
         </div>
       )}
       <div className="places-card-body">
@@ -469,9 +471,9 @@ function FocusedPlaceCard({
           )}
         </div>
         <div className="places-card-pager">
-          <button type="button" className="places-card-pager-btn" disabled={index <= 0} onClick={onPrev} aria-label="Previous place">←</button>
+          <button type="button" className="places-card-pager-btn" disabled={index <= 0} onClick={onPrev} aria-label="Previous place"><ArrowLeft size={18} strokeWidth={2} aria-hidden /></button>
           <span className="places-card-pager-pos">{index + 1} / {total}</span>
-          <button type="button" className="places-card-pager-btn" disabled={index >= total - 1} onClick={onNext} aria-label="Next place">→</button>
+          <button type="button" className="places-card-pager-btn" disabled={index >= total - 1} onClick={onNext} aria-label="Next place"><ArrowRight size={18} strokeWidth={2} aria-hidden /></button>
         </div>
       </div>
     </div>
@@ -542,8 +544,8 @@ function FullArticleAndList({
                 className="places-full-list-summary"
                 onClick={() => onSelect(place.id)}
               >
-                <span className="places-full-list-icon" style={{ background: cat?.color ?? '#6366f1' }} aria-hidden>
-                  {cat?.icon ?? '📍'}
+                <span className="places-full-list-icon" style={{ background: cat?.color ?? '#2E6A58' }} aria-hidden>
+                  {cat?.icon ?? <MapPin size={16} strokeWidth={1.75} />}
                 </span>
                 <div className="places-full-list-text">
                   <div className="places-full-list-name">{place.name}</div>
@@ -554,7 +556,7 @@ function FullArticleAndList({
                     </div>
                   )}
                 </div>
-                <span className="places-full-list-chevron" aria-hidden>▸</span>
+                <ChevronRight className="places-full-list-chevron" size={18} strokeWidth={2} aria-hidden />
               </button>
             </li>
           )

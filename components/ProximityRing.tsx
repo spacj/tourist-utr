@@ -2,7 +2,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { useI18n } from '@/hooks/useI18n'
 import { fmt } from '@/lib/gameClient'
-import { warmthColor, warmthFor, type Navigation, type Warmth } from '@/types'
+import { warmthFor, type Navigation, type Warmth } from '@/types'
+
+// Notebook inks per warmth band: cold blue-black → brick red. All AA on paper.
+const INK: Record<Warmth, string> = { cold: '#36597A', warm: '#7A5417', hot: '#B4441A', burning: '#A33B2B' }
+const warmthColor = (w: Warmth | null | undefined) => (w ? INK[w] : '#23201B')
 
 const SIZE = 160
 const CX = SIZE / 2
@@ -103,7 +107,7 @@ export function ProximityRing({ mode, distanceM, bearing, warmth: warmthProp, ac
         role="img" aria-label={label}
         style={{ overflow: 'visible' }}
       >
-        <circle cx={CX} cy={CY} r={R - 2} fill="#fffdf8" stroke="rgba(43,38,30,0.10)" strokeWidth="1" />
+        {mode === 'compass' && <circle cx={CX} cy={CY} r={R - 2} fill="#FFFDF8" stroke="rgba(43,38,30,0.18)" strokeWidth="1" />}
 
         {mode === 'compass' ? (
           <>
@@ -122,7 +126,7 @@ export function ProximityRing({ mode, distanceM, bearing, warmth: warmthProp, ac
                 )
               })}
               <text x={CX} y={CY - R + 14} textAnchor="middle" fontSize="11" fontWeight="700"
-                fill="#A33B2B" fontFamily="system-ui">N</text>
+                fill="#A33B2B" fontFamily="var(--font-mono), monospace">N</text>
             </g>
             <circle cx={CX} cy={CY} r={R} fill="none" stroke="rgba(43,38,30,0.08)" strokeWidth="6" />
             <circle cx={CX} cy={CY} r={R} fill="none" stroke={color} strokeWidth="6" strokeLinecap="round"
@@ -138,30 +142,37 @@ export function ProximityRing({ mode, distanceM, bearing, warmth: warmthProp, ac
             <circle cx={CX} cy={CY} r="5" fill="#fff" stroke={color} strokeWidth="2" />
           </>
         ) : (
-          // Warmth: concentric bands, outer = cold, inner = burning.
-          WARMTH_ORDER.map((w, i) => {
-            const active = warmth === w
-            const reached = warmth !== null && WARMTH_ORDER.indexOf(warmth) >= i
-            return (
-              <circle key={w} cx={CX} cy={CY} r={R - 4 - i * 14}
-                fill={active ? `${warmthColor(w)}33` : 'none'}
-                stroke={warmthColor(w)}
-                strokeOpacity={reached ? 0.95 : 0.22}
-                strokeWidth={active ? 5 : 3} />
-            )
-          })
+          // Warmth: an ink thermometer — no direction, just cold → burning.
+          <g className="thermo">
+            <rect x={CX - 9} y={22} width={18} height={98} rx={9} fill="#FFFDF8" stroke="#23201B" strokeWidth="1.6" />
+            {WARMTH_ORDER.map((w, i) => {
+              const y = 112 - i * 24
+              const reached = warmth !== null && WARMTH_ORDER.indexOf(warmth) >= i
+              return (
+                <g key={w}>
+                  <line x1={CX + 13} x2={CX + 21} y1={y} y2={y} stroke="#23201B" strokeWidth="1.2" />
+                  <rect x={CX - 5} y={y - 10} width={10} height={i === 3 ? 12 : 22}
+                    rx={i === 3 ? 5 : 0} fill={reached ? warmthColor(warmth) : 'transparent'}
+                    style={{ transition: 'fill .5s ease' }} />
+                </g>
+              )
+            })}
+            <circle cx={CX} cy={134} r={15} fill={warmth ? color : '#FFFDF8'} stroke="#23201B" strokeWidth="1.6" />
+            <text x={CX - 16} y={116} textAnchor="end" fontSize="11" fill="#5E574B" fontFamily="var(--font-mono), monospace">{t('coldLabel')}</text>
+            <text x={CX - 16} y={44} textAnchor="end" fontSize="11" fill="#A33B2B" fontFamily="var(--font-mono), monospace">{t('burningLabel')}</text>
+          </g>
         )}
       </svg>
 
       <div className="compass-readout" aria-hidden="true">
         {mode === 'compass' && distanceM !== null && (
           <div className="compass-distance" style={{ color }}>
-            <span className="compass-distance-num">{distanceM}</span>
+            <span className="compass-distance-num nb-num">{distanceM}</span>
             <span className="compass-distance-unit">{t('metresShort')}</span>
           </div>
         )}
         {warmth ? (
-          <span className="compass-zone" style={{ color, background: `${color}1a`, borderColor: `${color}55` }}>
+          <span className="compass-zone" style={{ color, borderColor: color }}>
             {t(`zone_${warmth}`)}
           </span>
         ) : (

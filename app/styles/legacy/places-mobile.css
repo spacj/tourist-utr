@@ -1,0 +1,193 @@
+/* Places-guide desktop layout and site-wide mobile polish.
+   Moved verbatim from globals.css (order preserved); notebook.css restyles on top. */
+/* ═══════════════════════════════════════════════════════════════
+   Places-guide DESKTOP layout (≥ 1024px)
+   On wide screens the bottom-sheet becomes a fixed LEFT SIDEBAR
+   that's always at "full" height — much better use of horizontal
+   real estate than a tiny bottom card. The map fills the right
+   side. The 3-state sheet collapses to the sidebar (no peek/card
+   switching — the article and place list are always visible).
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (min-width: 1024px) {
+  /* Top bar: solid background, full-width, with a divider below. */
+  .places-guide-topbar {
+    background: rgba(255, 255, 255, 0.98);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+  }
+
+  /* Map occupies the right-hand area, the sidebar takes the left. */
+  .places-guide-map-wrap {
+    top: 72px;
+    right: 0;
+    bottom: 0;
+    left: 440px;
+  }
+
+  /* Convert the bottom sheet into a fixed left sidebar. Override every
+   * sheet-* height variant — at this width the sidebar is always full
+   * height, no peek/card/full distinction. PlacesGuide snaps sheetState
+   * to 'full' on a desktop media query so the article + list render. */
+  .places-sheet,
+  .places-guide.sheet-peek .places-sheet,
+  .places-guide.sheet-card .places-sheet,
+  .places-guide.sheet-full .places-sheet {
+    top: 72px;
+    bottom: 0;
+    left: 0;
+    right: auto;
+    width: 440px;
+    height: auto;
+    border-radius: 0;
+    border-right: 1px solid var(--border);
+    box-shadow: 4px 0 24px rgba(20, 20, 30, 0.06);
+    padding-bottom: 0;
+    transition: none;
+  }
+  /* Handle is irrelevant on desktop — nothing to resize. */
+  .places-sheet-handle { display: none; }
+  .places-sheet-scroll { padding: 22px 24px 32px; }
+
+  /* Filter chips: tucked inside the sidebar instead of floating above
+   * the bottom sheet. Override all the bottom-of-page positioning. */
+  .places-guide .places-guide-cats,
+  .places-guide.sheet-peek .places-guide-cats,
+  .places-guide.sheet-card .places-guide-cats,
+  .places-guide.sheet-full .places-guide-cats {
+    display: flex;
+    position: static;
+    bottom: auto;
+    flex-wrap: wrap;
+    padding: 0 0 12px 0;
+  }
+
+  /* List view (alternate full-screen scrollable grid). Bump to 3 columns. */
+  .places-list-view-inner { max-width: 1100px; padding: 0 28px; }
+  .places-list-grid { grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .places-list-card-image { aspect-ratio: 4 / 3; }
+}
+
+@media (min-width: 1280px) {
+  /* Wider sidebar at full desktop. */
+  .places-guide-map-wrap { left: 480px; }
+  .places-sheet,
+  .places-guide.sheet-peek .places-sheet,
+  .places-guide.sheet-card .places-sheet,
+  .places-guide.sheet-full .places-sheet { width: 480px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Mobile polish pass — site-wide refinements layered last so they
+   override earlier component rules where they conflict.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Tap-target floor on the buttons that matter most. Apple HIG says 44px;
+ * 40px is a sensible balance with our compact UI. Only applied to the
+ * specific button classes that already pretend to be "primary" actions —
+ * we don't blanket-apply it to every <button> to avoid breaking small
+ * chips, dot pagers, and inline pickers. */
+.btn-primary,
+.btn-ghost,
+.tour-card-here-btn,
+.tour-stop-here-btn,
+.puzzle-submit,
+.places-guide-card-link {
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+/* Site-wide subtle press feedback. Each of these already has a unique
+ * hover style; this just adds a consistent "tap acknowledged" beat on
+ * touch and mouse alike. */
+.btn-primary:active,
+.btn-ghost:active,
+.tour-card-here-btn:active,
+.tour-stop-here-btn:active,
+.puzzle-submit:active,
+.places-guide-card-link:active,
+.city-card:active,
+.hunt-card:active {
+  transform: scale(0.985);
+  transition: transform 0.06s ease-out;
+}
+
+/* Country / city / hunt cards — give them a slightly tighter spacing
+ * stack on phones and lift the corner radius for a softer feel. */
+@media (max-width: 540px) {
+  .city-card,
+  .hunt-card {
+    border-radius: 18px;
+  }
+  .city-card-body,
+  .hunt-card-body {
+    padding: 14px 14px 16px;
+  }
+  .city-card-name,
+  .hunt-card-title {
+    font-size: 18px;
+    line-height: 1.2;
+  }
+  .city-card-desc,
+  .hunt-card-desc {
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+}
+
+/* Bottom-sheet handle — bigger tap zone on phones, more obvious affordance.
+ * Touches both the in-game ClueScreen sheet and the tour/places-guide sheet. */
+@media (max-width: 540px) {
+  .sheet-handle-btn { padding: 10px 16px 8px; }
+  .sheet-handle { width: 48px; height: 4px; }
+  .tour-sheet-handle { min-height: 48px; }
+  .tour-sheet-grip { width: 48px; height: 4px; }
+}
+
+/* Blog list page — the cards were quite cramped on phones; loosen the
+ * grid and standardize image aspect ratio. */
+@media (max-width: 540px) {
+  .blog-grid { grid-template-columns: 1fr !important; gap: 14px !important; }
+  .blog-card-image { aspect-ratio: 16/9; }
+  .blog-card-title { font-size: 16.5px; line-height: 1.25; }
+  .blog-card-excerpt { font-size: 13.5px; line-height: 1.5; }
+}
+
+/* Places-guide & tour — full-screen layouts get tighter on phones.
+ * The topbar collapses to give the map more vertical breathing room. */
+@media (max-width: 540px) {
+  .tour-topbar,
+  .places-guide-topbar { padding: calc(env(safe-area-inset-top, 0px) + 10px) 12px 12px; gap: 8px; }
+  .tour-topbar-title,
+  .places-guide .tour-topbar-title { font-size: 14px; }
+  .tour-topbar-eyebrow,
+  .places-guide .tour-topbar-eyebrow { font-size: 12px; }
+  .places-guide-view-btn { width: 32px; height: 30px; }
+  /* Sheet heights — tighter at phone size */
+  .places-guide.sheet-card .places-sheet { height: 320px; }
+  .places-guide.sheet-card .places-guide-cats { bottom: calc(320px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* Place card on mobile — slightly tighter image height. */
+@media (max-width: 540px) {
+  .places-card-image { height: 150px; }
+  .places-card-name { font-size: 19px; }
+  .places-card-desc { font-size: 14px; }
+  .places-list-card-name { font-size: 16.5px; }
+}
+
+/* Inputs — make them feel less Web 2.0 on phones. Slightly bigger touch
+ * area, modern focus ring (focus-visible only — typing doesn't show it). */
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+input[type="password"],
+textarea,
+select {
+  font: inherit;
+  font-size: 16px;  /* Prevents iOS zoom-on-focus */
+  min-height: 44px;
+  touch-action: manipulation;
+}

@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { FileSearch, FolderClosed } from 'lucide-react'
 import { useI18n } from '@/hooks/useI18n'
 import { apiPost } from '@/lib/apiFetch'
 import { errorCode, errorKey } from '@/lib/apiErrors'
@@ -12,7 +13,7 @@ interface Props {
   onSolved?: (bonus: number) => void
 }
 
-type AccuseResult = { alreadyAccused: boolean; correct: boolean; solution: { suspect: string; weapon: string; place: string }; bonus: number }
+type AccuseResult = { alreadyAccused: boolean; correct: boolean; solution: { suspect: string; weapon: string; place: string }; bonus: number; solutionStory?: Record<string, string> | null }
 
 /**
  * The finale of a mystery hunt: pick a suspect, weapon and place, then accuse.
@@ -61,13 +62,14 @@ export function MysteryAccusation({ sessionId, mystery, onSolved }: Props) {
   if (result) {
     return (
       <div className={`accuse-card ${result.correct ? 'is-correct' : 'is-wrong'}`} role="status">
-        <div className="accuse-result-icon" aria-hidden>{result.correct ? '🕵️' : '🔚'}</div>
+        <div className="accuse-result-icon" aria-hidden>{result.correct ? <FileSearch size={28} strokeWidth={1.75} /> : <FolderClosed size={28} strokeWidth={1.75} />}</div>
+        <span className={`stamp ${result.correct ? 'stamp-solved' : 'stamp-closed'}`} aria-hidden>{result.correct ? t('caseSolvedBadge') : t('caseClosedBadge')}</span>
         <div className="accuse-result-title">
           {result.correct ? t('caseSolvedBadge') : t('caseClosedBadge')}
           {result.correct && result.bonus > 0 && <span className="accuse-bonus">+{result.bonus}</span>}
         </div>
         {result.alreadyAccused && <p className="accuse-result-text">{t('alreadyAccused')}</p>}
-        <p className="accuse-result-text">{result.correct ? m.solvedText : m.failedText}</p>
+        <p className="accuse-result-text typewriter">{result.correct ? (result.solutionStory?.[lang] ?? result.solutionStory?.en ?? m.solvedText) : m.failedText}</p>
         <div className="accuse-solution">
           <span>{m.suspects.find(c => c.id === result.solution.suspect)?.icon} {nameOf(m.suspects, result.solution.suspect)}</span>
           <span aria-hidden>·</span>
@@ -81,7 +83,7 @@ export function MysteryAccusation({ sessionId, mystery, onSolved }: Props) {
 
   return (
     <div className="accuse-card">
-      <h2 className="accuse-head">🕵️ {m.accuseTitle}</h2>
+      <h2 className="accuse-head"><FileSearch size={22} strokeWidth={1.75} aria-hidden /> {m.accuseTitle}</h2>
       {axes.map(col => (
         <div key={col.axis} className="accuse-axis" role="group" aria-labelledby={`accuse-${col.axis}`}>
           <div className="accuse-axis-label" id={`accuse-${col.axis}`}>{col.label}</div>

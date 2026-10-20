@@ -1,5 +1,6 @@
 'use client'
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
+import { Check, Clock, Lock } from 'lucide-react'
 import { Modal } from '@/components/Modal'
 import { useToast } from '@/components/Toast'
 import { useI18n } from '@/hooks/useI18n'
@@ -22,8 +23,8 @@ export interface CheckoutOption {
   badge?: string
   /** Strike-through price (for bundles that show savings). */
   comparePriceCents?: number
-  /** Emoji or icon to show next to the title. */
-  icon?: string
+  /** Emoji (content) or icon element shown in a neutral badge next to the title. */
+  icon?: ReactNode
   /** Visual accent color for the option. */
   accent?: string
   disabled?: boolean
@@ -130,7 +131,7 @@ export function CheckoutSheet({ title, subtitle, options, defaultSelectedId, onC
                 <span className="checkout-option-price">€{eur(opt.priceCents)}</span>
               </span>
               <span className={`checkout-option-radio ${isSelected ? 'is-checked' : ''}`} aria-hidden>
-                {isSelected && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+                {isSelected && <Check size={12} strokeWidth={3} />}
               </span>
             </button>
           )
@@ -139,15 +140,15 @@ export function CheckoutSheet({ title, subtitle, options, defaultSelectedId, onC
 
       <ul className="checkout-trust">
         <li>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <Lock size={16} strokeWidth={1.75} aria-hidden />
           {t('checkoutSecure')}
         </li>
         <li>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/><polyline points="12 7 12 12 15 14"/></svg>
+          <Clock size={16} strokeWidth={1.75} aria-hidden />
           {t('checkoutNoSubscription')}
         </li>
         <li>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="20 6 9 17 4 12"/></svg>
+          <Check size={16} strokeWidth={1.75} aria-hidden />
           <a href="/terms" target="_blank" rel="noopener" className="checkout-trust-link">{t('checkoutRefundable')}</a>
         </li>
       </ul>

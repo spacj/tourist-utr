@@ -1,0 +1,95 @@
+/* Earlier desktop/mobile polish layer.
+   Moved verbatim from globals.css (order preserved); notebook.css restyles on top. */
+/* ═══════════════════════════════════════════════════════════════
+   Design polish — desktop & mobile refinements (May 2026)
+   ═══════════════════════════════════════════════════════════════
+   Layered on top of earlier rules with higher specificity / larger
+   breakpoints so the homepage feels less stacked-vertical and more
+   chaptered. */
+
+/* ─── Fluid section heading ─── */
+.section-label {
+  font-size: clamp(13px, 0.5vw + 11px, 16px);
+  letter-spacing: 0.18em;
+}
+
+/* ─── Stats bar: bigger numbers, animated count-up on viewport entry ─── */
+@media (min-width: 900px) {
+  .stat-label { font-size: 13px; margin-top: 8px; }
+}
+
+/* ─── How-it-works: connecting progression line on desktop ─── */
+@media (min-width: 900px) {
+  /* Dashed line behind the cards showing the 3-step progression */
+}
+
+/* ─── Why grid: 4-up on desktop ─── */
+
+/* ─── Reviews: 3-col on desktop, elevated cards ─── */
+
+/* ─── City page hero: bigger image background on desktop ─── */
+@media (min-width: 900px) {
+  .city-hero {
+    padding: 48px 40px 40px;
+    border-radius: 28px;
+    min-height: 320px;
+  }
+  .city-hero-emoji { font-size: 120px; }
+  .city-hero-title { font-size: clamp(42px, 4vw + 16px, 64px); }
+  .city-hero-desc { font-size: 17px; max-width: 56ch; }
+}
+
+/* ─── Country hero on /country/[id]: taller + richer on desktop ─── */
+@media (min-width: 900px) {
+  .country-hero {
+    min-height: 320px;
+    padding: 56px 40px 44px;
+    border-radius: 28px;
+  }
+  .country-hero-flag { font-size: 56px; }
+  .country-hero-title { font-size: clamp(42px, 3.6vw + 18px, 60px); }
+  .country-hero-tagline { font-size: 14px; letter-spacing: 0.8px; }
+  .country-hero-desc { font-size: 16px; max-width: 56ch; }
+  .country-hero-stats strong { font-size: 22px; }
+}
+
+/* ─── Mid-CTA: roomier on desktop ─── */
+
+/* ─── Final CTA section: more visual weight on desktop ─── */
+@media (min-width: 900px) {
+  .cta-primary-btn { padding: 18px 32px; font-size: 17px; }
+}
+
+/* ─── Footer: real breathing room + 3-col layout on desktop ─── */
+
+/* ─── "From the blog" section: bigger desktop layout ─── */
+@media (min-width: 900px) {
+  .home-blog-section { margin: 56px 0; }
+  .home-blog-card-cover { aspect-ratio: 16 / 9; }
+  .home-blog-card-title { font-size: 19px; line-height: 1.25; }
+  .home-blog-card-excerpt { font-size: 14px; }
+}
+
+/* ═══ Scroll reveal — fade-up cards as they enter the viewport ═══
+   Applied via the useScrollReveal hook + .reveal class. */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.55s ease, transform 0.55s cubic-bezier(.22,.61,.36,1);
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal { transition: none; opacity: 1; transform: none; }
+}
+
+/* ─── Mobile spacing fixes ─── */
+@media (max-width: 767px) {
+  .container { padding-left: 16px; padding-right: 16px; }
+  /* Restore previous tighter section spacings on mobile */
+}
+
+/* ─── Tiny screens: keep title from overflowing ─── */

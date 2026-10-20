@@ -1,15 +1,15 @@
 import type { Metadata } from 'next'
 import { getAllPostsMeta } from '@/lib/blog'
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tourhunts.com'
+import { SITE_URL } from '@/lib/site'
+import Image from 'next/image'
 
 export const metadata: Metadata = {
-  title: 'Blog — TourHunts',
+  title: 'Blog: city guides and walking-tour stories',
   description: 'Travel guides, city deep-dives, and walking-tour stories from the TourHunts editorial team. New posts weekly.',
   alternates: { canonical: `${SITE_URL}/blog` },
   openGraph: {
     type: 'website',
-    title: 'TourHunts Blog — travel guides and self-guided tour stories',
+    title: 'TourHunts blog: travel guides and self-guided tour stories',
     description: 'Travel guides, city deep-dives, and walking-tour stories.',
     url: `${SITE_URL}/blog`,
   },
@@ -41,7 +41,7 @@ export default function BlogIndexPage() {
       datePublished: p.publishedAt,
       dateModified: p.updatedAt ?? p.publishedAt,
       author: { '@type': 'Organization', name: p.author },
-      image: p.heroImage,
+      ...(p.heroImage ? { image: /^https?:/.test(p.heroImage) ? p.heroImage : `${SITE_URL}${p.heroImage}` } : {}),
       description: p.excerpt,
     })),
   }
@@ -67,7 +67,7 @@ export default function BlogIndexPage() {
               <a href={`/blog/${p.slug}`} className="blog-card-link">
                 <div className="blog-card-cover">
                   {p.heroImage && (
-                    <img src={p.heroImage} alt={p.heroAlt} loading="lazy" />
+                    <Image src={p.heroImage} alt={p.heroAlt} width={640} height={360} sizes="(max-width: 700px) 100vw, 50vw" />
                   )}
                   <span className="blog-card-cat">{CATEGORY_LABEL[p.category] ?? p.category}</span>
                 </div>

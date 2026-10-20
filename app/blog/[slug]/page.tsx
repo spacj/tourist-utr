@@ -1,12 +1,23 @@
 import { Fragment } from 'react'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { adminDb } from '@/lib/firebaseAdmin'
 import { getAllSlugs, getPost } from '@/lib/blog'
 import type { CtaSpec } from '@/lib/md'
+import { SITE_URL } from '@/lib/site'
 import { PlacesGuide } from '@/components/PlacesGuide'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tourhunts.com'
+function absUrl(u: string) {
+  return /^https?:\/\//.test(u) ? u : `${SITE_URL}${u.startsWith('/') ? '' : '/'}${u}`
+}
+
+/** Social image: the hero photo, or a generated card when there is none. */
+function ogImageFor(post: { slug: string; heroImage: string; heroAlt: string; title: string }) {
+  return post.heroImage
+    ? { url: post.heroImage, alt: post.heroAlt || post.title }
+    : { url: `/blog/${post.slug}/og`, width: 1200, height: 630, alt: post.title }
+}
 
 export const dynamic = 'force-static'
 export const revalidate = 3600
@@ -17,8 +28,9 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const post = getPost(params.slug)
-  if (!post) return { title: 'Not found' }
+  if (!post) return { title: 'Not found', robots: { index: false } }
   const url = `${SITE_URL}/blog/${post.slug}`
+  const image = ogImageFor(post)
   return {
     title: post.title,
     description: post.excerpt,
@@ -30,7 +42,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       title: post.title,
       description: post.excerpt,
       url,
-      images: [{ url: post.heroImage, alt: post.heroAlt }],
+      images: [image],
       publishedTime: post.publishedAt,
       modifiedTime: post.updatedAt ?? post.publishedAt,
       authors: [post.author],
@@ -40,7 +52,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       card: 'summary_large_image',
       title: post.title,
       description: post.excerpt,
-      images: [post.heroImage],
+      images: [image.url],
     },
   }
 }
@@ -66,29 +78,34 @@ async function resolveCta(spec: CtaSpec): Promise<CtaTarget | null> {
     )
   }
 
-  if (spec.kind === 'tour' && spec.targetId) {
-    return make(
-      '/multiplayer',
-      'Self-guided tour',
-      spec.title ?? 'Try this self-guided tour',
-      spec.description ?? 'Walk it at your own pace. GPS-guided, in-app maps, fun facts at every stop.'
-    )
-  }
-
-  if (spec.kind === 'hunt' && spec.targetId) {
+  // Hunts and tours link to their public landing page (/city/<city>/<hunt>).
+  if ((spec.kind === 'tour' || spec.kind === 'hunt') && spec.targetId) {
+    const isTourCta = spec.kind === 'tour'
+    const badge = isTourCta ? 'Self-guided tour' : 'Hunt'
+    const fallbackDesc = isTourCta
+      ? 'Walk it at your own pace. GPS-guided, in-app maps, fun facts at every stop.'
+      : 'GPS-guided self-guided scavenger hunt. The first hunt in every city is free.'
     try {
       const huntSnap = await adminDb().collection('hunts').doc(spec.targetId).get()
       if (huntSnap.exists) {
         const hunt = huntSnap.data() as { title?: string; description?: string; cityId?: string }
         return make(
-          hunt.cityId ? `/city/${hunt.cityId}#hunts` : '/',
-          'Hunt',
-          spec.title ?? hunt.title ?? 'Try this hunt',
-          spec.description ?? hunt.description ?? 'GPS-guided self-guided scavenger hunt — first hunt in every city is free.'
+          hunt.cityId ? `/city/${hunt.cityId}/${spec.targetId}` : '/',
+          badge,
+          spec.title ?? hunt.title ?? (isTourCta ? 'Try this self-guided tour' : 'Try this hunt'),
+          spec.description ?? hunt.description ?? fallbackDesc,
         )
       }
     } catch {}
-    return make('/', 'Hunt', spec.title ?? 'Try a hunt', spec.description ?? 'Pick a city and dive in.')
+    // Firestore unavailable at build: guess the city from the id convention
+    // (tour_<city>_<name> / hunt_<...>_<city>) only if it's unambiguous.
+    const cityGuess = spec.targetId.match(/^tour_([a-z]+)_/)?.[1]
+    return make(
+      cityGuess ? `/city/city_${cityGuess}/${spec.targetId}` : '/#countries',
+      badge,
+      spec.title ?? (isTourCta ? 'Try this self-guided tour' : 'Try a hunt'),
+      spec.description ?? fallbackDesc,
+    )
   }
 
   if (spec.kind === 'city' && spec.targetId) {
@@ -148,7 +165,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
           '@type': 'Article',
           headline: post.title,
           description: post.excerpt,
-          image: [post.heroImage].filter(Boolean),
+          image: [absUrl(ogImageFor(post).url)],
           datePublished: post.publishedAt,
           dateModified: post.updatedAt ?? post.publishedAt,
           author: { '@type': 'Organization', name: post.author },
@@ -164,7 +181,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     '@type': 'Article',
     headline: post.title,
     description: post.excerpt,
-    image: [post.heroImage],
+    image: [absUrl(ogImageFor(post).url)],
     datePublished: post.publishedAt,
     dateModified: post.updatedAt ?? post.publishedAt,
     author: { '@type': 'Organization', name: post.author },
@@ -209,8 +226,16 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
         </header>
 
         {post.heroImage && (
+          // The wrapper reserves a 16:9 box (CSS aspect-ratio), so the
+          // image can't shift the layout; next/image serves sized variants.
           <div className="blog-post-hero">
-            <img src={post.heroImage} alt={post.heroAlt} />
+            <Image
+              src={post.heroImage}
+              alt={post.heroAlt}
+              fill
+              priority
+              sizes="(max-width: 760px) 100vw, 720px"
+            />
           </div>
         )}
 

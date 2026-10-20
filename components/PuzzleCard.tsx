@@ -1,5 +1,9 @@
 'use client'
-import { useState } from 'react'
+import { useState, type ComponentType } from 'react'
+import {
+  Brain, Check, Eye, Hash, Image as ImageIcon, KeyRound, Lightbulb, ListOrdered, PenLine, Repeat,
+  Shuffle, WifiOff, X, type LucideProps,
+} from 'lucide-react'
 import { useI18n } from '@/hooks/useI18n'
 import { useToast } from '@/components/Toast'
 import { apiPost, ApiError } from '@/lib/apiFetch'
@@ -26,16 +30,17 @@ interface Props {
   onUnlockHint: () => void
 }
 
-const TYPE_META: Record<PuzzleType, { icon: string; labelKey: string; color: string }> = {
-  cipher:   { icon: '🔐', labelKey: 'puzzleTypeCipher',   color: '#4f46e5' },
-  anagram:  { icon: '🔤', labelKey: 'puzzleTypeAnagram',  color: '#7e22ce' },
-  logic:    { icon: '🧠', labelKey: 'puzzleTypeLogic',    color: '#0e7490' },
-  sequence: { icon: '🔢', labelKey: 'puzzleTypeSequence', color: '#15803d' },
-  numbers:  { icon: '🔢', labelKey: 'puzzleTypeNumbers',  color: '#15803d' },
-  wordplay: { icon: '✍️', labelKey: 'puzzleTypeWordplay', color: '#be185d' },
-  reverse:  { icon: '🔁', labelKey: 'puzzleTypeReverse',  color: '#6d28d9' },
-  rebus:    { icon: '🖼️', labelKey: 'puzzleTypeRebus',    color: '#b45309' },
-  observe:  { icon: '👀', labelKey: 'puzzleTypeObserve',  color: '#0f766e' },
+// One ink colour for every type — the icon and label tell them apart.
+const TYPE_META: Record<PuzzleType, { Icon: ComponentType<LucideProps>; labelKey: string }> = {
+  cipher:   { Icon: KeyRound,    labelKey: 'puzzleTypeCipher' },
+  anagram:  { Icon: Shuffle,     labelKey: 'puzzleTypeAnagram' },
+  logic:    { Icon: Brain,       labelKey: 'puzzleTypeLogic' },
+  sequence: { Icon: ListOrdered, labelKey: 'puzzleTypeSequence' },
+  numbers:  { Icon: Hash,        labelKey: 'puzzleTypeNumbers' },
+  wordplay: { Icon: PenLine,     labelKey: 'puzzleTypeWordplay' },
+  reverse:  { Icon: Repeat,      labelKey: 'puzzleTypeReverse' },
+  rebus:    { Icon: ImageIcon,   labelKey: 'puzzleTypeRebus' },
+  observe:  { Icon: Eye,         labelKey: 'puzzleTypeObserve' },
 }
 
 function PromptDisplay({ type, text }: { type: PuzzleType; text: string }) {
@@ -124,14 +129,15 @@ export function PuzzleCard({
     const explain = pickTxt(puzzle.explain, lang)
     return (
       <div className="puzzle-card puzzle-card-primary is-solved">
+        <span className="stamp stamp-solved puzzle-stamp" aria-hidden>{t('sampleSolved')}</span>
         <div className="puzzle-head">
-          <span className="puzzle-icon" aria-hidden>✓</span>
+          <span className="puzzle-icon" aria-hidden><Check size={18} strokeWidth={2} /></span>
           <span className="puzzle-label puzzle-label-solved">{t('puzzleSolvedLabel')}</span>
         </div>
         {story && <p className="puzzle-story">{story}</p>}
         {explain && <div className="puzzle-explain">{explain}</div>}
         {solvedOffline && !clue.puzzleSolved && (
-          <div className="puzzle-offline-note">📡 {t('puzzleOfflineSolved')}</div>
+          <div className="puzzle-offline-note"><WifiOff size={16} strokeWidth={1.75} aria-hidden /> {t('puzzleOfflineSolved')}</div>
         )}
       </div>
     )
@@ -139,10 +145,10 @@ export function PuzzleCard({
 
   const theme = pickTxt(clue.theme, lang)
   return (
-    <div className={`puzzle-card puzzle-card-primary puzzle-${puzzle.type}`} style={{ borderColor: `${meta.color}40` }}>
+    <div className={`puzzle-card puzzle-card-primary puzzle-${puzzle.type}`}>
       <div className="puzzle-head">
-        <span className="puzzle-icon" aria-hidden>{meta.icon}</span>
-        <span className="puzzle-label" style={{ color: meta.color }}>{t(meta.labelKey)}</span>
+        <span className="puzzle-icon" aria-hidden><meta.Icon size={18} strokeWidth={1.75} /></span>
+        <span className="puzzle-label">{t(meta.labelKey)}</span>
         {theme && <span className="puzzle-theme">· {theme}</span>}
         <span className="puzzle-points">+{SCORE.puzzle}</span>
       </div>
@@ -165,7 +171,7 @@ export function PuzzleCard({
           disabled={submitting}
           aria-invalid={wrongAt !== null}
         />
-        <button type="submit" disabled={submitting || !answer.trim()} className="puzzle-submit" style={{ background: meta.color }}>
+        <button type="submit" disabled={submitting || !answer.trim()} className="puzzle-submit">
           {submitting ? '…' : t('puzzleSubmit')}
         </button>
       </form>
@@ -177,21 +183,21 @@ export function PuzzleCard({
           onClick={onUnlockHint}
           disabled={unlockingHint}
           aria-busy={unlockingHint}
-          style={{ borderColor: `${meta.color}66`, color: meta.color }}
         >
-          💡 {unlockingHint ? '…' : fmt(t('puzzleHintCta'), { cost: hintCost })}
+          <Lightbulb size={18} strokeWidth={1.75} aria-hidden />
+          {unlockingHint ? '…' : fmt(t('puzzleHintCta'), { cost: hintCost })}
           {credits < hintCost && <span className="puzzle-hint-short"> · {t('notEnoughCredits')}</span>}
         </button>
       )}
       {hint && (
-        <div className="puzzle-hint" style={{ borderLeftColor: meta.color, background: `${meta.color}14` }}>
+        <div className="puzzle-hint typewriter">
           {pickTxt(hint.text, lang)}
         </div>
       )}
 
       {wrongAt !== null && (
         <div className="puzzle-feedback puzzle-wrong" key={wrongAt} role="alert">
-          ✗ {t('puzzleTryAgain')}
+          <X size={16} strokeWidth={2} aria-hidden /> {t('puzzleTryAgain')}
         </div>
       )}
     </div>

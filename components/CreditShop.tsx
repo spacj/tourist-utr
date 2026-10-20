@@ -1,4 +1,5 @@
 'use client'
+import { Lightbulb } from 'lucide-react'
 import { CREDIT_PACKAGES } from '@/types'
 import { useI18n } from '@/hooks/useI18n'
 import { fmt } from '@/lib/gameClient'
@@ -24,7 +25,7 @@ export function CreditShop({ credits, onBuy, onClose }: Props) {
       priceCents: pkg.priceCents,
       comparePriceCents: i === 0 ? undefined : Math.round(cheapestPerCredit * pkg.credits),
       badge: pkg.id === 'medium' ? t('shopBadgePopular') : pkg.id === 'large' ? t('shopBadgeBest') : undefined,
-      icon: '💎',
+      icon: <Lightbulb size={20} strokeWidth={1.75} />,
       accent: pkg.id === 'large' ? 'var(--primary)' : pkg.id === 'medium' ? 'var(--canal)' : undefined,
     }
   })

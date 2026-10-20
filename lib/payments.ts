@@ -76,9 +76,42 @@ export function parseCustomId(raw: unknown): PaymentMeta | null {
   return null
 }
 
-function toCents(value: string): number | null {
+export function toCents(value: string): number | null {
   if (!/^\d+(\.\d{1,2})?$/.test(value)) return null
   return Math.round(parseFloat(value) * 100)
+}
+
+/**
+ * Pure check that a capture pays exactly for what its custom_id says was
+ * bought. `cityPriceCents` is the authoritative city price (null = unknown
+ * city); `merchantId` is PAYPAL_MERCHANT_ID (payee check skipped if unset).
+ */
+export function verifyCaptureMoney(
+  info: Pick<CaptureInfo, 'orderId' | 'amountValue' | 'currency' | 'payeeMerchantId'>,
+  meta: PaymentMeta | null,
+  cityPriceCents: number | null,
+  merchantId: string | undefined,
+): { problem: string | null; expectedCents: number | null; credits: number } {
+  let problem: string | null = null
+  let expectedCents: number | null = null
+  let credits = 0
+  if (!meta) {
+    problem = 'bad_custom_id'
+  } else if (meta.kind === 'city_unlock') {
+    expectedCents = cityPriceCents
+    if (expectedCents === null) problem = 'unknown_city'
+  } else {
+    const pkg = CREDIT_PACKAGES.find(p => p.id === meta.packageId)
+    if (!pkg) problem = 'unknown_package'
+    else { expectedCents = pkg.priceCents; credits = pkg.credits }
+  }
+  if (!problem && info.currency !== 'EUR') problem = 'wrong_currency'
+  if (!problem && toCents(info.amountValue) !== expectedCents) problem = 'wrong_amount'
+  if (!problem && merchantId) {
+    if (!info.payeeMerchantId) console.warn('[payments] capture without payee merchant id', info.orderId)
+    else if (info.payeeMerchantId !== merchantId) problem = 'wrong_payee'
+  }
+  return { problem, expectedCents, credits }
 }
 
 // ── Grant ───────────────────────────────────────────────────────────────
@@ -100,26 +133,10 @@ export async function processCapture(info: CaptureInfo, via: 'redirect' | 'webho
   if (info.status !== 'COMPLETED') return { status: 'failed', meta }
 
   // ── Verify the money matches what the custom_id says was bought ──
-  let problem: string | null = null
-  let expectedCents: number | null = null
-  let credits = 0
-  if (!meta) {
-    problem = 'bad_custom_id'
-  } else if (meta.kind === 'city_unlock') {
-    expectedCents = await loadCityPriceCents(meta.cityId)
-    if (expectedCents === null) problem = 'unknown_city'
-  } else {
-    const pkg = CREDIT_PACKAGES.find(p => p.id === meta.packageId)
-    if (!pkg) problem = 'unknown_package'
-    else { expectedCents = pkg.priceCents; credits = pkg.credits }
-  }
-  if (!problem && info.currency !== 'EUR') problem = 'wrong_currency'
-  if (!problem && toCents(info.amountValue) !== expectedCents) problem = 'wrong_amount'
-  const merchant = process.env.PAYPAL_MERCHANT_ID
-  if (!problem && merchant) {
-    if (!info.payeeMerchantId) console.warn('[payments] capture without payee merchant id', info.orderId)
-    else if (info.payeeMerchantId !== merchant) problem = 'wrong_payee'
-  }
+  const cityPriceCents = meta?.kind === 'city_unlock' ? await loadCityPriceCents(meta.cityId) : null
+  const { problem, expectedCents, credits } = verifyCaptureMoney(
+    info, meta, cityPriceCents, process.env.PAYPAL_MERCHANT_ID,
+  )
 
   const db = adminDb()
   const paymentRef = db.collection('payments').doc(info.orderId)

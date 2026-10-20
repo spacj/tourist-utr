@@ -1,0 +1,231 @@
+/* ═══════════════════════════════════════════════════════════════
+   SEO / offline additions: hunt-card "Details" links, hunt landing
+   pages, "save map for offline", app-update banner, blog hero.
+   Uses the field-notebook tokens from globals.css.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── City page: card + details link ─────────────────────────── */
+.hunt-card-wrap { margin-bottom: 12px; scroll-margin: 96px; }
+.hunt-card-wrap > .hunt-card { margin-bottom: 0; }
+/* The wrapper breaks .hunt-card:nth-of-type stagger; re-create it. */
+.hunt-card-wrap:nth-of-type(1) > .hunt-card { animation-delay: 0.05s; }
+.hunt-card-wrap:nth-of-type(2) > .hunt-card { animation-delay: 0.13s; }
+.hunt-card-wrap:nth-of-type(3) > .hunt-card { animation-delay: 0.21s; }
+.hunt-card-wrap:nth-of-type(4) > .hunt-card { animation-delay: 0.29s; }
+.hunt-card-wrap:nth-of-type(5) > .hunt-card { animation-delay: 0.37s; }
+.hunt-card-wrap.is-highlighted > .hunt-card {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(194, 65, 12, 0.18), var(--shadow-md);
+}
+.hunt-card-details {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+  margin: 6px 6px 0 auto;
+  width: fit-content;
+  padding: 6px 4px;
+  min-height: 32px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--canal);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.hunt-card-details:hover { color: var(--text); }
+.hunt-card-details:focus-visible { outline: 2px solid var(--canal); outline-offset: 2px; border-radius: 6px; }
+
+/* ── Save map for offline ───────────────────────────────────── */
+.save-map-offline {
+  margin: 20px 0 8px;
+  padding: 14px 16px;
+  border: 1px dashed var(--border-2);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.save-map-offline-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--canal);
+  background: var(--canal-soft);
+  color: var(--canal);
+  font: inherit;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  text-align: left;
+}
+.save-map-offline-btn:hover { background: rgba(46, 106, 88, 0.16); }
+.save-map-offline-btn:disabled { cursor: progress; opacity: 0.85; }
+.save-map-offline-btn:focus-visible { outline: 2px solid var(--canal); outline-offset: 2px; }
+.save-map-offline-bar {
+  display: block;
+  height: 4px;
+  margin-top: 10px;
+  border-radius: 2px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.save-map-offline-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--canal);
+  transition: width 0.2s ease;
+}
+.save-map-offline-hint { margin-top: 8px; font-size: 13px; color: var(--text-muted); }
+.save-map-offline.is-error .save-map-offline-hint { color: var(--red); }
+.save-map-offline-done { font-size: 14px; color: var(--canal); font-weight: 600; }
+
+/* ── App update banner ──────────────────────────────────────── */
+.sw-update-banner {
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 8px 8px 8px 16px;
+  border-radius: 14px;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 14px;
+  box-shadow: var(--shadow-md);
+}
+.sw-update-text { flex: 1; min-width: 0; }
+.sw-update-btn {
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.sw-update-btn:hover { background: var(--primary-2); }
+.sw-update-close {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.sw-update-btn:focus-visible, .sw-update-close:focus-visible { outline: 2px solid var(--bg); outline-offset: 2px; }
+
+/* ── Hunt landing page ──────────────────────────────────────── */
+.landing { padding-bottom: 48px; }
+.landing-head { margin: 8px 0 20px; }
+.landing-eyebrow {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--canal);
+  margin-bottom: 8px;
+}
+.landing-title {
+  font-family: var(--font-serif, serif);
+  font-weight: 400;
+  font-size: clamp(28px, 6vw, 40px);
+  line-height: 1.1;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.landing-desc { margin-top: 12px; font-size: 17px; line-height: 1.6; color: var(--text-muted); }
+
+.landing-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 1px;
+  margin: 0 0 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--border);
+  overflow: hidden;
+}
+.landing-facts > div { background: var(--surface); padding: 12px 14px; min-width: 0; }
+.landing-facts dt {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+.landing-facts dd { font-size: 15px; font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
+
+.landing-price {
+  padding: 18px;
+  border-radius: 14px;
+  border: 2px solid var(--text);
+  background: var(--surface);
+  margin-bottom: 28px;
+}
+.landing-price.is-free { border-color: var(--canal); }
+.landing-price-main { font-family: var(--font-serif, serif); font-size: 20px; line-height: 1.25; }
+.landing-price-note { margin: 6px 0 14px; font-size: 14px; color: var(--text-muted); }
+.landing-cta { display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; width: 100%; }
+@media (min-width: 560px) { .landing-cta { width: auto; } }
+
+.landing-section { margin-bottom: 28px; }
+.landing-expect { list-style: none; display: grid; gap: 10px; }
+.landing-expect li {
+  position: relative;
+  padding-left: 22px;
+  font-size: 15px;
+  line-height: 1.55;
+}
+.landing-expect li::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 0.62em;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--brick);
+}
+
+.landing-map {
+  width: 100%;
+  height: 240px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.landing-map-note { margin-top: 8px; font-size: 14px; color: var(--text-muted); font-family: var(--font-mono, monospace); }
+
+.landing-siblings { list-style: none; display: grid; gap: 8px; }
+.landing-siblings a {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+}
+.landing-siblings a:hover { border-color: var(--border-2); }
+.landing-siblings a:focus-visible { outline: 2px solid var(--canal); outline-offset: 2px; }
+.landing-sibling-title { font-weight: 600; }
+.landing-sibling-meta { font-size: 13px; color: var(--text-muted); }
+
+/* ── Blog hero (next/image with `fill`) ─────────────────────── */
+.blog-post-hero { position: relative; }

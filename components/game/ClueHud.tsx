@@ -1,12 +1,14 @@
 'use client'
+import { ArrowLeft, CircleHelp, Lightbulb, MapPin, ScrollText, Search, Star } from 'lucide-react'
 import { useI18n } from '@/hooks/useI18n'
 import { fmt } from '@/lib/gameClient'
 
 /** Pinned top HUD. Every control is a ≥44 px button. Shows the server's totalScore. */
 export function ClueHud({
-  icon, order, totalClues, credits, score, historyCount, hasCase,
+  order, totalClues, credits, score, historyCount, hasCase,
   onBack, onIntro, onShop, onHistory, onCase, onHelp,
 }: {
+  /** The stop's content icon (unused in the HUD, which shows a neutral pin). */
   icon: string | null
   order: number
   totalClues: number
@@ -25,33 +27,33 @@ export function ClueHud({
   return (
     <div className="game-hud">
       <button type="button" onClick={onBack} className="hud-back" aria-label={t('backToCity')}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-          <path d="M19 12H5M12 19l-7-7 7-7" />
-        </svg>
+        <ArrowLeft size={20} strokeWidth={2} aria-hidden />
       </button>
       <button type="button" onClick={onIntro} className="hud-pill hud-stop"
         aria-label={fmt(t('hudStopLabel'), { n: order, total: totalClues })}>
-        <span aria-hidden>{icon ?? '📍'}</span> {order}/{totalClues}
+        <MapPin size={18} strokeWidth={1.75} aria-hidden /> <span className="hud-num">{order}/{totalClues}</span>
       </button>
       <button type="button" onClick={onShop} className="hud-pill hud-credits"
         aria-label={fmt(t('hudCreditsLabel'), { n: credits })}>
-        <span aria-hidden>💎</span> {credits}
+        <Lightbulb size={18} strokeWidth={1.75} aria-hidden /> <span className="hud-num">{credits}</span>
       </button>
       <button type="button" onClick={onHistory} className="hud-pill hud-score"
         aria-label={fmt(t('hudScoreLabel'), { n: score })}>
-        <span aria-hidden>⭐</span> {score}
+        <Star size={18} strokeWidth={1.75} aria-hidden /> <span className="hud-num">{score}</span>
       </button>
       {historyCount > 0 && (
         <button type="button" onClick={onHistory} className="hud-pill hud-history" aria-label={t('history')}>
-          <span aria-hidden>📜</span> {historyCount}
+          <ScrollText size={18} strokeWidth={1.75} aria-hidden /> <span className="hud-num">{historyCount}</span>
         </button>
       )}
       {hasCase && (
         <button type="button" onClick={onCase} className="hud-pill hud-case" aria-label={t('caseFile')}>
-          <span aria-hidden>🔍</span> <span className="hud-case-label">{t('caseFile')}</span>
+          <Search size={18} strokeWidth={1.75} aria-hidden /> <span className="hud-case-label">{t('caseFile')}</span>
         </button>
       )}
-      <button type="button" onClick={onHelp} className="hud-pill hud-help" aria-label={t('helpLabel')}>?</button>
+      <button type="button" onClick={onHelp} className="hud-pill hud-help" aria-label={t('helpLabel')}>
+        <CircleHelp size={20} strokeWidth={1.75} aria-hidden />
+      </button>
     </div>
   )
 }

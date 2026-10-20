@@ -1,12 +1,13 @@
 'use client'
+import { Logo } from '@/components/Logo'
 import { useI18n } from '@/hooks/useI18n'
 
 export default function NotFound() {
   const { t } = useI18n()
   return (
-    <main className="page-center">
+    <main className="page-center" id="main">
       <div className="container flow-status-page">
-        <div className="flow-status-icon" aria-hidden>🧭</div>
+        <div className="flow-status-icon" aria-hidden><Logo size={56} /></div>
         <h1 className="flow-page-title">{t('notFoundTitle')}</h1>
         <p className="flow-page-sub">{t('notFoundBody')}</p>
         <div className="flow-actions-row">

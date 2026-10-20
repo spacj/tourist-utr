@@ -1,4 +1,5 @@
 'use client'
+import { Smartphone, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { useI18n } from '@/hooks/useI18n'
@@ -115,10 +116,7 @@ export function PwaInstallBanner() {
   return (
     <div className="pwa-banner" role="region" aria-label={t('pwaInstallTitle')}>
       <div className="pwa-banner-icon" aria-hidden>
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="5" y="2" width="14" height="20" rx="3"/>
-          <line x1="12" y1="18" x2="12" y2="18"/>
-        </svg>
+        <Smartphone size={28} strokeWidth={1.75} />
       </div>
       <div className="pwa-banner-body">
         <div className="pwa-banner-title">{t('pwaInstallTitle')}</div>
@@ -129,7 +127,7 @@ export function PwaInstallBanner() {
           <button type="button" className="pwa-banner-cta" onClick={install}>{t('pwaInstallCta')}</button>
         )}
         <button type="button" className="pwa-banner-dismiss" onClick={dismiss} aria-label={t('pwaInstallDismiss')}>
-          {showIosHint ? '✕' : t('pwaInstallDismiss')}
+          {showIosHint ? <X size={18} strokeWidth={2} aria-hidden /> : t('pwaInstallDismiss')}
         </button>
       </div>
     </div>

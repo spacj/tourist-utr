@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
 import { type Bench, SPOT_KINDS } from '@/types'
 import { BenchEditButton } from '@/components/BenchEditButton'
+import { AreaMap } from '@/components/AreaMap'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tourhunts.com'
+import { SITE_URL } from '@/lib/site'
+import { MapPin } from 'lucide-react'
 
 /** Per-spot SEO metadata, derived from the spot's own kind. */
 export function buildSpotDetailMetadata(spot: Bench): Metadata {
@@ -74,7 +76,6 @@ export function SpotDetail({ spot }: { spot: Bench }) {
   }
 
   const directions = `https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lng}`
-  const mapImg = `https://staticmap.openstreetmap.de/staticmap.php?center=${spot.lat},${spot.lng}&zoom=16&size=640x320&markers=${spot.lat},${spot.lng},lightblue1`
 
   return (
     <main className="page-center">
@@ -94,13 +95,19 @@ export function SpotDetail({ spot }: { spot: Bench }) {
           )}
           <h1 className="bench-article-title">{spot.title}</h1>
           {(spot.address || spot.city) && (
-            <div className="bench-article-city">📍 {[spot.address, spot.postalCode, spot.city].filter(Boolean).join(', ')}</div>
+            <div className="bench-article-city"><MapPin size={15} strokeWidth={2} aria-hidden /> {[spot.address, spot.postalCode, spot.city].filter(Boolean).join(', ')}</div>
           )}
         </header>
 
-        <div className="bench-article-map">
-          <img src={mapImg} alt={`Map showing the location of ${spot.title}`} loading="lazy" />
-        </div>
+        <AreaMap
+          lat={spot.lat}
+          lng={spot.lng}
+          label={`Map showing the location of ${spot.title}`}
+          radiusM={null}
+          pin
+          zoom={16}
+          className="bench-article-map"
+        />
 
         {spot.description && <p className="bench-article-desc">{spot.description}</p>}
 

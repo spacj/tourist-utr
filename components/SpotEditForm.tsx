@@ -1,4 +1,5 @@
 'use client'
+import { MapPin, TriangleAlert } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { useIsAdmin } from '@/hooks/useIsAdmin'
@@ -211,10 +212,10 @@ export function SpotEditForm({ kind, id }: { kind: SpotKind; id: string }) {
         <div className={`bench-add-geo bench-add-geo-${geoState === 'idle' ? 'ok' : geoState}`}>
           {geoState === 'locating' && <><span className="spinner-mini-dark" aria-hidden /> Getting your location…</>}
           {geoState === 'error'
-            ? <><span aria-hidden>⚠️</span> <span>{geoError}</span> <button type="button" className="bench-add-relocate" onClick={repositionHere}>Retry</button></>
+            ? <><TriangleAlert size={16} strokeWidth={1.75} aria-hidden /> <span>{geoError}</span> <button type="button" className="bench-add-relocate" onClick={repositionHere}>Retry</button></>
             : (
               <>
-                <span aria-hidden>📍</span>
+                <MapPin size={16} strokeWidth={1.75} aria-hidden />
                 <span>Pin at <code>{coords?.lat.toFixed(5)}, {coords?.lng.toFixed(5)}</code></span>
                 <button type="button" className="bench-add-relocate" onClick={repositionHere}>Move pin to my location</button>
               </>

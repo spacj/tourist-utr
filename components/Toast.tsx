@@ -1,5 +1,7 @@
 'use client'
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react'
+import { X } from 'lucide-react'
+import { useI18n } from '@/hooks/useI18n'
 
 /**
  * Lightweight toasts announced to screen readers (aria-live).
@@ -18,6 +20,7 @@ const Ctx = createContext<ToastApi>({ success: () => {}, error: () => {}, info: 
 export const useToast = () => useContext(Ctx)
 
 export function ToastProvider({ children }: { children: ReactNode }) {
+  const { t } = useI18n()
   const [items, setItems] = useState<Item[]>([])
   const nextId = useRef(1)
 
@@ -46,7 +49,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {items.map(i => (
           <div key={i.id} className={`toast toast-${i.kind}`} role={i.kind === 'error' ? 'alert' : 'status'}>
             <span className="toast-text">{i.text}</span>
-            <button type="button" className="toast-close" onClick={() => dismiss(i.id)} aria-label="Dismiss">×</button>
+            <button type="button" className="toast-close" onClick={() => dismiss(i.id)} aria-label={t('dismiss')}><X size={18} strokeWidth={2} aria-hidden /></button>
           </div>
         ))}
       </div>

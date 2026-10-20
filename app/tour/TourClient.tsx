@@ -1,5 +1,9 @@
 'use client'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ComponentType } from 'react'
+import {
+  ArrowLeft, ArrowRight, Check, ChevronDown, ChevronRight, Compass, Landmark, MapPin, Moon, ShoppingBag,
+  Users, UtensilsCrossed, type LucideProps,
+} from 'lucide-react'
 import { Clue, Hunt, localizeClue, localizeHunt, TourCategory } from '@/types'
 import { useI18n } from '@/hooks/useI18n'
 import { haversineM } from '@/lib/geo'
@@ -18,13 +22,14 @@ interface Props {
   initiallyArrivedIds: string[]
 }
 
-const TOUR_CATEGORY_META: Record<TourCategory, { icon: string; color: string }> = {
-  nightlife: { icon: '🌙', color: '#7c3aed' },
-  food:      { icon: '🍝', color: '#dc2626' },
-  shopping:  { icon: '🛍️', color: '#0891b2' },
-  culture:   { icon: '🏛️', color: '#0d9488' },
-  family:    { icon: '👨‍👩‍👧', color: '#f59e0b' },
-  general:   { icon: '🧭', color: '#6366f1' },
+// Notebook inks (all ≥ 4.5:1 against white text and on paper).
+const TOUR_CATEGORY_META: Record<TourCategory, { Icon: ComponentType<LucideProps>; color: string }> = {
+  nightlife: { Icon: Moon,            color: '#3B4A6B' },
+  food:      { Icon: UtensilsCrossed, color: '#A33B2B' },
+  shopping:  { Icon: ShoppingBag,     color: '#7A5417' },
+  culture:   { Icon: Landmark,        color: '#2E6A58' },
+  family:    { Icon: Users,           color: '#7A3E62' },
+  general:   { Icon: Compass,         color: '#23201B' },
 }
 
 const NEARBY_M = 60
@@ -126,13 +131,11 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, cityId, 
       {/* Floating top bar */}
       <header className="tour-topbar">
         <a href={cityId ? `/city/${cityId}` : '/'} className="tour-topbar-back" aria-label={t('exitTour')}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
+          <ArrowLeft size={20} strokeWidth={2} aria-hidden />
         </a>
         <div className="tour-topbar-info">
           <div className="tour-topbar-eyebrow">
-            <span style={{ marginRight: 4 }}>{catMeta.icon}</span>
+            <catMeta.Icon size={16} strokeWidth={1.75} aria-hidden />
             {cat === 'general' ? t('tourLabel') : t(`cat${cat.charAt(0).toUpperCase()}${cat.slice(1)}`)}
           </div>
           <div className="tour-topbar-title">{hunt.title}</div>
@@ -195,7 +198,7 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, cityId, 
             <div className="tour-card">
               <div className="tour-card-head">
                 <span className={`tour-card-badge ${isVisited ? 'is-visited' : ''}`} style={!isVisited ? { background: catMeta.color } : undefined}>
-                  {isVisited ? '✓' : selectedClue.order}
+                  {isVisited ? <Check size={16} strokeWidth={2.5} aria-label={t('visited')} /> : selectedClue.order}
                 </span>
                 <div className="tour-card-headline">
                   <div className="tour-card-name">{selectedClue.locationName || fmt(t('stopN'), { n: selectedClue.order })}</div>
@@ -209,7 +212,7 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, cityId, 
                 )}
               </div>
               {selectedClue.riddle && (
-                <p className="tour-card-desc">{selectedClue.riddle}</p>
+                <p className="tour-card-desc typewriter">{selectedClue.riddle}</p>
               )}
               <div className="tour-card-actions">
                 <button
@@ -220,7 +223,7 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, cityId, 
                   {t('moreHints')} ↑
                 </button>
                 {isVisited ? (
-                  <span className="tour-card-visited-tag">✓ {t('visited')}</span>
+                  <span className="tour-card-visited-tag"><Check size={16} strokeWidth={2.25} aria-hidden /> {t('visited')}</span>
                 ) : (
                   <button
                     type="button"
@@ -244,7 +247,7 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, cityId, 
                   }}
                   aria-label={t('prevStop')}
                 >
-                  ←
+                  <ArrowLeft size={18} strokeWidth={2} aria-hidden />
                 </button>
                 <span className="tour-card-pager-pos">
                   {selectedClue.order} / {clues.length}
@@ -259,7 +262,7 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, cityId, 
                   }}
                   aria-label={t('nextStop')}
                 >
-                  →
+                  <ArrowRight size={18} strokeWidth={2} aria-hidden />
                 </button>
               </div>
             </div>
@@ -292,7 +295,7 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, cityId, 
                     aria-expanded={isOpen}
                   >
                     <span className="tour-stop-num">
-                      {isVisited ? '✓' : clue.order}
+                      {isVisited ? <Check size={16} strokeWidth={2.5} aria-label={t('visited')} /> : clue.order}
                     </span>
                     <div className="tour-stop-headline">
                       <div className="tour-stop-name">{clue.locationName || fmt(t('stopN'), { n: clue.order })}</div>
@@ -306,7 +309,7 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, cityId, 
                         )}
                       </div>
                     </div>
-                    <span className="tour-stop-chevron" aria-hidden>{isOpen ? '▾' : '▸'}</span>
+                    <span className="tour-stop-chevron" aria-hidden>{isOpen ? <ChevronDown size={18} strokeWidth={2} /> : <ChevronRight size={18} strokeWidth={2} />}</span>
                   </button>
 
                   {isOpen && (
@@ -324,13 +327,11 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, cityId, 
                           onClick={() => focusOnMap(clue.id)}
                           className="tour-stop-maps-btn"
                         >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-                          </svg>
+                          <MapPin size={16} strokeWidth={1.75} aria-hidden />
                           {t('showMap')}
                         </button>
                         {isVisited ? (
-                          <span className="tour-stop-visited-tag">✓ {t('visited')}</span>
+                          <span className="tour-stop-visited-tag"><Check size={16} strokeWidth={2.25} aria-hidden /> {t('visited')}</span>
                         ) : (
                           <button
                             type="button"
@@ -355,7 +356,7 @@ export function TourClient({ hunt: rawHunt, clues: rawClues, sessionId, cityId, 
             href={`/hunt/complete?session=${sessionId}`}
             className="tour-cta-finish"
           >
-            {t('seeFinal')} →
+            {t('seeFinal')} <ArrowRight size={18} strokeWidth={2} aria-hidden />
           </a>
         )}
       </aside>

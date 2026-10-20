@@ -19,7 +19,7 @@
 :where(.city-back, .back-link, .topbar-back, .mp-cta, .mp-cta-secondary, .btn-primary, .btn-secondary,
   .checkout-option, .checkout-cta, .auth-tab, .auth-link, .flow-link-btn, .resume-race-dismiss,
   .hunt-card, .lb-row, .pwa-banner-cta, .pwa-banner-dismiss):focus-visible {
-  outline: 3px solid var(--primary);
+  outline: 2px solid var(--text);
   outline-offset: 2px;
 }
 
@@ -43,7 +43,7 @@
 /* ── Checkout sheet (Modal variant="sheet") ── */
 .modal-panel.checkout-panel { max-width: 520px; }
 .checkout-panel .modal-title {
-  font-family: var(--font-serif, serif); font-weight: 700; font-size: 22px; letter-spacing: -0.3px;
+  font-family: var(--font-serif, serif); font-weight: 400; font-size: 24px; letter-spacing: -0.3px;
 }
 .checkout-panel .checkout-subtitle { margin: 0 0 14px; font-size: 14px; }
 .checkout-panel .checkout-option { min-height: 64px; }
@@ -57,7 +57,7 @@
 .checkout-panel .checkout-option-items { display: flex; }
 .checkout-panel .checkout-option-item { position: relative; padding-left: 14px; display: block; }
 .checkout-panel .checkout-option-item::before {
-  content: "✓"; position: absolute; left: 0; top: 0; color: var(--green); font-weight: 700; font-size: 11px;
+  content: "✓"; position: absolute; left: 0; top: 0; color: var(--green); font-weight: 700; font-size: 13px;
 }
 .checkout-panel .checkout-option-subtitle,
 .checkout-panel .checkout-option-items { font-size: 13.5px; }
@@ -81,16 +81,16 @@
 .hunt-arrow .spinner-mini { display: inline-block; vertical-align: middle; }
 .meta-pill { font-size: 12px; border: 1px solid transparent; }
 .diff-pill.diff-easy   { color: var(--canal); background: var(--canal-soft); border-color: rgba(46, 106, 88, 0.3); }
-.diff-pill.diff-medium { color: #8a5300; background: rgba(176, 106, 0, 0.10); border-color: rgba(176, 106, 0, 0.3); }
+.diff-pill.diff-medium { color: var(--brick); background: rgba(176, 106, 0, 0.10); border-color: rgba(176, 106, 0, 0.3); }
 .diff-pill.diff-hard   { color: var(--red); background: var(--brick-soft); border-color: rgba(178, 58, 46, 0.3); }
 .cat-pill { color: var(--text); background: var(--surface-2); border-color: var(--border); }
 .cat-pill-icon { margin-right: 4px; }
-.cat-pill.cat-nightlife { color: #5b2bb5; background: rgba(91, 43, 181, 0.08); border-color: rgba(91, 43, 181, 0.25); }
-.cat-pill.cat-food      { color: #a32020; background: rgba(163, 32, 32, 0.08); border-color: rgba(163, 32, 32, 0.25); }
-.cat-pill.cat-shopping  { color: #0a6177; background: rgba(10, 97, 119, 0.08); border-color: rgba(10, 97, 119, 0.25); }
+.cat-pill.cat-nightlife { color: var(--canal); background: rgba(91, 43, 181, 0.08); border-color: rgba(91, 43, 181, 0.25); }
+.cat-pill.cat-food      { color: var(--red); background: rgba(163, 32, 32, 0.08); border-color: rgba(163, 32, 32, 0.25); }
+.cat-pill.cat-shopping  { color: var(--canal); background: rgba(10, 97, 119, 0.08); border-color: rgba(10, 97, 119, 0.25); }
 .cat-pill.cat-culture   { color: var(--canal); background: var(--canal-soft); border-color: rgba(46, 106, 88, 0.25); }
-.cat-pill.cat-family    { color: #8a5300; background: rgba(176, 106, 0, 0.08); border-color: rgba(176, 106, 0, 0.25); }
-.cat-pill.cat-general   { color: #3f3fa8; background: rgba(63, 63, 168, 0.08); border-color: rgba(63, 63, 168, 0.25); }
+.cat-pill.cat-family    { color: var(--brick); background: rgba(176, 106, 0, 0.08); border-color: rgba(176, 106, 0, 0.25); }
+.cat-pill.cat-general   { color: var(--canal); background: rgba(63, 63, 168, 0.08); border-color: rgba(63, 63, 168, 0.25); }
 .flow-mp-cta { margin: 16px 0; }
 .flow-anchor { scroll-margin-top: 20px; }
 .flow-section-gap { margin-top: 24px; }
@@ -107,7 +107,7 @@
   color: inherit; font-size: 22px; line-height: 1; cursor: pointer;
 }
 .flow-flash-close:hover { background: rgba(20, 20, 30, 0.06); }
-.flow-flash-close:focus-visible { outline: 3px solid var(--primary); outline-offset: 1px; }
+.flow-flash-close:focus-visible { outline: 2px solid var(--text); outline-offset: 1px; }
 
 /* ── Country page ── */
 .flow-pb-48 { padding-bottom: 48px; }
@@ -141,7 +141,7 @@
   border: 0; background: transparent; font: inherit; color: inherit; cursor: pointer;
   min-height: 44px; padding: 0 8px; border-radius: 10px;
 }
-.mp-code-value-btn:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+.mp-code-value-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 .flow-actions-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
 .flow-actions-row > * { flex: 1 1 160px; text-align: center; }
 .flow-block-cta { display: block; text-align: center; text-decoration: none; }
@@ -152,11 +152,10 @@
 
 /* ── Profile ── */
 .flow-center { text-align: center; }
-.flow-page-title { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+.flow-page-title { font-family: var(--font-serif), Georgia, serif; font-size: 30px; font-weight: 400; line-height: 1.15; margin-bottom: 8px; }
 .flow-page-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 24px; }
 .flow-mt-8 { margin-top: 8px; }
 .flow-mt-18 { margin-top: 18px; }
-.flow-gold { color: var(--gold); }
 .flow-plain-list { list-style: none; margin: 0; padding: 0; }
 .profile-avatar-letter {
   width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
@@ -169,10 +168,10 @@
 /* ── Hunt complete ── */
 .cmp-container { text-align: center; }
 .cmp-back { align-self: flex-start; min-height: 44px; }
-.cmp-title { font-family: var(--font-serif, Georgia), serif; font-size: 26px; font-weight: 600; margin-bottom: 4px; }
+.cmp-title { font-family: var(--font-serif, Georgia), serif; font-size: 26px; font-weight: 400; margin-bottom: 4px; }
 .cmp-hunt { font-size: 15px; color: var(--gold); margin-bottom: 16px; letter-spacing: 0.02em; }
 .cmp-score-label { font-size: 13px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 2px; }
-.cmp-score { font-family: var(--font-serif, Georgia), serif; font-size: 58px; font-weight: 700; color: var(--gold); line-height: 1; }
+.cmp-score { font-family: var(--font-serif, Georgia), serif; font-size: 58px; font-weight: 400; color: var(--gold); line-height: 1; }
 .cmp-score-unit { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
 .xp-badge { font-size: 13px; border-color: var(--border-2); }
 .cmp-clues {
@@ -193,7 +192,7 @@
 .cmp-clue.is-done .cmp-clue-icon { background: var(--canal-soft); border-color: rgba(46, 106, 88, 0.35); color: var(--text); }
 .cmp-clue-name { font-size: 15px; font-weight: 500; }
 .cmp-clue-status { font-size: 13px; color: var(--text-dim); }
-.cmp-clue-points { font-size: 15px; font-weight: 600; color: var(--text-dim); font-family: var(--font-serif, Georgia), serif; }
+.cmp-clue-points { font-size: 15px; font-weight: 400; color: var(--text-dim); font-family: var(--font-serif, Georgia), serif; }
 .cmp-clue.is-done .cmp-clue-points { color: var(--gold); }
 .cmp-lb-btn { width: 100%; margin-bottom: 8px; cursor: pointer; min-height: 44px; background: var(--surface); font-family: inherit; font-size: 14px; }
 .next-secondary { font-size: 14px; min-height: 44px; }
@@ -224,7 +223,7 @@
 .auth-panel .auth-input { margin-bottom: 0; }
 .auth-panel .auth-error, .auth-panel .auth-notice { font-size: 14px; }
 .auth-link { min-height: 44px; display: block; margin: 6px auto 0; font-size: 14px; }
-.auth-google:focus-visible, .auth-input:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+.auth-google:focus-visible, .auth-input:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 .accuse-card .flow-error-text:empty { margin: 0; }
 
 /* ── PWA install banner ── */
@@ -237,3 +236,13 @@
 .flow-status-page { max-width: 480px; text-align: center; padding: 48px 20px; }
 .flow-status-icon { font-size: 52px; margin-bottom: 12px; }
 .flow-status-page .flow-actions-row { justify-content: center; }
+
+/* Signed-out multiplayer explainer */
+.mp-steps { list-style: none; display: grid; gap: 12px; margin: 20px 0 4px; padding: 0; }
+.mp-steps li { display: flex; gap: 12px; align-items: flex-start; font-size: 16px; line-height: 1.5; }
+.mp-steps strong {
+  flex: none; width: 30px; height: 30px; display: grid; place-items: center;
+  border: 1.5px solid var(--text); border-radius: 50%;
+  font-family: var(--font-serif), serif; font-weight: 400; font-size: 15px;
+}
+.mp-signin-note { margin-top: 10px; font-size: 14px; }

@@ -1,10 +1,23 @@
 import type { Metadata } from 'next'
-import { HomeClient } from './HomeClient'
+import { HomeClient, type HeroPhoto } from './HomeClient'
 import { getAllPostsMeta } from '@/lib/blog'
 
 export const metadata: Metadata = {
   alternates: { canonical: '/' },
 }
+
+/**
+ * HERO PHOTO SLOT — the hero is typographic until we have a real photo from
+ * one of our routes (no stock images). To add one, put the file in /public
+ * and set e.g.:
+ *   const HERO_PHOTO: HeroPhoto | null = {
+ *     src: '/photos/oudegracht-wharf.jpg',
+ *     alt: 'The wharf cellars along the Oudegracht in Utrecht',
+ *     caption: 'Oudegracht, stop 3',
+ *   }
+ * It appears as a taped photo behind the sample clue card.
+ */
+const HERO_PHOTO: HeroPhoto | null = null
 
 // Server component: pulls the 3 most recent blog posts off disk so the
 // client homepage can show them in a "From the blog" strip without doing
@@ -13,5 +26,5 @@ export const metadata: Metadata = {
 // time on every deploy.
 export default function Home() {
   const recentPosts = getAllPostsMeta().slice(0, 3)
-  return <HomeClient recentPosts={recentPosts} />
+  return <HomeClient recentPosts={recentPosts} heroPhoto={HERO_PHOTO} />
 }

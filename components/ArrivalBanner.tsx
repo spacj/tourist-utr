@@ -1,5 +1,9 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ComponentType } from 'react'
+import {
+  Brain, Check, Eye, Flag, GraduationCap, Lightbulb, MapPin, Puzzle, Search, Share2, WifiOff, X,
+  type LucideProps,
+} from 'lucide-react'
 import { useI18n } from '@/hooks/useI18n'
 import { useToast } from '@/components/Toast'
 import { apiPost, ApiError } from '@/lib/apiFetch'
@@ -136,14 +140,14 @@ export function ArrivalBanner({
   }
 
   const b = stop.breakdown
-  const rows: { key: string; label: string; value: number }[] = [
-    { key: 'puzzle', label: `🧩 ${t('bdPuzzle')}`, value: b.puzzle },
-    { key: 'arrival', label: `📍 ${t('bdArrival')}`, value: b.arrival },
-    { key: 'onSite', label: `👀 ${t('bdOnSite')}`, value: b.onSite },
-    { key: 'trivia', label: `🎓 ${t('bdTrivia')}`, value: b.trivia },
-    { key: 'clean', label: `🧠 ${t('bdClean')}`, value: b.clean },
-    { key: 'raceFirst', label: `🏁 ${t('bdRaceFirst')}`, value: b.raceFirst },
-    { key: 'hintPenalty', label: `💡 ${t('bdHints')}`, value: b.hintPenalty },
+  const rows: { key: string; Icon: ComponentType<LucideProps>; label: string; value: number }[] = [
+    { key: 'puzzle', Icon: Puzzle, label: t('bdPuzzle'), value: b.puzzle },
+    { key: 'arrival', Icon: MapPin, label: t('bdArrival'), value: b.arrival },
+    { key: 'onSite', Icon: Eye, label: t('bdOnSite'), value: b.onSite },
+    { key: 'trivia', Icon: GraduationCap, label: t('bdTrivia'), value: b.trivia },
+    { key: 'clean', Icon: Brain, label: t('bdClean'), value: b.clean },
+    { key: 'raceFirst', Icon: Flag, label: t('bdRaceFirst'), value: b.raceFirst },
+    { key: 'hintPenalty', Icon: Lightbulb, label: t('bdHints'), value: b.hintPenalty },
   ].filter(r => r.value !== 0)
 
   const evidence = localizeEvidenceText(stop.evidence ?? undefined, lang)
@@ -154,10 +158,9 @@ export function ArrivalBanner({
     <div className="arrival-backdrop">
       <div className="arrival-card" role="dialog" aria-modal="true" aria-labelledby={`arrival-${stop.id}`}>
         <div className="arrival-header">
+          <span className="stamp stamp-found arrival-stamp" aria-hidden>{t('stampFound')}</span>
           <div className="arrival-icon" aria-hidden>
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
+            <Check size={26} strokeWidth={2.25} />
           </div>
           <h2 className="arrival-title" id={`arrival-${stop.id}`} tabIndex={-1} ref={headingRef}>{t('youMadeIt')}</h2>
           <p className="arrival-loc">{place || fmt(t('stopN'), { n: stop.order })}</p>
@@ -171,14 +174,14 @@ export function ArrivalBanner({
         <div className="arrival-body" aria-live="polite">
           {stop.offline && (
             <div className="fact-card arrival-offline">
-              <p className="fact-text">📡 {t('arrivalOffline')}</p>
+              <p className="fact-text"><WifiOff size={16} strokeWidth={1.75} aria-hidden /> {t('arrivalOffline')}</p>
             </div>
           )}
 
           {phase === 'onsite' && stop.onSite && (
             <div className="trivia-card onsite-card">
-              <div className="trivia-head">👀 {fmt(t('onSiteTitle'), { points: 50 })}</div>
-              <p className="trivia-q">{pickTxt(stop.onSite.question, lang)}</p>
+              <div className="trivia-head"><Eye size={18} strokeWidth={1.75} aria-hidden /> {fmt(t('onSiteTitle'), { points: 50 })}</div>
+              <p className="trivia-q typewriter">{pickTxt(stop.onSite.question, lang)}</p>
               {!stop.onSite.done ? (
                 <form className="puzzle-input-row" onSubmit={(e) => { e.preventDefault(); void submitOnSite() }}>
                   <label htmlFor={`onsite-${stop.id}`} className="sr-only">{t('puzzlePlaceholder')}</label>
@@ -192,7 +195,7 @@ export function ArrivalBanner({
               ) : null}
               {onSiteMsg && (
                 <div className={`trivia-explain ${onSiteMsg.ok ? '' : 'wrong'}`} role="status">
-                  <strong>{onSiteMsg.ok ? '✓ ' : '✗ '}{onSiteMsg.text}</strong>
+                  <strong>{onSiteMsg.ok ? <Check size={16} strokeWidth={2} aria-hidden /> : <X size={16} strokeWidth={2} aria-hidden />} {onSiteMsg.text}</strong>
                   {onSiteExplain && <div className="trivia-explain-body">{pickTxt(onSiteExplain, lang)}</div>}
                 </div>
               )}
@@ -207,8 +210,8 @@ export function ArrivalBanner({
 
           {phase === 'trivia' && tr && (
             <div className="trivia-card">
-              <div className="trivia-head">🎓 {t('quickQuiz')}</div>
-              <p className="trivia-q" id={`quiz-${stop.id}`}>{pickTxt(tr.question, lang)}</p>
+              <div className="trivia-head"><GraduationCap size={18} strokeWidth={1.75} aria-hidden /> {t('quickQuiz')}</div>
+              <p className="trivia-q typewriter" id={`quiz-${stop.id}`}>{pickTxt(tr.question, lang)}</p>
               <div className="trivia-opts" role="group" aria-labelledby={`quiz-${stop.id}`}>
                 {tr.options.map((opt, i) => {
                   let cls = 'trivia-opt'
@@ -226,7 +229,7 @@ export function ArrivalBanner({
               </div>
               {res && (
                 <div className={`trivia-explain ${res.correct ? '' : 'wrong'}`} role="status">
-                  <strong>{res.correct ? `✓ ${t('quizCorrect')}` : `✗ ${t('notQuite')}`}</strong>
+                  <strong>{res.correct ? <><Check size={16} strokeWidth={2} aria-hidden /> {t('quizCorrect')}</> : <><X size={16} strokeWidth={2} aria-hidden /> {t('notQuite')}</>}</strong>
                   {res.explain && <div className="trivia-explain-body">{pickTxt(res.explain, lang)}</div>}
                 </div>
               )}
@@ -244,7 +247,7 @@ export function ArrivalBanner({
                 <div className="score-breakdown">
                   {rows.map(r => (
                     <div key={r.key} className="score-row">
-                      <span className="score-row-label">{r.label}</span>
+                      <span className="score-row-label"><r.Icon size={16} strokeWidth={1.75} aria-hidden /> {r.label}</span>
                       <span className={r.value < 0 ? 'score-neg' : 'score-pos'}>{r.value > 0 ? `+${r.value}` : `−${-r.value}`}</span>
                     </div>
                   ))}
@@ -256,8 +259,8 @@ export function ArrivalBanner({
               )}
               {evidence && (
                 <div className="evidence-card">
-                  <div className="evidence-label">🔍 {t('newEvidence')}</div>
-                  <p className="evidence-text">{evidence}</p>
+                  <div className="evidence-label"><Search size={16} strokeWidth={1.75} aria-hidden /> {t('newEvidence')}</div>
+                  <p className="evidence-text typewriter">{evidence}</p>
                 </div>
               )}
               {stop.funFact && (
@@ -274,10 +277,7 @@ export function ArrivalBanner({
           <div className="arrival-footer">
             {!stop.offline && (
               <button type="button" onClick={share} className="btn-ghost btn-share">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                  <line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/>
-                </svg>
+                <Share2 size={18} strokeWidth={1.75} aria-hidden />
                 {t('share')}
               </button>
             )}

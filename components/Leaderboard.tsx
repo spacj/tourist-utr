@@ -1,9 +1,12 @@
 'use client'
 import { useCallback, useEffect, useState } from 'react'
+import { Trophy } from 'lucide-react'
 import { Modal } from '@/components/Modal'
+import { RankMark } from '@/components/StopIcon'
 import { useI18n } from '@/hooks/useI18n'
 import { apiGet } from '@/lib/apiFetch'
 import { fmt } from '@/lib/i18n/fmt'
+import { Avatar } from '@/components/Avatar'
 
 interface Row {
   rank: number
@@ -18,8 +21,6 @@ interface Data {
   yourRank: { rank: number; score: number; total: number } | null
   totalPlayers: number
 }
-
-const MEDALS = ['🥇', '🥈', '🥉']
 
 /** Per-hunt leaderboard sheet: top players + the caller's own rank (token-based). */
 export function Leaderboard({ huntId, onClose }: { huntId: string; onClose: () => void }) {
@@ -42,7 +43,7 @@ export function Leaderboard({ huntId, onClose }: { huntId: string; onClose: () =
   const youInTop = !!data?.leaderboard.some(r => r.isYou)
 
   return (
-    <Modal open onClose={onClose} variant="sheet" title={<>🏆 {t('leaderboardTitle')}</>} className="lb-panel">
+    <Modal open onClose={onClose} variant="sheet" title={<><Trophy size={20} strokeWidth={1.75} aria-hidden /> {t('leaderboardTitle')}</>} className="lb-panel">
       {state === 'loading' && (
         <div className="lb-state" aria-busy="true">
           <div className="spinner" role="status" aria-label={t('loading')} />
@@ -66,11 +67,9 @@ export function Leaderboard({ huntId, onClose }: { huntId: string; onClose: () =
           <ol className="lb-list">
             {data.leaderboard.map(row => (
               <li key={row.rank} className={`lb-row ${row.isYou ? 'is-you' : ''}`} aria-current={row.isYou ? 'true' : undefined}>
-                <span className={`lb-rank ${row.rank <= 3 ? 'lb-medal' : ''}`}>
-                  {row.rank <= 3 ? <span role="img" aria-label={`#${row.rank}`}>{MEDALS[row.rank - 1]}</span> : row.rank}
-                </span>
+                <span className="lb-rank"><RankMark rank={row.rank} label={fmt(t('rankLabel'), { n: row.rank })} /></span>
                 {row.photoURL
-                  ? <img src={row.photoURL} alt="" className="lb-avatar" referrerPolicy="no-referrer" />
+                  ? <Avatar src={row.photoURL} className="lb-avatar" size={32} />
                   : <span className="lb-avatar lb-avatar-letter" aria-hidden>{row.displayName?.[0]?.toUpperCase() || '?'}</span>}
                 <span className="lb-name">
                   {row.displayName}
@@ -82,7 +81,7 @@ export function Leaderboard({ huntId, onClose }: { huntId: string; onClose: () =
           </ol>
           {data.yourRank && !youInTop && (
             <div className="lb-yours" aria-label={fmt(t('lbYourRank'), { rank: data.yourRank.rank, total: data.yourRank.total })}>
-              <span className="lb-rank">{data.yourRank.rank}</span>
+              <span className="lb-rank"><RankMark rank={data.yourRank.rank} label={fmt(t('rankLabel'), { n: data.yourRank.rank })} /></span>
               <span className="lb-name">{t('lbYou')}</span>
               <span className="lb-score">{data.yourRank.score}</span>
             </div>

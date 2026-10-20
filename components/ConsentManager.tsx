@@ -130,12 +130,12 @@ export function ConsentManager({
           )}
           <div className="consent-actions">
             {custom ? (
-              <button className="btn-primary consent-btn" onClick={() => save({ analytics, ads })}>{t('consentSave')}</button>
+              <button type="button" className="btn-primary consent-btn" onClick={() => save({ analytics, ads })}>{t('consentSave')}</button>
             ) : (
               <>
-                <button className="btn-secondary consent-btn" onClick={() => save({ analytics: false, ads: false })}>{t('consentReject')}</button>
-                <button className="btn-ghost consent-btn" onClick={() => setCustom(true)}>{t('consentCustomize')}</button>
-                <button className="btn-primary consent-btn" onClick={() => save({ analytics: true, ads: true })}>{t('consentAccept')}</button>
+                <button type="button" className="btn-secondary consent-btn" onClick={() => save({ analytics: false, ads: false })}>{t('consentReject')}</button>
+                <button type="button" className="btn-ghost consent-btn" onClick={() => setCustom(true)}>{t('consentCustomize')}</button>
+                <button type="button" className="btn-primary consent-btn" onClick={() => save({ analytics: true, ads: true })}>{t('consentAccept')}</button>
               </>
             )}
           </div>

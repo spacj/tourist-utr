@@ -1,7 +1,11 @@
 'use client'
+import { ChevronDown } from 'lucide-react'
+import { RankMark, StopIcon } from '@/components/StopIcon'
+import { fmt } from '@/lib/i18n/fmt'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useI18n } from '@/hooks/useI18n'
 import { apiGet } from '@/lib/apiFetch'
+import { Avatar as AvatarImg } from '@/components/Avatar'
 
 type ClueTime = {
   clueId: string
@@ -58,13 +62,11 @@ function formatTime(ms: number): string {
     : `${m}:${s.toString().padStart(2, '0')}`
 }
 
-const MEDALS = ['🥇', '🥈', '🥉']
-
 function Avatar({ p, className }: { p: PlayerResult; className: string }) {
   return (
     <div className={className} aria-hidden>
       {p.photoURL
-        ? <img src={p.photoURL} alt="" referrerPolicy="no-referrer" />
+        ? <AvatarImg src={p.photoURL} />
         : <span>{p.displayName?.[0]?.toUpperCase() || '?'}</span>}
     </div>
   )
@@ -135,7 +137,7 @@ export function MultiplayerResults({ roomId }: { roomId: string }) {
         <div className="mp-podium">
           {finishers.slice(0, 3).map((p, i) => (
             <div key={p.key} className={`mp-podium-item mp-podium-${i + 1}`}>
-              <div className="mp-podium-medal" aria-label={[t('mpMedalGold'), t('mpMedalSilver'), t('mpMedalBronze')][i]}>{MEDALS[i]}</div>
+              <div className="mp-podium-medal"><RankMark rank={i + 1} label={[t('mpMedalGold'), t('mpMedalSilver'), t('mpMedalBronze')][i]} /></div>
               <Avatar p={p} className="mp-podium-avatar" />
               <div className="mp-podium-name">
                 {p.displayName}
@@ -169,7 +171,7 @@ export function MultiplayerResults({ roomId }: { roomId: string }) {
               return (
                 <tr key={p.key} className={`mp-results-row ${p.isYou ? 'is-me' : ''} ${p.finishedAt ? 'is-done' : ''}`}>
                   <td className="mp-td-rank">
-                    <span className={`mp-rank-cell ${medal ? `mp-medal-${rank}` : ''}`}>{medal ? MEDALS[rank - 1] : rank}</span>
+                    <span className={`mp-rank-cell ${medal ? `mp-medal-${rank}` : ''}`}>{medal ? <RankMark rank={rank} label={fmt(t('rankLabel'), { n: rank })} /> : rank}</span>
                   </td>
                   <td className="mp-td-name">
                     <Avatar p={p} className="mp-td-avatar" />
@@ -227,7 +229,7 @@ export function MultiplayerResults({ roomId }: { roomId: string }) {
                   </span>
                   <span className="mp-breakdown-summary">
                     <span>{p.score} {t('points')}</span>
-                    <span className={`mp-chevron ${isExpanded ? 'open' : ''}`} aria-hidden>▾</span>
+                    <ChevronDown className={`mp-chevron ${isExpanded ? 'open' : ''}`} size={18} strokeWidth={2} aria-hidden />
                   </span>
                 </button>
                 {isExpanded && (
@@ -239,7 +241,7 @@ export function MultiplayerResults({ roomId }: { roomId: string }) {
                       const wasFirst = !!ct.arrivedAt && firstArrival.get(ct.clueId) === ct.arrivedAt && data.results.length > 1
                       return (
                         <div key={ct.clueId} className={`mp-breakdown-clue ${ct.arrivedAt ? 'done' : ''}`}>
-                          <span className="mp-breakdown-clue-icon" aria-hidden>{ct.icon}</span>
+                          <StopIcon icon={ct.icon} size="sm" className="mp-breakdown-clue-icon" />
                           <span className="mp-breakdown-clue-name">
                             {stopName(ct.clueId, ct.locationName, idx)}
                             {wasFirst && <span className="mp-first-badge">{t('mpFirstArrival')}</span>}

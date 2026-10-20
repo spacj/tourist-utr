@@ -1,5 +1,7 @@
 'use client'
+import { Search, X } from 'lucide-react'
 import { useI18n } from '@/hooks/useI18n'
+import { Modal } from '@/components/Modal'
 import {
   ClueEvidence, MysterySpec, MysteryAxis, MysteryCandidate,
   localizeMystery, localizeEvidenceText, accumulateEliminations,
@@ -34,50 +36,47 @@ export function CaseFile({ mystery, knownClues, onClose }: Props) {
     .map(c => ({ id: c.id, text: localizeEvidenceText(c.evidence ?? undefined, lang) as string }))
 
   return (
-    <div className="history-backdrop" onClick={onClose}>
-      <div className="history-sheet case-file" onClick={(e) => e.stopPropagation()}>
-        <div className="sheet-grab" aria-hidden />
-        <div className="case-file-head">
-          <div>
-            <div className="case-file-eyebrow">🔍 {t('caseFile')}</div>
-            <h2 className="history-title" style={{ margin: 0 }}>{m.victim}</h2>
-          </div>
-          <button className="history-close" onClick={onClose} aria-label={t('close')}>✕</button>
-        </div>
+    <Modal
+      open
+      onClose={onClose}
+      variant="sheet"
+      className="case-file"
+      title={<><span className="case-file-eyebrow"><Search size={16} strokeWidth={1.75} aria-hidden /> {t('caseFile')}</span>{m.victim}</>}
+    >
+      <p className="case-file-intro typewriter">{m.intro}</p>
 
-        <p className="case-file-intro">{m.intro}</p>
-
-        <div className="case-grid">
-          {columns.map(col => (
-            <div key={col.axis} className="case-col">
-              <div className="case-col-head">{col.label}</div>
+      <div className="case-grid">
+        {columns.map(col => (
+          <div key={col.axis} className="case-col">
+            <h3 className="case-col-head">{col.label}</h3>
+            <ul className="flow-plain-list">
               {col.items.map(item => {
                 const ruledOut = (elim[col.axis] ?? []).includes(item.id)
                 return (
-                  <div key={item.id} className={`case-item ${ruledOut ? 'is-out' : ''}`}>
+                  <li key={item.id} className={`case-item ${ruledOut ? 'is-out' : ''}`}>
                     <span className="case-item-icon" aria-hidden>{item.icon}</span>
-                    <span className="case-item-name">{item.name}</span>
-                    {ruledOut && <span className="case-item-x" aria-hidden>✕</span>}
-                  </div>
+                    <span className="case-item-name">{ruledOut ? <s>{item.name}</s> : item.name}</span>
+                    {ruledOut && <X className="case-item-x" size={16} strokeWidth={2.25} aria-hidden />}
+                  </li>
                 )
               })}
-            </div>
-          ))}
-        </div>
-
-        <div className="case-evidence">
-          <div className="case-col-head">{t('caseEvidence')} · {evidenceLog.length}</div>
-          {evidenceLog.length === 0 ? (
-            <p className="case-evidence-empty">{t('caseNoEvidence')}</p>
-          ) : (
-            <ul className="case-evidence-list">
-              {evidenceLog.map((e, i) => (
-                <li key={e.id}><span className="case-evidence-num">{i + 1}</span> {e.text}</li>
-              ))}
             </ul>
-          )}
-        </div>
+          </div>
+        ))}
       </div>
-    </div>
+
+      <div className="case-evidence">
+        <h3 className="case-col-head">{t('caseEvidence')} · {evidenceLog.length}</h3>
+        {evidenceLog.length === 0 ? (
+          <p className="case-evidence-empty">{t('caseNoEvidence')}</p>
+        ) : (
+          <ol className="case-evidence-list">
+            {evidenceLog.map((e, i) => (
+              <li key={e.id} className="typewriter"><span className="case-evidence-num" aria-hidden>{i + 1}</span> {e.text}</li>
+            ))}
+          </ol>
+        )}
+      </div>
+    </Modal>
   )
 }

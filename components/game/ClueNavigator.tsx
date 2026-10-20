@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
+import { Compass, MapPin, MapPinOff } from 'lucide-react'
 import { useI18n } from '@/hooks/useI18n'
 import { ProximityRing } from '@/components/ProximityRing'
 import { haversineM, bearingDeg } from '@/lib/geo'
@@ -90,7 +91,7 @@ export function GpsHelp({
 
   return (
     <div className="gps-help" role="alert">
-      <div className="gps-help-title"><span aria-hidden>📍</span> {t(titleKey)}</div>
+      <div className="gps-help-title"><MapPinOff size={18} strokeWidth={1.75} aria-hidden /> {t(titleKey)}</div>
       <ol className="gps-help-steps">
         {steps.map(k => <li key={k}>{t(k)}</li>)}
       </ol>
@@ -144,12 +145,12 @@ export function ClueNavigator({
             )}
             {readout.mode === 'compass' && compassNeedsPermission && (
               <button type="button" className="btn-secondary game-nav-btn" onClick={onEnableCompass}>
-                🧭 {t('enableCompass')}
+                <Compass size={18} strokeWidth={1.75} aria-hidden /> {t('enableCompass')}
               </button>
             )}
             {canCheckIn && (
               <button type="button" className="btn-secondary game-nav-btn" onClick={onCheckIn}>
-                📍 {t('imHereCta')}
+                <MapPin size={18} strokeWidth={1.75} aria-hidden /> {t('imHereCta')}
               </button>
             )}
           </div>

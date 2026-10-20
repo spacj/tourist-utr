@@ -1,5 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { Compass, Lightbulb, MapPin, Puzzle } from 'lucide-react'
+import { StopIcon } from '@/components/StopIcon'
 import { useI18n } from '@/hooks/useI18n'
 import { Modal } from '@/components/Modal'
 import { pickTxt, type ActiveClueView } from '@/types'
@@ -33,10 +35,10 @@ export function StopIntro({
     return (
       <Modal open onClose={onTutorialClose} title={t('tutorialTitle')} className="game-tutorial">
         <ul className="tutorial-steps">
-          <li><span aria-hidden>🧩</span><span>{t('tutorialStep1')}</span></li>
-          <li><span aria-hidden>🧭</span><span>{t('tutorialStep2')}</span></li>
-          <li><span aria-hidden>💡</span><span>{t('tutorialStep3')}</span></li>
-          <li><span aria-hidden>📍</span><span>{t('tutorialStep4')}</span></li>
+          <li><Puzzle size={20} strokeWidth={1.75} aria-hidden /><span>{t('tutorialStep1')}</span></li>
+          <li><Compass size={20} strokeWidth={1.75} aria-hidden /><span>{t('tutorialStep2')}</span></li>
+          <li><Lightbulb size={20} strokeWidth={1.75} aria-hidden /><span>{t('tutorialStep3')}</span></li>
+          <li><MapPin size={20} strokeWidth={1.75} aria-hidden /><span>{t('tutorialStep4')}</span></li>
         </ul>
         <button type="button" className="btn-primary game-modal-cta" onClick={onTutorialClose}>{t('tutorialGotIt')}</button>
       </Modal>
@@ -49,8 +51,8 @@ export function StopIntro({
     <div className="intro-backdrop" onClick={onIntroClose}>
       <div className="intro-card" role="dialog" aria-modal="false" aria-label={t('yourClue')} onClick={(e) => e.stopPropagation()}>
         <div className="intro-stop">{t('stop')} {clue.order} {t('of')} {clue.totalClues}</div>
-        <div className="intro-icon" aria-hidden>{clue.icon ?? '📍'}</div>
-        <div className="intro-theme">{pickTxt(clue.theme, lang) || t('getReady')}</div>
+        <StopIcon icon={clue.icon} size="lg" className="intro-icon" />
+        <div className="intro-theme typewriter">{pickTxt(clue.theme, lang) || t('getReady')}</div>
         <div className="intro-sub">{t(clue.puzzle ? 'introSolveFirst' : 'introReadClue')} · {t(navKey)}</div>
         <button type="button" className="btn-primary" onClick={onIntroClose} autoFocus>
           {t('continue')}

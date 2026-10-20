@@ -7,10 +7,12 @@ import { OfflineIndicator } from '@/components/OfflineIndicator'
 import { ConsentManager } from '@/components/ConsentManager'
 import { ToastProvider } from '@/components/Toast'
 import { SITE_URL, SITE_NAME } from '@/lib/site'
+import { LANG_BOOT_SCRIPT } from '@/lib/lang'
 import './globals.css'
 import './styles/components.css'
 import './styles/flows.css'
 import './styles/game.css'
+import './styles/seo.css'
 
 // Google Analytics 4 and AdSense. Production-only, and loaded by
 // <ConsentManager> only after the visitor opts in (GDPR/ePrivacy).
@@ -136,8 +138,14 @@ const WEBSITE_JSONLD = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${sans.variable} ${display.variable} ${typewriter.variable}`}>
+    // Static by design: no cookies()/headers() here, so blog, legal and
+    // landing pages stay prerendered/ISR. SSR markup is English; the boot
+    // script fixes <html lang> before first paint and I18nProvider switches
+    // the UI text right after hydration (see hooks/useI18n.tsx).
+    // suppressHydrationWarning covers the lang attribute the script changed.
+    <html lang="en" suppressHydrationWarning className={`${sans.variable} ${display.variable} ${typewriter.variable}`}>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: LANG_BOOT_SCRIPT }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(ORG_JSONLD) }}
@@ -159,14 +167,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </ToastProvider>
           </AuthProvider>
         </I18nProvider>
-        <script dangerouslySetInnerHTML={{ __html: `
-          if('serviceWorker' in navigator){
-            window.addEventListener('load',function(){
-              navigator.serviceWorker.register('/sw.js').catch(function(){})
-            })
-          }
-        ` }} />
-
+        {/* Service worker: registered by hooks/useServiceWorker (via OfflineIndicator), production only. */}
       </body>
     </html>
   )

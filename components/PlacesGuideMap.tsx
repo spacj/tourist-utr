@@ -1,8 +1,11 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
-import maplibregl from 'maplibre-gl'
+import { useEffect, useRef, useState, useMemo } from 'react'
+import type { Map as MlMap, Marker as MlMarker } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import type { Place, PlaceCategory } from '@/lib/md'
+import { MAP_STYLE_URL, MAP_ATTRIBUTION_CONTROL } from '@/lib/mapStyle'
+
+type MapLib = typeof import('maplibre-gl')
 
 interface Props {
   places: Place[]
@@ -11,6 +14,9 @@ interface Props {
   onSelect: (placeId: string) => void
   userLat: number | null
   userLng: number | null
+  /** Embedded in a scrolling page: one finger scrolls the page, two pan the
+   *  map (ctrl/⌘ + wheel to zoom on desktop). Default true. */
+  cooperativeGestures?: boolean
 }
 
 /**
@@ -47,15 +53,16 @@ function applyMarkerState(
 }
 
 export function PlacesGuideMap({
-  places, categories, selectedId, onSelect, userLat, userLng,
+  places, categories, selectedId, onSelect, userLat, userLng, cooperativeGestures = true,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const mapRef = useRef<maplibregl.Map>()
-  const userMarkerRef = useRef<maplibregl.Marker>()
-  const placeMarkersRef = useRef<Map<string, { marker: maplibregl.Marker; inner: HTMLDivElement }>>(new Map())
+  const libRef = useRef<MapLib | null>(null)
+  const mapRef = useRef<MlMap>()
+  const userMarkerRef = useRef<MlMarker>()
+  const placeMarkersRef = useRef<Map<string, { marker: MlMarker; inner: HTMLDivElement }>>(new Map())
   const [mapReady, setMapReady] = useState(false)
 
-  // ── Initialize map once, fit it to all places ─────────────────────
+  // ── Initialize map once (maplibre-gl loaded lazily), fit it to all places ─────────────────────
   useEffect(() => {
     if (!containerRef.current || places.length === 0) return
 
@@ -66,38 +73,53 @@ export function PlacesGuideMap({
       [Math.max(...lngs), Math.max(...lats)],
     ]
 
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
-      bounds,
-      fitBoundsOptions: { padding: 80, maxZoom: 16 },
-      attributionControl: false,
-    })
-    mapRef.current = map
-    map.on('load', () => setMapReady(true))
+    let cancelled = false
+    let map: MlMap | null = null
+    import('maplibre-gl').then((mod) => {
+      if (cancelled || !containerRef.current) return
+      const lib = ((mod as any).default ?? mod) as MapLib
+      libRef.current = lib
+      map = new lib.Map({
+        container: containerRef.current,
+        style: MAP_STYLE_URL,
+        bounds,
+        fitBoundsOptions: { padding: 80, maxZoom: 16 },
+        // OpenFreeMap/OSM attribution must stay visible.
+        attributionControl: MAP_ATTRIBUTION_CONTROL,
+        cooperativeGestures,
+      })
+      mapRef.current = map
+      map.on('load', () => { if (!cancelled) setMapReady(true) })
+    }).catch(() => {})
 
+    // The marker registry is a Map that lives for the component's lifetime.
+    const placeMarkers = placeMarkersRef.current
     return () => {
-      placeMarkersRef.current.forEach(({ marker }) => marker.remove())
-      placeMarkersRef.current.clear()
+      cancelled = true
+      placeMarkers.forEach(({ marker }) => marker.remove())
+      placeMarkers.clear()
       if (userMarkerRef.current) {
         userMarkerRef.current.remove()
         userMarkerRef.current = undefined
       }
-      map.remove()
+      map?.remove()
       mapRef.current = undefined
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Build a quick id→category lookup for icon + color
-  const catById = new Map<string, PlaceCategory>()
-  for (const c of categories) catById.set(c.id, c)
-  const fallback = categories[0] ?? { id: '', label: '', icon: '📍', color: '#6366f1' }
+  const catById = useMemo(() => new Map<string, PlaceCategory>(categories.map(c => [c.id, c])), [categories])
+  const fallback = useMemo<PlaceCategory>(
+    () => categories[0] ?? { id: '', label: '', icon: '📍', color: '#2E6A58' },
+    [categories],
+  )
 
   // ── Render / update place markers ─────────────────────────────────
   useEffect(() => {
     const map = mapRef.current
-    if (!map || !mapReady) return
+    const lib = libRef.current
+    if (!map || !lib || !mapReady) return
 
     const seen = new Set<string>()
     places.forEach(place => {
@@ -112,7 +134,7 @@ export function PlacesGuideMap({
           ev.stopPropagation()
           onSelect(place.id)
         })
-        const marker = new maplibregl.Marker({ element: root, anchor: 'center' })
+        const marker = new lib.Marker({ element: root, anchor: 'center' })
           .setLngLat([place.lng, place.lat])
           .addTo(map)
         entry = { marker, inner }
@@ -136,20 +158,21 @@ export function PlacesGuideMap({
   // ── User location dot ─────────────────────────────────────────────
   useEffect(() => {
     const map = mapRef.current
-    if (!map || userLat === null || userLng === null) return
+    const lib = libRef.current
+    if (!map || !lib || userLat === null || userLng === null) return
     if (!userMarkerRef.current) {
       const root = document.createElement('div')
       root.className = 'tour-user-marker'
       const inner = document.createElement('div')
       inner.className = 'tour-user-marker-inner'
       root.appendChild(inner)
-      userMarkerRef.current = new maplibregl.Marker({ element: root })
+      userMarkerRef.current = new lib.Marker({ element: root })
         .setLngLat([userLng, userLat])
         .addTo(map)
     } else {
       userMarkerRef.current.setLngLat([userLng, userLat])
     }
-  }, [userLat, userLng])
+  }, [userLat, userLng, mapReady])
 
   // ── Pan to selected place ─────────────────────────────────────────
   useEffect(() => {

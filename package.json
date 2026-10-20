@@ -1,5 +1,5 @@
 {
-  "name": "utrecht-hunt",
+  "name": "tourhunts",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -7,6 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm run typecheck && npm run lint && npm run test",
     "seed": "node scripts/seed.mjs",
     "set-admin": "node scripts/set-admin.mjs",
     "icons": "node scripts/build-icons.mjs"
@@ -14,6 +18,7 @@
   "dependencies": {
     "firebase": "^12.12.0",
     "firebase-admin": "^13.10.0",
+    "lucide-react": "^0.460.0",
     "maplibre-gl": "^5.23.0",
     "next": "^14.2.35",
     "react": "^18",
@@ -25,7 +30,10 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.5.0",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.35",
     "sharp": "^0.33.5",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^2.1.9"
   }
 }

@@ -1,6 +1,7 @@
 'use client'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { ChevronDown, ChevronUp, Volume2, VolumeX, WifiOff, Zap } from 'lucide-react'
 import {
   pickTxt, type ActiveClueView, type ArrivalResponse, type CompletedClueView, type HintTier,
   type MysterySpec, type ClueEvidence,
@@ -19,6 +20,7 @@ import { CreditShop } from './CreditShop'
 import { PuzzleCard, type PuzzleSolved } from './PuzzleCard'
 import { ClueHistory } from './ClueHistory'
 import { CaseFile } from './CaseFile'
+import { StopIcon } from './StopIcon'
 import { ClueHud } from './game/ClueHud'
 import { HintList } from './game/HintList'
 import { ClueNavigator, useNavReadout, useCheckInAvailable } from './game/ClueNavigator'
@@ -237,7 +239,7 @@ export function ClueScreen({
 
       {isOffline && (
         <div className="game-offline-banner" role="status">
-          <span aria-hidden>📡</span> {t('offlineBanner')}
+          <WifiOff size={18} strokeWidth={1.75} aria-hidden /> {t('offlineBanner')}
         </div>
       )}
 
@@ -275,21 +277,21 @@ export function ClueScreen({
           aria-label={sheetState === 'expanded' ? t('collapse') : t('expand')}
         >
           <div className="sheet-handle" />
-          <span className="sheet-handle-hint">
-            {sheetState === 'expanded' ? `▾ ${t('collapse')}`
-              : sheetState === 'minimized' ? `▴ ${t('expand')}`
-              : `▴ ${t('moreHints')}`}
+          <span className="sheet-handle-hint" aria-hidden>
+            {sheetState === 'expanded'
+              ? <><ChevronDown size={16} strokeWidth={2} /> {t('collapse')}</>
+              : <><ChevronUp size={16} strokeWidth={2} /> {sheetState === 'minimized' ? t('expand') : t('moreHints')}</>}
           </span>
         </button>
 
-        <div className="dot-trail" aria-label={`${t('stop')} ${clue.order} ${t('of')} ${clue.totalClues}`}>
+        <div className="dot-trail" role="img" aria-label={`${t('stop')} ${clue.order} ${t('of')} ${clue.totalClues}`}>
           {dots.map((state, i) => <div key={i} className={`dot ${state}`} aria-hidden />)}
           <span className="dot-trail-label" aria-hidden>{clue.order - 1}/{clue.totalClues}</span>
         </div>
 
         {active && isAdmin && (
           <button type="button" onClick={loc.debugArrive} className="btn-ghost game-admin-skip">
-            ⚡ {t('skipTest')}
+            <Zap size={16} strokeWidth={1.75} aria-hidden /> {t('skipTest')}
           </button>
         )}
 
@@ -323,7 +325,7 @@ export function ClueScreen({
         ) : (
           <div className="clue-card">
             <div className="clue-card-header">
-              <div className="clue-icon" aria-hidden>{clue.icon ?? '📍'}</div>
+              <StopIcon icon={clue.icon} className="clue-icon" />
               <div className="clue-card-titles">
                 <div className="clue-label">{t('yourClue')}</div>
                 {theme && <div className="clue-theme">{theme}</div>}
@@ -333,7 +335,8 @@ export function ClueScreen({
             {riddle && (
               <div className="clue-actions">
                 <button type="button" className={`btn-ghost ${reading ? 'active' : ''}`} onClick={toggleReadAloud} aria-pressed={reading}>
-                  🔊 {reading ? t('stopReading') : t('readAloud')}
+                  {reading ? <VolumeX size={18} strokeWidth={1.75} aria-hidden /> : <Volume2 size={18} strokeWidth={1.75} aria-hidden />}
+                  {reading ? t('stopReading') : t('readAloud')}
                 </button>
               </div>
             )}

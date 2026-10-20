@@ -1,5 +1,6 @@
 'use client'
-import { useState } from 'react'
+import { useState, type ComponentType } from 'react'
+import { ArrowRight, Flag, Footprints, Users, X, type LucideProps } from 'lucide-react'
 import { useActiveRoom } from '@/hooks/useActiveRoom'
 import { useI18n } from '@/hooks/useI18n'
 import { useToast } from '@/components/Toast'
@@ -17,7 +18,7 @@ export function ResumeRaceBanner() {
   let title: string
   let desc: string
   let badge: string
-  let icon: string
+  let Icon: ComponentType<LucideProps>
   let canDismiss = false
 
   if (active.state === 'racing' && active.sessionId) {
@@ -25,20 +26,20 @@ export function ResumeRaceBanner() {
     title = t('resumeRaceTitle')
     desc = `${active.huntTitle} · ${active.cluesDone} ${t('stopsCompleted')} · ${active.score} ${t('points')}`
     badge = t('inRoomBadge')
-    icon = '🏃'
+    Icon = Footprints
   } else if (active.state === 'finished') {
     href = `/multiplayer/${active.code}`
     title = t('viewRaceResults')
     desc = `${active.huntTitle} · ${active.score} ${t('points')}`
     badge = t('raceFinished')
-    icon = '🏁'
+    Icon = Flag
     canDismiss = true
   } else {
     href = `/multiplayer/${active.code}`
     title = active.state === 'racing' ? t('resumeRaceTitle') : t('rejoinLobbyTitle')
     desc = active.huntTitle ? `${active.huntTitle} · ${active.code}` : active.code
     badge = active.state === 'racing' ? t('inRoomBadge') : t('lobby')
-    icon = '👥'
+    Icon = Users
     canDismiss = active.state === 'lobby'
   }
 
@@ -53,13 +54,13 @@ export function ResumeRaceBanner() {
   return (
     <div className="resume-race-banner" role="region" aria-label={title}>
       <a href={href} className="resume-race-link">
-        <div className="resume-race-icon" aria-hidden>{icon}</div>
+        <div className="resume-race-icon" aria-hidden><Icon size={22} strokeWidth={1.75} /></div>
         <div className="resume-race-body">
           <div className="resume-race-badge">{badge}</div>
           <div className="resume-race-title">{title}</div>
           <div className="resume-race-desc">{desc}</div>
         </div>
-        <div className="resume-race-arrow" aria-hidden>→</div>
+        <div className="resume-race-arrow" aria-hidden><ArrowRight size={20} strokeWidth={2} /></div>
       </a>
       {canDismiss && (
         <button
@@ -69,7 +70,7 @@ export function ResumeRaceBanner() {
           disabled={busy}
           aria-label={active.state === 'lobby' ? t('leaveRoom') : t('dismiss')}
         >
-          ×
+          <X size={18} strokeWidth={2} aria-hidden />
         </button>
       )}
     </div>

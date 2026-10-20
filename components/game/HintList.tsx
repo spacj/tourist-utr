@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { Lightbulb } from 'lucide-react'
 import { useI18n } from '@/hooks/useI18n'
 import { HINT_COSTS, SCORE, pickTxt, type ActiveClueView } from '@/types'
 import { fmt } from '@/lib/gameClient'
@@ -28,7 +29,7 @@ export function HintList({
   const [open, setOpen] = useState<Tier | null>(null)
 
   return (
-    <section aria-labelledby={`hints-${clue.id}`}>
+    <section className="hint-tabs" aria-labelledby={`hints-${clue.id}`}>
       <h3 id={`hints-${clue.id}`} className="clue-label game-section-label">{t('hints')}</h3>
       {ROWS.map(({ tier, labelKey, descKey }) => {
         const key = String(tier) as '1' | '2' | '3'
@@ -58,7 +59,9 @@ export function HintList({
                 </span>
               </span>
               <span className={`hint-status ${unlocked ? 'is-unlocked' : cost === 0 ? 'is-free' : credits < cost ? 'is-short' : ''}`}>
-                {busy ? '…' : unlocked ? t('unlocked') : cost > 0 ? `💎 ${cost}` : t('free')}
+                {busy ? '…' : unlocked ? t('unlocked') : cost > 0 ? (
+                  <><Lightbulb size={16} strokeWidth={1.75} aria-hidden /> {cost}<span className="sr-only"> {t('credits')}</span></>
+                ) : t('free')}
               </span>
             </button>
             {isOpen && (

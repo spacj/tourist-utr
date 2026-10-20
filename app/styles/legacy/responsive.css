@@ -1,0 +1,338 @@
+/* Mobile polish, country hero, desktop enhancements.
+   Moved verbatim from globals.css (order preserved); notebook.css restyles on top. */
+/* ─────────────────────────────────────────────────────────────
+   Mobile polish
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* Bigger tap targets */
+  .lang-btn { width: 36px; height: 36px; font-size: 18px; border-radius: 10px; }
+  .avatar-btn { width: 42px; height: 42px; }
+
+  /* Hero - tighter on small screens */
+  .hero { border-radius: 20px; }
+  /* CTA button on mobile: full-width, doesn't get cut off */
+
+  /* Hunt cards - more touch-friendly */
+  .hunt-card { padding: 16px; border-radius: 14px; }
+  .hunt-title { font-size: 17px; padding-right: 84px; }
+  .hunt-desc { font-size: 12.5px; }
+  .hunt-arrow { font-size: 24px; }
+  .hunt-meta { gap: 8px; row-gap: 6px; }
+  .meta-pill, .meta-item { font-size: 13px; }
+
+  /* Bottom sheet - default collapsed shows ring + clue; expanded shows hints */
+  .bottom-sheet {
+    max-height: 58dvh;
+    padding: 4px 14px max(80px, calc(16px + env(safe-area-inset-bottom, 0px)));
+    gap: 10px;
+  }
+  .bottom-sheet.expanded { max-height: 92dvh; }
+  .sheet-handle-btn { background: linear-gradient(180deg, var(--surface) 70%, rgba(255, 255, 255, 0)); }
+  .clue-card { padding: 14px; }
+  .clue-text { font-size: 14.5px; }
+
+  /* HUD pills - larger and easier to read while walking */
+  .game-hud { left: 10px; right: 10px; gap: 4px; }
+  .hud-pill { padding: 7px 13px; font-size: 12px; }
+
+  /* Hint rows - bigger tap targets */
+  .hint-header { padding: 13px 14px; }
+  .hint-label { font-size: 13.5px; }
+  .hint-body { padding: 12px 14px; font-size: 13.5px; }
+
+  /* Trivia options - bigger tap area */
+  .trivia-opt { padding: 12px 14px; font-size: 13.5px; }
+
+  /* Hide ghost button label on very narrow screens, keep icon */
+  .btn-share { padding: 13px 14px; }
+}
+
+/* Very narrow phones (≤360px): icon-only share button */
+@media (max-width: 360px) {
+  .btn-share { font-size: 0; gap: 0; padding: 13px; }
+  .btn-share svg { width: 16px; height: 16px; }
+}
+
+/* PWA install banner — mobile only, fixed bottom, dismissible */
+.pwa-banner {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index: 1000;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  background: var(--text);
+  color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.45), 0 4px 14px rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.08);
+  animation: pwa-banner-in 0.42s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes pwa-banner-in {
+  from { transform: translateY(120%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+.pwa-banner-icon {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--primary);
+  color: #fff;
+}
+.pwa-banner-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.pwa-banner-title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 2px;
+}
+.pwa-banner-desc {
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: rgba(255,255,255,0.78);
+}
+.pwa-banner-actions {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: stretch;
+}
+.pwa-banner-cta {
+  background: #fff;
+  color: var(--text);
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.pwa-banner-cta:active { transform: scale(0.97); }
+.pwa-banner-dismiss {
+  background: transparent;
+  color: rgba(255,255,255,0.6);
+  border: none;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.pwa-banner-dismiss:hover { color: #fff; }
+
+/* Hide on tablets/desktop — PWA install only meaningful on mobile */
+@media (min-width: 821px) {
+  .pwa-banner { display: none; }
+}
+
+/* ── Cookie banner ── */
+@keyframes cookieIn {
+  from { transform: translateY(120%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+/* ── Enhanced mobile hero ── */
+@media (max-width: 767px) {
+  .features { padding: 12px 14px; }
+  .city-cover { height: 100px; }
+  .city-cover-emoji { font-size: 52px; }
+  .city-body { padding: 14px 16px 16px; }
+  .city-name { font-size: 20px; }
+  .city-desc { font-size: 12.5px; }
+}
+
+@media (max-width: 360px) {
+  .city-cover { height: 88px; }
+  .city-cover-emoji { font-size: 44px; }
+  .city-name { font-size: 18px; }
+}
+
+/* Staggered feature animation */
+
+/* ═══ Hero CTA button ═══ */
+
+/* ═══ Stats bar ═══ */
+/* Hairline dividers between stats for a more "dashboard" feel. */
+
+/* ═══ Pricing clarity ═══ */
+.stat-label {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* ═══ How it works ═══ */
+
+/* ═══ Why section ═══ */
+
+/* ═══ City grid ═══ */
+.city-grid {
+  display: grid;
+  gap: 14px;
+}
+
+/* ═══ Country grid + cards ═══ */
+@media (min-width: 1024px) {
+  /* On wider desktops give every country its own card on a 3-up grid so
+     they don't stretch to twice the natural width and feel empty. */
+}
+@media (min-width: 1024px) {
+  /* Slightly taller cover on desktop keeps proportions right when cards
+     get narrower in a 3-up grid. */
+}
+
+/* ═══ Country hero (on /country/[id]) ═══ */
+.country-hero {
+  position: relative;
+  margin: 12px 0 4px;
+  padding: 36px 22px 28px;
+  border-radius: 22px;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--primary);
+  overflow: hidden;
+  color: white;
+  min-height: 220px;
+  display: flex;
+  align-items: flex-end;
+}
+.country-hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.55) 100%);
+}
+.country-hero-content {
+  position: relative; z-index: 1;
+  width: 100%;
+}
+.country-hero-flag {
+  font-size: 38px;
+  display: block;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4));
+}
+.country-hero-title {
+  font-family: var(--font-serif, serif);
+  font-size: 36px;
+  font-weight: 400;
+  letter-spacing: -0.6px;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+.country-hero-tagline {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  opacity: 0.9;
+  margin-bottom: 8px;
+}
+.country-hero-desc {
+  font-size: 14px;
+  line-height: 1.5;
+  opacity: 0.92;
+  max-width: 540px;
+  margin-bottom: 14px;
+}
+.country-hero-stats {
+  display: flex; gap: 16px;
+  font-size: 13px;
+  opacity: 0.92;
+}
+.country-hero-stats strong {
+  font-size: 16px;
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+/* ═══ Reviews section ═══ */
+
+/* ═══ CTA section ═══ */
+.cta-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  padding: 16px 28px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.18s, box-shadow 0.2s;
+  font-family: inherit;
+}
+.cta-primary-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.cta-primary-btn:active { transform: scale(0.97); }
+.cta-primary-btn svg { transition: transform 0.2s; }
+.cta-primary-btn:hover svg { transform: translateX(4px); }
+
+/* ═══ Site footer ═══ */
+
+/* ═══ Desktop (≥768px) homepage enhancements ═══ */
+@media (min-width: 768px) {
+  .container { max-width: 960px; }
+
+  /* Hero: side-by-side layout on desktop */
+  .hero {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    border-radius: 24px;
+    overflow: hidden;
+  }
+  .lang-switch { padding: 4px; }
+  .lang-btn { width: 34px; height: 34px; font-size: 18px; }
+
+  /* Stats bar: larger on desktop */
+  .stat-label { font-size: 13px; }
+
+  /* How it works: horizontal on desktop */
+
+  /* Why grid: 2×2 on desktop (same, but wider cards) */
+
+  /* Features: 2-column grid on desktop */
+  .features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 20px;
+    padding: 20px 24px;
+    border-radius: 16px;
+  }
+
+  /* City cards: 2-column grid on desktop */
+  .city-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+  .city-card { margin-bottom: 0; }
+  .city-cover { height: 160px; }
+  .city-cover-emoji { font-size: 72px; }
+  .city-body { padding: 20px 22px 22px; }
+  .city-name { font-size: 24px; }
+  .city-desc { font-size: 13.5px; }
+
+  /* Reviews: 3-column on desktop */
+
+  /* CTA section: wider on desktop */
+  .cta-primary-btn { padding: 18px 32px; font-size: 17px; }
+
+  /* Footer: wider on desktop */
+}
+
+@media (max-width: 767px) {
+  .stat-label { font-size: 13px; }
+  .cta-primary-btn { padding: 14px 24px; font-size: 14px; }
+}

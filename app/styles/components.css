@@ -48,8 +48,8 @@
   background: var(--text); color: #fff; font-size: 15px; line-height: 1.4;
   box-shadow: 0 10px 30px rgba(20, 20, 30, 0.25);
 }
-.toast-error { background: #9b2c2c; }
-.toast-success { background: #1f6b4a; }
+.toast-error { background: var(--red); }
+.toast-success { background: var(--canal); }
 .toast-text { flex: 1; }
 .toast-close {
   width: 36px; height: 36px; border: 0; border-radius: 8px; background: transparent;

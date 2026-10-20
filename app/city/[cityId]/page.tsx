@@ -1,405 +1,132 @@
-'use client'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { useParams, useSearchParams } from 'next/navigation'
-import { useAuth } from '@/components/AuthProvider'
-import { useToast } from '@/components/Toast'
-import { useI18n } from '@/hooks/useI18n'
-import { apiGet, apiPost } from '@/lib/apiFetch'
-import { errorCode, errorKey } from '@/lib/apiErrors'
-import { fmt } from '@/lib/i18n/fmt'
-import {
-  CITY_UNLOCK_PRICE_EUROS, City, Hunt, TourCategory, isHuntFree, isTour, localizeCity, localizeHunt,
-} from '@/types'
-import { ResumeRaceBanner } from '@/components/ResumeRaceBanner'
-import { CheckoutSheet, type CheckoutOption } from '@/components/CheckoutSheet'
+import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+import { getActiveCities, getCityWithHunts, isValidId, type PublicCity, type PublicHunt } from '@/lib/catalog'
+import { SITE_URL } from '@/lib/site'
+import { CITY_UNLOCK_PRICE_EUROS, isHuntFree, isTour } from '@/types'
+import { CityClient } from './CityClient'
 
-const DIFFICULTY_KEY: Record<string, string> = { easy: 'diffEasy', medium: 'diffMedium', hard: 'diffHard' }
+// ISR: the catalogue only changes through the seed script.
+export const revalidate = 300
 
-const TOUR_CATEGORY_ICON: Record<TourCategory, string> = {
-  nightlife: '🌙',
-  food: '🍝',
-  shopping: '🛍️',
-  culture: '🏛️',
-  family: '👨‍👩‍👧',
-  general: '🧭',
+/** Prerender known cities when the build can read Firestore; otherwise on demand. */
+export async function generateStaticParams() {
+  const cities = await getActiveCities()
+  return (cities ?? []).map(c => ({ cityId: c.id }))
 }
 
-type ProgressEntry = {
-  sessionId: string
-  cluesCompleted: number
-  totalClues: number
-  status: 'in_progress' | 'completed'
-  score: number
-}
-type ProgressMap = Record<string, ProgressEntry>
-type LoadState = 'loading' | 'ready' | 'error'
-type Flash = { kind: 'success' | 'info' | 'error'; text: string }
-
-/** Values of `?paypal=` the capture route redirects back with. */
-const PAYPAL_FLASH: Record<string, { kind: Flash['kind']; key: string }> = {
-  success:  { kind: 'success', key: 'unlockSuccess' },
-  pending:  { kind: 'info',    key: 'paypalPending' },
-  refunded: { kind: 'error',   key: 'paypalRefunded' },
-  error:    { kind: 'error',   key: 'paypalError' },
+function prettyId(cityId: string) {
+  return cityId.replace(/^city_/, '').replace(/[_-]+/g, ' ').replace(/\b\w/g, m => m.toUpperCase())
 }
 
-export default function CityPage() {
-  const params = useParams<{ cityId: string }>()
-  const cityId = params?.cityId as string
-  const search = useSearchParams()
-  const { user, loading: authLoading, signIn } = useAuth()
-  const { lang, t } = useI18n()
-  const toast = useToast()
-
-  const [city, setCity] = useState<City | null>(null)
-  const [hunts, setHunts] = useState<Hunt[]>([])
-  const [cityState, setCityState] = useState<LoadState | 'notfound'>('loading')
-  const [huntsState, setHuntsState] = useState<LoadState>('loading')
-  const [unlocked, setUnlocked] = useState(false)
-  const [progress, setProgress] = useState<ProgressMap>({})
-  const [starting, setStarting] = useState<string | null>(null)
-  const [flash, setFlash] = useState<Flash | null>(null)
-  const [checkoutOpen, setCheckoutOpen] = useState(false)
-
-  const loadCityAndHunts = useCallback(() => {
-    if (!cityId) return
-    setCityState('loading')
-    setHuntsState('loading')
-    apiGet<City[]>('/api/cities')
-      .then(cs => {
-        const found = cs.find(c => c.id === cityId) ?? null
-        setCity(found)
-        setCityState(found ? 'ready' : 'notfound')
-      })
-      .catch(() => setCityState('error'))
-    apiGet<Hunt[]>('/api/hunts')
-      .then(hs => {
-        setHunts(hs.filter(h => h.cityId === cityId).sort((a, b) => (a.order ?? 0) - (b.order ?? 0)))
-        setHuntsState('ready')
-      })
-      .catch(() => setHuntsState('error'))
-  }, [cityId])
-
-  useEffect(() => { loadCityAndHunts() }, [loadCityAndHunts])
-
-  const loadUnlocks = useCallback(() => {
-    apiGet<string[]>('/api/city-unlocks')
-      .then(ids => setUnlocked(Array.isArray(ids) && ids.includes(cityId)))
-      .catch(() => {})
-  }, [cityId])
-
-  // Unlocks + progress. Guests play under an anonymous account, so their
-  // progress is fetched too (unlocks are always [] for them).
-  useEffect(() => {
-    if (authLoading || !cityId) return
-    loadUnlocks()
-    apiGet<ProgressMap>('/api/user-progress')
-      .then(d => setProgress(d && typeof d === 'object' ? d : {}))
-      .catch(() => setProgress({}))
-  }, [authLoading, user, cityId, loadUnlocks])
-
-  // Result of a PayPal round-trip: show it once, then strip the query string
-  // so a reload or share doesn't replay the message.
-  const handledPaypal = useRef(false)
-  useEffect(() => {
-    const flag = search?.get('paypal')
-    if (!flag || handledPaypal.current) return
-    handledPaypal.current = true
-    if (flag === 'cancelled') toast.info(t('paypalCancelled'))
-    else {
-      const meta = PAYPAL_FLASH[flag] ?? PAYPAL_FLASH.error
-      setFlash({ kind: meta.kind, text: t(meta.key) })
-    }
-    if (flag === 'success') setUnlocked(true)
-    if (flag === 'pending') {
-      // The webhook usually lands within a minute — check again shortly.
-      window.setTimeout(loadUnlocks, 20_000)
-      window.setTimeout(loadUnlocks, 60_000)
-    }
-    window.history.replaceState(null, '', window.location.pathname)
-  }, [search, t, toast, loadUnlocks])
-
-  // A pending payment that has since landed: replace the "processing" banner.
-  useEffect(() => {
-    if (unlocked && flash?.kind === 'info') setFlash({ kind: 'success', text: t('unlockSuccess') })
-  }, [unlocked, flash, t])
-
-  const askSignIn = (key: string) => {
-    toast.info(t(key))
-    signIn()
+export async function generateMetadata({ params }: { params: { cityId: string } }): Promise<Metadata> {
+  const canonical = `/city/${params.cityId}`
+  const data = await getCityWithHunts(params.cityId)
+  if (data && !data.city) return { title: 'City not found', robots: { index: false } }
+  const name = data?.city?.name ?? prettyId(params.cityId)
+  const title = `${name} scavenger hunts & puzzle walks`
+  const count = data?.hunts.length ?? 0
+  const base = data?.city?.description?.trim()
+  const description = [
+    base,
+    count
+      ? `${count} self-guided puzzle walks in ${name}. Your first hunt is free; €${data?.city?.priceEuros ?? CITY_UNLOCK_PRICE_EUROS} unlocks the rest of the city.`
+      : `Self-guided puzzle walks in ${name}. Your first hunt is free.`,
+  ].filter(Boolean).join(' ')
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: { type: 'website', title, description, url: canonical },
+    twitter: { card: 'summary_large_image', title, description },
   }
+}
 
-  const openCityCheckout = () => {
-    if (!city) return
-    if (!user) { askSignIn('accountNeededForPass'); return }
-    setCheckoutOpen(true)
-  }
+export default async function CityPage({ params }: { params: { cityId: string } }) {
+  if (!isValidId(params.cityId)) notFound()
+  const data = await getCityWithHunts(params.cityId)
+  // Firestore read fine but no such (active) city → real 404.
+  if (data && !data.city) notFound()
 
-  const startHunt = async (huntId: string, free: boolean) => {
-    if (starting) return
-    if (!free && !unlocked) { openCityCheckout(); return }
-    setStarting(huntId)
-    try {
-      const data = await apiPost<{ sessionId: string; resumed: boolean; tourType: 'hunt' | 'tour' }>(
-        '/api/start-session', { huntId },
-      )
-      const route = data.tourType === 'tour' ? '/tour' : '/hunt'
-      // Keep `starting` set: every card stays disabled until the page unloads.
-      window.location.href = `${route}?session=${encodeURIComponent(data.sessionId)}`
-    } catch (e) {
-      setStarting(null)
-      const code = errorCode(e)
-      if (code === 'city_locked') { setUnlocked(false); openCityCheckout() }
-      else if (code === 'sign_in_required' || code === 'account_required' || code === 'unauthenticated') askSignIn('accountNeededForPass')
-      else if (code === 'hunt_not_found' || code === 'no_clues') toast.error(t('huntUnavailable'))
-      else toast.error(t(errorKey(e)))
-    }
-  }
+  const city = data?.city ?? null
+  const hunts = data?.hunts ?? null
 
-  /** Resolves true while the browser is being sent to PayPal. */
-  const confirmCityCheckout = async (): Promise<boolean> => {
-    if (!city) return false
-    try {
-      const data = await apiPost<{ url: string }>('/api/city-unlocks/checkout', { cityId: city.id })
-      if (!data?.url) throw new Error('no_url')
-      window.location.href = data.url
-      return true
-    } catch (e) {
-      const code = errorCode(e)
-      if (code === 'account_required' || code === 'unauthenticated') {
-        setCheckoutOpen(false)
-        askSignIn('accountNeededForPass')
-      } else if (code === 'already_unlocked') {
-        setCheckoutOpen(false)
-        setUnlocked(true)
-        toast.success(t('alreadyUnlocked'))
-      } else {
-        toast.error(t(code === 'city_not_found' ? 'errNotFound' : errorKey(e) === 'errGeneric' ? 'checkoutFailed' : errorKey(e)))
-      }
-      return false
-    }
-  }
-
-  if (cityState === 'loading') {
-    return (
-      <main className="page-center" aria-busy="true">
-        <div className="container">
-          <span className="flow-sr-only" role="status">{t('loading')}</span>
-          <span className="skel skel-line is-short" />
-          <span className="skel skel-hero" />
-          <span className="skel skel-card" />
-          <span className="skel skel-card" />
-        </div>
-      </main>
-    )
-  }
-
-  if (cityState === 'error' || cityState === 'notfound' || !city) {
-    return (
-      <main className="page-center">
-        <div className="container">
-          <a href="/" className="city-back">{t('home')}</a>
-          <div className="empty-card" role={cityState === 'error' ? 'alert' : undefined}>
-            <p>{cityState === 'error' ? t('loadError') : t('cityNotFound')}</p>
-            {cityState === 'error'
-              ? <button type="button" onClick={loadCityAndHunts} className="btn-primary flow-retry">{t('retry')}</button>
-              : <a href="/" className="btn-primary flow-retry">{t('exploreCities')}</a>}
-          </div>
-        </div>
-      </main>
-    )
-  }
-
-  const localCity = localizeCity(city, lang)
-  const backHref = city.countryId ? `/country/${city.countryId}` : '/'
-  const backLabel = city.countryId && localCity.country ? fmt(t('backToCountry'), { country: localCity.country }) : t('home')
-  const unlockCta = fmt(t('unlockCityCta'), { city: localCity.name })
-  const huntsOnly = hunts.filter(h => !isTour(h))
-  const toursOnly = hunts.filter(h => isTour(h))
-  const busy = starting !== null
-
-  const renderItem = (rawHunt: Hunt) => {
-    const hunt = localizeHunt(rawHunt, lang)
-    const free = isHuntFree(hunt)
-    const locked = !free && !unlocked
-    const huntProgress = progress[hunt.id]
-    const isInProgress = huntProgress?.status === 'in_progress'
-    const isCompleted = huntProgress?.status === 'completed'
-    const totalSteps = hunt.clueCount || huntProgress?.totalClues || 0
-    const cluesDone = Math.min(huntProgress?.cluesCompleted ?? 0, totalSteps)
-    const pct = totalSteps > 0 ? Math.round((cluesDone / totalSteps) * 100) : 0
-    const tourMode = isTour(rawHunt)
-    const cat: TourCategory = tourMode ? (rawHunt.tourCategory ?? 'general') : 'general'
-    const difficulty = DIFFICULTY_KEY[hunt.difficulty] ? hunt.difficulty : 'medium'
-    const isStarting = starting === hunt.id
-
-    return (
-      <button
-        key={hunt.id}
-        type="button"
-        className={`hunt-card ${isCompleted ? 'completed' : isInProgress ? 'resuming' : ''} ${tourMode ? 'is-tour' : ''} ${locked ? 'is-locked' : ''}`}
-        onClick={() => locked ? openCityCheckout() : startHunt(hunt.id, free)}
-        disabled={busy}
-        aria-busy={isStarting}
-      >
-        {locked
-          ? <span className="hunt-badge locked-badge">🔒 {t('locked')}</span>
-          : free && !isCompleted && !isInProgress
-            ? <span className="hunt-badge free-badge">{t('freeHunt')}</span>
-            : isCompleted
-              ? <span className="hunt-badge completed-badge">✓ {t('ctaCompleted')}</span>
-              : isInProgress
-                ? <span className="hunt-badge resume-badge">{t('ctaResume')}</span>
-                : null
-        }
-        <span className="hunt-card-top">
-          <span>
-            <span className="hunt-title">{hunt.title}</span>
-            <span className="hunt-desc">{hunt.description}</span>
-          </span>
-          <span className="hunt-arrow" aria-hidden>
-            {isStarting ? <span className="spinner-mini" /> : (locked ? '🔒' : '→')}
-          </span>
-        </span>
-
-        {huntProgress && totalSteps > 0 && !locked && (
-          <span className={`resume-bar ${isCompleted ? 'is-completed' : ''}`}>
-            <span className="resume-bar-track">
-              <span className="resume-bar-fill" style={{ width: `${pct}%` }} />
-            </span>
-            <span className="resume-bar-text">
-              {isCompleted
-                ? (tourMode ? `✓ ${cluesDone}/${totalSteps}` : `${t('bestScore')} ${huntProgress.score}`)
-                : `${cluesDone}/${totalSteps}`}
-            </span>
-          </span>
-        )}
-
-        <span className="hunt-meta">
-          {tourMode ? (
-            <span className={`meta-pill cat-pill cat-${cat}`}>
-              <span aria-hidden className="cat-pill-icon">{TOUR_CATEGORY_ICON[cat]}</span>
-              {t(`cat${cat.charAt(0).toUpperCase()}${cat.slice(1)}`)}
-            </span>
-          ) : (
-            <span className={`meta-pill diff-pill diff-${difficulty}`}>{t(DIFFICULTY_KEY[difficulty])}</span>
-          )}
-          <span className="meta-item">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            {hunt.clueCount} {tourMode ? t('tourStops').toLowerCase() : t('places')}
-          </span>
-          <span className="meta-item">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            ~{hunt.durationMin} {t('min')}
-          </span>
-          <span className="meta-item">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-            {hunt.distanceKm} {t('km')}
-          </span>
-        </span>
-      </button>
-    )
-  }
-
-  const cityPriceCents = Math.round((city.priceEuros ?? CITY_UNLOCK_PRICE_EUROS) * 100)
-  const checkoutOptions: CheckoutOption[] = [{
-    id: city.id,
-    title: fmt(t('checkoutCityTitle'), { city: localCity.name }),
-    subtitle: fmt(t('checkoutCitySubtitle'), { n: hunts.length }),
-    items: [t('checkoutCityItem1'), t('checkoutCityItem2'), t('checkoutCityItem3'), t('checkoutCityItem4')],
-    priceCents: cityPriceCents,
-    icon: localCity.coverEmoji ?? '📍',
-  }]
+  const jsonLd = city && hunts ? buildJsonLd(city, hunts) : null
 
   return (
-    <main className="page-center">
-      <div className="container">
-        <a href={backHref} className="city-back">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          {backLabel}
-        </a>
-
-        <section className={`city-hero ${unlocked ? 'is-unlocked' : ''}`}>
-          <div className="city-hero-emoji" aria-hidden>{localCity.coverEmoji ?? '📍'}</div>
-          <div className="city-hero-meta">
-            <span className="city-hero-eyebrow">{localCity.country}</span>
-            <h1 className="city-hero-title">{localCity.name}</h1>
-            <p className="city-hero-desc">{localCity.description}</p>
-          </div>
-          {unlocked ? (
-            <div className="city-hero-cta city-hero-cta-unlocked">
-              <span className="city-hero-cta-icon" aria-hidden>✓</span>
-              <span>{t('cityUnlockedNote')}</span>
-            </div>
-          ) : (
-            <button type="button" onClick={openCityCheckout} disabled={checkoutOpen || busy} className="city-hero-cta">
-              <span className="city-hero-cta-label">{unlockCta}</span>
-              <span className="city-hero-cta-arrow" aria-hidden>→</span>
-            </button>
-          )}
-        </section>
-
-        {flash && (
-          <div className={`city-flash flow-flash is-${flash.kind}`} role={flash.kind === 'error' ? 'alert' : 'status'}>
-            <span className="flow-flash-text">{flash.text}</span>
-            <button type="button" className="flow-flash-close" onClick={() => setFlash(null)} aria-label={t('dismiss')}>×</button>
-          </div>
-        )}
-
-        <ResumeRaceBanner />
-
-        <a href="/multiplayer" className="mp-home-cta flow-mp-cta">
-          <div className="mp-home-cta-icon" aria-hidden>👥</div>
-          <div className="mp-home-cta-body">
-            <div className="mp-home-cta-title">{t('playWithFriends')}</div>
-            <div className="mp-home-cta-desc">{t('shareRoomCode')}</div>
-          </div>
-          <div className="mp-home-cta-arrow" aria-hidden>→</div>
-        </a>
-
-        <h2 id="hunts" className="section-label flow-anchor">{t('availableHunts')}</h2>
-
-        {huntsState === 'loading' && (
-          <div aria-busy="true">
-            <span className="flow-sr-only" role="status">{t('loading')}</span>
-            <span className="skel skel-card" />
-            <span className="skel skel-card" />
-          </div>
-        )}
-
-        {huntsState === 'error' && (
-          <div className="empty-card" role="alert">
-            <p>{t('loadError')}</p>
-            <button type="button" onClick={loadCityAndHunts} className="btn-primary flow-retry">{t('retry')}</button>
-          </div>
-        )}
-
-        {huntsState === 'ready' && hunts.length === 0 && (
-          <div className="empty-card"><p>{t('noHuntsYet')}</p></div>
-        )}
-
-        {huntsState === 'ready' && huntsOnly.map(renderItem)}
-
-        {huntsState === 'ready' && toursOnly.length > 0 && (
-          <>
-            <h2 className="section-label flow-section-gap">{t('selfGuidedTours')}</h2>
-            {toursOnly.map(renderItem)}
-          </>
-        )}
-
-        {!authLoading && !user && <p className="footer-note">{t('signInSaveHint')}</p>}
-      </div>
-
-      {checkoutOpen && (
-        <CheckoutSheet
-          title={fmt(t('checkoutCitySheetTitle'), { city: localCity.name })}
-          subtitle={t('checkoutCitySheetSub')}
-          options={checkoutOptions}
-          defaultSelectedId={city.id}
-          onConfirm={confirmCityCheckout}
-          onClose={() => setCheckoutOpen(false)}
-        />
-      )}
-    </main>
+    <>
+      <CityClient cityId={params.cityId} initialCity={city} initialHunts={hunts} />
+      {jsonLd && jsonLd.map((obj, i) => (
+        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJson(obj) }} />
+      ))}
+    </>
   )
+}
+
+/** JSON for a <script> tag: no `</script>` breakouts. */
+function safeJson(obj: unknown) {
+  return JSON.stringify(obj).replace(/</g, '\\u003c')
+}
+
+function buildJsonLd(city: PublicCity, hunts: PublicHunt[]) {
+  const url = `${SITE_URL}/city/${city.id}`
+  const price = city.priceEuros ?? CITY_UNLOCK_PRICE_EUROS
+  const list = {
+    '@type': 'ItemList',
+    name: `Scavenger hunts and walking tours in ${city.name}`,
+    numberOfItems: hunts.length,
+    itemListElement: hunts.map((h, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      url: `${SITE_URL}/city/${city.id}/${h.id}`,
+      name: h.title,
+    })),
+  }
+  const destination = {
+    '@context': 'https://schema.org',
+    '@type': 'TouristDestination',
+    '@id': `${url}#destination`,
+    name: city.name,
+    description: city.description,
+    url,
+    ...(city.imageUrl ? { image: city.imageUrl } : {}),
+    ...(city.country ? { containedInPlace: { '@type': 'Country', name: city.country } } : {}),
+    touristType: ['Families', 'Puzzle lovers', 'Walkers'],
+    includesAttraction: hunts.map(h => ({
+      '@type': 'TouristTrip',
+      name: h.title,
+      description: h.description,
+      url: `${SITE_URL}/city/${city.id}/${h.id}`,
+      ...(isTour(h) ? {} : { additionalType: 'https://schema.org/Game' }),
+    })),
+    subjectOf: list,
+  }
+  const freeCount = hunts.filter(h => isHuntFree(h)).length
+  const pass = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: `${city.name} city pass`,
+    description: `Unlocks every TourHunts hunt and tour in ${city.name}, with no time limit.${freeCount ? ' The first hunt is free without a pass.' : ''}`,
+    brand: { '@type': 'Brand', name: 'TourHunts' },
+    category: 'Self-guided city game',
+    url,
+    offers: {
+      '@type': 'Offer',
+      price: price.toFixed(2),
+      priceCurrency: 'EUR',
+      availability: 'https://schema.org/InStock',
+      url,
+    },
+  }
+  const breadcrumb = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
+      ...(city.countryId && city.country
+        ? [{ '@type': 'ListItem', position: 2, name: city.country, item: `${SITE_URL}/country/${city.countryId}` }]
+        : []),
+      { '@type': 'ListItem', position: city.countryId && city.country ? 3 : 2, name: city.name, item: url },
+    ],
+  }
+  return [destination, pass, breadcrumb]
 }

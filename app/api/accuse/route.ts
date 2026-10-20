@@ -67,6 +67,9 @@ export const POST = handle(async (req) => {
     return { alreadyAccused: false, correct, bonus }
   })
 
-  // Recorded (now or earlier) → safe to reveal the solution.
-  return NextResponse.json({ ...r, solution })
+  // Recorded (now or earlier) → safe to reveal the solution. The full ending
+  // (which names the culprit's motive) is the reward for a correct accusation.
+  const story = secretSnap.exists ? secretSnap.data()?.solutionStory : undefined
+  const solutionStory = r.correct && story && typeof story === 'object' ? story as Record<string, string> : null
+  return NextResponse.json({ ...r, solution, solutionStory })
 })

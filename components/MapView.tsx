@@ -4,6 +4,7 @@ import type { Map as MlMap, Marker as MlMarker, GeoJSONSource } from 'maplibre-g
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { useI18n } from '@/hooks/useI18n'
 import type { LatLngRadius } from '@/types'
+import { MAP_STYLE_URL, MAP_ATTRIBUTION_CONTROL } from '@/lib/mapStyle'
 
 type MapLib = typeof import('maplibre-gl')
 
@@ -17,8 +18,6 @@ interface Props {
   userLat: number | null
   userLng: number | null
 }
-
-const STYLE_URL = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 
 /** GeoJSON polygon approximating a circle of radiusM around (lat, lng). */
 function circlePolygon(lat: number, lng: number, radiusM: number, steps = 64) {
@@ -38,7 +37,7 @@ function circlePolygon(lat: number, lng: number, radiusM: number, steps = 64) {
 
 /**
  * Game map. maplibre-gl (~800 kB) is loaded lazily, after first paint.
- * Attribution stays visible (compact) — the OSM/CARTO licence requires it.
+ * Attribution stays visible (compact) — OpenFreeMap/OSM require it.
  */
 export function MapView({ zone, showZone, target, showPin, userLat, userLng }: Props) {
   const { t } = useI18n()
@@ -62,10 +61,11 @@ export function MapView({ zone, showZone, target, showPin, userLat, userLng }: P
       libRef.current = lib
       map = new lib.Map({
         container: containerRef.current,
-        style: STYLE_URL,
+        style: MAP_STYLE_URL,
         center: [zone.lng, zone.lat],
         zoom: 14.5,
-        attributionControl: { compact: true },
+        // Full-screen game map: no cooperativeGestures (one-finger pan is the point).
+        attributionControl: MAP_ATTRIBUTION_CONTROL,
       })
       mapRef.current = map
       const onUserMove = (e: any) => {

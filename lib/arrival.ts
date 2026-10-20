@@ -27,6 +27,39 @@ export function resolveAt(at: unknown, now = Date.now()): number {
   return Math.min(at, now)
 }
 
+/** Total hint penalty (positive number) for the hint tiers bought on a stop. Tier 1 is free. */
+export function hintPenaltyFor(hintTiers: Iterable<string | number>): number {
+  const tiers = new Set(Array.from(hintTiers, String))
+  return (tiers.has('2') ? SCORE.hint2Penalty : 0) +
+    (tiers.has('puzzle') ? SCORE.puzzleHintPenalty : 0) +
+    (tiers.has('3') ? SCORE.pinRevealPenalty : 0)
+}
+
+/**
+ * Pure arrival scoring (GAME_DESIGN.md "Scoring"): takes the stop's existing
+ * breakdown (puzzle/trivia points already earned) and returns a new one with
+ * arrival, clean-stop, hint penalty, race-first and on-site points applied.
+ * Walking tours are never scored.
+ */
+export function arrivalBreakdown(prev: StopBreakdown, o: {
+  isTour: boolean
+  hintTiers: Iterable<string | number>
+  /** This player claimed the stop first in a multiplayer race. */
+  raceFirst: boolean
+  onSiteCorrect?: boolean
+}): StopBreakdown {
+  const breakdown = { ...prev }
+  if (o.isTour) return breakdown
+  const penalty = hintPenaltyFor(o.hintTiers)
+  breakdown.arrival = SCORE.arrival
+  // Tier-1 (free) hints never cancel the clean-stop bonus.
+  breakdown.clean = penalty === 0 ? SCORE.cleanStop : 0
+  breakdown.hintPenalty = penalty ? -penalty : 0 // avoid storing -0
+  if (o.raceFirst) breakdown.raceFirst = SCORE.raceFirst
+  if (o.onSiteCorrect) breakdown.onSite = SCORE.onSite
+  return breakdown
+}
+
 export function roomIdOf(session: SessionDoc): string | null {
   return typeof session.roomId === 'string' && session.roomId ? session.roomId : null
 }
@@ -140,23 +173,16 @@ export async function performArrival(o: {
       if ((atMs - s.lastArrival.atMs) / 1000 < legM / MAX_SPEED_MPS) return { kind: 'implausible' }
     }
 
-    const breakdown = readBreakdown(scData)
-    if (!isTour) {
-      const tiers = new Set(hintsSnap.docs.map(d => String(d.data().tier)))
-      const penalty =
-        (tiers.has('2') ? SCORE.hint2Penalty : 0) +
-        (tiers.has('puzzle') ? SCORE.puzzleHintPenalty : 0) +
-        (tiers.has('3') ? SCORE.pinRevealPenalty : 0)
-      breakdown.arrival = SCORE.arrival
-      // Tier-1 (free) hints never cancel the clean-stop bonus.
-      breakdown.clean = penalty === 0 ? SCORE.cleanStop : 0
-      breakdown.hintPenalty = -penalty
-      if (claimSnap && !claimSnap.exists) {
-        tx.create(claimSnap.ref, { userId: uid, sessionId, claimedAt: FieldValue.serverTimestamp() })
-        breakdown.raceFirst = SCORE.raceFirst
-      }
-      if (o.onSiteCorrect) breakdown.onSite = SCORE.onSite
+    const raceFirst = !isTour && !!claimSnap && !claimSnap.exists
+    if (raceFirst && claimSnap) {
+      tx.create(claimSnap.ref, { userId: uid, sessionId, claimedAt: FieldValue.serverTimestamp() })
     }
+    const breakdown = arrivalBreakdown(readBreakdown(scData), {
+      isTour,
+      hintTiers: hintsSnap.docs.map(d => String(d.data().tier)),
+      raceFirst,
+      onSiteCorrect: o.onSiteCorrect,
+    })
     const before = breakdownTotal(readBreakdown(scData))
     const pointsEarned = breakdownTotal(breakdown)
     const delta = pointsEarned - before

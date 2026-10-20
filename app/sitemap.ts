@@ -1,121 +1,119 @@
 import type { MetadataRoute } from 'next'
-import { adminDb } from '@/lib/firebaseAdmin'
 import { getAllPostsMeta } from '@/lib/blog'
 import { getAllSpots } from '@/lib/benches'
+import { getActiveCities, getActiveCountries, getActiveHunts } from '@/lib/catalog'
+import { LEGAL, SITE_URL } from '@/lib/site'
 import { SPOT_KINDS, type SpotKind } from '@/types'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tourhunts.com'
-
 // Hourly ISR is the safety net for content that only changes via the seed
-// script (cities, countries). Bench writes additionally trigger on-demand
-// revalidation of this route, so new/edited benches surface immediately.
+// script (cities, countries, hunts). Bench writes additionally trigger
+// on-demand revalidation of this route, so new/edited benches surface quickly.
 export const revalidate = 3600
 
-/** Coerce a Firestore value (Timestamp | ms-number | undefined) to a Date. */
-function toDate(v: unknown, fallback: Date): Date {
-  if (typeof v === 'number') return new Date(v)
-  const ms = (v as { toMillis?: () => number } | null | undefined)?.toMillis?.()
-  return ms ? new Date(ms) : fallback
+/** Most recent of a list of dates, or undefined if none is known. */
+function newest(dates: (Date | undefined)[]): Date | undefined {
+  return dates.reduce<Date | undefined>((max, d) => (d && (!max || d > max) ? d : max), undefined)
 }
 
-/** Most recent of a list of dates (or `fallback` if the list is empty). */
-function newest(dates: Date[], fallback: Date): Date {
-  return dates.reduce((max, d) => (d > max ? d : max), fallback)
+function fromMs(ms: number | undefined): Date | undefined {
+  return typeof ms === 'number' && ms > 0 ? new Date(ms) : undefined
 }
 
+/**
+ * lastModified is only set when we actually know it (content timestamps,
+ * post dates, the legal "updated" date). A made-up "now" would change on
+ * every regeneration and teach crawlers to ignore the field.
+ *
+ * Excluded on purpose: /hunt and /tour (session-bound, would expose clues),
+ * /profile, /multiplayer/<code>, admin forms. See robots.ts.
+ */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date()
-  const epoch = new Date(0)
+  const entry = (
+    path: string,
+    lastModified: Date | undefined,
+    changeFrequency: NonNullable<MetadataRoute.Sitemap[number]['changeFrequency']>,
+    priority: number,
+  ): MetadataRoute.Sitemap[number] => ({
+    url: `${SITE_URL}${path}`,
+    ...(lastModified ? { lastModified } : {}),
+    changeFrequency,
+    priority,
+  })
 
   // ── Spots (benches + fountains) ──────────────────────────────────
-  // Each spot is its own indexable page; lastmod tracks the edit time so a
-  // repositioned/retitled spot tells crawlers it actually changed.
   const spotEntries: MetadataRoute.Sitemap = []
-  const spotLastMod: Record<SpotKind, Date> = { bench: epoch, fountain: epoch }
+  const spotLastMod: Record<SpotKind, Date | undefined> = { bench: undefined, fountain: undefined }
   for (const kind of ['bench', 'fountain'] as SpotKind[]) {
     const base = SPOT_KINDS[kind].urlBase
     try {
       for (const spot of await getAllSpots(kind)) {
         const mod = new Date(spot.updatedAt ?? spot.createdAt)
-        if (mod > spotLastMod[kind]) spotLastMod[kind] = mod
-        spotEntries.push({
-          url: `${SITE_URL}/${base}/${spot.slug}`,
-          lastModified: mod,
-          changeFrequency: 'monthly',
-          priority: 0.6,
-        })
+        const valid = Number.isFinite(mod.getTime()) ? mod : undefined
+        spotLastMod[kind] = newest([spotLastMod[kind], valid])
+        spotEntries.push(entry(`/${base}/${spot.slug}`, valid, 'monthly', 0.6))
       }
-    } catch (e) { console.error('[sitemap]', e) }
+    } catch (e) { console.warn('[sitemap] spots unavailable', (e as Error)?.message ?? e) }
   }
 
-  // ── Blog posts ───────────────────────────────────────────────────
-  const posts = getAllPostsMeta()
-  const blogEntries: MetadataRoute.Sitemap = posts.map(post => ({
-    url: `${SITE_URL}/blog/${post.slug}`,
-    lastModified: new Date(post.updatedAt ?? post.publishedAt),
-    changeFrequency: 'monthly' as const,
-    priority: 0.7,
-  }))
-  const blogLastMod = newest(blogEntries.map(e => e.lastModified as Date), epoch)
+  // ── Blog ─────────────────────────────────────────────────────────
+  const blogEntries = getAllPostsMeta().map(post => {
+    const d = new Date(post.updatedAt ?? post.publishedAt)
+    return entry(`/blog/${post.slug}`, Number.isFinite(d.getTime()) ? d : undefined, 'monthly', 0.7)
+  })
+  const blogLastMod = newest(blogEntries.map(e => e.lastModified as Date | undefined))
 
-  // ── Countries ────────────────────────────────────────────────────
-  const countryEntries: MetadataRoute.Sitemap = []
-  try {
-    const countriesSnap = await adminDb().collection('countries').get()
-    countriesSnap.docs
-      .filter(d => d.data().active !== false && !d.data().comingSoon)
-      .forEach(d => {
-        const data = d.data()
-        countryEntries.push({
-          url: `${SITE_URL}/country/${d.id}`,
-          lastModified: toDate(data.updatedAt ?? data.createdAt, now),
-          changeFrequency: 'weekly',
-          priority: 0.95,
-        })
-      })
-  } catch (e) { console.error('[sitemap]', e) }
+  // ── Catalogue: countries → cities → hunt landing pages ───────────
+  const [countries, cities, hunts] = await Promise.all([getActiveCountries(), getActiveCities(), getActiveHunts()])
 
-  // ── Cities ───────────────────────────────────────────────────────
-  const cityEntries: MetadataRoute.Sitemap = []
-  try {
-    const citiesSnap = await adminDb().collection('cities').get()
-    citiesSnap.docs
-      .filter(d => d.data().active !== false)
-      .forEach(d => {
-        const data = d.data()
-        cityEntries.push({
-          url: `${SITE_URL}/city/${d.id}`,
-          lastModified: toDate(data.updatedAt ?? data.createdAt, now),
-          changeFrequency: 'weekly',
-          priority: 0.9,
-        })
-      })
-  } catch (e) { console.error('[sitemap]', e) }
+  const activeCityIds = new Set((cities ?? []).map(c => c.id))
+  const huntEntries: MetadataRoute.Sitemap = []
+  const cityHuntLastMod = new Map<string, Date | undefined>()
+  for (const h of hunts ?? []) {
+    if (!activeCityIds.has(h.cityId)) continue
+    const mod = fromMs(h.updatedAt)
+    cityHuntLastMod.set(h.cityId, newest([cityHuntLastMod.get(h.cityId), mod]))
+    huntEntries.push(entry(`/city/${h.cityId}/${h.id}`, mod, 'monthly', 0.8))
+  }
 
-  // ── Static / index pages ─────────────────────────────────────────
-  // Their lastmod reflects the freshest item they list, so the value moves
-  // only when real content changes — not on every revalidation tick.
-  const allContentLastMod = newest(
-    [
-      spotLastMod.bench,
-      spotLastMod.fountain,
-      blogLastMod,
-      ...countryEntries.map(e => e.lastModified as Date),
-      ...cityEntries.map(e => e.lastModified as Date),
-    ],
-    now
+  const cityEntries = (cities ?? []).map(c =>
+    entry(`/city/${c.id}`, newest([fromMs(c.updatedAt), cityHuntLastMod.get(c.id)]), 'weekly', 0.9),
   )
 
+  const countryEntries = (countries ?? [])
+    .filter(c => !c.comingSoon)
+    .map(c => {
+      const childMods = (cities ?? [])
+        .filter(city => (city.countryId ?? 'nl') === c.id)
+        .map(city => newest([fromMs(city.updatedAt), cityHuntLastMod.get(city.id)]))
+      return entry(`/country/${c.id}`, newest([fromMs(c.updatedAt), ...childMods]), 'weekly', 0.95)
+    })
+
+  // ── Static pages ─────────────────────────────────────────────────
+  const legalDate = new Date(LEGAL.updated)
+  const legalMod = Number.isFinite(legalDate.getTime()) ? legalDate : undefined
+  const everything = newest([
+    spotLastMod.bench, spotLastMod.fountain, blogLastMod,
+    ...countryEntries.map(e => e.lastModified as Date | undefined),
+    ...cityEntries.map(e => e.lastModified as Date | undefined),
+  ])
+
   const staticEntries: MetadataRoute.Sitemap = [
-    { url: SITE_URL, lastModified: allContentLastMod, changeFrequency: 'weekly', priority: 1 },
-    { url: `${SITE_URL}/blog`, lastModified: newest([blogLastMod], now), changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${SITE_URL}/multiplayer`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${SITE_URL}/benches`, lastModified: newest([spotLastMod.bench], now), changeFrequency: 'daily', priority: 0.8 },
-    { url: `${SITE_URL}/fountains`, lastModified: newest([spotLastMod.fountain], now), changeFrequency: 'daily', priority: 0.8 },
+    entry('', everything, 'weekly', 1),
+    entry('/blog', blogLastMod, 'weekly', 0.85),
+    entry('/multiplayer', undefined, 'monthly', 0.6),
+    entry('/benches', spotLastMod.bench, 'daily', 0.8),
+    entry('/fountains', spotLastMod.fountain, 'daily', 0.8),
+    entry('/contact', legalMod, 'yearly', 0.3),
+    entry('/privacy', legalMod, 'yearly', 0.2),
+    entry('/terms', legalMod, 'yearly', 0.2),
   ]
 
-  // Note: /hunt and /tour are NOT included — they require a session and would
-  // expose clue/tour content. They're disallowed in robots.txt.
-
-  return [...staticEntries, ...spotEntries, ...blogEntries, ...countryEntries, ...cityEntries]
+  return [
+    ...staticEntries,
+    ...countryEntries,
+    ...cityEntries,
+    ...huntEntries,
+    ...blogEntries,
+    ...spotEntries,
+  ]
 }

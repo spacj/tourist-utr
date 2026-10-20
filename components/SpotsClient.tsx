@@ -5,6 +5,7 @@ import { useIsAdmin } from '@/hooks/useIsAdmin'
 import { apiGet } from '@/lib/apiFetch'
 import { PlacesGuideMap } from '@/components/PlacesGuideMap'
 import type { Place, PlaceCategory } from '@/lib/md'
+import { MapPin, Pencil } from 'lucide-react'
 
 interface Props {
   kind: SpotKind
@@ -147,7 +148,7 @@ export function SpotsClient({ kind, initialSpots }: Props) {
                     </div>
                   )}
                   <h3 className="benches-card-title">{selected.title}</h3>
-                  {where && <div className="benches-card-city">📍 {where}</div>}
+                  {where && <div className="benches-card-city"><MapPin size={14} strokeWidth={2} aria-hidden /> {where}</div>}
                   {selected.description && <p className="benches-card-desc">{selected.description}</p>}
                   <div className="benches-card-actions">
                     <a className="benches-card-link" href={`/${base}/${selected.slug}`}>Open page →</a>
@@ -161,7 +162,7 @@ export function SpotsClient({ kind, initialSpots }: Props) {
                     </a>
                   </div>
                   {isAdmin && (
-                    <a className="benches-card-edit" href={`/${base}/edit/${selected.id}`}>✎ Edit {cfg.copy.nounSingular}</a>
+                    <a className="benches-card-edit" href={`/${base}/edit/${selected.id}`}><Pencil size={14} strokeWidth={2} aria-hidden /> Edit {cfg.copy.nounSingular}</a>
                   )}
                 </div>
               </aside>

@@ -1,291 +1,280 @@
 /* ═══════════════════════════════════════════════════════════════
    TourHunts — Service Worker
-   Precaches shell, caches pages offline, persists hunt data.
+   Registered by hooks/useServiceWorker as /sw.js?v=<build id>.
+
+   Strategies
+   - App shell (offline page, icons): precached per build.
+   - /_next/static, images, fonts: cache-first, capped (FIFO ≈ LRU).
+   - Page navigations: network-first → cached page → /offline.html.
+   - Public catalogue API (/api/countries|cities|hunts): stale-while-
+     revalidate. Their responses are identical for every caller (the
+     Authorization header our fetch helper always attaches is ignored by
+     those routes), so they're safe to share. EVERY OTHER /api route is
+     per-user or a write and is never cached.
+   - OpenFreeMap style / TileJSON: stale-while-revalidate; tiles, sprites
+     and glyphs: cache-first, capped — map areas seen online work offline.
+   - "Save map for offline": {type:'PRECACHE_TILES', urls} (+ MessagePort
+     for progress) stores tiles in a separate, larger cache.
+
+   Updates: no automatic skipWaiting. A new worker waits until the page
+   posts {type:'SKIP_WAITING'} (the "New version — Reload" banner).
    ═══════════════════════════════════════════════════════════════ */
 
-const CACHE_NAME = 'tourhunts-v4'
-const HUNT_CACHE_NAME = 'tourhunts-hunts-v1'
-const API_CACHE_NAME = 'tourhunts-api-v1'
-const HUNT_PAGE_CACHE_NAME = 'tourhunts-hunt-pages-v1'
+const VERSION = new URL(self.location.href).searchParams.get('v') || 'dev'
+
+const SHELL_CACHE = `th-shell-${VERSION}`
+const STATIC_CACHE = `th-static-${VERSION}`
+const PAGES_CACHE = `th-pages-${VERSION}`
+const API_CACHE = `th-api-${VERSION}`
+// Map caches outlive deploys: tiles don't depend on our build.
+const MAP_CACHE = 'th-map-v1'
+const MAP_SAVED_CACHE = 'th-map-saved-v1'
+
+const KEEP = [SHELL_CACHE, STATIC_CACHE, PAGES_CACHE, API_CACHE, MAP_CACHE, MAP_SAVED_CACHE]
+
+const LIMITS = {
+  [STATIC_CACHE]: 150,
+  [PAGES_CACHE]: 40,
+  [API_CACHE]: 20,
+  [MAP_CACHE]: 2000,
+  [MAP_SAVED_CACHE]: 6000,
+}
+
 const OFFLINE_PAGE = '/offline.html'
+const SHELL_URLS = [OFFLINE_PAGE, '/icon.svg', '/icon-192.png', '/manifest.json']
 
-// Assets that are precached on SW install
-const PRECACHE_URLS = [
-  '/',
-  '/manifest.json',
-  '/icon.svg',
-  '/offline.html',
-]
+const MAP_ORIGIN = 'https://tiles.openfreemap.org'
 
-// Font & chunk patterns — cache-first, long-lived
-const ASSET_PATTERNS = [
-  /_next\/static\//,       // JS chunks, CSS
-  /_next\/image/,          // Next.js image optimization
-  /_next\/font/,           // Fonts
-  /\.(woff2?|ttf|otf)$/,   // Font files
-  /\.(png|jpe?g|gif|svg|webp|ico)$/,  // Images
-]
+const PUBLIC_API = new Set(['/api/countries', '/api/cities', '/api/hunts'])
+const STATIC_EXT = /\.(?:js|css|woff2?|ttf|otf|png|jpe?g|gif|svg|webp|avif|ico)$/i
 
-// Page routes — network-first, fallback to cache
-const PAGE_PATTERNS = [
-  /^\/$/,                            // Homepage
-  /^\/city\/[^/]+$/,                // City detail
-  /^\/multiplayer(\/[^/]+)?$/,      // Multiplayer
-  /^\/profile$/,                    // Profile
-]
-
-// Read-only API routes — network-first with cache fallback so the
-// app remains browsable when offline (homepage countries, city hunts, etc.).
-const READ_API_PATTERNS = [
-  /^\/api\/countries(\?.*)?$/,
-  /^\/api\/cities(\?.*)?$/,
-  /^\/api\/hunts(\?.*)?$/,
-  /^\/api\/city-unlocks(\?.*)?$/,
-  /^\/api\/user-progress(\?.*)?$/,
-  /^\/api\/user-history(\?.*)?$/,
-  /^\/api\/leaderboard(\?.*)?$/,
-  /^\/api\/session-credits(\?.*)?$/,
-  /^\/api\/rooms\/(active|get|results)(\?.*)?$/,
-]
-
-// Write/realtime API routes — never cache, always go to network.
-const API_PATTERNS = [
-  /^\/api\//,
-]
-
-// Hunt page — network-first with IndexedDB fallback
-const HUNT_PATTERN = /^\/hunt(\?.*)?$/
-
-// Complete page — network-first
-const COMPLETE_PATTERN = /^\/hunt\/complete(\?.*)?$/
+// ── Lifecycle ─────────────────────────────────────────────────
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS))
+    caches.open(SHELL_CACHE)
+      .then((cache) => cache.addAll(SHELL_URLS))
       .catch(() => {})
   )
-  self.skipWaiting()
+  // Intentionally no skipWaiting(): see header comment.
 })
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((k) => k !== CACHE_NAME && k !== HUNT_CACHE_NAME && k !== API_CACHE_NAME && k !== HUNT_PAGE_CACHE_NAME)
-          .map((k) => caches.delete(k))
-      )
+  event.waitUntil((async () => {
+    const keys = await caches.keys()
+    await Promise.all(
+      keys
+        .filter((k) => (k.startsWith('th-') || k.startsWith('tourhunts-')) && !KEEP.includes(k))
+        .map((k) => caches.delete(k))
     )
-  )
-  self.clients.claim()
+    await self.clients.claim()
+  })())
 })
 
-// ── Fetch strategy ────────────────────────────────────────────
+self.addEventListener('message', (event) => {
+  const data = event.data || {}
+  if (data.type === 'SKIP_WAITING') {
+    self.skipWaiting()
+    return
+  }
+  if (data.type === 'PRECACHE_TILES' && Array.isArray(data.urls)) {
+    const port = event.ports && event.ports[0]
+    event.waitUntil(precacheTiles(data.urls, port))
+  }
+})
+
+// ── Routing ───────────────────────────────────────────────────
+
 self.addEventListener('fetch', (event) => {
   const { request } = event
+  if (request.method !== 'GET') return
   const url = new URL(request.url)
 
-  // Only handle GET requests on same origin
-  if (request.method !== 'GET' || url.origin !== self.location.origin) return
-
-  // Read-only APIs: network-first with cache fallback so offline users
-  // still see countries/hunts/cities they've previously visited.
-  if (READ_API_PATTERNS.some(p => p.test(url.pathname + url.search))) {
-    event.respondWith(networkFirstCache(request, API_CACHE_NAME))
-    return
-  }
-
-  // Other APIs (writes, realtime): network-only
-  if (API_PATTERNS.some(p => p.test(url.pathname))) {
-    event.respondWith(networkOnly(request))
-    return
-  }
-
-  // Hunt page: try network, fall back to IndexedDB cached hunt data
-  if (HUNT_PATTERN.test(url.pathname)) {
-    event.respondWith(huntFallback(request, url))
-    return
-  }
-
-  // Page routes: network-first, cache on success
-  if (PAGE_PATTERNS.some(p => p.test(url.pathname))) {
-    event.respondWith(networkFirstCache(request, CACHE_NAME))
-    return
-  }
-
-  // Static assets: cache-first
-  if (ASSET_PATTERNS.some(p => p.test(url.pathname))) {
-    event.respondWith(cacheFirst(request, CACHE_NAME))
-    return
-  }
-
-  // Default: network-first for any remaining pages
-  event.respondWith(networkFirstCache(request, CACHE_NAME))
-})
-
-// ── Message handler: cache hunt data ──────────────────────────
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'CACHE_HUNT') {
-    const { huntId, huntData, clues } = event.data
-    event.waitUntil(
-      caches.open(HUNT_CACHE_NAME).then((cache) => {
-        const response = new Response(
-          JSON.stringify({ hunt: huntData, clues }),
-          { headers: { 'Content-Type': 'application/json' } }
-        )
-        return cache.put(`/__hunt__/${huntId}`, response)
-      })
+  // Map: OpenFreeMap style, TileJSON, tiles, sprites, glyphs.
+  if (url.origin === MAP_ORIGIN) {
+    const isMetadata = url.pathname.startsWith('/styles/') || !/\.[a-z0-9]+$/i.test(url.pathname)
+    event.respondWith(
+      isMetadata
+        ? staleWhileRevalidate(event, request, MAP_CACHE, request.url, MAP_SAVED_CACHE)
+        : cacheFirst(request, MAP_CACHE, [MAP_SAVED_CACHE])
     )
+    return
   }
 
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting()
+  if (url.origin !== self.location.origin) return
+  if (url.pathname === '/sw.js') return
+
+  if (url.pathname.startsWith('/api/')) {
+    // Public catalogue only. Keyed by URL alone (no headers) so the cached
+    // entry never carries a caller's Authorization context.
+    if (PUBLIC_API.has(url.pathname)) {
+      event.respondWith(staleWhileRevalidate(event, request, API_CACHE, url.pathname + url.search))
+    }
+    return // everything else: straight to the network, never cached
+  }
+
+  if (request.mode === 'navigate') {
+    event.respondWith(networkFirstPage(request))
+    return
+  }
+
+  // React Server Component payloads for client-side navigation: not cached.
+  // If they fail offline, Next falls back to a full navigation, which the
+  // page handler above serves from cache or /offline.html.
+  if (request.headers.get('RSC') === '1' || url.searchParams.has('_rsc')) return
+
+  if (
+    url.pathname.startsWith('/_next/static/') ||
+    url.pathname.startsWith('/_next/image') ||
+    STATIC_EXT.test(url.pathname)
+  ) {
+    event.respondWith(cacheFirst(request, STATIC_CACHE, [SHELL_CACHE]))
   }
 })
 
-// ── Cache strategies ──────────────────────────────────────────
+// ── Strategies ────────────────────────────────────────────────
 
-async function networkOnly(request) {
-  return fetch(request)
-}
-
-async function cacheFirst(request, cacheName) {
-  const cached = await caches.match(request)
-  if (cached) return cached
+/** Cache-first; also looks in `alsoIn` caches before hitting the network. */
+async function cacheFirst(request, cacheName, alsoIn = []) {
+  for (const name of [cacheName, ...alsoIn]) {
+    const cache = await caches.open(name)
+    const hit = await cache.match(request, { ignoreVary: true })
+    if (hit) return hit
+  }
   try {
     const response = await fetch(request)
-    if (response.ok) {
-      const cache = await caches.open(cacheName)
-      cache.put(request, response.clone())
+    if (response.ok && (response.type === 'basic' || response.type === 'cors')) {
+      await putCapped(cacheName, request, response.clone())
     }
     return response
   } catch {
-    return new Response('', { status: 404 })
+    return new Response('', { status: 504, statusText: 'Offline' })
   }
 }
 
-async function networkFirstCache(request, cacheName) {
-  try {
-    const response = await fetch(request)
-    if (response.ok) {
-      const cache = await caches.open(cacheName)
-      cache.put(request, response.clone())
-    }
-    return response
-  } catch {
-    const cached = await caches.match(request)
-    if (cached) return cached
-    // Final fallback: offline page
-    if (request.headers.get('Accept')?.includes('text/html')) {
-      const offline = await caches.match(OFFLINE_PAGE)
-      if (offline) return offline
-    }
-    return new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } })
-  }
-}
-
-async function huntFallback(request, url) {
-  // Try network and cache the response on success. This is what lets the
-  // user navigate to /hunt?session=X offline — we serve the previously
-  // cached HTML so the React app can boot, hydrate from Firestore's
-  // IndexedDB cache, and pick up where they left off.
-  try {
-    const response = await fetch(request)
-    if (response.ok) {
-      try {
-        const cache = await caches.open(HUNT_PAGE_CACHE_NAME)
-        await cache.put(request, response.clone())
-      } catch {}
+/** Serve the cached copy at once (if any) and refresh it in the background. */
+async function staleWhileRevalidate(event, request, cacheName, key, fallbackCache) {
+  const cache = await caches.open(cacheName)
+  const cached = (await cache.match(key, { ignoreVary: true }))
+    || (fallbackCache ? await (await caches.open(fallbackCache)).match(key, { ignoreVary: true }) : undefined)
+  const network = fetch(request)
+    .then(async (response) => {
+      if (response.ok) await putCapped(cacheName, key, response.clone())
       return response
-    }
-  } catch {}
+    })
+    .catch(() => null)
 
-  // Offline: serve the cached HTML for this exact URL if we have it.
-  const cached = await caches.match(request, { cacheName: HUNT_PAGE_CACHE_NAME })
-  if (cached) return cached
-  // Some Next.js navigations append _rsc=... params we cached separately —
-  // try a URL-stripped lookup as a fallback.
-  const fallbackUrl = new URL(request.url)
-  fallbackUrl.searchParams.delete('_rsc')
-  const fallbackReq = new Request(fallbackUrl.toString(), { headers: request.headers })
-  const cachedFallback = await caches.match(fallbackReq, { cacheName: HUNT_PAGE_CACHE_NAME })
-  if (cachedFallback) return cachedFallback
-
-  // Last fallback: render a static HTML view from IndexedDB-cached clue data.
-  const sessionId = url.searchParams.get('session')
-  if (sessionId) {
-    const allCaches = await caches.keys()
-    if (allCaches.includes(HUNT_CACHE_NAME)) {
-      const huntCache = await caches.open(HUNT_CACHE_NAME)
-      const keys = await huntCache.keys()
-      for (const key of keys) {
-        const resp = await huntCache.match(key)
-        if (resp) {
-          const data = await resp.json()
-          return buildOfflineHuntPage(sessionId, data)
-        }
-      }
-    }
+  if (cached) {
+    event.waitUntil(network)
+    return cached
   }
-
-  return caches.match(OFFLINE_PAGE).then(r => r || new Response('Offline', { status: 503 }))
+  const response = await network
+  if (response) return response
+  return new Response(JSON.stringify({ error: 'offline' }), {
+    status: 503,
+    headers: { 'Content-Type': 'application/json' },
+  })
 }
 
-function buildOfflineHuntPage(sessionId, data) {
-  const { hunt, clues } = data
-  const clueList = JSON.stringify(clues || []).replace(/</g, '\\u003c')
-  const huntName = hunt?.title || 'Hunt'
-  const huntCity = hunt?.city || ''
-
-  const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>${huntName} — Offline</title>
-<style>
-body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0b0d1a;color:#fff;font-family:system-ui,-apple-system,sans-serif;text-align:center;padding:24px}
-.card{max-width:400px;background:#1a1d2e;border-radius:20px;padding:32px 24px;border:1px solid rgba(255,255,255,0.1)}
-.icon{font-size:48px;margin-bottom:12px}
-h1{font-size:22px;margin:0 0 8px}
-p{font-size:14px;color:rgba(255,255,255,0.7);margin:0 0 20px;line-height:1.5}
-.btn{display:inline-block;padding:14px 24px;background:#ff6a13;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none}
-.btn:hover{background:#ff8a3d}
-.clues{margin-top:20px;text-align:left;background:rgba(255,255,255,0.05);border-radius:12px;padding:16px;max-height:300px;overflow-y:auto}
-.clue{padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.08)}
-.clue:last-child{border-bottom:none}
-.clue-name{font-weight:600;font-size:14px}
-.clue-riddle{font-size:13px;color:rgba(255,255,255,0.6);margin-top:4px;line-height:1.5}
-</style>
-</head>
-<body>
-<div class="card">
-  <div class="icon">📡</div>
-  <h1>You're offline</h1>
-  <p>Showing cached clues for <strong>${huntName}</strong>. GPS navigation works without data.</p>
-  <a href="/" class="btn">Back to Home</a>
-  <div class="clues" id="clues"></div>
-</div>
-<script>
-try{
-  var clues=${clueList};
-  var el=document.getElementById('clues');
-  if(clues&&clues.length){
-    clues.sort(function(a,b){return(a.order||0)-(b.order||0)});
-    clues.forEach(function(c,i){
-      var d=document.createElement('div');
-      d.className='clue';
-      d.innerHTML='<div class="clue-name">'+(i+1)+'. '+(c.locationName||'Stop '+(i+1))+'</div>'
-        +'<div class="clue-riddle">'+(c.riddle||'')+'</div>';
-      el.appendChild(d);
-    });
+/** Pages: network-first, then the cached page, then the offline page. */
+async function networkFirstPage(request) {
+  try {
+    const response = await fetch(request)
+    if (response.ok && response.type === 'basic' && !response.redirected) {
+      await putCapped(PAGES_CACHE, stripRsc(request.url), response.clone())
+    }
+    return response
+  } catch {
+    const pages = await caches.open(PAGES_CACHE)
+    const cached = await pages.match(stripRsc(request.url), { ignoreVary: true })
+    if (cached) return cached
+    const offline = await caches.match(OFFLINE_PAGE, { cacheName: SHELL_CACHE })
+    return offline || new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
   }
-}catch(e){}
-</script>
-</body>
-</html>`
+}
 
-  return new Response(html, {
-    headers: { 'Content-Type': 'text/html; charset=utf-8' },
-  })
+function stripRsc(href) {
+  const u = new URL(href)
+  u.searchParams.delete('_rsc')
+  return u.toString()
+}
+
+// ── Cache size caps (oldest-first eviction) ───────────────────
+
+const putCounts = {}
+
+async function putCapped(cacheName, key, response) {
+  try {
+    const cache = await caches.open(cacheName)
+    await cache.put(key, response)
+    const limit = LIMITS[cacheName]
+    if (!limit) return
+    // Listing a big cache is not free: check every few writes.
+    putCounts[cacheName] = (putCounts[cacheName] || 0) + 1
+    const every = limit > 500 ? 25 : 5
+    if (putCounts[cacheName] % every !== 0) return
+    const keys = await cache.keys()
+    const excess = keys.length - limit
+    for (let i = 0; i < excess; i++) await cache.delete(keys[i])
+  } catch {
+    // Quota exceeded or similar: caching is best-effort.
+  }
+}
+
+// ── Save map for offline ──────────────────────────────────────
+
+const MAX_PRECACHE = 3000
+const PRECACHE_CONCURRENCY = 6
+
+async function precacheTiles(rawUrls, port) {
+  const urls = Array.from(new Set(rawUrls))
+    .filter((u) => {
+      try { return new URL(u).origin === MAP_ORIGIN } catch { return false }
+    })
+    .slice(0, MAX_PRECACHE)
+
+  const total = urls.length
+  let done = 0
+  let failed = 0
+  let bytes = 0
+  const post = (type) => {
+    try { port && port.postMessage({ type, done, total, failed, bytes }) } catch {}
+  }
+
+  const saved = await caches.open(MAP_SAVED_CACHE)
+  const runtime = await caches.open(MAP_CACHE)
+  let next = 0
+
+  async function worker() {
+    while (next < urls.length) {
+      const url = urls[next++]
+      try {
+        const existing = (await saved.match(url)) || (await runtime.match(url))
+        if (existing) {
+          // Promote into the saved cache so runtime eviction can't drop it.
+          await saved.put(url, existing.clone())
+        } else {
+          const response = await fetch(url, { mode: 'cors', credentials: 'omit' })
+          if (!response.ok) throw new Error(String(response.status))
+          const len = Number(response.headers.get('Content-Length')) || 0
+          bytes += len
+          await saved.put(url, response)
+        }
+      } catch {
+        failed++
+      }
+      done++
+      if (done % 5 === 0 || done === total) post('progress')
+    }
+  }
+
+  post('progress')
+  await Promise.all(Array.from({ length: PRECACHE_CONCURRENCY }, worker))
+  // Keep the saved cache within its cap too.
+  try {
+    const keys = await saved.keys()
+    const excess = keys.length - LIMITS[MAP_SAVED_CACHE]
+    for (let i = 0; i < excess; i++) await saved.delete(keys[i])
+  } catch {}
+  post('done')
 }

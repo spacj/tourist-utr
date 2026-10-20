@@ -1,4 +1,7 @@
 'use client'
+import { ArrowLeft, ArrowRight, Lock, Users } from 'lucide-react'
+import { AchievementIcon } from '@/components/AchievementIcon'
+import { RankMark } from '@/components/StopIcon'
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { useI18n } from '@/hooks/useI18n'
@@ -8,6 +11,7 @@ import { fmt } from '@/lib/i18n/fmt'
 import { db } from '@/lib/firebase'
 import { doc, getDoc } from 'firebase/firestore'
 import { ACHIEVEMENTS_DEF, levelFromXp, type PlayerProfile } from '@/types'
+import { Avatar } from '@/components/Avatar'
 
 interface Session {
   id: string
@@ -90,16 +94,14 @@ export default function ProfilePage() {
     <main className="page-center">
       <div className="container">
         <a href="/" className="topbar-back">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
+          <ArrowLeft size={18} strokeWidth={2} aria-hidden />
           <span>{t('home')}</span>
         </a>
 
         <div className="profile-header fade-in-up">
           <div className="profile-avatar">
             {user.photoURL
-              ? <img src={user.photoURL} alt="" referrerPolicy="no-referrer" />
+              ? <Avatar src={user.photoURL} size={72} />
               : <div className="profile-avatar-letter" aria-hidden>{user.displayName?.[0] || '?'}</div>}
           </div>
           <div>
@@ -134,7 +136,7 @@ export default function ProfilePage() {
             const earned = !!profile?.achievements?.[a.id]
             return (
               <li key={a.id} className={`badge-cell ${earned ? 'is-earned' : 'is-locked'}`} title={t(`achDesc_${a.id}`)}>
-                <span className="badge-cell-icon" aria-hidden>{earned ? a.icon : '🔒'}</span>
+                <span className="badge-cell-icon" aria-hidden>{earned ? <AchievementIcon id={a.id} /> : <Lock size={20} strokeWidth={1.75} />}</span>
                 <span className="badge-cell-label">{t(`ach_${a.id}`)}</span>
                 <span className="flow-sr-only">{earned ? t('badgeEarned') : t('locked')}: {t(`achDesc_${a.id}`)}</span>
               </li>
@@ -145,12 +147,12 @@ export default function ProfilePage() {
         <ResumeRaceBanner />
 
         <a href="/multiplayer" className="mp-home-cta flow-mp-cta">
-          <div className="mp-home-cta-icon" aria-hidden>👥</div>
+          <div className="mp-home-cta-icon" aria-hidden><Users size={22} strokeWidth={1.75} /></div>
           <div className="mp-home-cta-body">
             <div className="mp-home-cta-title">{t('playWithFriends')}</div>
             <div className="mp-home-cta-desc">{t('shareRoomCode')}</div>
           </div>
-          <div className="mp-home-cta-arrow" aria-hidden>→</div>
+          <div className="mp-home-cta-arrow" aria-hidden><ArrowRight size={20} strokeWidth={2} /></div>
         </a>
 
         <div className="stats-grid">
@@ -163,7 +165,7 @@ export default function ProfilePage() {
             <div className="stat-label">{t('placesFound')}</div>
           </div>
           <div className="stat-card">
-            <div className="stat-value flow-gold">{totalScore}</div>
+            <div className="stat-value">{totalScore}</div>
             <div className="stat-label">{t('totalScore')}</div>
           </div>
           <div className="stat-card">
@@ -184,7 +186,7 @@ export default function ProfilePage() {
                       <span className="history-mp-code">{fmt(t('roomLabel'), { code: s.multiplayer.roomCode })}</span>
                     )}
                     <span>· {s.multiplayer?.rank}/{s.multiplayer?.totalPlayers}</span>
-                    {s.multiplayer?.rank === 1 && <span className="history-mp-medal" role="img" aria-label={t('mpMedalGold')}>🥇</span>}
+                    {s.multiplayer?.rank === 1 && <span className="history-mp-medal"><RankMark rank={1} label={t('mpMedalGold')} /></span>}
                   </div>
                 </div>
                 <div className="history-score">{s.score}</div>

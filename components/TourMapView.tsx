@@ -4,6 +4,7 @@ import type { Map as MlMap, Marker as MlMarker } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { Clue } from '@/types'
 import { useI18n } from '@/hooks/useI18n'
+import { MAP_STYLE_URL, MAP_ATTRIBUTION_CONTROL } from '@/lib/mapStyle'
 
 type MapLib = typeof import('maplibre-gl')
 
@@ -96,11 +97,12 @@ export function TourMapView({
     libRef.current = lib
     map = new lib.Map({
       container: containerRef.current,
-      style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+      style: MAP_STYLE_URL,
       bounds,
       fitBoundsOptions: { padding: 80, maxZoom: 16 },
-      // OSM/CARTO licence: attribution must stay visible.
-      attributionControl: { compact: true },
+      // OpenFreeMap/OSM: attribution must stay visible. Full-screen map, so
+      // no cooperativeGestures.
+      attributionControl: MAP_ATTRIBUTION_CONTROL,
     })
     mapRef.current = map
 
@@ -122,10 +124,11 @@ export function TourMapView({
     })
     }).catch(() => {})
 
+    const stopMarkers = stopMarkersRef.current
     return () => {
       cancelled = true
-      stopMarkersRef.current.forEach(({ marker }) => marker.remove())
-      stopMarkersRef.current.clear()
+      stopMarkers.forEach(({ marker }) => marker.remove())
+      stopMarkers.clear()
       if (userMarkerRef.current) {
         userMarkerRef.current.remove()
         userMarkerRef.current = undefined

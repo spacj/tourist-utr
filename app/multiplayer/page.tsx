@@ -117,8 +117,14 @@ export default function MultiplayerEntryPage() {
         <div className="container flow-narrow">
           <a href="/" className="back-link">{t('home')}</a>
           <h1 className="mp-title">{t('playWithFriends')}</h1>
-          <p className="mp-sub">{t('signInToPlayMp')}</p>
+          <p className="mp-sub">{t('mpPitch')}</p>
+          <ol className="mp-steps">
+            <li><strong>1</strong><span>{t('mpStep1')}</span></li>
+            <li><strong>2</strong><span>{t('mpStep2')}</span></li>
+            <li><strong>3</strong><span>{t('mpStep3')}</span></li>
+          </ol>
           <button type="button" onClick={signIn} className="cta-primary-btn flow-mt-20">{t('signIn')}</button>
+          <p className="mp-sub mp-signin-note">{t('signInToPlayMp')}</p>
         </div>
       </main>
     )
@@ -205,7 +211,7 @@ export default function MultiplayerEntryPage() {
                           {cityName} · {hunt.clueCount} {t('places')} · {hunt.durationMin} {t('min')}
                         </span>
                       </span>
-                      <span className="mp-hunt-radio" aria-hidden>{selected ? '●' : '○'}</span>
+                      <span className={`mp-hunt-radio ${selected ? 'is-on' : ''}`} aria-hidden />
                     </button>
                   )
                 })}

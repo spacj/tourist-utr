@@ -1,0 +1,1001 @@
+/* Places guide and blog.
+   Moved verbatim from globals.css (order preserved); notebook.css restyles on top. */
+/* ═══════════════════════════════════════════════════════════════
+   Places-guide article — map-first blog layout
+   Two top-level views:
+     view-map   — full-screen map + three-state bottom sheet (peek/card/full)
+     view-list  — full-screen scrollable list of place cards (no map)
+   Toggled via the .places-guide-view-toggle pill in the top bar.
+   ═══════════════════════════════════════════════════════════════ */
+
+.places-guide {
+  position: fixed;
+  inset: 0;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+/* ── Top bar ────────────────────────────────────────────────────── */
+.places-guide-topbar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: calc(env(safe-area-inset-top, 0px) + 12px) 14px 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.82) 70%, rgba(255,255,255,0) 100%);
+  pointer-events: none;
+}
+.places-guide-topbar > * { pointer-events: auto; }
+.places-guide .tour-topbar-back {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(20, 20, 30, 0.10);
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none;
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+  flex-shrink: 0;
+}
+.places-guide .tour-topbar-info { flex: 1; min-width: 0; }
+.places-guide .tour-topbar-eyebrow {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+  text-transform: uppercase; color: var(--text-muted);
+}
+.places-guide .tour-topbar-title {
+  font-family: var(--font-serif, serif);
+  font-weight: 400; font-size: 16px; line-height: 1.15;
+  letter-spacing: -0.2px; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* View toggle (Map / List) — segmented pill */
+.places-guide-view-toggle {
+  display: inline-flex;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(20, 20, 30, 0.10);
+  border-radius: 12px;
+  padding: 3px;
+  gap: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+}
+.places-guide-view-btn {
+  width: 36px; height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 9px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+.places-guide-view-btn:active { transform: scale(0.94); }
+.places-guide-view-btn.is-active {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Map view ───────────────────────────────────────────────────── */
+.places-guide-map-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.places-guide-map-wrap .tour-map {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+}
+
+/* Category filter chip strip — floats just above the sheet handle */
+.places-guide-cats {
+  position: absolute;
+  left: 0; right: 0;
+  z-index: 4;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  padding: 0 12px 10px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  pointer-events: none;
+  /* Default (card state) position; map view overrides via .sheet-* below */
+  bottom: calc(360px + env(safe-area-inset-bottom, 0px));
+  transition: bottom 0.32s cubic-bezier(.22,.61,.36,1);
+}
+.places-guide-cats::-webkit-scrollbar { display: none; }
+.places-guide.sheet-peek  .places-guide-cats { bottom: calc(72px  + env(safe-area-inset-bottom, 0px)); }
+.places-guide.sheet-card  .places-guide-cats { bottom: calc(360px + env(safe-area-inset-bottom, 0px)); }
+.places-guide.sheet-full  .places-guide-cats { display: none; }
+
+.places-guide-cat {
+  flex: none;
+  pointer-events: auto;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(20, 20, 30, 0.10);
+  background: rgba(255, 255, 255, 0.96);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+  transition: background 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
+}
+.places-guide-cat:active { transform: scale(0.96); }
+.places-guide-cat.is-active { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18); }
+
+/* Place marker — same DOM pattern as tour markers, but the badge contains
+ * the category icon (emoji) instead of a number. */
+.place-marker { pointer-events: auto; }
+.place-marker-inner {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+  user-select: none;
+  transform-origin: 50% 50%;
+  transition: transform 0.2s cubic-bezier(.22,.61,.36,1);
+}
+.place-marker-inner:hover { transform: scale(1.10); }
+.place-marker-inner.is-selected { transform: scale(1.28); z-index: 1; }
+.place-marker-badge {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 2.5px solid #fff;
+  box-shadow:
+    0 4px 12px rgba(20, 20, 30, 0.22),
+    0 0 0 1px rgba(20, 20, 30, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.place-marker-inner.is-selected .place-marker-badge {
+  box-shadow:
+    0 6px 18px rgba(20, 20, 30, 0.30),
+    0 0 0 4px rgba(255, 255, 255, 0.55);
+}
+.place-marker-icon {
+  font-size: 16px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));
+}
+.place-marker-halo {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(46, 106, 88, 0.40);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.place-marker-inner.is-selected .place-marker-halo {
+  opacity: 1;
+  animation: tour-marker-halo 1.8s ease-out infinite;
+}
+
+/* ── Three-state bottom sheet ──────────────────────────────────────
+ * .places-sheet wraps a handle (always visible) + scrollable content.
+ * The sheet's height is controlled by the .sheet-peek / .sheet-card /
+ * .sheet-full class on the parent .places-guide. Inner content scrolls
+ * within .places-sheet-scroll using overflow-y: auto + overscroll
+ * containment, so the user can read long descriptions / the full
+ * article without the sheet needing to be bigger than the viewport. */
+.places-sheet {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  z-index: 5;
+  background: #fff;
+  border-top-left-radius: 22px;
+  border-top-right-radius: 22px;
+  box-shadow: 0 -10px 32px rgba(0, 0, 0, 0.16);
+  display: flex;
+  flex-direction: column;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  /* Smooth height changes — the actual height is set by the .sheet-*
+   * classes on .places-guide. */
+  transition: height 0.32s cubic-bezier(.22,.61,.36,1);
+  /* Height variants — assigned via parent class */
+  height: 320px;
+  overflow: hidden;
+}
+.places-guide.sheet-peek .places-sheet { height: 72px; }
+.places-guide.sheet-card .places-sheet { height: 360px; }
+.places-guide.sheet-full .places-sheet { height: 88dvh; }
+
+/* Handle — always visible at the top of the sheet, captures swipe gestures */
+.places-sheet-handle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 16px 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  width: 100%;
+  flex-shrink: 0;
+  /* Tells the browser this strip is for vertical swipes; the scroll area
+   * below gets the page-y. Lets the user actually drag the handle without
+   * triggering scroll-pull. */
+  touch-action: pan-y;
+}
+.places-sheet-handle:hover { color: var(--text); }
+.places-sheet-grip {
+  width: 48px; height: 4px;
+  background: rgba(20, 20, 30, 0.22);
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+.places-sheet-handle:hover .places-sheet-grip { background: rgba(194, 65, 12, 0.5); }
+.places-sheet-handle-label { margin-top: 2px; }
+
+/* Inner scroll container — fills the rest of the sheet height. */
+.places-sheet-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 18px 16px;
+}
+.places-guide.sheet-peek .places-sheet-scroll { padding-bottom: 0; }
+
+/* Peek mode — a compact strip with the selected place's name + arrow */
+.places-sheet-peek {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 4px 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text);
+}
+.places-sheet-peek-icon {
+  flex-shrink: 0;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+.places-sheet-peek-name {
+  flex: 1;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.places-sheet-peek-arrow {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ── Focused place card (sheet 'card' state) ───────────────────── */
+.places-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 0 8px;
+}
+.places-card-image {
+  margin: 0 -18px;
+  height: 180px;
+  overflow: hidden;
+  background: var(--surface-2, var(--surface-2));
+  border-radius: 0;
+}
+.places-card-image img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.places-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.places-card-cat {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.places-card-name {
+  font-family: var(--font-serif, serif);
+  font-weight: 400;
+  font-size: 22px;
+  line-height: 1.15;
+  letter-spacing: -0.3px;
+  margin: 0;
+  color: var(--text);
+}
+.places-card-addr {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.places-card-desc {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--text);
+  margin: 0;
+}
+.places-card-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 4px;
+}
+.places-card-expand-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-2);
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+}
+.places-card-expand-btn:active { transform: scale(0.97); }
+.places-card-expand-btn:hover { border-color: var(--primary); background: var(--surface-2); }
+.places-card-link {
+  flex: 1;
+  text-align: center;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  background: var(--primary);
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+.places-card-link:active { transform: scale(0.97); }
+.places-card-link:hover { filter: brightness(1.06); }
+.places-card-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+.places-card-pager-btn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 16px;
+  display: grid;
+  place-items: center;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+}
+.places-card-pager-btn:disabled { opacity: 0.32; cursor: not-allowed; }
+.places-card-pager-btn:not(:disabled):hover { border-color: var(--primary); }
+.places-card-pager-btn:not(:disabled):active { transform: scale(0.92); }
+.places-card-pager-pos {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  min-width: 48px;
+  text-align: center;
+}
+
+/* ── Full mode (article + list) ────────────────────────────────── */
+.places-full-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 4px;
+}
+.places-guide-article {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+}
+.places-guide-article-lede {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 8px 0 14px;
+}
+.places-guide-article .blog-post-body { font-size: 14.5px; line-height: 1.6; }
+.places-guide-article .blog-h2 { font-size: 18px; margin-top: 18px; }
+.places-guide-article .blog-h3 { font-size: 16px; margin-top: 14px; }
+.places-full-list-heading {
+  font-family: var(--font-serif, serif);
+  font-weight: 400;
+  font-size: 13px;
+  margin: 4px 0 8px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.places-full-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.places-full-list-item {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.places-full-list-item:hover { border-color: var(--border-2); }
+.places-full-list-item.is-open {
+  border-color: rgba(194, 65, 12, 0.5);
+  background: rgba(194, 65, 12, 0.04);
+}
+.places-full-list-summary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  color: var(--text);
+}
+.places-full-list-icon {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  font-size: 14px;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+.places-full-list-text { flex: 1; min-width: 0; }
+.places-full-list-name {
+  font-weight: 600;
+  font-size: 14.5px;
+  line-height: 1.3;
+}
+.places-full-list-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.places-full-list-chevron { color: var(--text-muted); font-size: 12px; flex-shrink: 0; }
+
+/* ── List view (no map) ────────────────────────────────────────── */
+.places-list-view {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--bg-2, var(--surface));
+  /* Clear the absolute top bar */
+  padding-top: calc(env(safe-area-inset-top, 0px) + 86px);
+  padding-bottom: max(40px, calc(env(safe-area-inset-bottom, 0px) + 32px));
+}
+.places-list-view-inner {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.places-list-view-cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.places-list-grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+@media (min-width: 720px) {
+  .places-list-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.places-list-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text);
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  padding: 0;
+}
+@media (hover: hover) {
+  .places-list-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(20, 20, 30, 0.10);
+  }
+}
+.places-list-card:active { transform: scale(0.99); }
+.places-list-card-image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.places-list-card-image img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.places-list-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px 16px;
+}
+.places-list-card-cat {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.places-list-card-name {
+  font-family: var(--font-serif, serif);
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+}
+.places-list-card-addr {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+.places-list-card-desc {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  margin: 4px 0 0;
+}
+.places-list-card-cta {
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+@media (max-width: 540px) {
+  .tour-stop-summary { padding: 12px 14px; gap: 12px; }
+  .tour-stop-num { width: 28px; height: 28px; font-size: 13px; }
+  .tour-stop-name { font-size: 14px; }
+  .tour-stop-actions { flex-direction: column; }
+  .tour-stop-maps-btn, .tour-stop-here-btn, .tour-stop-visited-tag {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Blog (/blog and /blog/[slug])
+   ═══════════════════════════════════════════════════════════════ */
+
+.blog-container {
+  max-width: 980px;
+  padding: 12px 20px 60px;
+}
+
+.blog-header { margin: 24px 0 32px; }
+.blog-eyebrow {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+.blog-title {
+  font-family: var(--font-serif, serif);
+  font-size: 44px;
+  font-weight: 400;
+  letter-spacing: -1px;
+  line-height: 1.05;
+  margin: 8px 0 12px;
+}
+.blog-subtitle {
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  max-width: 640px;
+}
+
+.blog-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 22px;
+  padding: 0;
+}
+@media (min-width: 720px) {
+  .blog-list { grid-template-columns: 1fr 1fr; gap: 26px; }
+}
+
+.blog-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.blog-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+  border-color: var(--border-2);
+}
+.blog-card-link {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: var(--text);
+  height: 100%;
+}
+.blog-card-cover {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.blog-card-cover img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.blog-card:hover .blog-card-cover img { transform: scale(1.04); }
+.blog-card-cat {
+  position: absolute;
+  top: 12px; left: 12px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+}
+.blog-card-body { padding: 18px 20px 20px; flex: 1; }
+.blog-card-title {
+  font-family: var(--font-serif, serif);
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.3px;
+  margin-bottom: 8px;
+}
+.blog-card-excerpt {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.blog-card-meta {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+/* ─── Single post ─── */
+.blog-article { max-width: 760px; padding: 12px 20px 60px; }
+
+.blog-post-header { margin: 24px 0 18px; }
+.blog-post-meta {
+  display: flex; gap: 8px; align-items: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.blog-post-cat {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+  color: var(--primary);
+}
+.blog-post-title {
+  font-family: var(--font-serif, serif);
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -1px;
+  margin: 0 0 12px;
+}
+@media (max-width: 540px) {
+  .blog-post-title { font-size: 30px; }
+}
+.blog-post-excerpt {
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.blog-post-hero {
+  border-radius: 18px;
+  overflow: hidden;
+  margin: 24px 0 8px;
+  aspect-ratio: 16 / 9;
+  background: var(--surface-2);
+}
+.blog-post-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.blog-post-body { margin: 18px 0; font-size: 17px; line-height: 1.7; color: var(--text); }
+.blog-post-body > * + * { margin-top: 18px; }
+
+.blog-h2 {
+  font-family: var(--font-serif, serif);
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.4px;
+  margin-top: 36px;
+  scroll-margin-top: 16px;
+}
+.blog-h3 {
+  font-family: var(--font-serif, serif);
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.25;
+  margin-top: 28px;
+  scroll-margin-top: 16px;
+}
+.blog-p { margin: 0; }
+.blog-ul, .blog-ol { padding-left: 22px; margin: 0; }
+.blog-ul li, .blog-ol li { margin: 4px 0; }
+
+.blog-quote {
+  border-left: 4px solid var(--primary);
+  padding: 4px 0 4px 18px;
+  margin: 22px 0;
+  font-style: italic;
+  color: var(--text);
+}
+.blog-quote p { margin: 0; }
+.blog-quote cite {
+  display: block;
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  font-style: normal;
+}
+
+.blog-figure {
+  margin: 26px 0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.blog-figure img { width: 100%; display: block; }
+.blog-figure figcaption {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+  background: var(--surface-2);
+}
+
+.blog-divider {
+  border: none;
+  height: 1px;
+  background: var(--border);
+  margin: 36px 0;
+}
+
+/* ─── Inline CTA card (the conversion engine) ─── */
+.blog-cta {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+  margin: 28px 0;
+  padding: 18px 20px;
+  background: var(--brick-soft);
+  border: 1.5px solid rgba(194, 65, 12, 0.4);
+  border-radius: 18px;
+  text-decoration: none;
+  color: var(--text);
+  transition: transform 0.18s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.blog-cta:hover {
+  transform: translateY(-1px);
+  border-color: var(--primary);
+  box-shadow: 0 8px 22px rgba(194, 65, 12, 0.18);
+}
+.blog-cta-content { flex: 1; min-width: 0; }
+.blog-cta-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--primary);
+  background: rgba(194, 65, 12, 0.15);
+  padding: 3px 8px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+.blog-cta-title {
+  font-family: var(--font-serif, serif);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.25;
+  letter-spacing: -0.2px;
+  margin-bottom: 4px;
+}
+.blog-cta-desc {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.blog-cta-arrow {
+  font-size: 26px;
+  color: var(--primary);
+  align-self: center;
+  flex-shrink: 0;
+}
+
+/* ─── Tags footer ─── */
+.blog-post-footer { margin-top: 36px; padding-top: 22px; border-top: 1px solid var(--border); }
+.blog-post-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.blog-post-tag {
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+/* ─── "From the blog" section on the homepage ─── */
+.home-blog-section {
+  margin: 32px 0;
+}
+.home-blog-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.home-blog-all {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: none;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+.home-blog-all:hover { text-decoration: underline; }
+
+.home-blog-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  padding: 0;
+  margin: 0;
+}
+@media (min-width: 720px) {
+  .home-blog-list { grid-template-columns: repeat(3, 1fr); gap: 18px; }
+}
+
+.home-blog-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.home-blog-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.07);
+  border-color: var(--border-2);
+}
+.home-blog-card-link {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: var(--text);
+  height: 100%;
+}
+.home-blog-card-cover {
+  aspect-ratio: 16 / 10;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.home-blog-card-cover img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.home-blog-card:hover .home-blog-card-cover img { transform: scale(1.04); }
+
+.home-blog-card-body {
+  padding: 14px 16px 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.home-blog-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+.home-blog-card-cat {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--primary);
+}
+.home-blog-card-title {
+  font-family: var(--font-serif, serif);
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+  margin: 0;
+}
+.home-blog-card-excerpt {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

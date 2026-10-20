@@ -1,5 +1,7 @@
 'use client'
 import { useState } from 'react'
+import { Check, ChevronDown, ChevronRight, GraduationCap } from 'lucide-react'
+import { StopIcon } from '@/components/StopIcon'
 import { pickTxt, type CompletedClueView } from '@/types'
 import { useI18n } from '@/hooks/useI18n'
 import { Modal } from '@/components/Modal'
@@ -36,15 +38,15 @@ export function ClueHistory({ completedClues, onClose }: Props) {
                     aria-expanded={isOpen}
                   >
                     <span className="history-stop">{c.order}</span>
-                    <span className="history-icon" aria-hidden>{c.icon ?? '📍'}</span>
+                    <StopIcon icon={c.icon} size="sm" className="history-icon" />
                     <span className="history-name">{pickTxt(c.locationName, lang)}</span>
-                    <span className="history-points">+{c.points}</span>
-                    <span className="history-chevron" aria-hidden>{isOpen ? '▾' : '▸'}</span>
+                    <span className="history-points nb-num">+{c.points}</span>
+                    <span className="history-chevron" aria-hidden>{isOpen ? <ChevronDown size={18} strokeWidth={2} /> : <ChevronRight size={18} strokeWidth={2} />}</span>
                   </button>
                   {isOpen && (
                     <div className="history-item-body">
                       {c.theme && <div className="history-theme">{pickTxt(c.theme, lang)}</div>}
-                      {riddle && <p className="history-riddle">{riddle}</p>}
+                      {riddle && <p className="history-riddle typewriter">{riddle}</p>}
                       {funFact && (
                         <div className="history-fact">
                           <div className="history-fact-label">{t('didYouKnow')}</div>
@@ -53,9 +55,9 @@ export function ClueHistory({ completedClues, onClose }: Props) {
                       )}
                       {c.trivia && (
                         <div className="history-trivia">
-                          <div className="history-fact-label">🎓 {t('quizLabel')}</div>
+                          <div className="history-fact-label"><GraduationCap size={16} strokeWidth={1.75} aria-hidden /> {t('quizLabel')}</div>
                           <p className="history-trivia-q">{pickTxt(c.trivia.question, lang)}</p>
-                          <p className="history-trivia-a">✓ {pickTxt(c.trivia.options[c.trivia.correctIndex], lang)}</p>
+                          <p className="history-trivia-a"><Check size={16} strokeWidth={2} aria-hidden /> {pickTxt(c.trivia.options[c.trivia.correctIndex], lang)}</p>
                           {c.trivia.explain && <p className="history-trivia-explain">{pickTxt(c.trivia.explain, lang)}</p>}
                         </div>
                       )}
