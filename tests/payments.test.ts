@@ -183,10 +183,10 @@ describe('siteOrigin', () => {
     vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://tourhunts.example/some/path?x=1')
     expect(siteOrigin()).toBe('https://tourhunts.example')
   })
-  it('throws in production when unset, localhost in dev', () => {
+  it('falls back to the canonical domain in production when unset, localhost in dev', () => {
     vi.stubEnv('NEXT_PUBLIC_SITE_URL', '')
     vi.stubEnv('NODE_ENV', 'production')
-    expect(() => siteOrigin()).toThrow()
+    expect(siteOrigin()).toMatch(/^https:\/\//)
     vi.stubEnv('NODE_ENV', 'development')
     expect(siteOrigin()).toBe('http://localhost:3000')
   })

@@ -5,6 +5,7 @@ import { CREDIT_PACKAGES } from '@/types'
 import { cityUnlockRef, grantCityUnlock, loadCityPriceCents } from '@/lib/cityUnlock'
 import { freeHuntIdOf, grantHuntUnlock, huntUnlockRef, loadHuntForPayment, userRef } from '@/lib/huntAccess'
 import { refundCapture, getCapture, type CaptureInfo } from '@/lib/paypal'
+import { SITE_URL } from '@/lib/site'
 
 /**
  * Shared, idempotent payment processing for the redirect capture routes and
@@ -25,9 +26,9 @@ import { refundCapture, getCapture, type CaptureInfo } from '@/lib/paypal'
 export function siteOrigin(): string {
   const raw = process.env.NEXT_PUBLIC_SITE_URL
   if (raw) return new URL(raw).origin
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('NEXT_PUBLIC_SITE_URL must be set in production')
-  }
+  // Never derived from the request (Origin/Host can be spoofed). In production
+  // fall back to the fixed canonical domain.
+  if (process.env.NODE_ENV === 'production') return new URL(SITE_URL).origin
   return 'http://localhost:3000'
 }
 

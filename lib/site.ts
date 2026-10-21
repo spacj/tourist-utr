@@ -1,5 +1,6 @@
 /** Site-wide constants. Legal identity comes from env so it's never guessed. */
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tourhunts.com'
+// The apex domain redirects to www, so www is the canonical origin.
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tourhunts.com'
 export const SITE_NAME = 'TourHunts'
 
 export const LEGAL = {

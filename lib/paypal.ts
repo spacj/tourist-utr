@@ -47,7 +47,7 @@ function baseUrl(): string {
 
 let cachedToken: { token: string; expiresAt: number; base: string } | null = null
 
-async function getAccessToken(): Promise<string> {
+export async function getAccessToken(): Promise<string> {
   const base = baseUrl()
   if (cachedToken && cachedToken.base === base && cachedToken.expiresAt > Date.now()) {
     return cachedToken.token

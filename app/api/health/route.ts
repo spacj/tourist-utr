@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { adminDb, adminCredentialSource } from '@/lib/firebaseAdmin'
+import { paypalMode, getAccessToken } from '@/lib/paypal'
+import { siteOrigin } from '@/lib/payments'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,5 +38,22 @@ export async function GET() {
     out.firestoreError = String(e?.code ?? '') + ' ' + String(e?.message ?? '').slice(0, 160)
     return NextResponse.json({ ok: false, ...out }, { status: 500 })
   }
-  return NextResponse.json({ ok: true, ...out })
+  // Payments: config present + a real OAuth round-trip to PayPal (no secrets echoed).
+  const pay: Record<string, unknown> = {
+    clientIdSet: !!process.env.PAYPAL_CLIENT_ID,
+    secretSet: !!process.env.PAYPAL_CLIENT_SECRET,
+    webhookIdSet: !!process.env.PAYPAL_WEBHOOK_ID,
+    modeEnv: process.env.PAYPAL_MODE ?? null,
+  }
+  try { pay.returnOrigin = siteOrigin() } catch (e) { pay.returnOrigin = 'error' }
+  try {
+    pay.mode = paypalMode()
+    await getAccessToken()
+    pay.paypalLogin = 'ok'
+  } catch (e: any) {
+    pay.paypalLogin = 'error'
+    pay.paypalError = String(e?.code ?? e?.kind ?? '') + ' ' + String(e?.message ?? '').slice(0, 160)
+  }
+  out.payments = pay
+  return NextResponse.json({ ok: pay.paypalLogin === 'ok', ...out })
 }
