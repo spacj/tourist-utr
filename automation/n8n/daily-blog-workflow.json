@@ -1,0 +1,663 @@
+{
+  "name": "TourHunts — daily blog article",
+  "nodes": [
+    {
+      "id": "daily",
+      "name": "Every day 07:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "config",
+      "name": "Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// ── Edit these settings ──\nreturn [{ json: {\n  githubOwner: 'spacj',\n  githubRepo: 'tourist-utr',\n  branch: 'master',\n  // 'pr' = open a pull request for a quick human check before it goes live (recommended).\n  // 'direct' = commit straight to the branch; Vercel publishes it automatically.\n  publishMode: 'pr',\n  siteUrl: 'https://www.tourhunts.com',\n  startDate: '2026-10-22',\n  author: 'TourHunts Editorial',\n} }]"
+      }
+    },
+    {
+      "id": "pick-today-s-topic",
+      "name": "Pick today's topic",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Picks today's brief from the topic plan (generated from the real hunts).\nconst PLAN = [\n {\n  \"slug\": \"things-to-do-in-utrecht-utrecht-classic\",\n  \"keyword\": \"things to do in Utrecht\",\n  \"angle\": \"The best things to do in Utrecht on foot in one afternoon, built around the \\\"Utrecht Classic\\\" puzzle walk.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"hunt_utrecht_classic\",\n  \"huntTitle\": \"Utrecht Classic\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"The essential eight. From the Dom Tower to a house that looks like a painting — a thousand years of Utrecht on foot. Duration about 150 minutes, 4.2 km, difficulty medium, 8 stops.\",\n  \"photoQuery\": \"Utrecht old town street\"\n },\n {\n  \"slug\": \"things-to-do-in-amsterdam-amsterdam-classic\",\n  \"keyword\": \"things to do in Amsterdam\",\n  \"angle\": \"The best things to do in Amsterdam on foot in one afternoon, built around the \\\"Amsterdam Classic\\\" puzzle walk.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_amsterdam\",\n  \"city\": \"Amsterdam\",\n  \"huntId\": \"hunt_amsterdam_classic\",\n  \"huntTitle\": \"Amsterdam Classic\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"The essential eight. From the Royal Palace to Van Gogh — Amsterdam's greatest hits, with a few myths busted on the way. Duration about 180 minutes, 5.5 km, difficulty medium, 8 stops.\",\n  \"photoQuery\": \"Amsterdam old town street\"\n },\n {\n  \"slug\": \"things-to-do-in-the-hague-the-hague-royal-walk\",\n  \"keyword\": \"things to do in The Hague\",\n  \"angle\": \"The best things to do in The Hague on foot in one afternoon, built around the \\\"The Hague Royal Walk\\\" puzzle walk.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_the_hague\",\n  \"city\": \"The Hague\",\n  \"huntId\": \"hunt_the_hague_royal\",\n  \"huntTitle\": \"The Hague Royal Walk\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Six stops through the city of kings and diplomats — from the medieval heart of Dutch politics to the Peace Palace, with Vermeer's most famous girl in between and the North Sea at the end. Duration about 170 minutes, 7 km, difficulty easy, 6 stops.\",\n  \"photoQuery\": \"The Hague old town street\"\n },\n {\n  \"slug\": \"things-to-do-in-rotterdam-rotterdam-modern-marvels\",\n  \"keyword\": \"things to do in Rotterdam\",\n  \"angle\": \"The best things to do in Rotterdam on foot in one afternoon, built around the \\\"Rotterdam Modern Marvels\\\" puzzle walk.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_rotterdam\",\n  \"city\": \"Rotterdam\",\n  \"huntId\": \"hunt_rotterdam_modern\",\n  \"huntTitle\": \"Rotterdam Modern Marvels\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Seven stops through the city that rebuilt itself after 1940: a market hall you can live in, a forest of tilted yellow cubes, a white tower that survived, a bridge called the Swan and a mast you can ride up. Duration about 150 minutes, 5 km, difficulty medium, 7 stops.\",\n  \"photoQuery\": \"Rotterdam old town street\"\n },\n {\n  \"slug\": \"things-to-do-in-delft-delft-vermeer-s-trail\",\n  \"keyword\": \"things to do in Delft\",\n  \"angle\": \"The best things to do in Delft on foot in one afternoon, built around the \\\"Delft: Vermeer's Trail\\\" puzzle walk.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_delft\",\n  \"city\": \"Delft\",\n  \"huntId\": \"hunt_delft_vermeer\",\n  \"huntTitle\": \"Delft: Vermeer's Trail\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Six stops through the canal town Vermeer called home: the royal burial church, the painter's own grave, the stair where William of Orange was shot — and the last original pottery still painting Delft Blue. Duration about 120 minutes, 4 km, difficulty easy, 6 stops.\",\n  \"photoQuery\": \"Delft old town street\"\n },\n {\n  \"slug\": \"things-to-do-in-haarlem-haarlem-golden-age-in-miniature\",\n  \"keyword\": \"things to do in Haarlem\",\n  \"angle\": \"The best things to do in Haarlem on foot in one afternoon, built around the \\\"Haarlem: Golden Age in Miniature\\\" puzzle walk.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_haarlem\",\n  \"city\": \"Haarlem\",\n  \"huntId\": \"hunt_haarlem_classic\",\n  \"huntTitle\": \"Haarlem: Golden Age in Miniature\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Five stops through Frans Hals's home town: a giant church organ, the painter of laughter, the oldest museum in the country, the oldest almshouse courtyard and a windmill reborn from its ashes. Duration about 100 minutes, 2.2 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Haarlem old town street\"\n },\n {\n  \"slug\": \"things-to-do-in-leiden-leiden-rembrandt-the-pilgrims\",\n  \"keyword\": \"things to do in Leiden\",\n  \"angle\": \"The best things to do in Leiden on foot in one afternoon, built around the \\\"Leiden: Rembrandt & the Pilgrims\\\" puzzle walk.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_leiden\",\n  \"city\": \"Leiden\",\n  \"huntId\": \"hunt_leiden_classic\",\n  \"huntTitle\": \"Leiden: Rembrandt & the Pilgrims\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Five stops through Rembrandt's birthplace — where the Pilgrim Fathers prayed before the Mayflower, where the country's oldest university began, and where Europe's first tulips bloomed. Duration about 100 minutes, 2.5 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Leiden old town street\"\n },\n {\n  \"slug\": \"things-to-do-in-milan-milan-classic\",\n  \"keyword\": \"things to do in Milan\",\n  \"angle\": \"The best things to do in Milan on foot in one afternoon, built around the \\\"Milan Classic\\\" puzzle walk.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_milan\",\n  \"city\": \"Milan\",\n  \"huntId\": \"hunt_milan_classic\",\n  \"huntTitle\": \"Milan Classic\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Six essential stops from Italy's largest cathedral to a row of Roman columns where Milan drinks its aperitivo — the city's six centuries in one loop. Duration about 150 minutes, 4.2 km, difficulty medium, 6 stops.\",\n  \"photoQuery\": \"Milan old town street\"\n },\n {\n  \"slug\": \"things-to-do-in-rome-rome-classic\",\n  \"keyword\": \"things to do in Rome\",\n  \"angle\": \"The best things to do in Rome on foot in one afternoon, built around the \\\"Rome Classic\\\" puzzle walk.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_rome\",\n  \"city\": \"Rome\",\n  \"huntId\": \"hunt_rome_classic\",\n  \"huntTitle\": \"Rome Classic\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Six legendary stops across two thousand years — Colosseum, Forum, Pantheon, Navona, Trevi and the Spanish Steps. Rome's greatest hits in one walk. Duration about 180 minutes, 4.5 km, difficulty medium, 6 stops.\",\n  \"photoQuery\": \"Rome old town street\"\n },\n {\n  \"slug\": \"utrecht-self-guided-walking-tour-utrecht-classic\",\n  \"keyword\": \"Utrecht self-guided walking tour\",\n  \"angle\": \"Why a self-guided puzzle walk beats a free walking tour in Utrecht: freedom, pace, price and fun — using \\\"Utrecht Classic\\\" as the example.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"hunt_utrecht_classic\",\n  \"huntTitle\": \"Utrecht Classic\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"The essential eight. From the Dom Tower to a house that looks like a painting — a thousand years of Utrecht on foot. Duration about 150 minutes, 4.2 km, difficulty medium, 8 stops.\",\n  \"photoQuery\": \"Utrecht old town street\"\n },\n {\n  \"slug\": \"amsterdam-self-guided-walking-tour-amsterdam-classic\",\n  \"keyword\": \"Amsterdam self-guided walking tour\",\n  \"angle\": \"Why a self-guided puzzle walk beats a free walking tour in Amsterdam: freedom, pace, price and fun — using \\\"Amsterdam Classic\\\" as the example.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_amsterdam\",\n  \"city\": \"Amsterdam\",\n  \"huntId\": \"hunt_amsterdam_classic\",\n  \"huntTitle\": \"Amsterdam Classic\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"The essential eight. From the Royal Palace to Van Gogh — Amsterdam's greatest hits, with a few myths busted on the way. Duration about 180 minutes, 5.5 km, difficulty medium, 8 stops.\",\n  \"photoQuery\": \"Amsterdam old town street\"\n },\n {\n  \"slug\": \"the-hague-self-guided-walking-tour-the-hague-royal-walk\",\n  \"keyword\": \"The Hague self-guided walking tour\",\n  \"angle\": \"Why a self-guided puzzle walk beats a free walking tour in The Hague: freedom, pace, price and fun — using \\\"The Hague Royal Walk\\\" as the example.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_the_hague\",\n  \"city\": \"The Hague\",\n  \"huntId\": \"hunt_the_hague_royal\",\n  \"huntTitle\": \"The Hague Royal Walk\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Six stops through the city of kings and diplomats — from the medieval heart of Dutch politics to the Peace Palace, with Vermeer's most famous girl in between and the North Sea at the end. Duration about 170 minutes, 7 km, difficulty easy, 6 stops.\",\n  \"photoQuery\": \"The Hague old town street\"\n },\n {\n  \"slug\": \"rotterdam-self-guided-walking-tour-rotterdam-modern-marvels\",\n  \"keyword\": \"Rotterdam self-guided walking tour\",\n  \"angle\": \"Why a self-guided puzzle walk beats a free walking tour in Rotterdam: freedom, pace, price and fun — using \\\"Rotterdam Modern Marvels\\\" as the example.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_rotterdam\",\n  \"city\": \"Rotterdam\",\n  \"huntId\": \"hunt_rotterdam_modern\",\n  \"huntTitle\": \"Rotterdam Modern Marvels\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Seven stops through the city that rebuilt itself after 1940: a market hall you can live in, a forest of tilted yellow cubes, a white tower that survived, a bridge called the Swan and a mast you can ride up. Duration about 150 minutes, 5 km, difficulty medium, 7 stops.\",\n  \"photoQuery\": \"Rotterdam old town street\"\n },\n {\n  \"slug\": \"delft-self-guided-walking-tour-delft-vermeer-s-trail\",\n  \"keyword\": \"Delft self-guided walking tour\",\n  \"angle\": \"Why a self-guided puzzle walk beats a free walking tour in Delft: freedom, pace, price and fun — using \\\"Delft: Vermeer's Trail\\\" as the example.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_delft\",\n  \"city\": \"Delft\",\n  \"huntId\": \"hunt_delft_vermeer\",\n  \"huntTitle\": \"Delft: Vermeer's Trail\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Six stops through the canal town Vermeer called home: the royal burial church, the painter's own grave, the stair where William of Orange was shot — and the last original pottery still painting Delft Blue. Duration about 120 minutes, 4 km, difficulty easy, 6 stops.\",\n  \"photoQuery\": \"Delft old town street\"\n },\n {\n  \"slug\": \"haarlem-self-guided-walking-tour-haarlem-golden-age-in-miniature\",\n  \"keyword\": \"Haarlem self-guided walking tour\",\n  \"angle\": \"Why a self-guided puzzle walk beats a free walking tour in Haarlem: freedom, pace, price and fun — using \\\"Haarlem: Golden Age in Miniature\\\" as the example.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_haarlem\",\n  \"city\": \"Haarlem\",\n  \"huntId\": \"hunt_haarlem_classic\",\n  \"huntTitle\": \"Haarlem: Golden Age in Miniature\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Five stops through Frans Hals's home town: a giant church organ, the painter of laughter, the oldest museum in the country, the oldest almshouse courtyard and a windmill reborn from its ashes. Duration about 100 minutes, 2.2 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Haarlem old town street\"\n },\n {\n  \"slug\": \"leiden-self-guided-walking-tour-leiden-rembrandt-the-pilgrims\",\n  \"keyword\": \"Leiden self-guided walking tour\",\n  \"angle\": \"Why a self-guided puzzle walk beats a free walking tour in Leiden: freedom, pace, price and fun — using \\\"Leiden: Rembrandt & the Pilgrims\\\" as the example.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_leiden\",\n  \"city\": \"Leiden\",\n  \"huntId\": \"hunt_leiden_classic\",\n  \"huntTitle\": \"Leiden: Rembrandt & the Pilgrims\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Five stops through Rembrandt's birthplace — where the Pilgrim Fathers prayed before the Mayflower, where the country's oldest university began, and where Europe's first tulips bloomed. Duration about 100 minutes, 2.5 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Leiden old town street\"\n },\n {\n  \"slug\": \"milan-self-guided-walking-tour-milan-classic\",\n  \"keyword\": \"Milan self-guided walking tour\",\n  \"angle\": \"Why a self-guided puzzle walk beats a free walking tour in Milan: freedom, pace, price and fun — using \\\"Milan Classic\\\" as the example.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_milan\",\n  \"city\": \"Milan\",\n  \"huntId\": \"hunt_milan_classic\",\n  \"huntTitle\": \"Milan Classic\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Six essential stops from Italy's largest cathedral to a row of Roman columns where Milan drinks its aperitivo — the city's six centuries in one loop. Duration about 150 minutes, 4.2 km, difficulty medium, 6 stops.\",\n  \"photoQuery\": \"Milan old town street\"\n },\n {\n  \"slug\": \"rome-self-guided-walking-tour-rome-classic\",\n  \"keyword\": \"Rome self-guided walking tour\",\n  \"angle\": \"Why a self-guided puzzle walk beats a free walking tour in Rome: freedom, pace, price and fun — using \\\"Rome Classic\\\" as the example.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_rome\",\n  \"city\": \"Rome\",\n  \"huntId\": \"hunt_rome_classic\",\n  \"huntTitle\": \"Rome Classic\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Six legendary stops across two thousand years — Colosseum, Forum, Pantheon, Navona, Trevi and the Spanish Steps. Rome's greatest hits in one walk. Duration about 180 minutes, 4.5 km, difficulty medium, 6 stops.\",\n  \"photoQuery\": \"Rome old town street\"\n },\n {\n  \"slug\": \"utrecht-with-kids-utrecht-classic\",\n  \"keyword\": \"Utrecht with kids\",\n  \"angle\": \"A family day out in Utrecht: keeping children curious with riddles and a treasure-hunt format on the \\\"Utrecht Classic\\\" route.\",\n  \"category\": \"family\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"hunt_utrecht_classic\",\n  \"huntTitle\": \"Utrecht Classic\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"The essential eight. From the Dom Tower to a house that looks like a painting — a thousand years of Utrecht on foot. Duration about 150 minutes, 4.2 km, difficulty medium, 8 stops.\",\n  \"photoQuery\": \"Utrecht family street\"\n },\n {\n  \"slug\": \"amsterdam-with-kids-amsterdam-classic\",\n  \"keyword\": \"Amsterdam with kids\",\n  \"angle\": \"A family day out in Amsterdam: keeping children curious with riddles and a treasure-hunt format on the \\\"Amsterdam Classic\\\" route.\",\n  \"category\": \"family\",\n  \"cityId\": \"city_amsterdam\",\n  \"city\": \"Amsterdam\",\n  \"huntId\": \"hunt_amsterdam_classic\",\n  \"huntTitle\": \"Amsterdam Classic\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"The essential eight. From the Royal Palace to Van Gogh — Amsterdam's greatest hits, with a few myths busted on the way. Duration about 180 minutes, 5.5 km, difficulty medium, 8 stops.\",\n  \"photoQuery\": \"Amsterdam family street\"\n },\n {\n  \"slug\": \"the-hague-with-kids-the-hague-royal-walk\",\n  \"keyword\": \"The Hague with kids\",\n  \"angle\": \"A family day out in The Hague: keeping children curious with riddles and a treasure-hunt format on the \\\"The Hague Royal Walk\\\" route.\",\n  \"category\": \"family\",\n  \"cityId\": \"city_the_hague\",\n  \"city\": \"The Hague\",\n  \"huntId\": \"hunt_the_hague_royal\",\n  \"huntTitle\": \"The Hague Royal Walk\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Six stops through the city of kings and diplomats — from the medieval heart of Dutch politics to the Peace Palace, with Vermeer's most famous girl in between and the North Sea at the end. Duration about 170 minutes, 7 km, difficulty easy, 6 stops.\",\n  \"photoQuery\": \"The Hague family street\"\n },\n {\n  \"slug\": \"rotterdam-with-kids-rotterdam-modern-marvels\",\n  \"keyword\": \"Rotterdam with kids\",\n  \"angle\": \"A family day out in Rotterdam: keeping children curious with riddles and a treasure-hunt format on the \\\"Rotterdam Modern Marvels\\\" route.\",\n  \"category\": \"family\",\n  \"cityId\": \"city_rotterdam\",\n  \"city\": \"Rotterdam\",\n  \"huntId\": \"hunt_rotterdam_modern\",\n  \"huntTitle\": \"Rotterdam Modern Marvels\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Seven stops through the city that rebuilt itself after 1940: a market hall you can live in, a forest of tilted yellow cubes, a white tower that survived, a bridge called the Swan and a mast you can ride up. Duration about 150 minutes, 5 km, difficulty medium, 7 stops.\",\n  \"photoQuery\": \"Rotterdam family street\"\n },\n {\n  \"slug\": \"delft-with-kids-delft-vermeer-s-trail\",\n  \"keyword\": \"Delft with kids\",\n  \"angle\": \"A family day out in Delft: keeping children curious with riddles and a treasure-hunt format on the \\\"Delft: Vermeer's Trail\\\" route.\",\n  \"category\": \"family\",\n  \"cityId\": \"city_delft\",\n  \"city\": \"Delft\",\n  \"huntId\": \"hunt_delft_vermeer\",\n  \"huntTitle\": \"Delft: Vermeer's Trail\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Six stops through the canal town Vermeer called home: the royal burial church, the painter's own grave, the stair where William of Orange was shot — and the last original pottery still painting Delft Blue. Duration about 120 minutes, 4 km, difficulty easy, 6 stops.\",\n  \"photoQuery\": \"Delft family street\"\n },\n {\n  \"slug\": \"haarlem-with-kids-haarlem-golden-age-in-miniature\",\n  \"keyword\": \"Haarlem with kids\",\n  \"angle\": \"A family day out in Haarlem: keeping children curious with riddles and a treasure-hunt format on the \\\"Haarlem: Golden Age in Miniature\\\" route.\",\n  \"category\": \"family\",\n  \"cityId\": \"city_haarlem\",\n  \"city\": \"Haarlem\",\n  \"huntId\": \"hunt_haarlem_classic\",\n  \"huntTitle\": \"Haarlem: Golden Age in Miniature\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Five stops through Frans Hals's home town: a giant church organ, the painter of laughter, the oldest museum in the country, the oldest almshouse courtyard and a windmill reborn from its ashes. Duration about 100 minutes, 2.2 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Haarlem family street\"\n },\n {\n  \"slug\": \"leiden-with-kids-leiden-rembrandt-the-pilgrims\",\n  \"keyword\": \"Leiden with kids\",\n  \"angle\": \"A family day out in Leiden: keeping children curious with riddles and a treasure-hunt format on the \\\"Leiden: Rembrandt & the Pilgrims\\\" route.\",\n  \"category\": \"family\",\n  \"cityId\": \"city_leiden\",\n  \"city\": \"Leiden\",\n  \"huntId\": \"hunt_leiden_classic\",\n  \"huntTitle\": \"Leiden: Rembrandt & the Pilgrims\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Five stops through Rembrandt's birthplace — where the Pilgrim Fathers prayed before the Mayflower, where the country's oldest university began, and where Europe's first tulips bloomed. Duration about 100 minutes, 2.5 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Leiden family street\"\n },\n {\n  \"slug\": \"milan-with-kids-milan-classic\",\n  \"keyword\": \"Milan with kids\",\n  \"angle\": \"A family day out in Milan: keeping children curious with riddles and a treasure-hunt format on the \\\"Milan Classic\\\" route.\",\n  \"category\": \"family\",\n  \"cityId\": \"city_milan\",\n  \"city\": \"Milan\",\n  \"huntId\": \"hunt_milan_classic\",\n  \"huntTitle\": \"Milan Classic\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Six essential stops from Italy's largest cathedral to a row of Roman columns where Milan drinks its aperitivo — the city's six centuries in one loop. Duration about 150 minutes, 4.2 km, difficulty medium, 6 stops.\",\n  \"photoQuery\": \"Milan family street\"\n },\n {\n  \"slug\": \"rome-with-kids-rome-classic\",\n  \"keyword\": \"Rome with kids\",\n  \"angle\": \"A family day out in Rome: keeping children curious with riddles and a treasure-hunt format on the \\\"Rome Classic\\\" route.\",\n  \"category\": \"family\",\n  \"cityId\": \"city_rome\",\n  \"city\": \"Rome\",\n  \"huntId\": \"hunt_rome_classic\",\n  \"huntTitle\": \"Rome Classic\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Six legendary stops across two thousand years — Colosseum, Forum, Pantheon, Navona, Trevi and the Spanish Steps. Rome's greatest hits in one walk. Duration about 180 minutes, 4.5 km, difficulty medium, 6 stops.\",\n  \"photoQuery\": \"Rome family street\"\n },\n {\n  \"slug\": \"utrecht-classic-utrecht-utrecht-classic\",\n  \"keyword\": \"utrecht classic utrecht\",\n  \"angle\": \"A storytelling article about the theme of \\\"Utrecht Classic\\\" — The essential eight. From the Dom Tower to a house that looks like a painting — a thousand years of Utrecht on foot.\",\n  \"category\": \"stories\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"hunt_utrecht_classic\",\n  \"huntTitle\": \"Utrecht Classic\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"The essential eight. From the Dom Tower to a house that looks like a painting — a thousand years of Utrecht on foot. Duration about 150 minutes, 4.2 km, difficulty medium, 8 stops.\",\n  \"photoQuery\": \"Utrecht old town street\"\n },\n {\n  \"slug\": \"amsterdam-classic-amsterdam-amsterdam-classic\",\n  \"keyword\": \"amsterdam classic amsterdam\",\n  \"angle\": \"A storytelling article about the theme of \\\"Amsterdam Classic\\\" — The essential eight. From the Royal Palace to Van Gogh — Amsterdam's greatest hits, with a few myths busted on the way.\",\n  \"category\": \"stories\",\n  \"cityId\": \"city_amsterdam\",\n  \"city\": \"Amsterdam\",\n  \"huntId\": \"hunt_amsterdam_classic\",\n  \"huntTitle\": \"Amsterdam Classic\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"The essential eight. From the Royal Palace to Van Gogh — Amsterdam's greatest hits, with a few myths busted on the way. Duration about 180 minutes, 5.5 km, difficulty medium, 8 stops.\",\n  \"photoQuery\": \"Amsterdam old town street\"\n },\n {\n  \"slug\": \"the-hague-royal-walk-the-hague-the-hague-royal-walk\",\n  \"keyword\": \"the hague royal walk the hague\",\n  \"angle\": \"A storytelling article about the theme of \\\"The Hague Royal Walk\\\" — Six stops through the city of kings and diplomats — from the medieval heart of Dutch politics to the Peace Palace, with Vermeer's most famous girl in between and the North Sea at the end.\",\n  \"category\": \"stories\",\n  \"cityId\": \"city_the_hague\",\n  \"city\": \"The Hague\",\n  \"huntId\": \"hunt_the_hague_royal\",\n  \"huntTitle\": \"The Hague Royal Walk\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Six stops through the city of kings and diplomats — from the medieval heart of Dutch politics to the Peace Palace, with Vermeer's most famous girl in between and the North Sea at the end. Duration about 170 minutes, 7 km, difficulty easy, 6 stops.\",\n  \"photoQuery\": \"The Hague old town street\"\n },\n {\n  \"slug\": \"rotterdam-modern-marvels-rotterdam-rotterdam-modern-marvels\",\n  \"keyword\": \"rotterdam modern marvels rotterdam\",\n  \"angle\": \"A storytelling article about the theme of \\\"Rotterdam Modern Marvels\\\" — Seven stops through the city that rebuilt itself after 1940: a market hall you can live in, a forest of tilted yellow cubes, a white tower that survived, a bridge called the Swan and a mast you can ride up.\",\n  \"category\": \"stories\",\n  \"cityId\": \"city_rotterdam\",\n  \"city\": \"Rotterdam\",\n  \"huntId\": \"hunt_rotterdam_modern\",\n  \"huntTitle\": \"Rotterdam Modern Marvels\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Seven stops through the city that rebuilt itself after 1940: a market hall you can live in, a forest of tilted yellow cubes, a white tower that survived, a bridge called the Swan and a mast you can ride up. Duration about 150 minutes, 5 km, difficulty medium, 7 stops.\",\n  \"photoQuery\": \"Rotterdam old town street\"\n },\n {\n  \"slug\": \"vermeer-s-trail-delft-delft-vermeer-s-trail\",\n  \"keyword\": \"vermeer's trail delft\",\n  \"angle\": \"A storytelling article about the theme of \\\"Delft: Vermeer's Trail\\\" — Six stops through the canal town Vermeer called home: the royal burial church, the painter's own grave, the stair where William of Orange was shot — and the last original pottery still painting Delft Blue.\",\n  \"category\": \"stories\",\n  \"cityId\": \"city_delft\",\n  \"city\": \"Delft\",\n  \"huntId\": \"hunt_delft_vermeer\",\n  \"huntTitle\": \"Delft: Vermeer's Trail\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Six stops through the canal town Vermeer called home: the royal burial church, the painter's own grave, the stair where William of Orange was shot — and the last original pottery still painting Delft Blue. Duration about 120 minutes, 4 km, difficulty easy, 6 stops.\",\n  \"photoQuery\": \"Delft old town street\"\n },\n {\n  \"slug\": \"golden-age-in-miniature-haarlem-haarlem-golden-age-in-miniature\",\n  \"keyword\": \"golden age in miniature haarlem\",\n  \"angle\": \"A storytelling article about the theme of \\\"Haarlem: Golden Age in Miniature\\\" — Five stops through Frans Hals's home town: a giant church organ, the painter of laughter, the oldest museum in the country, the oldest almshouse courtyard and a windmill reborn from its ashes.\",\n  \"category\": \"stories\",\n  \"cityId\": \"city_haarlem\",\n  \"city\": \"Haarlem\",\n  \"huntId\": \"hunt_haarlem_classic\",\n  \"huntTitle\": \"Haarlem: Golden Age in Miniature\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Five stops through Frans Hals's home town: a giant church organ, the painter of laughter, the oldest museum in the country, the oldest almshouse courtyard and a windmill reborn from its ashes. Duration about 100 minutes, 2.2 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Haarlem old town street\"\n },\n {\n  \"slug\": \"rembrandt-the-pilgrims-leiden-leiden-rembrandt-the-pilgrims\",\n  \"keyword\": \"rembrandt & the pilgrims leiden\",\n  \"angle\": \"A storytelling article about the theme of \\\"Leiden: Rembrandt & the Pilgrims\\\" — Five stops through Rembrandt's birthplace — where the Pilgrim Fathers prayed before the Mayflower, where the country's oldest university began, and where Europe's first tulips bloomed.\",\n  \"category\": \"stories\",\n  \"cityId\": \"city_leiden\",\n  \"city\": \"Leiden\",\n  \"huntId\": \"hunt_leiden_classic\",\n  \"huntTitle\": \"Leiden: Rembrandt & the Pilgrims\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Five stops through Rembrandt's birthplace — where the Pilgrim Fathers prayed before the Mayflower, where the country's oldest university began, and where Europe's first tulips bloomed. Duration about 100 minutes, 2.5 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Leiden old town street\"\n },\n {\n  \"slug\": \"milan-classic-milan-milan-classic\",\n  \"keyword\": \"milan classic milan\",\n  \"angle\": \"A storytelling article about the theme of \\\"Milan Classic\\\" — Six essential stops from Italy's largest cathedral to a row of Roman columns where Milan drinks its aperitivo — the city's six centuries in one loop.\",\n  \"category\": \"stories\",\n  \"cityId\": \"city_milan\",\n  \"city\": \"Milan\",\n  \"huntId\": \"hunt_milan_classic\",\n  \"huntTitle\": \"Milan Classic\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Six essential stops from Italy's largest cathedral to a row of Roman columns where Milan drinks its aperitivo — the city's six centuries in one loop. Duration about 150 minutes, 4.2 km, difficulty medium, 6 stops.\",\n  \"photoQuery\": \"Milan old town street\"\n },\n {\n  \"slug\": \"rome-classic-rome-rome-classic\",\n  \"keyword\": \"rome classic rome\",\n  \"angle\": \"A storytelling article about the theme of \\\"Rome Classic\\\" — Six legendary stops across two thousand years — Colosseum, Forum, Pantheon, Navona, Trevi and the Spanish Steps. Rome's greatest hits in one walk.\",\n  \"category\": \"stories\",\n  \"cityId\": \"city_rome\",\n  \"city\": \"Rome\",\n  \"huntId\": \"hunt_rome_classic\",\n  \"huntTitle\": \"Rome Classic\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Six legendary stops across two thousand years — Colosseum, Forum, Pantheon, Navona, Trevi and the Spanish Steps. Rome's greatest hits in one walk. Duration about 180 minutes, 4.5 km, difficulty medium, 6 stops.\",\n  \"photoQuery\": \"Rome old town street\"\n },\n {\n  \"slug\": \"utrecht-day-trip-from-amsterdam-utrecht-classic\",\n  \"keyword\": \"Utrecht day trip from Amsterdam\",\n  \"angle\": \"How to spend a perfect day trip in Utrecht: getting there, what to see, where to eat, with \\\"Utrecht Classic\\\" as the backbone of the day.\",\n  \"category\": \"itineraries\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"hunt_utrecht_classic\",\n  \"huntTitle\": \"Utrecht Classic\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"The essential eight. From the Dom Tower to a house that looks like a painting — a thousand years of Utrecht on foot. Duration about 150 minutes, 4.2 km, difficulty medium, 8 stops.\",\n  \"photoQuery\": \"Utrecht canal city\"\n },\n {\n  \"slug\": \"things-to-do-in-amsterdam-hidden-amsterdam\",\n  \"keyword\": \"things to do in Amsterdam\",\n  \"angle\": \"The best things to do in Amsterdam on foot in one afternoon, built around the \\\"Hidden Amsterdam\\\" puzzle walk.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_amsterdam\",\n  \"city\": \"Amsterdam\",\n  \"huntId\": \"hunt_amsterdam_hidden\",\n  \"huntTitle\": \"Hidden Amsterdam\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Seven secrets the guidebooks rush past: a courtyard of devout women, a church in an attic, a house with six heads, a boat full of cats and the tower where Henry Hudson set sail. Duration about 150 minutes, 4.5 km, difficulty hard, 7 stops.\",\n  \"photoQuery\": \"Amsterdam old town street\"\n },\n {\n  \"slug\": \"the-hague-day-trip-from-amsterdam-the-hague-royal-walk\",\n  \"keyword\": \"The Hague day trip from Amsterdam\",\n  \"angle\": \"How to spend a perfect day trip in The Hague: getting there, what to see, where to eat, with \\\"The Hague Royal Walk\\\" as the backbone of the day.\",\n  \"category\": \"itineraries\",\n  \"cityId\": \"city_the_hague\",\n  \"city\": \"The Hague\",\n  \"huntId\": \"hunt_the_hague_royal\",\n  \"huntTitle\": \"The Hague Royal Walk\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Six stops through the city of kings and diplomats — from the medieval heart of Dutch politics to the Peace Palace, with Vermeer's most famous girl in between and the North Sea at the end. Duration about 170 minutes, 7 km, difficulty easy, 6 stops.\",\n  \"photoQuery\": \"The Hague canal city\"\n },\n {\n  \"slug\": \"rotterdam-day-trip-from-amsterdam-rotterdam-modern-marvels\",\n  \"keyword\": \"Rotterdam day trip from Amsterdam\",\n  \"angle\": \"How to spend a perfect day trip in Rotterdam: getting there, what to see, where to eat, with \\\"Rotterdam Modern Marvels\\\" as the backbone of the day.\",\n  \"category\": \"itineraries\",\n  \"cityId\": \"city_rotterdam\",\n  \"city\": \"Rotterdam\",\n  \"huntId\": \"hunt_rotterdam_modern\",\n  \"huntTitle\": \"Rotterdam Modern Marvels\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Seven stops through the city that rebuilt itself after 1940: a market hall you can live in, a forest of tilted yellow cubes, a white tower that survived, a bridge called the Swan and a mast you can ride up. Duration about 150 minutes, 5 km, difficulty medium, 7 stops.\",\n  \"photoQuery\": \"Rotterdam canal city\"\n },\n {\n  \"slug\": \"delft-day-trip-from-amsterdam-delft-vermeer-s-trail\",\n  \"keyword\": \"Delft day trip from Amsterdam\",\n  \"angle\": \"How to spend a perfect day trip in Delft: getting there, what to see, where to eat, with \\\"Delft: Vermeer's Trail\\\" as the backbone of the day.\",\n  \"category\": \"itineraries\",\n  \"cityId\": \"city_delft\",\n  \"city\": \"Delft\",\n  \"huntId\": \"hunt_delft_vermeer\",\n  \"huntTitle\": \"Delft: Vermeer's Trail\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Six stops through the canal town Vermeer called home: the royal burial church, the painter's own grave, the stair where William of Orange was shot — and the last original pottery still painting Delft Blue. Duration about 120 minutes, 4 km, difficulty easy, 6 stops.\",\n  \"photoQuery\": \"Delft canal city\"\n },\n {\n  \"slug\": \"haarlem-day-trip-from-amsterdam-haarlem-golden-age-in-miniature\",\n  \"keyword\": \"Haarlem day trip from Amsterdam\",\n  \"angle\": \"How to spend a perfect day trip in Haarlem: getting there, what to see, where to eat, with \\\"Haarlem: Golden Age in Miniature\\\" as the backbone of the day.\",\n  \"category\": \"itineraries\",\n  \"cityId\": \"city_haarlem\",\n  \"city\": \"Haarlem\",\n  \"huntId\": \"hunt_haarlem_classic\",\n  \"huntTitle\": \"Haarlem: Golden Age in Miniature\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Five stops through Frans Hals's home town: a giant church organ, the painter of laughter, the oldest museum in the country, the oldest almshouse courtyard and a windmill reborn from its ashes. Duration about 100 minutes, 2.2 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Haarlem canal city\"\n },\n {\n  \"slug\": \"leiden-day-trip-from-amsterdam-leiden-rembrandt-the-pilgrims\",\n  \"keyword\": \"Leiden day trip from Amsterdam\",\n  \"angle\": \"How to spend a perfect day trip in Leiden: getting there, what to see, where to eat, with \\\"Leiden: Rembrandt & the Pilgrims\\\" as the backbone of the day.\",\n  \"category\": \"itineraries\",\n  \"cityId\": \"city_leiden\",\n  \"city\": \"Leiden\",\n  \"huntId\": \"hunt_leiden_classic\",\n  \"huntTitle\": \"Leiden: Rembrandt & the Pilgrims\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Five stops through Rembrandt's birthplace — where the Pilgrim Fathers prayed before the Mayflower, where the country's oldest university began, and where Europe's first tulips bloomed. Duration about 100 minutes, 2.5 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Leiden canal city\"\n },\n {\n  \"slug\": \"milan-food-and-drink-guide-milan-aperitivo-crawl\",\n  \"keyword\": \"Milan food and drink guide\",\n  \"angle\": \"A local-style guide to an evening of eating and drinking in Milan, structured around the stops of the \\\"Milan Aperitivo Crawl\\\" self-guided tour.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_milan\",\n  \"city\": \"Milan\",\n  \"huntId\": \"tour_milan_aperitivo\",\n  \"huntTitle\": \"Milan Aperitivo Crawl\",\n  \"huntKind\": \"tour\",\n  \"huntFacts\": \"Five stops for Milan's great evening ritual, the aperitivo — from a historic bar in the Galleria to the old canal harbour. Start around 6 pm. Duration about 210 minutes, 10 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Milan old town street\"\n },\n {\n  \"slug\": \"rome-food-and-drink-guide-rome-trastevere-by-night\",\n  \"keyword\": \"Rome food and drink guide\",\n  \"angle\": \"A local-style guide to an evening of eating and drinking in Rome, structured around the stops of the \\\"Rome: Trastevere by Night\\\" self-guided tour.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_rome\",\n  \"city\": \"Rome\",\n  \"huntId\": \"tour_rome_trastevere\",\n  \"huntTitle\": \"Rome: Trastevere by Night\",\n  \"huntKind\": \"tour\",\n  \"huntFacts\": \"A self-guided evening through Rome's most atmospheric neighbourhood — a papal bridge, golden mosaics, an old biscuit bakery, Roman pasta and a fountain-side nightcap. Duration about 180 minutes, 2.4 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Rome old town street\"\n },\n {\n  \"slug\": \"things-to-do-in-utrecht-hidden-utrecht\",\n  \"keyword\": \"things to do in Utrecht\",\n  \"angle\": \"The best things to do in Utrecht on foot in one afternoon, built around the \\\"Hidden Utrecht\\\" puzzle walk.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"hunt_utrecht_hidden\",\n  \"huntTitle\": \"Hidden Utrecht\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Seven corners the guidebooks skip: a pope's house that never saw its pope, a bishop's lost garden, a widows' almshouse and the country's first department store. Duration about 135 minutes, 2.5 km, difficulty hard, 7 stops.\",\n  \"photoQuery\": \"Utrecht old town street\"\n },\n {\n  \"slug\": \"amsterdam-self-guided-walking-tour-hidden-amsterdam\",\n  \"keyword\": \"Amsterdam self-guided walking tour\",\n  \"angle\": \"Why a self-guided puzzle walk beats a free walking tour in Amsterdam: freedom, pace, price and fun — using \\\"Hidden Amsterdam\\\" as the example.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_amsterdam\",\n  \"city\": \"Amsterdam\",\n  \"huntId\": \"hunt_amsterdam_hidden\",\n  \"huntTitle\": \"Hidden Amsterdam\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Seven secrets the guidebooks rush past: a courtyard of devout women, a church in an attic, a house with six heads, a boat full of cats and the tower where Henry Hudson set sail. Duration about 150 minutes, 4.5 km, difficulty hard, 7 stops.\",\n  \"photoQuery\": \"Amsterdam old town street\"\n },\n {\n  \"slug\": \"milan-self-guided-walking-tour-milan-aperitivo-crawl\",\n  \"keyword\": \"Milan self-guided walking tour\",\n  \"angle\": \"Why a self-guided puzzle walk beats a free walking tour in Milan: freedom, pace, price and fun — using \\\"Milan Aperitivo Crawl\\\" as the example.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_milan\",\n  \"city\": \"Milan\",\n  \"huntId\": \"tour_milan_aperitivo\",\n  \"huntTitle\": \"Milan Aperitivo Crawl\",\n  \"huntKind\": \"tour\",\n  \"huntFacts\": \"Five stops for Milan's great evening ritual, the aperitivo — from a historic bar in the Galleria to the old canal harbour. Start around 6 pm. Duration about 210 minutes, 10 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Milan old town street\"\n },\n {\n  \"slug\": \"rome-self-guided-walking-tour-rome-trastevere-by-night\",\n  \"keyword\": \"Rome self-guided walking tour\",\n  \"angle\": \"Why a self-guided puzzle walk beats a free walking tour in Rome: freedom, pace, price and fun — using \\\"Rome: Trastevere by Night\\\" as the example.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_rome\",\n  \"city\": \"Rome\",\n  \"huntId\": \"tour_rome_trastevere\",\n  \"huntTitle\": \"Rome: Trastevere by Night\",\n  \"huntKind\": \"tour\",\n  \"huntFacts\": \"A self-guided evening through Rome's most atmospheric neighbourhood — a papal bridge, golden mosaics, an old biscuit bakery, Roman pasta and a fountain-side nightcap. Duration about 180 minutes, 2.4 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Rome old town street\"\n },\n {\n  \"slug\": \"utrecht-self-guided-walking-tour-hidden-utrecht\",\n  \"keyword\": \"Utrecht self-guided walking tour\",\n  \"angle\": \"Why a self-guided puzzle walk beats a free walking tour in Utrecht: freedom, pace, price and fun — using \\\"Hidden Utrecht\\\" as the example.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"hunt_utrecht_hidden\",\n  \"huntTitle\": \"Hidden Utrecht\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Seven corners the guidebooks skip: a pope's house that never saw its pope, a bishop's lost garden, a widows' almshouse and the country's first department store. Duration about 135 minutes, 2.5 km, difficulty hard, 7 stops.\",\n  \"photoQuery\": \"Utrecht old town street\"\n },\n {\n  \"slug\": \"hidden-amsterdam-amsterdam-hidden-amsterdam\",\n  \"keyword\": \"hidden amsterdam amsterdam\",\n  \"angle\": \"A storytelling article about the theme of \\\"Hidden Amsterdam\\\" — Seven secrets the guidebooks rush past: a courtyard of devout women, a church in an attic, a house with six heads, a boat full of cats and the tower where Henry Hudson set sail.\",\n  \"category\": \"stories\",\n  \"cityId\": \"city_amsterdam\",\n  \"city\": \"Amsterdam\",\n  \"huntId\": \"hunt_amsterdam_hidden\",\n  \"huntTitle\": \"Hidden Amsterdam\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Seven secrets the guidebooks rush past: a courtyard of devout women, a church in an attic, a house with six heads, a boat full of cats and the tower where Henry Hudson set sail. Duration about 150 minutes, 4.5 km, difficulty hard, 7 stops.\",\n  \"photoQuery\": \"Amsterdam old town street\"\n },\n {\n  \"slug\": \"milan-with-kids-milan-aperitivo-crawl\",\n  \"keyword\": \"Milan with kids\",\n  \"angle\": \"A family day out in Milan: keeping children curious with riddles and a treasure-hunt format on the \\\"Milan Aperitivo Crawl\\\" route.\",\n  \"category\": \"family\",\n  \"cityId\": \"city_milan\",\n  \"city\": \"Milan\",\n  \"huntId\": \"tour_milan_aperitivo\",\n  \"huntTitle\": \"Milan Aperitivo Crawl\",\n  \"huntKind\": \"tour\",\n  \"huntFacts\": \"Five stops for Milan's great evening ritual, the aperitivo — from a historic bar in the Galleria to the old canal harbour. Start around 6 pm. Duration about 210 minutes, 10 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Milan family street\"\n },\n {\n  \"slug\": \"rome-with-kids-rome-trastevere-by-night\",\n  \"keyword\": \"Rome with kids\",\n  \"angle\": \"A family day out in Rome: keeping children curious with riddles and a treasure-hunt format on the \\\"Rome: Trastevere by Night\\\" route.\",\n  \"category\": \"family\",\n  \"cityId\": \"city_rome\",\n  \"city\": \"Rome\",\n  \"huntId\": \"tour_rome_trastevere\",\n  \"huntTitle\": \"Rome: Trastevere by Night\",\n  \"huntKind\": \"tour\",\n  \"huntFacts\": \"A self-guided evening through Rome's most atmospheric neighbourhood — a papal bridge, golden mosaics, an old biscuit bakery, Roman pasta and a fountain-side nightcap. Duration about 180 minutes, 2.4 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Rome family street\"\n },\n {\n  \"slug\": \"hidden-utrecht-utrecht-hidden-utrecht\",\n  \"keyword\": \"hidden utrecht utrecht\",\n  \"angle\": \"A storytelling article about the theme of \\\"Hidden Utrecht\\\" — Seven corners the guidebooks skip: a pope's house that never saw its pope, a bishop's lost garden, a widows' almshouse and the country's first department store.\",\n  \"category\": \"stories\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"hunt_utrecht_hidden\",\n  \"huntTitle\": \"Hidden Utrecht\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Seven corners the guidebooks skip: a pope's house that never saw its pope, a bishop's lost garden, a widows' almshouse and the country's first department store. Duration about 135 minutes, 2.5 km, difficulty hard, 7 stops.\",\n  \"photoQuery\": \"Utrecht old town street\"\n },\n {\n  \"slug\": \"things-to-do-in-amsterdam-amsterdam-underground\",\n  \"keyword\": \"things to do in Amsterdam\",\n  \"angle\": \"The best things to do in Amsterdam on foot in one afternoon, built around the \\\"Amsterdam Underground\\\" puzzle walk.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_amsterdam\",\n  \"city\": \"Amsterdam\",\n  \"huntId\": \"hunt_amsterdam_underground\",\n  \"huntTitle\": \"Amsterdam Underground\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Squats, street art and the city's restless counter-culture. From a squat that refused to leave to a bunker under the Vondelpark — then a free ferry to a shipyard full of street art. Duration about 240 minutes, 11.5 km, difficulty hard, 6 stops.\",\n  \"photoQuery\": \"Amsterdam old town street\"\n },\n {\n  \"slug\": \"milan-aperitivo-crawl-milan-milan-aperitivo-crawl\",\n  \"keyword\": \"milan aperitivo crawl milan\",\n  \"angle\": \"A storytelling article about the theme of \\\"Milan Aperitivo Crawl\\\" — Five stops for Milan's great evening ritual, the aperitivo — from a historic bar in the Galleria to the old canal harbour. Start around 6 pm.\",\n  \"category\": \"stories\",\n  \"cityId\": \"city_milan\",\n  \"city\": \"Milan\",\n  \"huntId\": \"tour_milan_aperitivo\",\n  \"huntTitle\": \"Milan Aperitivo Crawl\",\n  \"huntKind\": \"tour\",\n  \"huntFacts\": \"Five stops for Milan's great evening ritual, the aperitivo — from a historic bar in the Galleria to the old canal harbour. Start around 6 pm. Duration about 210 minutes, 10 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Milan old town street\"\n },\n {\n  \"slug\": \"trastevere-by-night-rome-rome-trastevere-by-night\",\n  \"keyword\": \"trastevere by night rome\",\n  \"angle\": \"A storytelling article about the theme of \\\"Rome: Trastevere by Night\\\" — A self-guided evening through Rome's most atmospheric neighbourhood — a papal bridge, golden mosaics, an old biscuit bakery, Roman pasta and a fountain-side nightcap.\",\n  \"category\": \"stories\",\n  \"cityId\": \"city_rome\",\n  \"city\": \"Rome\",\n  \"huntId\": \"tour_rome_trastevere\",\n  \"huntTitle\": \"Rome: Trastevere by Night\",\n  \"huntKind\": \"tour\",\n  \"huntFacts\": \"A self-guided evening through Rome's most atmospheric neighbourhood — a papal bridge, golden mosaics, an old biscuit bakery, Roman pasta and a fountain-side nightcap. Duration about 180 minutes, 2.4 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Rome old town street\"\n },\n {\n  \"slug\": \"utrecht-day-trip-from-amsterdam-hidden-utrecht\",\n  \"keyword\": \"Utrecht day trip from Amsterdam\",\n  \"angle\": \"How to spend a perfect day trip in Utrecht: getting there, what to see, where to eat, with \\\"Hidden Utrecht\\\" as the backbone of the day.\",\n  \"category\": \"itineraries\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"hunt_utrecht_hidden\",\n  \"huntTitle\": \"Hidden Utrecht\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Seven corners the guidebooks skip: a pope's house that never saw its pope, a bishop's lost garden, a widows' almshouse and the country's first department store. Duration about 135 minutes, 2.5 km, difficulty hard, 7 stops.\",\n  \"photoQuery\": \"Utrecht canal city\"\n },\n {\n  \"slug\": \"amsterdam-self-guided-walking-tour-amsterdam-underground\",\n  \"keyword\": \"Amsterdam self-guided walking tour\",\n  \"angle\": \"Why a self-guided puzzle walk beats a free walking tour in Amsterdam: freedom, pace, price and fun — using \\\"Amsterdam Underground\\\" as the example.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_amsterdam\",\n  \"city\": \"Amsterdam\",\n  \"huntId\": \"hunt_amsterdam_underground\",\n  \"huntTitle\": \"Amsterdam Underground\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Squats, street art and the city's restless counter-culture. From a squat that refused to leave to a bunker under the Vondelpark — then a free ferry to a shipyard full of street art. Duration about 240 minutes, 11.5 km, difficulty hard, 6 stops.\",\n  \"photoQuery\": \"Amsterdam old town street\"\n },\n {\n  \"slug\": \"things-to-do-in-utrecht-canals-cafes\",\n  \"keyword\": \"things to do in Utrecht\",\n  \"angle\": \"The best things to do in Utrecht on foot in one afternoon, built around the \\\"Canals & Cafés\\\" puzzle walk.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"hunt_utrecht_canals\",\n  \"huntTitle\": \"Canals & Cafés\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"A relaxed six-stop stroll along Utrecht's water. Terrace to terrace, bridge to bridge — best on a sunny afternoon. Duration about 90 minutes, 2.2 km, difficulty easy, 6 stops.\",\n  \"photoQuery\": \"Utrecht old town street\"\n },\n {\n  \"slug\": \"amsterdam-underground-amsterdam-amsterdam-underground\",\n  \"keyword\": \"amsterdam underground amsterdam\",\n  \"angle\": \"A storytelling article about the theme of \\\"Amsterdam Underground\\\" — Squats, street art and the city's restless counter-culture. From a squat that refused to leave to a bunker under the Vondelpark — then a free ferry to a shipyard full of street art.\",\n  \"category\": \"stories\",\n  \"cityId\": \"city_amsterdam\",\n  \"city\": \"Amsterdam\",\n  \"huntId\": \"hunt_amsterdam_underground\",\n  \"huntTitle\": \"Amsterdam Underground\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Squats, street art and the city's restless counter-culture. From a squat that refused to leave to a bunker under the Vondelpark — then a free ferry to a shipyard full of street art. Duration about 240 minutes, 11.5 km, difficulty hard, 6 stops.\",\n  \"photoQuery\": \"Amsterdam old town street\"\n },\n {\n  \"slug\": \"utrecht-self-guided-walking-tour-canals-cafes\",\n  \"keyword\": \"Utrecht self-guided walking tour\",\n  \"angle\": \"Why a self-guided puzzle walk beats a free walking tour in Utrecht: freedom, pace, price and fun — using \\\"Canals & Cafés\\\" as the example.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"hunt_utrecht_canals\",\n  \"huntTitle\": \"Canals & Cafés\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"A relaxed six-stop stroll along Utrecht's water. Terrace to terrace, bridge to bridge — best on a sunny afternoon. Duration about 90 minutes, 2.2 km, difficulty easy, 6 stops.\",\n  \"photoQuery\": \"Utrecht old town street\"\n },\n {\n  \"slug\": \"things-to-do-in-amsterdam-amsterdam-school\",\n  \"keyword\": \"things to do in Amsterdam\",\n  \"angle\": \"The best things to do in Amsterdam on foot in one afternoon, built around the \\\"Amsterdam School\\\" puzzle walk.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_amsterdam\",\n  \"city\": \"Amsterdam\",\n  \"huntId\": \"hunt_amsterdam_school\",\n  \"huntTitle\": \"Amsterdam School\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"The early-20th-century brick movement that turned workers' housing into sculpture. From a block shaped like a ship to an Olympic stadium — six of the city's most playful buildings. Duration about 210 minutes, 11.5 km, difficulty medium, 6 stops.\",\n  \"photoQuery\": \"Amsterdam old town street\"\n },\n {\n  \"slug\": \"utrecht-with-kids-canals-cafes\",\n  \"keyword\": \"Utrecht with kids\",\n  \"angle\": \"A family day out in Utrecht: keeping children curious with riddles and a treasure-hunt format on the \\\"Canals & Cafés\\\" route.\",\n  \"category\": \"family\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"hunt_utrecht_canals\",\n  \"huntTitle\": \"Canals & Cafés\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"A relaxed six-stop stroll along Utrecht's water. Terrace to terrace, bridge to bridge — best on a sunny afternoon. Duration about 90 minutes, 2.2 km, difficulty easy, 6 stops.\",\n  \"photoQuery\": \"Utrecht family street\"\n },\n {\n  \"slug\": \"amsterdam-self-guided-walking-tour-amsterdam-school\",\n  \"keyword\": \"Amsterdam self-guided walking tour\",\n  \"angle\": \"Why a self-guided puzzle walk beats a free walking tour in Amsterdam: freedom, pace, price and fun — using \\\"Amsterdam School\\\" as the example.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_amsterdam\",\n  \"city\": \"Amsterdam\",\n  \"huntId\": \"hunt_amsterdam_school\",\n  \"huntTitle\": \"Amsterdam School\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"The early-20th-century brick movement that turned workers' housing into sculpture. From a block shaped like a ship to an Olympic stadium — six of the city's most playful buildings. Duration about 210 minutes, 11.5 km, difficulty medium, 6 stops.\",\n  \"photoQuery\": \"Amsterdam old town street\"\n },\n {\n  \"slug\": \"canals-cafes-utrecht-canals-cafes\",\n  \"keyword\": \"canals & cafés utrecht\",\n  \"angle\": \"A storytelling article about the theme of \\\"Canals & Cafés\\\" — A relaxed six-stop stroll along Utrecht's water. Terrace to terrace, bridge to bridge — best on a sunny afternoon.\",\n  \"category\": \"stories\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"hunt_utrecht_canals\",\n  \"huntTitle\": \"Canals & Cafés\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"A relaxed six-stop stroll along Utrecht's water. Terrace to terrace, bridge to bridge — best on a sunny afternoon. Duration about 90 minutes, 2.2 km, difficulty easy, 6 stops.\",\n  \"photoQuery\": \"Utrecht old town street\"\n },\n {\n  \"slug\": \"amsterdam-with-kids-amsterdam-school\",\n  \"keyword\": \"Amsterdam with kids\",\n  \"angle\": \"A family day out in Amsterdam: keeping children curious with riddles and a treasure-hunt format on the \\\"Amsterdam School\\\" route.\",\n  \"category\": \"family\",\n  \"cityId\": \"city_amsterdam\",\n  \"city\": \"Amsterdam\",\n  \"huntId\": \"hunt_amsterdam_school\",\n  \"huntTitle\": \"Amsterdam School\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"The early-20th-century brick movement that turned workers' housing into sculpture. From a block shaped like a ship to an Olympic stadium — six of the city's most playful buildings. Duration about 210 minutes, 11.5 km, difficulty medium, 6 stops.\",\n  \"photoQuery\": \"Amsterdam family street\"\n },\n {\n  \"slug\": \"utrecht-day-trip-from-amsterdam-canals-cafes\",\n  \"keyword\": \"Utrecht day trip from Amsterdam\",\n  \"angle\": \"How to spend a perfect day trip in Utrecht: getting there, what to see, where to eat, with \\\"Canals & Cafés\\\" as the backbone of the day.\",\n  \"category\": \"itineraries\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"hunt_utrecht_canals\",\n  \"huntTitle\": \"Canals & Cafés\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"A relaxed six-stop stroll along Utrecht's water. Terrace to terrace, bridge to bridge — best on a sunny afternoon. Duration about 90 minutes, 2.2 km, difficulty easy, 6 stops.\",\n  \"photoQuery\": \"Utrecht canal city\"\n },\n {\n  \"slug\": \"amsterdam-school-amsterdam-amsterdam-school\",\n  \"keyword\": \"amsterdam school amsterdam\",\n  \"angle\": \"A storytelling article about the theme of \\\"Amsterdam School\\\" — The early-20th-century brick movement that turned workers' housing into sculpture. From a block shaped like a ship to an Olympic stadium — six of the city's most playful buildings.\",\n  \"category\": \"stories\",\n  \"cityId\": \"city_amsterdam\",\n  \"city\": \"Amsterdam\",\n  \"huntId\": \"hunt_amsterdam_school\",\n  \"huntTitle\": \"Amsterdam School\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"The early-20th-century brick movement that turned workers' housing into sculpture. From a block shaped like a ship to an Olympic stadium — six of the city's most playful buildings. Duration about 210 minutes, 11.5 km, difficulty medium, 6 stops.\",\n  \"photoQuery\": \"Amsterdam old town street\"\n },\n {\n  \"slug\": \"things-to-do-in-utrecht-utrecht-decoded\",\n  \"keyword\": \"things to do in Utrecht\",\n  \"angle\": \"The best things to do in Utrecht on foot in one afternoon, built around the \\\"Utrecht Decoded\\\" puzzle walk.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"hunt_utrecht_decoded\",\n  \"huntTitle\": \"Utrecht Decoded\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Six stops, six codes. Crack Caesar shifts, mirror alphabets, anagrams and number codes from a republic's birthplace to a brick colossus with a red UFO stuck to it. Duration about 120 minutes, 3.5 km, difficulty hard, 6 stops.\",\n  \"photoQuery\": \"Utrecht old town street\"\n },\n {\n  \"slug\": \"utrecht-self-guided-walking-tour-utrecht-decoded\",\n  \"keyword\": \"Utrecht self-guided walking tour\",\n  \"angle\": \"Why a self-guided puzzle walk beats a free walking tour in Utrecht: freedom, pace, price and fun — using \\\"Utrecht Decoded\\\" as the example.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"hunt_utrecht_decoded\",\n  \"huntTitle\": \"Utrecht Decoded\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Six stops, six codes. Crack Caesar shifts, mirror alphabets, anagrams and number codes from a republic's birthplace to a brick colossus with a red UFO stuck to it. Duration about 120 minutes, 3.5 km, difficulty hard, 6 stops.\",\n  \"photoQuery\": \"Utrecht old town street\"\n },\n {\n  \"slug\": \"utrecht-decoded-utrecht-utrecht-decoded\",\n  \"keyword\": \"utrecht decoded utrecht\",\n  \"angle\": \"A storytelling article about the theme of \\\"Utrecht Decoded\\\" — Six stops, six codes. Crack Caesar shifts, mirror alphabets, anagrams and number codes from a republic's birthplace to a brick colossus with a red UFO stuck to it.\",\n  \"category\": \"stories\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"hunt_utrecht_decoded\",\n  \"huntTitle\": \"Utrecht Decoded\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Six stops, six codes. Crack Caesar shifts, mirror alphabets, anagrams and number codes from a republic's birthplace to a brick colossus with a red UFO stuck to it. Duration about 120 minutes, 3.5 km, difficulty hard, 6 stops.\",\n  \"photoQuery\": \"Utrecht old town street\"\n },\n {\n  \"slug\": \"utrecht-day-trip-from-amsterdam-utrecht-decoded\",\n  \"keyword\": \"Utrecht day trip from Amsterdam\",\n  \"angle\": \"How to spend a perfect day trip in Utrecht: getting there, what to see, where to eat, with \\\"Utrecht Decoded\\\" as the backbone of the day.\",\n  \"category\": \"itineraries\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"hunt_utrecht_decoded\",\n  \"huntTitle\": \"Utrecht Decoded\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"Six stops, six codes. Crack Caesar shifts, mirror alphabets, anagrams and number codes from a republic's birthplace to a brick colossus with a red UFO stuck to it. Duration about 120 minutes, 3.5 km, difficulty hard, 6 stops.\",\n  \"photoQuery\": \"Utrecht canal city\"\n },\n {\n  \"slug\": \"things-to-do-in-utrecht-murder-at-the-dom\",\n  \"keyword\": \"things to do in Utrecht\",\n  \"angle\": \"The best things to do in Utrecht on foot in one afternoon, built around the \\\"Murder at the Dom\\\" puzzle walk.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"hunt_utrecht_mystery\",\n  \"huntTitle\": \"Murder at the Dom\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"A Cluedo-style whodunnit through old Utrecht. Gather evidence at six stops, rule out suspects, weapons and places — then name the killer. Duration about 100 minutes, 1.8 km, difficulty hard, 6 stops.\",\n  \"photoQuery\": \"Utrecht old town street\"\n },\n {\n  \"slug\": \"utrecht-self-guided-walking-tour-murder-at-the-dom\",\n  \"keyword\": \"Utrecht self-guided walking tour\",\n  \"angle\": \"Why a self-guided puzzle walk beats a free walking tour in Utrecht: freedom, pace, price and fun — using \\\"Murder at the Dom\\\" as the example.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"hunt_utrecht_mystery\",\n  \"huntTitle\": \"Murder at the Dom\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"A Cluedo-style whodunnit through old Utrecht. Gather evidence at six stops, rule out suspects, weapons and places — then name the killer. Duration about 100 minutes, 1.8 km, difficulty hard, 6 stops.\",\n  \"photoQuery\": \"Utrecht old town street\"\n },\n {\n  \"slug\": \"murder-at-the-dom-utrecht-murder-at-the-dom\",\n  \"keyword\": \"murder at the dom utrecht\",\n  \"angle\": \"A storytelling article about the theme of \\\"Murder at the Dom\\\" — A Cluedo-style whodunnit through old Utrecht. Gather evidence at six stops, rule out suspects, weapons and places — then name the killer.\",\n  \"category\": \"stories\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"hunt_utrecht_mystery\",\n  \"huntTitle\": \"Murder at the Dom\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"A Cluedo-style whodunnit through old Utrecht. Gather evidence at six stops, rule out suspects, weapons and places — then name the killer. Duration about 100 minutes, 1.8 km, difficulty hard, 6 stops.\",\n  \"photoQuery\": \"Utrecht old town street\"\n },\n {\n  \"slug\": \"utrecht-day-trip-from-amsterdam-murder-at-the-dom\",\n  \"keyword\": \"Utrecht day trip from Amsterdam\",\n  \"angle\": \"How to spend a perfect day trip in Utrecht: getting there, what to see, where to eat, with \\\"Murder at the Dom\\\" as the backbone of the day.\",\n  \"category\": \"itineraries\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"hunt_utrecht_mystery\",\n  \"huntTitle\": \"Murder at the Dom\",\n  \"huntKind\": \"hunt\",\n  \"huntFacts\": \"A Cluedo-style whodunnit through old Utrecht. Gather evidence at six stops, rule out suspects, weapons and places — then name the killer. Duration about 100 minutes, 1.8 km, difficulty hard, 6 stops.\",\n  \"photoQuery\": \"Utrecht canal city\"\n },\n {\n  \"slug\": \"utrecht-food-and-drink-guide-utrecht-bites-bars\",\n  \"keyword\": \"Utrecht food and drink guide\",\n  \"angle\": \"A local-style guide to an evening of eating and drinking in Utrecht, structured around the stops of the \\\"Utrecht Bites & Bars\\\" self-guided tour.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"tour_utrecht_bites\",\n  \"huntTitle\": \"Utrecht Bites & Bars\",\n  \"huntKind\": \"tour\",\n  \"huntFacts\": \"A self-guided crawl through some of Utrecht's best-loved cafés — a bar in a former church, a medieval city castle that brews its own beer, and a terrace where the canal ends. No riddles, just where to sit. Duration about 180 minutes, 2.2 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Utrecht old town street\"\n },\n {\n  \"slug\": \"utrecht-self-guided-walking-tour-utrecht-bites-bars\",\n  \"keyword\": \"Utrecht self-guided walking tour\",\n  \"angle\": \"Why a self-guided puzzle walk beats a free walking tour in Utrecht: freedom, pace, price and fun — using \\\"Utrecht Bites & Bars\\\" as the example.\",\n  \"category\": \"guides\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"tour_utrecht_bites\",\n  \"huntTitle\": \"Utrecht Bites & Bars\",\n  \"huntKind\": \"tour\",\n  \"huntFacts\": \"A self-guided crawl through some of Utrecht's best-loved cafés — a bar in a former church, a medieval city castle that brews its own beer, and a terrace where the canal ends. No riddles, just where to sit. Duration about 180 minutes, 2.2 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Utrecht old town street\"\n },\n {\n  \"slug\": \"utrecht-with-kids-utrecht-bites-bars\",\n  \"keyword\": \"Utrecht with kids\",\n  \"angle\": \"A family day out in Utrecht: keeping children curious with riddles and a treasure-hunt format on the \\\"Utrecht Bites & Bars\\\" route.\",\n  \"category\": \"family\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"tour_utrecht_bites\",\n  \"huntTitle\": \"Utrecht Bites & Bars\",\n  \"huntKind\": \"tour\",\n  \"huntFacts\": \"A self-guided crawl through some of Utrecht's best-loved cafés — a bar in a former church, a medieval city castle that brews its own beer, and a terrace where the canal ends. No riddles, just where to sit. Duration about 180 minutes, 2.2 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Utrecht family street\"\n },\n {\n  \"slug\": \"utrecht-bites-bars-utrecht-utrecht-bites-bars\",\n  \"keyword\": \"utrecht bites & bars utrecht\",\n  \"angle\": \"A storytelling article about the theme of \\\"Utrecht Bites & Bars\\\" — A self-guided crawl through some of Utrecht's best-loved cafés — a bar in a former church, a medieval city castle that brews its own beer, and a terrace where the canal ends. No riddles, just where to sit.\",\n  \"category\": \"stories\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"tour_utrecht_bites\",\n  \"huntTitle\": \"Utrecht Bites & Bars\",\n  \"huntKind\": \"tour\",\n  \"huntFacts\": \"A self-guided crawl through some of Utrecht's best-loved cafés — a bar in a former church, a medieval city castle that brews its own beer, and a terrace where the canal ends. No riddles, just where to sit. Duration about 180 minutes, 2.2 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Utrecht old town street\"\n },\n {\n  \"slug\": \"utrecht-day-trip-from-amsterdam-utrecht-bites-bars\",\n  \"keyword\": \"Utrecht day trip from Amsterdam\",\n  \"angle\": \"How to spend a perfect day trip in Utrecht: getting there, what to see, where to eat, with \\\"Utrecht Bites & Bars\\\" as the backbone of the day.\",\n  \"category\": \"itineraries\",\n  \"cityId\": \"city_utrecht\",\n  \"city\": \"Utrecht\",\n  \"huntId\": \"tour_utrecht_bites\",\n  \"huntTitle\": \"Utrecht Bites & Bars\",\n  \"huntKind\": \"tour\",\n  \"huntFacts\": \"A self-guided crawl through some of Utrecht's best-loved cafés — a bar in a former church, a medieval city castle that brews its own beer, and a terrace where the canal ends. No riddles, just where to sit. Duration about 180 minutes, 2.2 km, difficulty easy, 5 stops.\",\n  \"photoQuery\": \"Utrecht canal city\"\n }\n];\nconst cfg = $input.first().json;\nconst day = Math.floor((Date.now() - Date.parse(cfg.startDate + 'T00:00:00Z')) / 86400000);\nconst idx = ((day % PLAN.length) + PLAN.length) % PLAN.length;\nconst brief = PLAN[idx];\nconst today = new Date().toISOString().slice(0, 10);\nreturn [{ json: { ...cfg, brief, today, slug: brief.slug, path: 'content/blog/' + brief.slug + '.md' } }];"
+      }
+    },
+    {
+      "id": "already-published",
+      "name": "Already published?",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        300
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.github.com/repos/{{ $('Config').first().json.githubOwner }}/{{ $('Config').first().json.githubRepo }}/contents/{{ $json.path }}?ref={{ $json.branch }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "tourhunts-n8n"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "GitHub token"
+        }
+      }
+    },
+    {
+      "id": "is-new",
+      "name": "Is new?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        880,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "is-new-c",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 404,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "build-prompt",
+      "name": "Build prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        280
+      ],
+      "parameters": {
+        "jsCode": "// Builds the Gemini request for today's brief.\nconst b = $('Pick today\\'s topic').first().json.brief;\nconst prompt = [\n  'Write a blog article.',\n  'Primary keyword (use naturally in the title, first paragraph and one heading): ' + b.keyword,\n  'Angle: ' + b.angle,\n  'City: ' + b.city,\n  'The TourHunts route this article should lead readers to: \"' + b.huntTitle + '\". Facts you may use about it: ' + b.huntFacts,\n  'Length: 900–1300 words in total. 5 to 7 sections with H2-style headings (no numbering in headings unless it is a list article).',\n  'Each section body is Markdown paragraphs; you may use short bullet lists and **bold**. No tables, no images, no H1, no links.',\n  'End with a short practical section (getting there, best time, what to bring).',\n].join('\\n');\nconst schema = {\n  type: 'OBJECT',\n  properties: {\n    title: { type: 'STRING', description: 'SEO title, max 65 characters' },\n    excerpt: { type: 'STRING', description: 'Meta description, 120-160 characters, includes the keyword' },\n    heroAlt: { type: 'STRING', description: 'Alt text for a photo of the city, max 110 characters' },\n    tags: { type: 'ARRAY', items: { type: 'STRING' } },\n    intro: { type: 'STRING', description: 'Opening 2 paragraphs in Markdown' },\n    sections: { type: 'ARRAY', items: { type: 'OBJECT', properties: { heading: { type: 'STRING' }, body: { type: 'STRING' } }, required: ['heading', 'body'] } },\n  },\n  required: ['title', 'excerpt', 'heroAlt', 'tags', 'intro', 'sections'],\n};\nreturn [{ json: { ...$('Pick today\\'s topic').first().json, geminiBody: {\n  systemInstruction: { parts: [{ text: \"You write for TourHunts, a small company from Utrecht that makes self-guided GPS puzzle walks: each stop is a riddle or cipher about a real place; crack it, walk there, and the phone tells you the story. Pricing: the first hunt is free (any hunt, any city); after that €5 per hunt. Works in the browser, no app; 6 languages.\\n\\nVoice: first person plural (\\\"we\\\"), warm, specific, a little dry humour, like a friend who lives there. Concrete details over adjectives. British English.\\nNever use: \\\"hidden gem\\\", \\\"embark\\\", \\\"journey\\\", \\\"unforgettable\\\", \\\"immerse\\\", \\\"seamless\\\", \\\"nestled\\\", \\\"bustling\\\", \\\"vibrant tapestry\\\", \\\"must-see\\\", \\\"in today's fast-paced world\\\", \\\"whether you're\\\", \\\"look no further\\\", \\\"elevate\\\", \\\"delve\\\".\\nFacts: only state facts that are well known or given in the brief. Do NOT invent prices, opening hours, dates, numbers, names of businesses or quotes. If unsure, describe instead of quantify.\\nSelling: the article must be genuinely useful on its own; mention TourHunts naturally 2–3 times at most, always tied to the hunt in the brief. No fake reviews, ratings or testimonials.\" }] },\n  contents: [{ role: 'user', parts: [{ text: prompt }] }],\n  generationConfig: { temperature: 0.8, responseMimeType: 'application/json', responseSchema: schema },\n} } }];"
+      }
+    },
+    {
+      "id": "gemini",
+      "name": "Gemini: write article",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        280
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.geminiBody) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "Gemini API key"
+        }
+      }
+    },
+    {
+      "id": "build-article",
+      "name": "Build article",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        280
+      ],
+      "parameters": {
+        "jsCode": "// Validates Gemini's article and assembles the Markdown file.\nconst ctx = $('Build prompt').first().json;\nconst b = ctx.brief;\nconst raw = $json.candidates?.[0]?.content?.parts?.[0]?.text;\nif (!raw) throw new Error('Gemini returned no text: ' + JSON.stringify($json).slice(0, 500));\nconst a = JSON.parse(raw);\n\nconst BANNED = ['hidden gem', 'embark', 'journey', 'unforgettable', 'immerse', 'seamless', 'nestled', 'bustling', 'tapestry', 'must-see', 'fast-paced', 'look no further', 'elevate', 'delve'];\nconst all = [a.title, a.excerpt, a.intro, ...a.sections.map(s => s.heading + ' ' + s.body)].join(' ');\nconst hits = BANNED.filter(w => all.toLowerCase().includes(w));\nconst words = all.split(/\\s+/).length;\nconst problems = [];\nif (hits.length) problems.push('banned words: ' + hits.join(', '));\nif (words < 700 || words > 1800) problems.push('word count ' + words);\nif (a.sections.length < 4) problems.push('only ' + a.sections.length + ' sections');\nif (/€\\s?\\d|\\d+\\s?euro/i.test(all.replace(/€\\s?5\\b/g, ''))) problems.push('mentions a price other than €5');\nif (problems.length) throw new Error('Article rejected: ' + problems.join('; '));\n\nconst clean = s => String(s).replace(/```/g, '').replace(/^#\\s.*$/gm, '').trim();\nconst ctaHunt = { kind: b.huntKind, targetId: b.huntId,\n  title: (b.huntKind === 'tour' ? 'Do it yourself: ' : 'Play it: ') + b.huntTitle,\n  description: 'Self-guided, at your own pace, in your browser. Your first hunt is free — after that €5.' };\nconst ctaCity = { kind: 'city', targetId: b.cityId,\n  title: 'All TourHunts in ' + b.city,\n  description: 'Pick any hunt — the first one is on us.' };\nconst cta = c => '```cta\\n' + JSON.stringify(c, null, 2) + '\\n```';\n\nconst parts = [clean(a.intro)];\na.sections.forEach((s, i) => {\n  parts.push('## ' + clean(s.heading).replace(/^#+\\s*/, '') + '\\n\\n' + clean(s.body));\n  if (i === 1) parts.push(cta(ctaHunt));\n});\nparts.push(cta(ctaCity));\n\nconst tags = [...new Set([b.city, ...(a.tags || []).slice(0, 6)])];\nreturn [{ json: { ...ctx, article: {\n  title: String(a.title).slice(0, 80),\n  excerpt: String(a.excerpt).slice(0, 170),\n  heroAlt: String(a.heroAlt).slice(0, 120),\n  tags, body: parts.join('\\n\\n'), words,\n  readMinutes: Math.max(3, Math.round(words / 220)),\n} } }];"
+      }
+    },
+    {
+      "id": "pexels",
+      "name": "Pexels: find photo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        280
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.pexels.com/v1/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $json.brief.photoQuery }}"
+            },
+            {
+              "name": "orientation",
+              "value": "landscape"
+            },
+            {
+              "name": "per_page",
+              "value": "20"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "Pexels API key"
+        }
+      }
+    },
+    {
+      "id": "assemble-file",
+      "name": "Assemble file",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        280
+      ],
+      "parameters": {
+        "jsCode": "// Picks a landscape Pexels photo (varied by day) and writes the final file.\nconst ctx = $('Build article').first().json;\nconst art = ctx.article;\nconst photos = ($json.photos || []).filter(p => p.width > p.height);\nif (!photos.length) throw new Error('No Pexels photo for: ' + ctx.brief.photoQuery);\nconst day = Math.floor(Date.now() / 86400000);\nconst p = photos[day % photos.length];\n// The blog's frontmatter parser doesn't unescape, so use typographic quotes.\nconst q = s => '\"' + String(s).replace(/\"([^\"]*)\"/g, '“$1”').replace(/\"/g, '”').replace(/\\\\/g, '').trim() + '\"';\nconst fm = [\n  '---',\n  'title: ' + q(art.title),\n  'excerpt: ' + q(art.excerpt),\n  'publishedAt: ' + q(ctx.today),\n  'author: ' + q(ctx.author),\n  'category: ' + q(ctx.brief.category),\n  'tags: [' + art.tags.map(t => String(t).replace(/[\\[\\],]/g, '')).join(', ') + ']',\n  'heroImage: ' + q(p.src.large2x || p.src.large),\n  'heroAlt: ' + q(art.heroAlt),\n  'readMinutes: ' + art.readMinutes,\n  'relatedCities: [' + ctx.brief.cityId + ']',\n  'relatedHunts: [' + ctx.brief.huntId + ']',\n  '---',\n].join('\\n');\nconst credit = '\\n\\n*Photo: [' + p.photographer + '](' + p.photographer_url + ') on [Pexels](' + p.url + ')*\\n';\nconst markdown = fm + '\\n\\n' + art.body + credit;\nconst message = 'Blog: ' + art.title;\nconst content = Buffer.from(markdown, 'utf8').toString('base64');\nreturn [{ json: { ...ctx, markdown, message, content, prBranch: 'blog/' + ctx.slug } }];"
+      }
+    },
+    {
+      "id": "review-first",
+      "name": "Review first?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        280
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "review-first-c",
+              "leftValue": "={{ $json.publishMode }}",
+              "rightValue": "pr",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "get-branch-head",
+      "name": "Get branch head",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2420,
+        140
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.github.com/repos/{{ $('Config').first().json.githubOwner }}/{{ $('Config').first().json.githubRepo }}/git/ref/heads/{{ $json.branch }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "tourhunts-n8n"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "GitHub token"
+        }
+      }
+    },
+    {
+      "id": "create-review-branch",
+      "name": "Create review branch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2640,
+        140
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.github.com/repos/{{ $('Config').first().json.githubOwner }}/{{ $('Config').first().json.githubRepo }}/git/refs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "tourhunts-n8n"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ ref: 'refs/heads/' + $('Assemble file').first().json.prBranch, sha: $json.body.object.sha }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "GitHub token"
+        }
+      }
+    },
+    {
+      "id": "add-article-to-branch",
+      "name": "Add article to branch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2860,
+        140
+      ],
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.github.com/repos/{{ $('Config').first().json.githubOwner }}/{{ $('Config').first().json.githubRepo }}/contents/{{ $('Assemble file').first().json.path }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "tourhunts-n8n"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ message: $('Assemble file').first().json.message, content: $('Assemble file').first().json.content, branch: $('Assemble file').first().json.prBranch }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "GitHub token"
+        }
+      }
+    },
+    {
+      "id": "open-pull-request",
+      "name": "Open pull request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3080,
+        140
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.github.com/repos/{{ $('Config').first().json.githubOwner }}/{{ $('Config').first().json.githubRepo }}/pulls",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "tourhunts-n8n"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ title: $('Assemble file').first().json.message, head: $('Assemble file').first().json.prBranch, base: $('Assemble file').first().json.branch, body: 'Daily article for **' + $('Assemble file').first().json.brief.keyword + '** → links to ' + $('Assemble file').first().json.brief.huntTitle + '.\\n\\nMerge to publish (Vercel deploys automatically). Check facts and the photo first.' }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "GitHub token"
+        }
+      }
+    },
+    {
+      "id": "publish-directly",
+      "name": "Publish directly",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2420,
+        420
+      ],
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.github.com/repos/{{ $('Config').first().json.githubOwner }}/{{ $('Config').first().json.githubRepo }}/contents/{{ $json.path }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "tourhunts-n8n"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ message: $json.message, content: $json.content, branch: $json.branch }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "GitHub token"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every day 07:00": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Pick today's topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick today's topic": {
+      "main": [
+        [
+          {
+            "node": "Already published?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Already published?": {
+      "main": [
+        [
+          {
+            "node": "Is new?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is new?": {
+      "main": [
+        [
+          {
+            "node": "Build prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Build prompt": {
+      "main": [
+        [
+          {
+            "node": "Gemini: write article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: write article": {
+      "main": [
+        [
+          {
+            "node": "Build article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build article": {
+      "main": [
+        [
+          {
+            "node": "Pexels: find photo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pexels: find photo": {
+      "main": [
+        [
+          {
+            "node": "Assemble file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assemble file": {
+      "main": [
+        [
+          {
+            "node": "Review first?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Review first?": {
+      "main": [
+        [
+          {
+            "node": "Get branch head",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Publish directly",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get branch head": {
+      "main": [
+        [
+          {
+            "node": "Create review branch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create review branch": {
+      "main": [
+        [
+          {
+            "node": "Add article to branch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add article to branch": {
+      "main": [
+        [
+          {
+            "node": "Open pull request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Amsterdam"
+  },
+  "pinData": {}
+}

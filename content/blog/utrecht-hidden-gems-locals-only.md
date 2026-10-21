@@ -9,7 +9,7 @@ heroImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Utrecht_Do
 heroAlt: "Utrecht's Dom Tower seen from a quiet canal at dusk"
 readMinutes: 6
 relatedCities: [city_utrecht]
-relatedHunts: [hunt_utrecht_classic, hunt_hidden_utrecht]
+relatedHunts: [hunt_utrecht_classic, hunt_utrecht_hidden]
 ---
 
 Most visitors to Utrecht do the same loop: Dom Tower, Oudegracht, a stroopwafel, done in three hours. Then they head back to Amsterdam thinking they've "seen it." They haven't. The Utrecht locals love is in the courtyards behind the cathedral, the wharf cellars two metres below the street, and the bastions where the city walls used to stand.
@@ -33,7 +33,7 @@ Seven 4-metre-wide alleys, lined with tiny 1830s workers' cottages, two minutes'
 ```cta
 {
   "kind": "hunt",
-  "targetId": "hunt_hidden_utrecht",
+  "targetId": "hunt_utrecht_hidden",
   "title": "See all 7 + a few more on the Hidden Utrecht hunt",
   "description": "8 lesser-known stops, GPS-guided, with riddles and stories. Pause and resume any time."
 }
