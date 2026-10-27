@@ -5,7 +5,7 @@ publishedAt: "2026-10-27"
 author: "TourHunts Editorial"
 category: "inspiration"
 tags: [Utrecht]
-heroImage: "https://images.pexels.com/photos/1264430/pexels-photo-1264430.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+heroImage: "https://images.pexels.com/photos/37362442/pexels-photo-37362442.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
 heroAlt: "A Quiet Morning Walk Along the Oudegracht"
 readMinutes: 3
 ---
@@ -33,4 +33,4 @@ By nine, the first places open their doors. Pick a spot facing the water, order 
 }
 ```
 
-*Photo: [Tim Gouw](https://www.pexels.com/@punttim) on [Pexels](https://www.pexels.com/photo/three-people-sitting-on-bench-in-front-of-ludwig-coffee-bar-1264430/)*
+*Photo: [YL Lew](https://www.pexels.com/@yl-lew-88954986) on [Pexels](https://www.pexels.com/photo/scenic-canal-view-in-utrecht-city-center-37362442/)*
