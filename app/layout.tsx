@@ -116,7 +116,7 @@ export const viewport: Viewport = {
   maximumScale: 5,
   userScalable: true,
   viewportFit: 'cover',
-  themeColor: '#F5F0E6',
+  themeColor: '#F2EFE8',
 }
 
 const ORG_JSONLD = {

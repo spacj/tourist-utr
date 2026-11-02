@@ -129,55 +129,51 @@
 /* ── Hunt landing page ──────────────────────────────────────── */
 .landing { padding-bottom: 48px; }
 .landing-head { margin: 8px 0 20px; }
+/* Kind and city, read as a subtitle under the title. */
 .landing-eyebrow {
   display: block;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: var(--canal);
-  margin-bottom: 8px;
+  margin-top: 10px;
 }
 .landing-title {
   font-family: var(--font-serif, serif);
   font-weight: 400;
-  font-size: clamp(28px, 6vw, 40px);
-  line-height: 1.1;
+  font-size: clamp(36px, 8vw, 56px);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
   color: var(--text);
   overflow-wrap: anywhere;
+  text-wrap: balance;
 }
-.landing-desc { margin-top: 12px; font-size: 17px; line-height: 1.6; color: var(--text-muted); }
+.landing-desc { margin-top: 16px; font-size: 17px; line-height: 1.6; color: var(--text); }
 
+/* Facts: one filled sheet, separated by space rather than grid lines. */
 .landing-facts {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 1px;
-  margin: 0 0 20px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--border);
-  overflow: hidden;
-}
-.landing-facts > div { background: var(--surface); padding: 12px 14px; min-width: 0; }
-.landing-facts dt {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-dim);
-  margin-bottom: 4px;
-}
-.landing-facts dd { font-size: 15px; font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
-
-.landing-price {
-  padding: 18px;
-  border-radius: 14px;
-  border: 2px solid var(--text);
+  gap: 16px 24px;
+  margin: 0 0 16px;
+  padding: 18px 20px;
+  border-radius: var(--radius-sm, 6px);
   background: var(--surface);
-  margin-bottom: 28px;
 }
-.landing-price.is-free { border-color: var(--canal); }
-.landing-price-main { font-family: var(--font-serif, serif); font-size: 20px; line-height: 1.25; }
-.landing-price-note { margin: 6px 0 14px; font-size: 14px; color: var(--text-muted); }
+.landing-facts > div { min-width: 0; }
+.landing-facts > div:last-child { grid-column: 1 / -1; } /* languages: a long list */
+.landing-facts dt { font-size: 14px; color: var(--text-muted); margin-bottom: 2px; }
+.landing-facts dd { font-size: 16px; font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
+
+/* Price and the start button: a tone step, canal green when it's free. */
+.landing-price {
+  padding: 20px;
+  border-radius: var(--radius-sm, 6px);
+  background: var(--surface-2);
+  margin-bottom: 36px;
+}
+.landing-price.is-free { background: var(--canal-soft); }
+.landing-price-main { font-family: var(--font-serif, serif); font-size: 22px; line-height: 1.25; }
+.landing-price-note { margin: 6px 0 16px; font-size: 15px; color: var(--text-muted); }
 .landing-cta { display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; width: 100%; }
 @media (min-width: 560px) { .landing-cta { width: auto; } }
 
@@ -208,7 +204,7 @@
   background: var(--surface-2);
   overflow: hidden;
 }
-.landing-map-note { margin-top: 8px; font-size: 14px; color: var(--text-muted); font-family: var(--font-mono, monospace); }
+.landing-map-note { margin-top: 8px; font-size: 15px; color: var(--text-muted); }
 
 .landing-siblings { list-style: none; display: grid; gap: 8px; }
 .landing-siblings a {
@@ -216,13 +212,13 @@
   flex-direction: column;
   gap: 2px;
   padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm, 6px);
   background: var(--surface);
   color: var(--text);
   text-decoration: none;
+  transition: background-color .15s;
 }
-.landing-siblings a:hover { border-color: var(--border-2); }
+.landing-siblings a:hover { background: #fff; }
 .landing-siblings a:focus-visible { outline: 2px solid var(--canal); outline-offset: 2px; }
 .landing-sibling-title { font-weight: 600; }
 .landing-sibling-meta { font-size: 13px; color: var(--text-muted); }

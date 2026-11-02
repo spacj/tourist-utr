@@ -203,7 +203,8 @@ export const CITIES = [
     country: 'Netherlands',
     description: 'Rembrandt\'s birthplace, the oldest university in the Netherlands, and the canal city where the Pilgrim Fathers spent twelve years before sailing for America.',
     coverEmoji: '🎓',
-    imageUrl: 'https://images.pexels.com/photos/12715169/pexels-photo-12715169.jpeg',
+    // "Leiden, Oude Rijn 2015" by Chiel Koolhaas, CC0, via Wikimedia Commons (the Pexels cover went 404).
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Leiden%2C_Oude_Rijn_2015.jpg/1280px-Leiden%2C_Oude_Rijn_2015.jpg',
     priceEuros: 5,
     order: 6,
     active: true,
@@ -242,7 +243,8 @@ export const CITIES = [
     country: 'Netherlands',
     description: 'A 15-minute train from Amsterdam — and a different century. Frans Hals\'s portraits, the oldest museum in the Netherlands, and a Gothic church with one of Europe\'s most famous organs.',
     coverEmoji: '🎨',
-    imageUrl: 'https://images.pexels.com/photos/14269885/pexels-photo-14269885.jpeg',
+    // "Haarlem Spaarne en Gravestenenbrug" by Torsade de Pointes, CC0, via Wikimedia Commons (the Pexels cover went 404).
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Haarlem_Spaarne_en_Gravestenenbrug.jpg/1280px-Haarlem_Spaarne_en_Gravestenenbrug.jpg',
     priceEuros: 5,
     order: 5,
     active: true,

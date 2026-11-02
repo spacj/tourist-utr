@@ -52,8 +52,8 @@ export function HuntLanding({ city: rawCity, hunt: rawHunt, isMystery, languages
         </a>
 
         <header className="landing-head">
-          <span className="landing-eyebrow">{kindLabel} · {city.name}</span>
           <h1 className="landing-title">{hunt.title}</h1>
+          <p className="landing-eyebrow">{kindLabel} · {city.name}</p>
           <p className="landing-desc">{hunt.description}</p>
         </header>
 

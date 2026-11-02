@@ -4,7 +4,7 @@ import { ImageResponse } from 'next/og'
 export const ogSize = { width: 1200, height: 630 }
 
 const INK = '#23201B'
-const PAPER = '#F5F0E6'
+const PAPER = '#F2EFE8'
 const CANAL = '#2E6A58'
 const BRICK = '#A33B2B'
 

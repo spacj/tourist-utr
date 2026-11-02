@@ -1,5 +1,6 @@
 'use client'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
 import { useAuth } from '@/components/AuthProvider'
 import { useToast } from '@/components/Toast'
 import { useI18n } from '@/hooks/useI18n'
@@ -69,6 +70,8 @@ export function CityClient({ cityId, initialCity, initialHunts }: Props) {
   const [cityState, setCityState] = useState<LoadState | 'notfound'>(hasInitial ? 'ready' : 'loading')
   const [huntsState, setHuntsState] = useState<LoadState>(hasInitial ? 'ready' : 'loading')
   const [accessChecked, setAccessChecked] = useState(false)
+  /** The cover URL lives in Firestore; a dead one falls back to the emoji badge. */
+  const [photoFailed, setPhotoFailed] = useState(false)
   const [highlight, setHighlight] = useState<string | null>(null)
   const [access, setAccess] = useState<HuntAccessSummary | null>(null)
   const [progress, setProgress] = useState<ProgressMap>({})
@@ -441,9 +444,15 @@ export function CityClient({ cityId, initialCity, initialHunts }: Props) {
         </div>
 
         <section className={`city-hero ${hasCityPass ? 'is-unlocked' : ''}`}>
-          <StopIcon icon={localCity.coverEmoji} size="lg" className="city-hero-emoji" />
+          {localCity.imageUrl && !photoFailed ? (
+            <div className="city-hero-photo">
+              <Image src={localCity.imageUrl} alt="" fill sizes="(max-width: 720px) 100vw, 680px" priority
+                onError={() => setPhotoFailed(true)} />
+            </div>
+          ) : (
+            <StopIcon icon={localCity.coverEmoji} size="lg" className="city-hero-emoji" />
+          )}
           <div className="city-hero-meta">
-            <span className="city-hero-eyebrow">{localCity.country}</span>
             <h1 className="city-hero-title">{localCity.name}</h1>
             <p className="city-hero-desc">{localCity.description}</p>
           </div>

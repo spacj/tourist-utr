@@ -7,3 +7,6 @@ node_modules/
 .env.production
 tsconfig.tsbuildinfo
 /coverage
+
+# design inspector screenshots and notes
+/.taste-skill
