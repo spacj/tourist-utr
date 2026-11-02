@@ -134,13 +134,25 @@ self.addEventListener('fetch', (event) => {
 
 // ── Strategies ────────────────────────────────────────────────
 
+/** Look `key` up in each named cache in turn. Cache Storage can throw (quota
+ *  exhausted, a damaged profile, some privacy modes); that counts as a miss,
+ *  so a broken cache costs us offline support, never the page itself. */
+async function cacheLookup(key, names) {
+  for (const name of names) {
+    try {
+      const hit = await (await caches.open(name)).match(key, { ignoreVary: true })
+      if (hit) return hit
+    } catch {
+      return undefined
+    }
+  }
+  return undefined
+}
+
 /** Cache-first; also looks in `alsoIn` caches before hitting the network. */
 async function cacheFirst(request, cacheName, alsoIn = []) {
-  for (const name of [cacheName, ...alsoIn]) {
-    const cache = await caches.open(name)
-    const hit = await cache.match(request, { ignoreVary: true })
-    if (hit) return hit
-  }
+  const hit = await cacheLookup(request, [cacheName, ...alsoIn])
+  if (hit) return hit
   try {
     const response = await fetch(request)
     if (response.ok && (response.type === 'basic' || response.type === 'cors')) {
@@ -154,9 +166,7 @@ async function cacheFirst(request, cacheName, alsoIn = []) {
 
 /** Serve the cached copy at once (if any) and refresh it in the background. */
 async function staleWhileRevalidate(event, request, cacheName, key, fallbackCache) {
-  const cache = await caches.open(cacheName)
-  const cached = (await cache.match(key, { ignoreVary: true }))
-    || (fallbackCache ? await (await caches.open(fallbackCache)).match(key, { ignoreVary: true }) : undefined)
+  const cached = await cacheLookup(key, fallbackCache ? [cacheName, fallbackCache] : [cacheName])
   const network = fetch(request)
     .then(async (response) => {
       if (response.ok) await putCapped(cacheName, key, response.clone())
@@ -185,11 +195,9 @@ async function networkFirstPage(request) {
     }
     return response
   } catch {
-    const pages = await caches.open(PAGES_CACHE)
-    const cached = await pages.match(stripRsc(request.url), { ignoreVary: true })
-    if (cached) return cached
-    const offline = await caches.match(OFFLINE_PAGE, { cacheName: SHELL_CACHE })
-    return offline || new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
+    const cached = await cacheLookup(stripRsc(request.url), [PAGES_CACHE])
+      || await cacheLookup(OFFLINE_PAGE, [SHELL_CACHE])
+    return cached || new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
   }
 }
 
@@ -241,8 +249,17 @@ async function precacheTiles(rawUrls, port) {
     try { port && port.postMessage({ type, done, total, failed, bytes }) } catch {}
   }
 
-  const saved = await caches.open(MAP_SAVED_CACHE)
-  const runtime = await caches.open(MAP_CACHE)
+  let saved, runtime
+  try {
+    saved = await caches.open(MAP_SAVED_CACHE)
+    runtime = await caches.open(MAP_CACHE)
+  } catch {
+    // No usable Cache Storage: nothing can be saved, but the page must hear back.
+    done = total
+    failed = total
+    post('done')
+    return
+  }
   let next = 0
 
   async function worker() {

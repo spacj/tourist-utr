@@ -71,12 +71,12 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { border-color
   border: 1px solid var(--primary); border-radius: var(--radius);
   font-family: var(--font-sans), system-ui, sans-serif; font-size: 16px; font-weight: 600;
   letter-spacing: 0; text-decoration: none; cursor: pointer;
-  box-shadow: 0 1px 0 rgba(43, 38, 30, 0.18);
+  box-shadow: none;
   transition: background-color .15s var(--ease), transform .15s var(--ease);
 }
 .btn-primary:hover:not(:disabled), .cta-primary-btn:hover, .mp-cta:hover:not(:disabled),
 .checkout-cta:hover:not(:disabled), .pwa-banner-cta:hover, .accuse-submit:hover:not(:disabled), .auth-submit:hover:not(:disabled) {
-  background: var(--primary-2); border-color: var(--primary-2); transform: none; box-shadow: 0 1px 0 rgba(43, 38, 30, 0.18);
+  background: var(--primary-2); border-color: var(--primary-2); transform: none; box-shadow: none;
 }
 .btn-primary:active:not(:disabled), .mp-cta:active:not(:disabled) { transform: translateY(1px); }
 .btn-primary:disabled, .mp-cta:disabled, .checkout-cta:disabled, .accuse-submit:disabled {
@@ -111,25 +111,27 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { border-color
 .flow-link-btn, .flow-inline-link { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
 .flow-link-btn:hover, .flow-inline-link:hover { color: var(--brick); }
 
-/* ── Cards: flat surface, 1px ink-tinted rule, small shadow ── */
+/* ── Cards: a filled sheet one tone lighter than the page — no outline, no
+   shadow. The border stays transparent so selected states can still ink it. ── */
 .empty-card, .stat-card, .mp-card, .hunt-card, .city-card, .xp-card, .level-card, .next-card,
 .resume-race-banner, .mp-home-cta, .history-item, .profile-header, .lb-yours, .mp-breakdown-card,
 .mp-results-table-wrap, .mp-podium-item, .accuse-card, .gps-help, .checkout-option, .pwa-banner {
   background: var(--surface);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  box-shadow: none;
 }
-.hunt-card:hover, .city-card:hover, .mp-home-cta:hover, .stat-card:hover { box-shadow: var(--shadow-md); transform: none; border-color: var(--rule-strong); }
+.hunt-card, .city-card, .mp-home-cta, .stat-card { transition: background-color .15s var(--ease), border-color .15s var(--ease); }
+.hunt-card:hover, .city-card:hover, .mp-home-cta:hover, .stat-card:hover { box-shadow: none; transform: none; border-color: var(--rule-strong); background: #fff; }
 .empty-card { padding: var(--s5); text-align: center; color: var(--text-muted); }
 
-/* Section labels: small typewriter kicker with a short rule. */
+/* Section headings: the display serif in sentence case, not a tiny kicker. */
 .section-label {
-  font-family: var(--font-type); font-size: 14px; font-weight: 700;
-  letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted);
-  margin: var(--s6) 0 var(--s3);
+  font-family: var(--font-display); font-size: 24px; font-weight: 400; line-height: 1.2;
+  letter-spacing: -0.01em; text-transform: none; color: var(--text);
+  margin: var(--s7) 0 var(--s4);
 }
-.section-label::before { background: var(--brick); }
+.section-label::before { display: none; }
 
 /* Back links */
 .topbar-back, .back-link, .city-back {
@@ -236,11 +238,22 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { border-color
 .toast-close { width: 44px; height: 44px; display: grid; place-items: center; }
 
 /* Consent: paper card, never under other fixed UI. */
-.consent { border-radius: var(--radius); border-color: var(--rule-strong); box-shadow: var(--shadow-md); }
-.consent-title { font-family: var(--font-display); font-weight: 400; font-size: 20px; }
-.consent-text { font-size: 15px; }
+/* Phones: a flat bar along the bottom edge. Desktop: a small panel in the corner. */
+.consent {
+  left: 0; right: 0; bottom: 0; max-width: none; margin: 0;
+  border: 0; border-radius: 0; box-shadow: 0 -8px 24px rgba(35, 32, 27, 0.12);
+  padding: 14px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 768px) {
+  .consent { left: 24px; right: auto; bottom: 24px; width: 420px; border-radius: var(--radius-sm); padding: 18px 20px 16px; }
+}
+.consent-title { font-family: var(--font-display); font-weight: 400; font-size: 18px; margin-bottom: 4px; }
+.consent-text { font-size: 15px; line-height: 1.45; }
 .consent-option { font-size: 15px; }
-.consent-btn { min-height: 44px; font-size: 15px; }
+.consent-actions { flex-wrap: nowrap; margin-top: 12px; }
+.consent-btn { min-height: 44px; font-size: 15px; padding: 0 12px; white-space: nowrap; border-radius: var(--radius-sm); box-shadow: none; }
+.consent .btn-secondary.consent-btn { border: 0; background: var(--surface-2); }
+.consent .btn-ghost.consent-btn { flex: 0 0 auto; padding: 0 8px; text-decoration: underline; text-underline-offset: 3px; }
 
 /* PWA banner */
 .pwa-banner { color: var(--ink); }
@@ -675,7 +688,45 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { border-color
 .tour-card-visited-tag, .tour-stop-visited-tag { display: inline-flex; align-items: center; gap: 4px; color: var(--canal); font-weight: 600; }
 .tour-card-pager-btn, .tour-card-detail-btn, .tour-stop-maps-btn { min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .tour-stop-chevron { display: grid; place-items: center; }
-.tour-card-desc, .tour-stop-desc { font-family: var(--font-type); font-size: 15px; line-height: 1.6; }
+.tour-card-desc, .tour-stop-desc { font-size: 16px; line-height: 1.6; }
+
+/* ═══ City hero: the city's photograph, then its name in ink on paper ═══ */
+.city-hero {
+  background: transparent; color: var(--text); box-shadow: none; border-radius: 0;
+  padding: 0; margin-bottom: var(--s6); overflow: visible; min-height: 0;
+}
+.city-hero.is-unlocked { background: transparent; box-shadow: none; }
+.city-hero::before { display: none; }
+.city-hero-photo {
+  position: relative; aspect-ratio: 3 / 2; margin: 0 0 var(--s5);
+  background: var(--bg-2); overflow: clip; border-radius: var(--radius-sm);
+}
+.city-hero-photo img { object-fit: cover; }
+@media (min-width: 600px) {
+  /* keep the city's name on the first screen */
+  .city-hero-photo { aspect-ratio: auto; height: min(44vh, 400px); }
+}
+@media (max-width: 599px) {
+  /* edge to edge on a phone, like a print laid across the page */
+  .city-hero-photo { margin-left: -18px; margin-right: -18px; border-radius: 0; aspect-ratio: 4 / 3; }
+}
+.city-hero-emoji { filter: none; text-align: left; margin-bottom: var(--s4); }
+.city-hero-meta { text-align: left; }
+.city-hero-title {
+  font-size: clamp(44px, 9vw, 72px); line-height: 1; letter-spacing: -0.03em;
+  color: var(--text); text-shadow: none; margin: 0 0 var(--s3);
+}
+.city-hero-desc { color: var(--text); font-size: 17px; line-height: 1.6; max-width: 52ch; margin: 0 0 var(--s5); }
+.city-hero-cta-unlocked {
+  display: inline-flex; width: auto; padding: 10px 14px; gap: 10px;
+  background: var(--canal-soft); color: var(--canal); border: 0; border-radius: var(--radius-sm);
+  font-size: 15px; font-weight: 600;
+}
+.city-hero-cta-unlocked .city-hero-cta-icon { background: var(--canal); color: #fff; }
+@media (prefers-reduced-motion: no-preference) {
+  .city-hero-photo img { animation: nb-settle 9s var(--ease) both; }
+  @keyframes nb-settle { from { transform: scale(1.06); } }
+}
 
 /* ═══ City / country pages (SEO-owned markup) — restyled only ═══ */
 .city-hero-title, .country-hero-title, .hunt-title, .city-name {
@@ -722,11 +773,11 @@ body:has(.consent) .sticky-cta { display: none !important; }
 .lang-picker {
   position: relative; display: inline-flex; align-items: center; gap: 6px;
   min-height: 44px; padding: 0 10px 0 12px;
-  border: 1px solid var(--border-2); border-radius: var(--radius); background: var(--surface);
-  color: var(--text); font-family: var(--font-mono), monospace; font-weight: 700; font-size: 14px;
+  border: 0; border-radius: var(--radius-sm); background: var(--surface-2);
+  color: var(--text); font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 15px;
   cursor: pointer;
 }
-.lang-picker:hover { border-color: var(--text); }
+.lang-picker:hover { background: var(--bg-2); }
 .lang-picker select {
   position: absolute; inset: 0; width: 100%; height: 100%;
   opacity: 0; cursor: pointer; font-size: 16px; /* 16px stops iOS zoom */
@@ -734,3 +785,24 @@ body:has(.consent) .sticky-cta { display: none !important; }
 .lang-picker:focus-within { outline: 2px solid var(--text); outline-offset: 2px; }
 .page-topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .page-topbar .city-back { margin-bottom: 0; }
+
+/* ═══ Labels speak in the text face ═══
+   The typewriter is reserved for what a player actually reads as a clue:
+   riddles, puzzle text, answer inputs, hints, room codes and the rubber
+   stamps. Every label, badge and table head is set in the text face in
+   sentence case instead of tiny letter-spaced capitals. */
+.lang-btn, .resume-race-badge, .dot-trail-label, .clue-label, .game-section-label, .puzzle-label,
+.puzzle-theme, .puzzle-points, .compass-zone, .intro-stop, .arrival-loc,
+.trivia-head, .fact-label, .evidence-label, .history-theme, .history-fact-label, .case-file-eyebrow,
+.case-col-head, .accuse-axis-label, .mp-tag, .mp-results-table thead th, .mp-podium-time, .mp-first-badge,
+.mp-room-badge, .mp-code-label, .mp-waiting, .stat-label, .cmp-hunt, .cmp-score-label, .next-cta-label,
+.checkout-option-badge, .legal-updated, .hunt-badge, .auth-or {
+  font-family: var(--font-sans), system-ui, sans-serif !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+.clue-label, .game-section-label, .puzzle-label, .intro-stop, .trivia-head, .fact-label, .evidence-label,
+.history-theme, .case-file-eyebrow, .stat-label, .cmp-score-label, .mp-code-label, .mp-results-table thead th {
+  font-size: 15px !important; font-weight: 600;
+}
+.compass-zone { font-size: 15px !important; }

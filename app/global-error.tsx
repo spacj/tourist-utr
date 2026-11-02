@@ -8,7 +8,7 @@ import { Logo } from '@/components/Logo'
 export default function GlobalError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#F5F0E6', color: '#23201B', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+      <body style={{ margin: 0, minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#F2EFE8', color: '#23201B', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
         <main role="alert" style={{ maxWidth: 420, padding: 24, textAlign: 'center' }}>
           <div aria-hidden><Logo size={56} /></div>
           <h1 style={{ fontSize: 26, fontWeight: 400, fontFamily: 'Georgia, serif', margin: '12px 0 8px' }}>Something went wrong</h1>

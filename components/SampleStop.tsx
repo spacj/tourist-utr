@@ -11,7 +11,7 @@ const SCRAMBLED = 'HDTREACOGU'.split('')
  * The hero's "page torn from the notebook": a real clue in typewriter type
  * with a playable anagram. Purely client-side — nothing is sent anywhere.
  */
-export function SampleStop({ ctaHref }: { ctaHref: string }) {
+export function SampleStop({ ctaHref, onSolve }: { ctaHref: string; onSolve?: () => void }) {
   const { t } = useI18n()
   const [picked, setPicked] = useState<number[]>([])
 
@@ -26,7 +26,7 @@ export function SampleStop({ ctaHref }: { ctaHref: string }) {
     setPicked(next)
     const w = next.map(j => SCRAMBLED[j]).join('')
     try {
-      if (w === ANSWER) navigator.vibrate?.([40, 30, 60])
+      if (w === ANSWER) { onSolve?.(); navigator.vibrate?.([40, 30, 60]) }
       else if (next.length === ANSWER.length) navigator.vibrate?.([15, 20, 15])
     } catch {}
   }
@@ -42,7 +42,7 @@ export function SampleStop({ ctaHref }: { ctaHref: string }) {
       : fmt(t('sampleProgress'), { n: picked.length, total: ANSWER.length })
 
   return (
-    <article className={`nb-sample ${solved ? 'is-solved' : ''} ${wrong ? 'is-wrong' : ''}`} aria-labelledby="sample-title">
+    <article className={`nb-sample ${solved ? 'is-solved' : ''} ${wrong ? 'is-wrong' : ''}`} aria-labelledby="sample-title" data-ui>
       <span className="nb-sample-tape" aria-hidden />
       <header className="nb-sample-head">
         <h2 id="sample-title" className="nb-sample-stamp">{t('sampleStamp')}</h2>

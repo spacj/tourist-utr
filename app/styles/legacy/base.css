@@ -17,10 +17,10 @@
 
 :root {
   /* paper & ink */
-  --bg:          #F5F0E6;
-  --bg-2:        #EFE7D8;
-  --surface:     #FFFDF8;
-  --surface-2:   #F3ECDD;
+  --bg:          #F2EFE8;
+  --bg-2:        #E9E4DA;
+  --surface:     #FCFBF8;
+  --surface-2:   #EEE9DF;
   --border:      rgba(43, 38, 30, 0.14);
   --border-2:    rgba(43, 38, 30, 0.26);
   --text:        #23201B;
