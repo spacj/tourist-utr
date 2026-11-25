@@ -146,8 +146,11 @@ export async function processCapture(info: CaptureInfo, via: 'redirect' | 'webho
 
   // ── Verify the money matches what the custom_id says was bought ──
   const hunt = meta?.kind === 'hunt_unlock' ? await loadHuntForPayment(meta.huntId) : null
+  // Creator (marketplace) hunts are sold through Stripe Connect only: a
+  // PayPal order for one is treated like an unknown hunt (refunded), so it
+  // can never bypass the creator's revenue split.
   const unlockPriceCents = meta?.kind === 'hunt_unlock'
-    ? (hunt?.priceCents ?? null)
+    ? (hunt && !hunt.ownerUid ? hunt.priceCents : null)
     : meta?.kind === 'city_unlock' ? await loadCityPriceCents(meta.cityId) : null
   const { problem, expectedCents, credits } = verifyCaptureMoney(
     info, meta, unlockPriceCents, process.env.PAYPAL_MERCHANT_ID,

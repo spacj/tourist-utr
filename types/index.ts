@@ -103,6 +103,30 @@ export interface Hunt {
   mystery?: MysterySpec
   /** Per-hunt price override in euros (trusted only between 1 and 50). */
   priceEuros?: number
+  /** Marketplace: who sells this hunt. Absent or HOUSE_OWNER = a house hunt
+   *  (platform keeps 100%, the free first hunt may be spent on it); any
+   *  other value is the creator's Firebase uid. */
+  ownerUid?: string
+  /** Public creator attribution (creator hunts only). */
+  creatorName?: string
+  creatorSlug?: string
+  /** Language the creator wrote the hunt in (the others are translations). */
+  sourceLang?: Lang
+  coverImageUrl?: string
+}
+
+/** ownerUid of hunts the platform itself sells. */
+export const HOUSE_OWNER = 'house'
+
+/**
+ * A house hunt is sold by the platform. Missing ownerUid counts as house so
+ * every hunt seeded before the marketplace keeps its behaviour. Only house
+ * hunts can take the account's free first hunt (creators are never asked to
+ * give their hunt away).
+ */
+export function isHouseHunt(h: { ownerUid?: unknown } | null | undefined): boolean {
+  const o = h?.ownerUid
+  return typeof o !== 'string' || !o || o === HOUSE_OWNER
 }
 
 export function isTour(h: Pick<Hunt, 'tourType'>): boolean {
@@ -139,12 +163,15 @@ export interface HuntAccessSummary {
  * Client-side mirror of lib/huntAccess resolveAccess(): 'owned' (bought, the
  * free hunt was spent on it, or a legacy city pass), 'free' (the free hunt
  * is still unused — starting this one spends it), or 'locked' (buy it).
+ * Creator hunts can only be bought: no free slot, no legacy city pass.
  */
 export function huntAccessFor(
   s: HuntAccessSummary,
-  h: Pick<Hunt, 'id' | 'cityId'>,
+  h: Pick<Hunt, 'id' | 'cityId' | 'ownerUid'>,
 ): 'owned' | 'free' | 'locked' {
-  if (s.freeHuntId === h.id || s.owned.includes(h.id) || (!!h.cityId && s.cityPasses.includes(h.cityId))) return 'owned'
+  if (s.freeHuntId === h.id || s.owned.includes(h.id)) return 'owned'
+  if (!isHouseHunt(h)) return 'locked'
+  if (!!h.cityId && s.cityPasses.includes(h.cityId)) return 'owned'
   return s.freeAvailable ? 'free' : 'locked'
 }
 
@@ -828,6 +855,64 @@ export function xpForHunt(opts: { score: number; cluesArrived: number; firstComp
   if (opts.firstCompletion) xp += 100
   if (opts.variant === 'speedrun' || opts.variant === 'nohints') xp += 50
   return xp
+}
+
+// ── Creator marketplace ───────────────────────────────────────────────
+// Creators write hunts as drafts (huntDrafts/{id}, server-only). An admin
+// approves a draft, which publishes it into hunts/{id} + clues in the exact
+// shape the game engine already plays. Sales are paid through Stripe
+// Connect; every sale is recorded in the sales/{id} ledger.
+
+/** Default platform commission, in basis points of the price excl. VAT (2000 = 20%). */
+export const DEFAULT_COMMISSION_BPS = 2000
+
+/** Default payment fee, in basis points of the price paid (300 = 3%; covers Stripe). */
+export const DEFAULT_PAYMENT_FEE_BPS = 300
+
+export type HuntDraftStatus = 'draft' | 'pending_review' | 'approved' | 'rejected' | 'unpublished'
+
+export type CreatorStatus = 'active' | 'suspended'
+
+/** creators/{uid} — server-only; the public part is exposed via the catalog. */
+export interface CreatorProfile {
+  uid: string
+  displayName: string
+  /** URL slug for /creators/[slug]; unique. */
+  slug: string
+  bio: string
+  avatarUrl?: string
+  /** ISO 3166-1 alpha-2 country, used for Stripe Connect onboarding. */
+  country: string
+  status: CreatorStatus
+  /** Platform share in basis points; DEFAULT_COMMISSION_BPS unless overridden by an admin. */
+  commissionBps: number
+  termsAcceptedAt: number | null
+  stripeAccountId?: string | null
+  /** Stripe says the account may take payments: only then are its hunts listed. */
+  chargesEnabled: boolean
+  payoutsEnabled: boolean
+  createdAt?: number
+}
+
+/** A sale in the ledger (sales/{checkoutSessionId}). Amounts in euro cents. */
+export interface Sale {
+  id: string
+  huntId: string
+  huntTitle: string
+  creatorUid: string
+  buyerUid: string
+  grossCents: number
+  vatCents: number
+  paymentFeeCents: number
+  commissionCents: number
+  platformFeeCents: number
+  creatorCents: number
+  currency: 'EUR'
+  status: 'paid' | 'refunded'
+  stripeCheckoutSessionId: string
+  stripePaymentIntentId: string | null
+  createdAt?: number
+  refundedAt?: number | null
 }
 
 // ── i18n ──────────────────────────────────────────────────────────────

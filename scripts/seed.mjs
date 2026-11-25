@@ -87,10 +87,23 @@ initializeApp({ credential: loadCredential(), projectId: process.env.NEXT_PUBLIC
 const db = getFirestore()
 
 async function seed() {
+  // Published creator (marketplace) hunts live only in Firestore, not in
+  // seed-data: count them too so re-seeding never hides them from the
+  // city/country hunt counts. House hunts are the ones written below.
+  const creatorSnap = await db.collection('hunts').where('ownerUid', '!=', 'house').get()
+  const creatorHuntsByCity = new Map()
+  for (const d of creatorSnap.docs) {
+    const h = d.data()
+    if (h.active !== true || typeof h.cityId !== 'string') continue
+    creatorHuntsByCity.set(h.cityId, (creatorHuntsByCity.get(h.cityId) ?? 0) + 1)
+  }
+  const creatorCount = (cityId) => creatorHuntsByCity.get(cityId) ?? 0
+
   // 1. Countries
   for (const country of COUNTRIES) {
     const cityCount = CITIES.filter(c => c.countryId === country.id).length
     const huntCount = HUNTS.filter(h => CITIES.find(c => c.id === h.meta.cityId)?.countryId === country.id).length
+      + CITIES.filter(c => c.countryId === country.id).reduce((n, c) => n + creatorCount(c.id), 0)
     const { id, ...data } = country
     await db.collection('countries').doc(id).set({ ...data, cityCount, huntCount, createdAt: FieldValue.serverTimestamp() })
     console.log(`✓ country ${id}: "${country.name}" (${cityCount} cities, ${huntCount} hunts${country.comingSoon ? ' — coming soon' : ''})`)
@@ -98,7 +111,7 @@ async function seed() {
 
   // 2. Cities
   for (const city of CITIES) {
-    const huntCount = HUNTS.filter(h => h.meta.cityId === city.id).length
+    const huntCount = HUNTS.filter(h => h.meta.cityId === city.id).length + creatorCount(city.id)
     const { id, ...data } = city
     await db.collection('cities').doc(id).set({ ...data, huntCount, createdAt: FieldValue.serverTimestamp() })
     console.log(`✓ city ${id}: "${city.name}" (${huntCount} hunts${city.active === false ? ", hidden" : ""})`)
@@ -108,6 +121,7 @@ async function seed() {
   for (const hunt of HUNTS) {
     await db.collection('hunts').doc(hunt.id).set({
       ...hunt.meta,
+      ownerUid: 'house',
       clueCount: hunt.clues.length,
       active: true,
       createdAt: FieldValue.serverTimestamp(),

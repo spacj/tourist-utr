@@ -5,13 +5,14 @@ import { game } from './game'
 import { flows } from './flows'
 import { seo } from './seo'
 import { home } from './home'
+import { creator } from './creator'
 
 /**
  * UI strings, one file per area so features can add keys independently.
  * To add an area: create `./<area>.ts` exporting a Dict and list it here.
  * Later areas override earlier ones on key collisions.
  */
-export const T: Dict = Object.assign({}, core, legal, flows, game, seo, home)
+export const T: Dict = Object.assign({}, core, legal, flows, game, seo, home, creator)
 
 export function t(lang: Lang, key: string): string {
   const entry = T[key]

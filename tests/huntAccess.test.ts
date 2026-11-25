@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { resolveAccess, isOwned, huntUnlockId, freeHuntIdOf, type AccessState } from '@/lib/huntAccess'
 import { huntAccessFor, type HuntAccessSummary } from '@/types'
 
-const base: AccessState = { huntId: 'h1', freeHuntId: null, purchased: false, cityPass: false }
+const base: AccessState = { huntId: 'h1', freeHuntId: null, purchased: false, cityPass: false, house: true }
 
 describe('resolveAccess (one free hunt per account, then per-hunt purchases)', () => {
   it('fresh account: the free hunt is available for any hunt', () => {
@@ -30,6 +30,13 @@ describe('resolveAccess (one free hunt per account, then per-hunt purchases)', (
 
   it('free-used-here takes precedence over other ownership', () => {
     expect(resolveAccess({ ...base, freeHuntId: 'h1', purchased: true, cityPass: true })).toBe('free-used-here')
+  })
+
+  it('creator hunts: purchase only — no free slot, no legacy city pass', () => {
+    const creator = { ...base, house: false }
+    expect(resolveAccess(creator)).toBe('locked')
+    expect(resolveAccess({ ...creator, cityPass: true })).toBe('locked')
+    expect(resolveAccess({ ...creator, purchased: true })).toBe('purchased')
   })
 
   it('isOwned covers exactly the owned states', () => {
@@ -63,5 +70,16 @@ describe('huntAccessFor (client mirror of resolveAccess)', () => {
     expect(huntAccessFor(summary({ freeHuntId: 'h2', freeAvailable: false, owned: ['h1'] }), hunt)).toBe('owned')
     expect(huntAccessFor(summary({ freeHuntId: 'h2', freeAvailable: false, cityPasses: ['utrecht'] }), hunt)).toBe('owned')
     expect(huntAccessFor(summary({ freeHuntId: 'h2', freeAvailable: false, cityPasses: ['delft'] }), hunt)).toBe('locked')
+  })
+
+  it('house hunts may be marked explicitly', () => {
+    expect(huntAccessFor(summary(), { ...hunt, ownerUid: 'house' })).toBe('free')
+  })
+
+  it('creator hunts are only ever owned by buying them', () => {
+    const creatorHunt = { ...hunt, ownerUid: 'creator-uid' }
+    expect(huntAccessFor(summary(), creatorHunt)).toBe('locked')
+    expect(huntAccessFor(summary({ cityPasses: ['utrecht'] }), creatorHunt)).toBe('locked')
+    expect(huntAccessFor(summary({ owned: ['h1'] }), creatorHunt)).toBe('owned')
   })
 })

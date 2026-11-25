@@ -100,6 +100,12 @@ function toHunt(id: string, d: Record<string, unknown>): PublicHunt {
   if (typeof d.tourCategory === 'string') hunt.tourCategory = d.tourCategory as Hunt['tourCategory']
   if (d.mystery && typeof d.mystery === 'object') hunt.isMystery = true
   if (typeof d.priceEuros === 'number' && Number.isFinite(d.priceEuros)) hunt.priceEuros = d.priceEuros
+  // Marketplace attribution (absent on house hunts).
+  if (typeof d.ownerUid === 'string' && d.ownerUid) hunt.ownerUid = d.ownerUid
+  if (typeof d.creatorName === 'string' && d.creatorName) hunt.creatorName = d.creatorName
+  if (typeof d.creatorSlug === 'string' && d.creatorSlug) hunt.creatorSlug = d.creatorSlug
+  if (typeof d.sourceLang === 'string' && (LANGS as string[]).includes(d.sourceLang)) hunt.sourceLang = d.sourceLang as Lang
+  if (typeof d.coverImageUrl === 'string' && d.coverImageUrl) hunt.coverImageUrl = d.coverImageUrl
   const updated = toMs(d.updatedAt ?? d.createdAt)
   if (updated) hunt.updatedAt = updated
   return hunt

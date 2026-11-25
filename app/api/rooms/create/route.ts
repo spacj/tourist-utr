@@ -38,7 +38,7 @@ export const POST = handle(async (req: NextRequest) => {
   const cityId = typeof hunt.cityId === 'string' ? hunt.cityId : null
 
   if (hunt.active === false) throw new HttpError(404, 'hunt_not_found')
-  const huntRef = { id: huntId, cityId, priceEuros: hunt.priceEuros }
+  const huntRef = { id: huntId, cityId, priceEuros: hunt.priceEuros, ownerUid: hunt.ownerUid }
   // Cheap pre-check so a locked hunt doesn't burn a room code.
   if ((await getHuntAccess(user.uid, huntRef)) === 'locked') throw huntLockedError(huntRef)
 

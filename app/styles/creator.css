@@ -1,0 +1,28 @@
+/* Creator marketplace: /create, /studio, /admin review. Builds on the
+   bench-add form primitives (styles/legacy/spots-legal.css). */
+
+.creator-page { max-width: 720px; }
+
+.creator-steps { list-style: none; padding: 0; margin: 24px 0 8px; display: grid; gap: 12px; }
+.creator-step {
+  display: flex; gap: 14px; align-items: flex-start;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px 16px; box-shadow: var(--shadow-sm);
+}
+.creator-step-n {
+  flex: none; width: 28px; height: 28px; border-radius: 50%;
+  display: grid; place-items: center; font-weight: 700; font-size: 14px;
+  background: var(--canal-soft); color: var(--canal);
+}
+.creator-step-title { font-size: 16px; margin: 2px 0 4px; }
+.creator-step-text { margin: 0; color: var(--text-muted); font-size: 14px; line-height: 1.5; }
+.creator-note { color: var(--text-muted); font-size: 13px; margin: 12px 0 24px; }
+
+.creator-form { margin-top: 8px; }
+.creator-form-title { font-size: 20px; margin: 0 0 4px; }
+.creator-hint { color: var(--text-dim); font-size: 13px; margin: 6px 0 0; }
+.creator-check { display: flex; gap: 10px; align-items: flex-start; margin: 18px 0 0; font-size: 14px; line-height: 1.45; }
+.creator-check input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--canal); }
+.creator-error { color: var(--red); font-size: 14px; margin: 14px 0 0; }
+.creator-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 20px; }
+.creator-saved { color: var(--canal); font-size: 14px; font-weight: 600; }

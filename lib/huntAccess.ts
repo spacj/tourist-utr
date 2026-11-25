@@ -3,7 +3,7 @@ import type { DocumentData, Transaction } from 'firebase-admin/firestore'
 import { adminDb, FieldValue } from '@/lib/firebaseAdmin'
 import { HttpError } from '@/lib/apiAuth'
 import { cityUnlockRef } from '@/lib/cityUnlock'
-import { huntPriceEuros } from '@/types'
+import { huntPriceEuros, isHouseHunt } from '@/types'
 
 /**
  * Who may play which hunt (pricing model, see docs/GAME_DESIGN.md):
@@ -13,6 +13,8 @@ import { huntPriceEuros } from '@/types'
  *  - every other hunt is bought one by one: `huntUnlocks/{uid}__{huntId}`;
  *  - legacy: a city pass bought before the change (`cityUnlocks/{uid}__{cityId}`)
  *    still opens every hunt in that city.
+ *  - creator hunts (marketplace, `hunts.ownerUid` set) can only be bought:
+ *    the free slot and legacy city passes are house-hunt perks only.
  * All three records are written only here / in lib/payments.ts (Admin SDK);
  * firestore.rules keeps clients away from them.
  */
@@ -27,12 +29,15 @@ export interface AccessState {
   purchased: boolean
   /** Legacy cityUnlocks/{uid}__{cityId} exists for the hunt's city. */
   cityPass: boolean
+  /** The platform sells this hunt (isHouseHunt). Creator hunts: purchase only. */
+  house: boolean
 }
 
 /** Pure access resolution (tested in tests/huntAccess.test.ts). */
 export function resolveAccess(s: AccessState): HuntAccess {
   if (s.freeHuntId && s.freeHuntId === s.huntId) return 'free-used-here'
   if (s.purchased) return 'purchased'
+  if (!s.house) return 'locked'
   if (s.cityPass) return 'city-pass'
   if (!s.freeHuntId) return 'free-available'
   return 'locked'
@@ -65,6 +70,8 @@ export interface HuntRef {
   id: string
   cityId?: unknown
   priceEuros?: unknown
+  /** hunts.ownerUid — see isHouseHunt. */
+  ownerUid?: unknown
 }
 
 const cityOf = (hunt: HuntRef): string | null =>
@@ -79,6 +86,7 @@ export async function getHuntAccess(uid: string, hunt: HuntRef): Promise<HuntAcc
     freeHuntId: freeHuntIdOf(user.data()),
     purchased: unlock.exists,
     cityPass: !!pass?.exists,
+    house: isHouseHunt(hunt),
   })
 }
 
@@ -109,6 +117,7 @@ export async function txClaimHuntAccess(
     freeHuntId: freeHuntIdOf(user.data()),
     purchased: unlock.exists,
     cityPass: !!pass?.exists,
+    house: isHouseHunt(hunt),
   })
   if (access === 'locked') throw huntLockedError(hunt)
   const claimedFree = access === 'free-available'
@@ -141,13 +150,14 @@ export async function claimHuntAccess(
 }
 
 /** Price of a hunt for payment verification, plus its city (redirect target). */
-export async function loadHuntForPayment(huntId: string): Promise<{ priceCents: number; cityId: string | null } | null> {
+export async function loadHuntForPayment(huntId: string): Promise<{ priceCents: number; cityId: string | null; ownerUid: string | null } | null> {
   const snap = await adminDb().collection('hunts').doc(huntId).get()
   if (!snap.exists) return null
   const d = snap.data() ?? {}
   return {
     priceCents: Math.round(huntPriceEuros(d) * 100),
     cityId: typeof d.cityId === 'string' ? d.cityId : null,
+    ownerUid: isHouseHunt(d) ? null : String(d.ownerUid),
   }
 }
 

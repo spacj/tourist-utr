@@ -22,7 +22,7 @@ export const POST = handle(async (req) => {
   if (!huntSnap.exists) throw new HttpError(404, 'hunt_not_found')
   const hunt = huntSnap.data() as {
     cityId?: string; city?: string; order?: number; tourType?: 'hunt' | 'tour'; active?: boolean
-    difficulty?: string; priceEuros?: unknown
+    difficulty?: string; priceEuros?: unknown; ownerUid?: unknown
   }
   if (hunt.active === false) throw new HttpError(404, 'hunt_not_found')
 
@@ -55,7 +55,7 @@ export const POST = handle(async (req) => {
   // else spend the account's one free hunt on this one, else 402.
   let claimedFree = false
   try {
-    claimedFree = (await claimHuntAccess(user.uid, { id: huntId, cityId, priceEuros: hunt.priceEuros })).claimedFree
+    claimedFree = (await claimHuntAccess(user.uid, { id: huntId, cityId, priceEuros: hunt.priceEuros, ownerUid: hunt.ownerUid })).claimedFree
   } catch (e) {
     // Guests can't buy — tell the client to sign in first.
     if (e instanceof HttpError && e.code === 'hunt_locked' && user.isAnonymous) {

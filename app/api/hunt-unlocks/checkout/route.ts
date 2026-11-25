@@ -27,7 +27,7 @@ export const POST = handle(async (req: NextRequest) => {
   const cityId = typeof hunt.cityId === 'string' ? hunt.cityId : null
   if (hunt.active === false || !cityId) throw new HttpError(404, 'hunt_not_found')
 
-  if (isOwned(await getHuntAccess(user.uid, { id: huntId, cityId }))) {
+  if (isOwned(await getHuntAccess(user.uid, { id: huntId, cityId, ownerUid: hunt.ownerUid }))) {
     throw new HttpError(409, 'already_unlocked')
   }
 

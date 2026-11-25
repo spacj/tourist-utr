@@ -60,6 +60,7 @@ export const POST = handle(async (req: NextRequest) => {
     id: huntSnap.id,
     cityId: typeof hunt.cityId === 'string' ? hunt.cityId : (room.cityId ?? null),
     priceEuros: hunt.priceEuros,
+    ownerUid: hunt.ownerUid,
   }
   if ((await getHuntAccess(user.uid, huntRef)) === 'locked') throw huntLockedError(huntRef)
 

@@ -13,6 +13,7 @@ import './styles/components.css'
 import './styles/flows.css'
 import './styles/game.css'
 import './styles/seo.css'
+import './styles/creator.css'
 
 // Google Analytics 4 and AdSense. Production-only, and loaded by
 // <ConsentManager> only after the visitor opts in (GDPR/ePrivacy).
