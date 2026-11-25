@@ -54,6 +54,12 @@ export function HuntLanding({ city: rawCity, hunt: rawHunt, isMystery, languages
         <header className="landing-head">
           <h1 className="landing-title">{hunt.title}</h1>
           <p className="landing-eyebrow">{kindLabel} · {city.name}</p>
+          {hunt.creatorName && (
+            <p className="landing-byline">
+              {fmt(t('creatorByline'), { name: '' }).trim()}{' '}
+              {hunt.creatorSlug ? <a href={`/creators/${hunt.creatorSlug}`}>{hunt.creatorName}</a> : hunt.creatorName}
+            </p>
+          )}
           <p className="landing-desc">{hunt.description}</p>
         </header>
 

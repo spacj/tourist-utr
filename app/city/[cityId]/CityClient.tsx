@@ -8,7 +8,7 @@ import { apiGet, apiPost } from '@/lib/apiFetch'
 import { errorCode, errorKey } from '@/lib/apiErrors'
 import { fmt } from '@/lib/i18n/fmt'
 import {
-  City, Hunt, HuntAccessSummary, TourCategory, huntAccessFor, huntPriceEuros, isTour, localizeCity, localizeHunt,
+  City, Hunt, HuntAccessSummary, TourCategory, huntAccessFor, huntPriceEuros, isHouseHunt, isTour, localizeCity, localizeHunt,
 } from '@/types'
 import { ResumeRaceBanner } from '@/components/ResumeRaceBanner'
 import { CheckoutSheet, type CheckoutOption } from '@/components/CheckoutSheet'
@@ -536,6 +536,7 @@ export function CityClient({ cityId, initialCity, initialHunts }: Props) {
           defaultSelectedId={localCheckoutHunt.id}
           onConfirm={confirmHuntCheckout}
           onClose={() => setCheckoutHunt(null)}
+          provider={isHouseHunt(localCheckoutHunt) ? 'paypal' : 'card'}
         />
       )}
 

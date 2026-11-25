@@ -11,6 +11,10 @@ export type Difficulty = 'easy' | 'medium' | 'hard'
 /** Default price of one hunt or walking tour (see huntPriceEuros). */
 export const HUNT_PRICE_EUROS = 5
 
+/** Price of every creator (marketplace) hunt, set when it is published. House
+ *  hunts keep HUNT_PRICE_EUROS. */
+export const CREATOR_HUNT_PRICE_EUROS = 7
+
 /**
  * @deprecated City passes are no longer sold (one free hunt per account,
  * then a price per hunt). Kept for legacy `city_unlock` orders still being

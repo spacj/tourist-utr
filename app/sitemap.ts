@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { getAllPostsMeta } from '@/lib/blog'
 import { getAllSpots } from '@/lib/benches'
-import { getActiveCities, getActiveCountries, getActiveHunts } from '@/lib/catalog'
+import { getActiveCities, getActiveCountries, getActiveHunts, getCreatorSlugs } from '@/lib/catalog'
 import { LEGAL, SITE_URL } from '@/lib/site'
 import { SPOT_KINDS, type SpotKind } from '@/types'
 
@@ -103,13 +103,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry('/multiplayer', undefined, 'monthly', 0.6),
     entry('/benches', spotLastMod.bench, 'daily', 0.8),
     entry('/fountains', spotLastMod.fountain, 'daily', 0.8),
+    entry('/create', undefined, 'monthly', 0.6),
+    entry('/creator-terms', legalMod, 'yearly', 0.2),
     entry('/contact', legalMod, 'yearly', 0.3),
     entry('/privacy', legalMod, 'yearly', 0.2),
     entry('/terms', legalMod, 'yearly', 0.2),
   ]
 
+  const creatorEntries = (await getCreatorSlugs() ?? []).map(slug => entry(`/creators/${slug}`, undefined, 'weekly', 0.5))
+
   return [
     ...staticEntries,
+    ...creatorEntries,
     ...countryEntries,
     ...cityEntries,
     ...huntEntries,

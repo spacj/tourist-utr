@@ -11,12 +11,10 @@ import { adminAuth } from '@/lib/firebaseAdmin'
  *  - small validators and an in-memory rate limiter.
  */
 
-export class HttpError extends Error {
-  /** `extra` fields are sent next to `error` in the JSON body (e.g. huntId, priceEuros). */
-  constructor(public status: number, public code: string, public extra?: Record<string, unknown>) {
-    super(code)
-  }
-}
+// HttpError lives in a client-safe module so shared validation code (also
+// bundled into client components) can throw it.
+import { HttpError } from '@/lib/httpError'
+export { HttpError }
 
 export interface AuthUser {
   uid: string

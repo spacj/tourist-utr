@@ -20,6 +20,8 @@ export default function robots(): MetadataRoute.Robots {
           '/benches/edit',
           '/fountains/add',
           '/fountains/edit',
+          '/studio',
+          '/admin',
         ],
       },
     ],

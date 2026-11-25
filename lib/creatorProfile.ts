@@ -1,4 +1,4 @@
-import { HttpError } from '@/lib/apiAuth'
+import { HttpError } from '@/lib/httpError'
 
 /**
  * Pure helpers for creator profiles (tested in tests/creatorProfile.test.ts).
@@ -6,13 +6,14 @@ import { HttpError } from '@/lib/apiAuth'
  */
 
 /**
- * Countries a creator can be paid in: Stripe Connect Express countries we
- * accept for now (EU/EEA + UK, CH, US, CA, AU). Extend as needed.
+ * Countries a creator can be paid in. Destination charges from an EU
+ * platform can pay out to connected accounts in the EEA, the UK and
+ * Switzerland; creators elsewhere would need cross-border payouts.
  */
 export const CREATOR_COUNTRIES = [
   'at', 'be', 'bg', 'hr', 'cy', 'cz', 'dk', 'ee', 'fi', 'fr', 'de', 'gr', 'hu', 'ie', 'it',
   'lv', 'lt', 'lu', 'mt', 'nl', 'pl', 'pt', 'ro', 'sk', 'si', 'es', 'se',
-  'no', 'is', 'li', 'gb', 'ch', 'us', 'ca', 'au',
+  'no', 'is', 'li', 'gb', 'ch',
 ] as const
 
 export type CreatorCountry = (typeof CREATOR_COUNTRIES)[number]

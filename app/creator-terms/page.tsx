@@ -44,16 +44,16 @@ export default function CreatorTermsPage() {
 
       <h2>Price and earnings</h2>
       <ul>
-        <li>You choose the price players pay for your hunt, between €1 and €50, including VAT.</li>
+        <li>Players pay €7 for a creator hunt, including VAT. We may change this price; we will tell you first.</li>
         <li>
           We sell your hunt to players in our own name. We collect the VAT on each sale and pay it
           to the tax authorities.
         </li>
         <li>
           From each sale you receive the price excluding VAT, minus our commission of 20% of the
-          price excluding VAT and a payment fee of 3% of the price paid. Example: a €5 hunt with
-          21% VAT is €4.13 excluding VAT; minus €0.83 commission and €0.15 payment fee, you
-          receive €3.15. The VAT rate can differ by the player&rsquo;s country.
+          price excluding VAT and a payment fee of 3% of the price paid. Example: a €7 hunt with
+          21% VAT is €5.79 excluding VAT; minus €1.16 commission and €0.21 payment fee, you
+          receive €4.42. The VAT rate can differ by the player&rsquo;s country.
         </li>
         <li>
           Your share is paid to your Stripe account at the moment of each sale, and Stripe pays it

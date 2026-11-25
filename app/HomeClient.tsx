@@ -479,6 +479,7 @@ export function HomeClient({ recentPosts }: HomeClientProps) {
           </div>
           <nav className="th-foot-links" aria-label={t('footerAbout')}>
             <a href="/blog">{t('footerBlog')}</a>
+            <a href="/create">{t('creatorNavCta')}</a>
             <a href="/contact">{t('footerContact')}</a>
             <a href="/benches">{t('footerBenches')}</a>
             <a href="/fountains">{t('footerFountains')}</a>

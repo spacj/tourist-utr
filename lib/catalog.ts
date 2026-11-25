@@ -182,3 +182,62 @@ export const getCityWithHunts = cache(async (cityId: string): Promise<{ city: Pu
 export function huntLanguages(h: Pick<Hunt, 'i18n'>): Lang[] {
   return LANGS.filter(l => l === 'en' || !!h.i18n?.[l]?.title)
 }
+
+// ── Creators (marketplace) ───────────────────────────────────────────
+
+export interface PublicCreator {
+  slug: string
+  displayName: string
+  bio: string
+  avatarUrl?: string
+}
+
+/** Slugs of active creators with at least one listed hunt (sitemap). */
+export const getCreatorSlugs = cache(async (): Promise<string[] | null> => {
+  try {
+    const hunts = await adminDb().collection('hunts').where('active', '==', true).get()
+    const slugs = new Set<string>()
+    for (const h of hunts.docs) {
+      const s = h.data().creatorSlug
+      if (typeof s === 'string' && s && isValidId(s)) slugs.add(s)
+    }
+    return [...slugs]
+  } catch (e) {
+    console.warn('[catalog] creators unavailable:', (e as Error)?.message ?? e)
+    return null
+  }
+})
+
+/**
+ * A creator's public profile and listed hunts.
+ *  - null → Firestore unavailable; { creator: null } → unknown/suspended (404)
+ * Only public fields: never email, Stripe or commission data.
+ */
+export const getCreatorWithHunts = cache(async (slug: string): Promise<{ creator: PublicCreator | null; hunts: PublicHunt[] } | null> => {
+  if (!isValidId(slug)) return { creator: null, hunts: [] }
+  try {
+    const db = adminDb()
+    const map = await db.collection('creatorSlugs').doc(slug).get()
+    const uid = map.data()?.uid
+    if (typeof uid !== 'string') return { creator: null, hunts: [] }
+    const [c, hunts] = await Promise.all([
+      db.collection('creators').doc(uid).get(),
+      db.collection('hunts').where('ownerUid', '==', uid).get(),
+    ])
+    const d = c.data()
+    if (!d || d.status === 'suspended') return { creator: null, hunts: [] }
+    const creator: PublicCreator = {
+      slug,
+      displayName: str(d.displayName, slug),
+      bio: str(d.bio),
+      ...(typeof d.avatarUrl === 'string' && d.avatarUrl ? { avatarUrl: d.avatarUrl } : {}),
+    }
+    return {
+      creator,
+      hunts: hunts.docs.map(h => toHunt(h.id, h.data())).filter(h => h.active).sort(byOrder),
+    }
+  } catch (e) {
+    console.warn('[catalog] creator unavailable:', (e as Error)?.message ?? e)
+    return null
+  }
+})

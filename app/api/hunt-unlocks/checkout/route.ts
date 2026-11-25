@@ -4,7 +4,8 @@ import { handle, requireUser, readJson, id, rateLimit, HttpError } from '@/lib/a
 import { createOrder } from '@/lib/paypal'
 import { getHuntAccess, isOwned } from '@/lib/huntAccess'
 import { encodeCustomId, siteOrigin } from '@/lib/payments'
-import { huntPriceEuros } from '@/types'
+import { huntPriceEuros, isHouseHunt } from '@/types'
+import { createCreatorCheckout } from '@/lib/creatorPayments'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,6 +15,10 @@ export const dynamic = 'force-dynamic'
  * cleared browser. Price comes from the hunt doc only (huntPriceEuros).
  * 409 already_unlocked when the player already owns the hunt (bought, free
  * hunt spent on it, or a legacy city pass for its city).
+ *
+ * House hunts are paid with PayPal; creator (marketplace) hunts with Stripe
+ * Checkout, which splits the payment with the creator. Either way the reply
+ * is { url } to send the browser to.
  */
 export const POST = handle(async (req: NextRequest) => {
   const user = await requireUser(req, { registered: true })
@@ -29,6 +34,11 @@ export const POST = handle(async (req: NextRequest) => {
 
   if (isOwned(await getHuntAccess(user.uid, { id: huntId, cityId, ownerUid: hunt.ownerUid }))) {
     throw new HttpError(409, 'already_unlocked')
+  }
+
+  if (!isHouseHunt(hunt)) {
+    const url = await createCreatorCheckout({ uid: user.uid, email: user.email, huntId, hunt })
+    return NextResponse.json({ url })
   }
 
   const amount = huntPriceEuros(hunt).toFixed(2)

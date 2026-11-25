@@ -21,6 +21,8 @@ export function LegalPage({ title, children }: { title: string; children: ReactN
         <nav aria-label="Legal">
           <a href="/privacy">Privacy</a>
           <a href="/terms">Terms</a>
+          <a href="/creator-terms">Creator terms</a>
+          <a href="/create">Create a hunt</a>
           <a href="/contact">Contact</a>
         </nav>
       </footer>

@@ -50,3 +50,6 @@ function makeDb(): Firestore {
 }
 
 export const db = makeDb()
+
+/** The initialised Firebase app (for lazily loaded SDKs such as Storage). */
+export { app as firebaseApp }

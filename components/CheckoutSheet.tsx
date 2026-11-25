@@ -46,6 +46,8 @@ interface Props {
    */
   onConfirm: (optionId: string) => Promise<boolean | void> | boolean | void
   onClose: () => void
+  /** 'paypal' (house hunts, credits) or 'card' (creator hunts via Stripe Checkout). */
+  provider?: 'paypal' | 'card'
 }
 
 const eur = (cents: number) => (cents / 100).toFixed(2)
@@ -55,7 +57,7 @@ const eur = (cents: number) => (cents / 100).toFixed(2)
  * the options, trust signals and one explicit "Pay with PayPal" button.
  * Used by both the credit shop and the city unlock flow.
  */
-export function CheckoutSheet({ title, subtitle, options, defaultSelectedId, onConfirm, onClose }: Props) {
+export function CheckoutSheet({ title, subtitle, options, defaultSelectedId, onConfirm, onClose, provider = 'paypal' }: Props) {
   const { t } = useI18n()
   const toast = useToast()
   const firstAvailable = options.find(o => !o.disabled)?.id ?? options[0]?.id ?? ''
@@ -167,8 +169,10 @@ export function CheckoutSheet({ title, subtitle, options, defaultSelectedId, onC
         >
           {submitting ? (
             <span className="checkout-cta-loading">
-              <span className="spinner-mini" aria-hidden /> {t('checkoutRedirecting')}
+              <span className="spinner-mini" aria-hidden /> {t(provider === 'card' ? 'checkoutCardRedirecting' : 'checkoutRedirecting')}
             </span>
+          ) : provider === 'card' ? (
+            <>{t('checkoutCardCta')}</>
           ) : (
             <>
               {t('checkoutPayWith')}{' '}
@@ -180,7 +184,7 @@ export function CheckoutSheet({ title, subtitle, options, defaultSelectedId, onC
           )}
         </button>
       </div>
-      <p className="checkout-footnote">{t('checkoutFootnote')}</p>
+      <p className="checkout-footnote">{t(provider === 'card' ? 'checkoutCardFootnote' : 'checkoutFootnote')}</p>
     </Modal>
   )
 }

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { adminDb, FieldValue } from '@/lib/firebaseAdmin'
 import { handle, requireUser, readJson, id, rateLimit, HttpError } from '@/lib/apiAuth'
-import { claimHuntAccess } from '@/lib/huntAccess'
+import { claimHuntAccess, huntUnlockRef } from '@/lib/huntAccess'
 import { toMillis } from '@/lib/sessionServer'
 import { normalizeDifficulty } from '@/lib/clueView'
 import { STARTING_CREDITS } from '@/types'
@@ -24,7 +24,11 @@ export const POST = handle(async (req) => {
     cityId?: string; city?: string; order?: number; tourType?: 'hunt' | 'tour'; active?: boolean
     difficulty?: string; priceEuros?: unknown; ownerUid?: unknown
   }
-  if (hunt.active === false) throw new HttpError(404, 'hunt_not_found')
+  // An unlisted hunt stays playable for players who bought it (creator hunts
+  // can be unpublished or paused; buyers keep access).
+  if (hunt.active === false && !(await huntUnlockRef(user.uid, huntId).get()).exists) {
+    throw new HttpError(404, 'hunt_not_found')
+  }
 
   const tourType: 'hunt' | 'tour' = hunt.tourType === 'tour' ? 'tour' : 'hunt'
   const cityId = hunt.cityId ?? null
