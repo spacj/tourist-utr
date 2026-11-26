@@ -96,7 +96,7 @@ export function StudioClient() {
       <main className="page-center">
         <div className="container flow-center">
           <h1 className="flow-page-title">Creator studio</h1>
-          <p className="flow-page-sub">Sign in to build and sell your own hunts.</p>
+          <p className="flow-page-sub">Sign in with your Google account (or email) to build and sell your own hunts.</p>
           <button type="button" className="btn-primary" onClick={signIn}>Sign in</button>
         </div>
       </main>

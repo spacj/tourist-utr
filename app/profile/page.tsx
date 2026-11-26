@@ -4,6 +4,7 @@ import { AchievementIcon } from '@/components/AchievementIcon'
 import { RankMark } from '@/components/StopIcon'
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
+import { useIsAdmin } from '@/hooks/useIsAdmin'
 import { useI18n } from '@/hooks/useI18n'
 import { ResumeRaceBanner } from '@/components/ResumeRaceBanner'
 import { apiGet } from '@/lib/apiFetch'
@@ -33,6 +34,7 @@ interface Session {
 
 export default function ProfilePage() {
   const { user, loading, signIn, logOut } = useAuth()
+  const isAdmin = useIsAdmin()
   const { t, lang } = useI18n()
   const [sessions, setSessions] = useState<Session[]>([])
   const [historyState, setHistoryState] = useState<'loading' | 'ready' | 'error'>('loading')
@@ -234,6 +236,10 @@ export default function ProfilePage() {
 
         <div className="flow-actions-row">
           <a href="/" className="btn-primary flow-btn">{t('playHunt')}</a>
+        </div>
+        <div className="flow-actions-row flow-mt-8">
+          <a href="/studio" className="btn-secondary flow-btn">{t('creatorStudioLink')}</a>
+          {isAdmin && <a href="/admin" className="btn-secondary flow-btn">{t('ownerDashboardLink')}</a>}
         </div>
         <button type="button" className="btn-secondary flow-mt-8" onClick={logOut}>{t('signOut')}</button>
       </div>

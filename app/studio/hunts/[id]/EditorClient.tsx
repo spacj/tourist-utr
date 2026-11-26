@@ -129,7 +129,7 @@ export function EditorClient({ id }: { id: string }) {
 
   if (loading) return <main className="page-center"><div className="spinner" role="status" aria-label="Loading" /></main>
   if (!registered) {
-    return <main className="page-center"><div className="container flow-center"><p className="flow-page-sub">Sign in to edit your hunt.</p><button type="button" className="btn-primary" onClick={signIn}>Sign in</button></div></main>
+    return <main className="page-center"><div className="container flow-center"><p className="flow-page-sub">Sign in with Google (or email) to edit your hunt.</p><button type="button" className="btn-primary" onClick={signIn}>Sign in</button></div></main>
   }
   if (notFound) return <main className="page-center"><div className="container flow-center"><p className="flow-page-sub">This hunt doesn’t exist or isn’t yours.</p><a className="btn-secondary" href="/studio">Back to studio</a></div></main>
   if (!draft || !content) return <main className="page-center"><div className="spinner" role="status" aria-label="Loading" /></main>
